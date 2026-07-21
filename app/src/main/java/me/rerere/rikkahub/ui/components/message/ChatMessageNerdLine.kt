@@ -12,10 +12,14 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.datetime.toJavaLocalDateTime
 import me.rerere.ai.ui.UIMessage
 import me.rerere.ai.ui.UIMessagePart
@@ -29,6 +33,7 @@ import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.utils.formatNumber
 import me.rerere.rikkahub.utils.toFixed
 import java.time.Duration
+import java.time.LocalDateTime
 
 /**
  * 显示消息的技术统计信息（如 token 使用量）
@@ -36,10 +41,26 @@ import java.time.Duration
 @Composable
 fun ChatMessageNerdLine(
     message: UIMessage,
+    loading: Boolean,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
 ) {
     val settings = LocalSettings.current.displaySetting
+    val elapsedMillis by produceState(
+        initialValue = message.elapsedMillis(loading),
+        key1 = message.createdAt,
+        key2 = message.finishedAt,
+        key3 = loading,
+    ) {
+        if (loading) {
+            while (isActive) {
+                value = message.elapsedMillis(loading = true)
+                delay(100)
+            }
+        } else {
+            value = message.elapsedMillis(loading = false)
+        }
+    }
 
     ProvideTextStyle(MaterialTheme.typography.labelSmall.copy(color = color)) {
         CompositionLocalProvider(LocalContentColor provides color) {
@@ -50,11 +71,13 @@ fun ChatMessageNerdLine(
             ) {
                 val usage = message.usage
                 if (settings.showTokenUsage) {
-                    val characterCount = message.parts
-                        .filterIsInstance<UIMessagePart.Text>()
-                        .sumOf { part ->
-                            Character.codePointCount(part.text, 0, part.text.length)
-                        }
+                    val characterCount = message.characterCount(includeReasoning = true)
+                    val seconds = elapsedMillis / 1000f
+                    val charactersPerSecond = if (elapsedMillis > 0) {
+                        characterCount.toFloat() / elapsedMillis * 1000
+                    } else {
+                        0f
+                    }
                     StatsItem(
                         icon = {
                             Icon(
@@ -67,72 +90,78 @@ fun ChatMessageNerdLine(
                             Text(text = "${characterCount.formatNumber()} chars")
                         }
                     )
-                }
-                if (settings.showTokenUsage && usage != null) {
-                    // Input tokens
                     StatsItem(
                         icon = {
                             Icon(
-                                imageVector = HugeIcons.Upload02,
-                                contentDescription = "Input",
-                                tint = color,
+                                imageVector = HugeIcons.Clock02,
+                                contentDescription = "Duration",
                                 modifier = Modifier.size(12.dp)
                             )
                         },
                         content = {
-                            Text(text = usage.promptTokens.formatNumber())
-                            // Cached tokens
-                            if (usage.cachedTokens > 0) {
-                                Text(
-                                    text = "(${message.usage?.cachedTokens?.formatNumber() ?: "0"} cached)"
+                            Text(text = "${seconds.toFixed(1)}s")
+                        }
+                    )
+                    StatsItem(
+                        icon = {
+                            Icon(
+                                imageVector = HugeIcons.Zap,
+                                contentDescription = "Character speed",
+                                modifier = Modifier.size(12.dp)
+                            )
+                        },
+                        content = {
+                            Text(text = "${charactersPerSecond.toFixed(1)} chars/s")
+                        }
+                    )
+
+                    if (!loading && usage != null) {
+                        // Input tokens
+                        StatsItem(
+                            icon = {
+                                Icon(
+                                    imageVector = HugeIcons.Upload02,
+                                    contentDescription = "Input",
+                                    tint = color,
+                                    modifier = Modifier.size(12.dp)
                                 )
+                            },
+                            content = {
+                                Text(text = usage.promptTokens.formatNumber())
+                                if (usage.cachedTokens > 0) {
+                                    Text(text = "(${usage.cachedTokens.formatNumber()} cached)")
+                                }
                             }
-                        }
-                    )
-                    // Output tokens
-                    StatsItem(
-                        icon = {
-                            Icon(
-                                imageVector = HugeIcons.Download04,
-                                contentDescription = "Output",
-                                modifier = Modifier.size(12.dp)
-                            )
-                        },
-                        content = {
-                            Text(text = usage.completionTokens.formatNumber())
-                        }
-                    )
-                    // TPS
-                    if (message.finishedAt != null) {
-                        val duration = Duration.between(
-                            message.createdAt.toJavaLocalDateTime(),
-                            message.finishedAt!!.toJavaLocalDateTime()
                         )
-                        val tps = usage.completionTokens.toFloat() / duration.toMillis() * 1000
-                        val seconds = (duration.toMillis() / 1000f).toFixed(1)
+                        // Output tokens
+                        StatsItem(
+                            icon = {
+                                Icon(
+                                    imageVector = HugeIcons.Download04,
+                                    contentDescription = "Output",
+                                    modifier = Modifier.size(12.dp)
+                                )
+                            },
+                            content = {
+                                Text(text = usage.completionTokens.formatNumber())
+                            }
+                        )
+                        // Tokens per second
                         StatsItem(
                             icon = {
                                 Icon(
                                     imageVector = HugeIcons.Zap,
-                                    contentDescription = "Speed",
+                                    contentDescription = "Token speed",
                                     modifier = Modifier.size(12.dp)
                                 )
                             },
                             content = {
-                                Text(text = "${tps.toFixed(1)} tok/s")
-                            }
-                        )
-
-                        StatsItem(
-                            icon = {
-                                Icon(
-                                    imageVector = HugeIcons.Clock02,
-                                    contentDescription = "Duration",
-                                    modifier = Modifier.size(12.dp)
-                                )
-                            },
-                            content = {
-                                Text(text = "${seconds}s")
+                                val tokensPerSecond = if (elapsedMillis > 0) {
+                                    usage.completionTokens.toFloat() / elapsedMillis * 1000
+                                } else {
+                                    0f
+                                }
+                                Text(text = "${tokensPerSecond.toFixed(1)} tok/s")
                             }
                         )
                     }
@@ -140,6 +169,24 @@ fun ChatMessageNerdLine(
             }
         }
     }
+}
+
+internal fun UIMessage.characterCount(includeReasoning: Boolean): Int = parts.sumOf { part ->
+    val text = when (part) {
+        is UIMessagePart.Text -> part.text
+        is UIMessagePart.Reasoning -> if (includeReasoning) part.reasoning else ""
+        else -> ""
+    }
+    Character.codePointCount(text, 0, text.length)
+}
+
+private fun UIMessage.elapsedMillis(loading: Boolean): Long {
+    val end = if (loading) {
+        LocalDateTime.now()
+    } else {
+        finishedAt?.toJavaLocalDateTime() ?: createdAt.toJavaLocalDateTime()
+    }
+    return Duration.between(createdAt.toJavaLocalDateTime(), end).toMillis().coerceAtLeast(0)
 }
 
 @Composable

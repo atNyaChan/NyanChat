@@ -176,11 +176,12 @@ class WebServerManager(
                 Collections.list(networkInterface.inetAddresses).asSequence()
             }
             .filter { address ->
-                !address.isLoopbackAddress &&
+                address is Inet4Address &&
+                    !address.isLoopbackAddress &&
                     !address.isAnyLocalAddress &&
                     !address.isMulticastAddress
             }
-            .sortedWith(compareBy({ it !is Inet4Address }, { it.hostAddress }))
+            .sortedBy { it.hostAddress }
             .mapNotNull { it.hostAddress }
             .distinct()
             .toList()

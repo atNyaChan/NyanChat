@@ -217,6 +217,7 @@ fun SettingWebPage() {
                                     }
                                 },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                textStyle = MaterialTheme.typography.titleLarge,
                                 singleLine = true,
                                 isError = portText.toIntOrNull()?.let { it !in 1024..65535 } ?: true,
                                 modifier = Modifier.width(100.dp),
@@ -284,6 +285,7 @@ fun SettingWebPage() {
                                     }
                                 },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                                textStyle = MaterialTheme.typography.titleLarge,
                                 visualTransformation = if (passwordVisible) {
                                     VisualTransformation.None
                                 } else {

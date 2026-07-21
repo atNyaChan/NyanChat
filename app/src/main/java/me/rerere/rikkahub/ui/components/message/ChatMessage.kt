@@ -213,7 +213,12 @@ fun ChatMessage(
         )
 
         ProvideTextStyle(textStyle) {
-            ChatMessageNerdLine(message = message)
+            if (message.role == MessageRole.ASSISTANT) {
+                ChatMessageNerdLine(
+                    message = message,
+                    loading = loading,
+                )
+            }
         }
 
     }

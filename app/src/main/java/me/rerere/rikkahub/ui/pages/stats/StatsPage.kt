@@ -151,6 +151,7 @@ private fun ChatHeatmap(conversationsPerDay: Map<LocalDate, Int>) {
         .minOrNull()
     val startSunday = (firstActiveDate ?: today)
         .with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
+        .minusWeeks(1)
 
     val numWeeks = ChronoUnit.WEEKS.between(startSunday, currentSunday).toInt() + 1
     val activeCounts = conversationsPerDay.values.filter { it > 0 }.sorted()
