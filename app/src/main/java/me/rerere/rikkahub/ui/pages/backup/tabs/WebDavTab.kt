@@ -81,7 +81,7 @@ fun WebDavTab(
     val scope = rememberCoroutineScope()
     var showBackupFiles by remember { mutableStateOf(false) }
     var restoringItemId by remember { mutableStateOf<String?>(null) }
-    var isBackingUp by remember { mutableStateOf(false) }
+    val isBackingUp by vm.isBackupOrRestoreRunning.collectAsStateWithLifecycle()
 
     fun updateWebDavConfig(newConfig: WebDavConfig) {
         vm.updateSettings(settings.copy(webDavConfig = newConfig))
@@ -265,7 +265,6 @@ fun WebDavTab(
             Button(
                 onClick = {
                     scope.launch {
-                        isBackingUp = true
                         runCatching {
                             vm.backup()
                             vm.loadBackupFileItems()
@@ -280,7 +279,6 @@ fun WebDavTab(
                                 type = ToastType.Error
                             )
                         }
-                        isBackingUp = false
                     }
                 },
                 enabled = !isBackingUp

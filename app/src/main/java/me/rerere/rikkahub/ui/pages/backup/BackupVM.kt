@@ -5,7 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.SettingsStore
@@ -35,6 +37,10 @@ class BackupVM(
 
     val webDavBackupItems = MutableStateFlow<UiState<List<WebDavBackupItem>>>(UiState.Idle)
     val s3BackupItems = MutableStateFlow<UiState<List<S3BackupItem>>>(UiState.Idle)
+    private val activeBackupOrRestoreCount = MutableStateFlow(0)
+    val isBackupOrRestoreRunning = activeBackupOrRestoreCount
+        .map { it > 0 }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     init {
         loadBackupFileItems()
@@ -69,12 +75,16 @@ class BackupVM(
     }
 
     suspend fun backup() {
-        webDavSync.backup(settings.value.webDavConfig)
-        recordBackupTime()
+        trackBackupOrRestore {
+            webDavSync.backup(settings.value.webDavConfig)
+            recordBackupTime()
+        }
     }
 
     suspend fun restore(item: WebDavBackupItem) {
-        webDavSync.restore(config = settings.value.webDavConfig, item = item)
+        trackBackupOrRestore {
+            webDavSync.restore(config = settings.value.webDavConfig, item = item)
+        }
     }
 
     suspend fun deleteWebDavBackupFile(item: WebDavBackupItem) {
@@ -176,16 +186,29 @@ class BackupVM(
     }
 
     suspend fun backupToS3() {
-        s3Sync.backupToS3(settings.value.s3Config)
-        recordBackupTime()
+        trackBackupOrRestore {
+            s3Sync.backupToS3(settings.value.s3Config)
+            recordBackupTime()
+        }
     }
 
     suspend fun restoreFromS3(item: S3BackupItem) {
-        s3Sync.restoreFromS3(config = settings.value.s3Config, item = item)
+        trackBackupOrRestore {
+            s3Sync.restoreFromS3(config = settings.value.s3Config, item = item)
+        }
     }
 
     suspend fun deleteS3BackupFile(item: S3BackupItem) {
         s3Sync.deleteS3BackupFile(settings.value.s3Config, item)
+    }
+
+    suspend fun <T> trackBackupOrRestore(block: suspend () -> T): T {
+        activeBackupOrRestoreCount.update { it + 1 }
+        return try {
+            block()
+        } finally {
+            activeBackupOrRestoreCount.update { (it - 1).coerceAtLeast(0) }
+        }
     }
 
     private suspend fun recordBackupTime() {

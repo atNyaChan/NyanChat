@@ -1,5 +1,6 @@
 package me.rerere.rikkahub.ui.components.message
 
+import android.content.ClipData
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -7,13 +8,16 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
@@ -26,21 +30,27 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import me.rerere.ai.provider.Model
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.hugeicons.HugeIcons
+import me.rerere.hugeicons.stroke.Copy01
 import me.rerere.hugeicons.stroke.Idea01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.model.Assistant
@@ -202,6 +212,8 @@ fun ChainOfThoughtScope.ChatMessageReasoningStep(
     val thinkingTitle = reasoning.reasoning.extractThinkingTitle()
     val showThinkingTitle = loading && thinkingTitle != null
     val chatFontFamily = LocalTextStyle.current.fontFamily
+    val clipboard = LocalClipboard.current
+    val scope = rememberCoroutineScope()
 
     ControlledChainOfThoughtStep(
         expanded = state.expandState == ReasoningCardState.Expanded,
@@ -230,12 +242,30 @@ fun ChainOfThoughtScope.ChatMessageReasoningStep(
             }
         },
         extra = {
-            if (showThinkingTitle && state.duration > 0.seconds) {
-                Text(
-                    text = state.duration.toString(DurationUnit.SECONDS, 1),
-                    style = MaterialTheme.typography.labelSmall.copy(fontFamily = chatFontFamily),
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.shimmer(isLoading = loading),
+            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                if (showThinkingTitle && state.duration > 0.seconds) {
+                    Text(
+                        text = state.duration.toString(DurationUnit.SECONDS, 1),
+                        style = MaterialTheme.typography.labelSmall.copy(fontFamily = chatFontFamily),
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.shimmer(isLoading = loading),
+                    )
+                }
+                Icon(
+                    imageVector = HugeIcons.Copy01,
+                    contentDescription = stringResource(R.string.copy),
+                    tint = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .clickable {
+                            scope.launch {
+                                clipboard.setClipEntry(
+                                    ClipEntry(ClipData.newPlainText("reasoning.md", reasoning.reasoning))
+                                )
+                            }
+                        }
+                        .padding(4.dp)
+                        .size(14.dp),
                 )
             }
         },

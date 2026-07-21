@@ -50,6 +50,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.time.temporal.TemporalAdjusters
+import java.time.temporal.ChronoUnit
 import java.util.Locale
 
 @Composable
@@ -144,11 +145,14 @@ private fun HeatmapCard(conversationsPerDay: Map<LocalDate, Int>, modifier: Modi
 @Composable
 private fun ChatHeatmap(conversationsPerDay: Map<LocalDate, Int>) {
     val today = LocalDate.now()
-    val startSunday = today
+    val currentSunday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
+    val firstActiveDate = conversationsPerDay.keys
+        .filterNot { it.isAfter(today) }
+        .minOrNull()
+    val startSunday = (firstActiveDate ?: today)
         .with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
-        .minusWeeks(52)
 
-    val numWeeks = 53
+    val numWeeks = ChronoUnit.WEEKS.between(startSunday, currentSunday).toInt() + 1
     val activeCounts = conversationsPerDay.values.filter { it > 0 }.sorted()
     val q1 = activeCounts.getOrElse((activeCounts.size * 0.25).toInt()) { 1 }
     val q2 = activeCounts.getOrElse((activeCounts.size * 0.50).toInt()) { 2 }

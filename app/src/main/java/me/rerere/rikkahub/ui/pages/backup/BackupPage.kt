@@ -1,5 +1,6 @@
 package me.rerere.rikkahub.ui.pages.backup
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.nav.BackButton
@@ -40,6 +42,11 @@ fun BackupPage(vm: BackupVM = koinViewModel()) {
     val scope = rememberCoroutineScope()
     var showRestartDialog by remember { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val isBackupOrRestoreRunning by vm.isBackupOrRestoreRunning.collectAsStateWithLifecycle()
+
+    // BackHandler with an empty callback consumes both the system back button and
+    // predictive-back gesture while a backup is writing its archive remotely or locally.
+    BackHandler(enabled = isBackupOrRestoreRunning) {}
 
     Scaffold(
         topBar = {
@@ -48,7 +55,7 @@ fun BackupPage(vm: BackupVM = koinViewModel()) {
                     Text(stringResource(R.string.backup_page_title))
                 },
                 navigationIcon = {
-                    BackButton()
+                    BackButton(enabled = !isBackupOrRestoreRunning)
                 },
                 scrollBehavior = scrollBehavior,
                 colors = CustomColors.topBarColors

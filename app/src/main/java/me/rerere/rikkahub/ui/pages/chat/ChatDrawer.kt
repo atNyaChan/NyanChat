@@ -286,8 +286,12 @@ fun ChatDrawerContent(
             AssistantPicker(
                 settings = settings,
                 onUpdateSettings = {
-                    vm.updateSettings(it)
+                    val updateJob = vm.updateSettings(it)
                     scope.launch {
+                        // A new chat resolves its assistant from SettingsStore during initialization.
+                        // Wait for the selection to be persisted before navigating, otherwise the
+                        // new page can race the update and bind the conversation to the old assistant.
+                        updateJob.join()
                         val id = if (context.readBooleanPreference("create_new_conversation_on_start", true)) {
                             Uuid.random()
                         } else {

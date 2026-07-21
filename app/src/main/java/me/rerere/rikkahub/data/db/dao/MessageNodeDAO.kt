@@ -69,16 +69,13 @@ private val TOKEN_STATS_SQL = SimpleSQLiteQuery(
 suspend fun MessageNodeDAO.getTokenStats(): MessageTokenStats = getTokenStatsRaw(TOKEN_STATS_SQL)
 
 // 按用户消息的 createdAt 字段（LocalDateTime ISO 字符串前10位即日期）统计每日消息数
-suspend fun MessageNodeDAO.getMessageCountPerDay(startDate: String): List<MessageDayCount> =
+suspend fun MessageNodeDAO.getMessageCountPerDay(): List<MessageDayCount> =
     getMessageCountPerDayRaw(
         SimpleSQLiteQuery(
             "SELECT substr(json_extract(j.value, '$.createdAt'), 1, 10) AS day, " +
                 "COUNT(*) AS count " +
                 "FROM message_node mn, json_each(mn.messages) j " +
                 "WHERE json_extract(j.value, '$.role') = 'user' " +
-                "AND json_extract(j.value, '$.createdAt') >= ? " +
-                "GROUP BY day",
-            arrayOf(startDate)
+                "GROUP BY day"
         )
     )
-

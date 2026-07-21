@@ -82,7 +82,7 @@ fun S3Tab(
     val scope = rememberCoroutineScope()
     var showBackupFiles by remember { mutableStateOf(false) }
     var restoringItemId by remember { mutableStateOf<String?>(null) }
-    var isBackingUp by remember { mutableStateOf(false) }
+    val isBackingUp by vm.isBackupOrRestoreRunning.collectAsStateWithLifecycle()
 
     fun updateS3Config(newConfig: S3Config) {
         vm.updateSettings(settings.copy(s3Config = newConfig))
@@ -284,7 +284,6 @@ fun S3Tab(
             Button(
                 onClick = {
                     scope.launch {
-                        isBackingUp = true
                         runCatching {
                             vm.backupToS3()
                             vm.loadS3BackupFileItems()
@@ -299,7 +298,6 @@ fun S3Tab(
                                 type = ToastType.Error
                             )
                         }
-                        isBackingUp = false
                     }
                 },
                 enabled = !isBackingUp

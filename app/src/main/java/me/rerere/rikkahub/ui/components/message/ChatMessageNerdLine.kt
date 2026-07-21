@@ -18,9 +18,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.toJavaLocalDateTime
 import me.rerere.ai.ui.UIMessage
+import me.rerere.ai.ui.UIMessagePart
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Clock02
 import me.rerere.hugeicons.stroke.Download04
+import me.rerere.hugeicons.stroke.Message01
 import me.rerere.hugeicons.stroke.Upload02
 import me.rerere.hugeicons.stroke.Zap
 import me.rerere.rikkahub.ui.context.LocalSettings
@@ -47,6 +49,25 @@ fun ChatMessageNerdLine(
                 modifier = modifier.padding(horizontal = 4.dp),
             ) {
                 val usage = message.usage
+                if (settings.showTokenUsage) {
+                    val characterCount = message.parts
+                        .filterIsInstance<UIMessagePart.Text>()
+                        .sumOf { part ->
+                            Character.codePointCount(part.text, 0, part.text.length)
+                        }
+                    StatsItem(
+                        icon = {
+                            Icon(
+                                imageVector = HugeIcons.Message01,
+                                contentDescription = "Characters",
+                                modifier = Modifier.size(12.dp)
+                            )
+                        },
+                        content = {
+                            Text(text = "${characterCount.formatNumber()} chars")
+                        }
+                    )
+                }
                 if (settings.showTokenUsage && usage != null) {
                     // Input tokens
                     StatsItem(
@@ -59,7 +80,7 @@ fun ChatMessageNerdLine(
                             )
                         },
                         content = {
-                            Text(text = "${usage.promptTokens.formatNumber()} tokens")
+                            Text(text = usage.promptTokens.formatNumber())
                             // Cached tokens
                             if (usage.cachedTokens > 0) {
                                 Text(
@@ -78,7 +99,7 @@ fun ChatMessageNerdLine(
                             )
                         },
                         content = {
-                            Text(text = "${usage.completionTokens.formatNumber()} tokens")
+                            Text(text = usage.completionTokens.formatNumber())
                         }
                     )
                     // TPS

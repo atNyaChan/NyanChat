@@ -5,7 +5,10 @@ import android.net.wifi.WifiManager
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.net.Inet4Address
 import java.net.InetAddress
+import java.net.NetworkInterface
+import java.util.Collections
 import javax.jmdns.JmDNS
 import javax.jmdns.ServiceInfo
 
@@ -47,8 +50,7 @@ class NsdServiceRegistrar(
 
             val address = getLocalIpAddress()
             if (address == null) {
-                Log.e(TAG, "Failed to get local IP address")
-                return@withContext
+                error("No usable local IPv4 address is available for mDNS")
             }
 
             Log.i(TAG, "Creating JmDNS with hostname=$serviceName, address=$address")
@@ -69,13 +71,14 @@ class NsdServiceRegistrar(
 
             Log.i(
                 TAG,
-                "Service registered: $serviceName.$serviceType port=$port, hostname=$serviceName.local"
+                "Service registered: $serviceName.$serviceType port=$port, hostname=${mdns.hostName}"
             )
 
+            val registeredHostname = mdns.hostName.removeSuffix(".")
             onRegistered?.invoke(
                 RegisteredServiceInfo(
-                    serviceName = serviceName,
-                    hostname = "$serviceName.local",
+                    serviceName = serviceInfo.name,
+                    hostname = registeredHostname,
                     port = port,
                     address = address
                 )
@@ -83,6 +86,7 @@ class NsdServiceRegistrar(
         } catch (e: Exception) {
             Log.e(TAG, "Failed to register service", e)
             cleanup()
+            throw e
         }
     }
 
@@ -112,24 +116,27 @@ class NsdServiceRegistrar(
     }
 
     private fun getLocalIpAddress(): InetAddress? {
-        return try {
-            val wifiManager = context.applicationContext
-                .getSystemService(Context.WIFI_SERVICE) as? WifiManager
-            val wifiInfo = wifiManager?.connectionInfo
-            val ipInt = wifiInfo?.ipAddress ?: return null
-
-            if (ipInt == 0) return null
-
-            val ipBytes = byteArrayOf(
-                (ipInt and 0xff).toByte(),
-                (ipInt shr 8 and 0xff).toByte(),
-                (ipInt shr 16 and 0xff).toByte(),
-                (ipInt shr 24 and 0xff).toByte()
-            )
-            InetAddress.getByAddress(ipBytes)
-        } catch (e: Exception) {
+        return runCatching {
+            Collections.list(NetworkInterface.getNetworkInterfaces())
+                .asSequence()
+                .filter { it.isUp && !it.isLoopback }
+                .sortedBy { networkInterface ->
+                    val name = networkInterface.name.lowercase()
+                    when {
+                        name.startsWith("wlan") || name.startsWith("wifi") -> 0
+                        name.startsWith("ap") || name.startsWith("swlan") -> 1
+                        else -> 2
+                    }
+                }
+                .flatMap { Collections.list(it.inetAddresses).asSequence() }
+                .filterIsInstance<Inet4Address>()
+                .firstOrNull { address ->
+                    address.isSiteLocalAddress &&
+                        !address.isLoopbackAddress &&
+                        !address.isAnyLocalAddress
+                }
+        }.onFailure { e ->
             Log.e(TAG, "Failed to get local IP address", e)
-            null
-        }
+        }.getOrNull()
     }
 }

@@ -65,6 +65,7 @@ import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.plus
 import me.rerere.rikkahub.web.WebServerManager
+import me.rerere.rikkahub.web.formatWebServerUrl
 import org.koin.compose.koinInject
 
 @Composable
@@ -311,47 +312,23 @@ fun SettingWebPage() {
                     )
                     if (serverState.isRunning) {
                         val port = serverState.port
-                        if (!serverState.localhostOnly) {
-                            val lanUrl = "http://${serverState.address ?: "localhost"}:$port"
-                            item(
-                                onClick = { copyUrl(lanUrl) },
-                                headlineContent = { Text(stringResource(R.string.setting_page_web_server_lan_address)) },
-                                supportingContent = { Text(lanUrl) },
-                            )
-
-                            if (serverState.hostname != null) {
-                                val mdnsUrl = "http://${serverState.hostname}:$port"
-                                item(
-                                    onClick = { copyUrl(mdnsUrl) },
-                                    headlineContent = { Text(stringResource(R.string.setting_page_web_server_mdns_address)) },
-                                    supportingContent = { Text(mdnsUrl) },
-                                )
+                        val urls = buildList {
+                            addAll(serverState.addresses.map { address ->
+                                formatWebServerUrl(address, port)
+                            })
+                            serverState.hostname?.let { hostname ->
+                                add("http://$hostname:$port")
                             }
+                        }.distinct()
+                        if (urls.isNotEmpty()) {
+                            val urlsText = urls.joinToString("\n")
+                            item(
+                                onClick = { copyUrl(urlsText) },
+                                headlineContent = { Text("网址") },
+                                supportingContent = { Text(urlsText) },
+                            )
                         }
-
-                        val localUrl = "http://localhost:$port"
-                        item(
-                            onClick = { copyUrl(localUrl) },
-                            headlineContent = { Text(stringResource(R.string.setting_page_web_server_local_address)) },
-                            supportingContent = { Text(localUrl) },
-                        )
                     }
-                    item(
-                        headlineContent = {
-                            Text(
-                                text = stringResource(R.string.setting_page_web_server_address_note),
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                        },
-                        supportingContent = {
-                            Text(
-                                text = stringResource(R.string.setting_page_web_server_address_note_desc),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        },
-                    )
                     if (serverState.error != null) {
                         item(
                             headlineContent = {

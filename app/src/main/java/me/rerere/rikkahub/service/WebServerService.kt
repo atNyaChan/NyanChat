@@ -20,6 +20,7 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.WEB_SERVER_NOTIFICATION_CHANNEL_ID
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.web.WebServerManager
+import me.rerere.rikkahub.web.formatWebServerUrl
 import org.koin.android.ext.android.inject
 
 private const val TAG = "WebServerService"
@@ -121,9 +122,10 @@ class WebServerService : Service() {
                 when {
                     state.isRunning -> {
                         wasRunning = true
-                        val host = if (state.localhostOnly) "localhost" else (state.address ?: "localhost")
-                        val url = "http://$host:${state.port}"
-                        updateNotification(buildRunningNotification(url))
+                        val address = state.addresses.firstOrNull()
+                        val content = address?.let { formatWebServerUrl(it, state.port) }
+                            ?: getString(R.string.notification_web_server_running)
+                        updateNotification(buildRunningNotification(content))
                     }
 
                     wasRunning && !state.isRunning && !state.isLoading -> {

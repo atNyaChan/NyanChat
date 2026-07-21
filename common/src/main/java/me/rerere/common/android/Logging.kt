@@ -38,7 +38,7 @@ sealed class LogEntry {
 object Logging {
     private val recentLogs = arrayListOf<LogEntry>()
     @Volatile
-    private var requestLoggingEnabled = false
+    private var requestLoggingEnabled = true
 
     fun log(tag: String, message: String) {
         addLog(LogEntry.TextLog(tag = tag, message = message))

@@ -13,9 +13,7 @@ import me.rerere.rikkahub.data.db.dao.MessageNodeDAO
 import me.rerere.rikkahub.data.db.dao.getMessageCountPerDay
 import me.rerere.rikkahub.data.db.dao.getTokenStats
 import me.rerere.rikkahub.data.datastore.SettingsStore
-import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.temporal.TemporalAdjusters
 
 data class AppStats(
     val isLoading: Boolean = true,
@@ -44,18 +42,11 @@ class StatsVM(
     private suspend fun loadStats() {
         delay(50)
 
-        val today = LocalDate.now()
-
-        // 热力图起始日期（52 周前的周日），格式 "yyyy-MM-dd" 直接与 JSON 中的 LocalDateTime 前缀比较
-        val startDate = today
-            .with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
-            .minusWeeks(52)
-            .toString()
-
-        // 基于用户消息的 createdAt 统计每日活跃消息数，SQLite 侧 GROUP BY，返回 ≤371 行
+        // 基于用户消息的 createdAt 统计全部历史的每日活跃消息数。
+        // 热力图会从第一个活跃日所在周开始，不再固定补齐 52 周。
         val conversationsPerDay = withContext(Dispatchers.IO) {
             messageNodeDAO
-                .getMessageCountPerDay(startDate)
+                .getMessageCountPerDay()
                 .mapNotNull { entry ->
                     runCatching { LocalDate.parse(entry.day) to entry.count }.getOrNull()
                 }

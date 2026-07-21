@@ -4,9 +4,6 @@ import android.content.Context
 import android.util.Log
 import io.ktor.server.cio.CIOApplicationEngine
 import io.ktor.server.engine.EmbeddedServer
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +15,10 @@ import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.rikkahub.data.repository.FolderRepository
 import me.rerere.rikkahub.service.ChatService
 import me.rerere.rikkahub.web.startWebServer
+import java.net.Inet4Address
+import java.net.NetworkInterface
 import java.net.ServerSocket
+import java.util.Collections
 
 private const val TAG = "WebServerManager"
 private const val HOST_ALL_INTERFACES = "0.0.0.0"
@@ -31,9 +31,18 @@ data class WebServerState(
     val serviceName: String = DEFAULT_SERVICE_NAME,
     val localhostOnly: Boolean = false,
     val hostname: String? = null,
-    val address: String? = null,
+    val addresses: List<String> = emptyList(),
     val error: String? = null
 )
+
+fun formatWebServerUrl(address: String, port: Int): String {
+    val host = if (':' in address) {
+        "[${address.replace("%", "%25")}]"
+    } else {
+        address
+    }
+    return "http://$host:$port"
+}
 
 class WebServerManager(
     private val context: Context,
@@ -66,7 +75,8 @@ class WebServerManager(
             val baseState = WebServerState(
                 port = port,
                 serviceName = serviceName,
-                localhostOnly = localhostOnly
+                localhostOnly = localhostOnly,
+                addresses = if (localhostOnly) emptyList() else getLocalIpAddresses(),
             )
             try {
                 _state.value = _state.value.copy(isLoading = true)
@@ -91,12 +101,14 @@ class WebServerManager(
                                 _state.value = _state.value.copy(
                                     serviceName = info.serviceName,
                                     hostname = info.hostname,
-                                    address = info.address.hostAddress
                                 )
                             }
                         )
                     }.onFailure {
                         Log.w(TAG, "NSD register failed", it)
+                        _state.value = _state.value.copy(
+                            error = "mDNS registration failed: ${it.message}",
+                        )
                     }
                 }
                 Log.i(TAG, "Web server started successfully on $host:$port")
@@ -113,7 +125,13 @@ class WebServerManager(
 
     fun stop() {
         _state.value =
-            _state.value.copy(isRunning = false, isLoading = true, hostname = null, address = null, error = null)
+            _state.value.copy(
+                isRunning = false,
+                isLoading = true,
+                hostname = null,
+                addresses = emptyList(),
+                error = null,
+            )
         appScope.launch {
             try {
                 Log.i(TAG, "Stopping web server")
@@ -149,4 +167,24 @@ class WebServerManager(
             false
         }
     }
+
+    private fun getLocalIpAddresses(): List<String> = runCatching {
+        Collections.list(NetworkInterface.getNetworkInterfaces())
+            .asSequence()
+            .filter { it.isUp && !it.isLoopback }
+            .flatMap { networkInterface ->
+                Collections.list(networkInterface.inetAddresses).asSequence()
+            }
+            .filter { address ->
+                !address.isLoopbackAddress &&
+                    !address.isAnyLocalAddress &&
+                    !address.isMulticastAddress
+            }
+            .sortedWith(compareBy({ it !is Inet4Address }, { it.hostAddress }))
+            .mapNotNull { it.hostAddress }
+            .distinct()
+            .toList()
+    }.onFailure {
+        Log.w(TAG, "Failed to enumerate local IP addresses", it)
+    }.getOrDefault(emptyList())
 }
