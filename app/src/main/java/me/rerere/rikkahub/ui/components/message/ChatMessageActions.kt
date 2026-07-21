@@ -62,7 +62,6 @@ import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalTTSState
 import me.rerere.rikkahub.utils.copyMessageToClipboard
 import me.rerere.rikkahub.utils.extractQuotedContentAsText
-import me.rerere.rikkahub.utils.formatNumber
 import me.rerere.rikkahub.utils.removeBracketedContent
 import me.rerere.rikkahub.utils.toLocalString
 import me.rerere.rikkahub.utils.toMessageTimeString
@@ -96,6 +95,7 @@ fun ColumnScope.ChatMessageActionButtons(
         itemVerticalAlignment = Alignment.CenterVertically,
     ) {
         val actionIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+        val statsColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
 
         if (message.role == MessageRole.USER && settings.displaySetting.showTokenUsage) {
             StatsItem(
@@ -104,15 +104,16 @@ fun ColumnScope.ChatMessageActionButtons(
                         imageVector = HugeIcons.Message01,
                         contentDescription = "Characters",
                         modifier = Modifier.size(12.dp),
-                        tint = actionIconColor,
+                        tint = statsColor,
                     )
                 },
                 content = {
-                    Text(
-                        text = "${message.characterCount(includeReasoning = false).formatNumber()} chars",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = actionIconColor,
-                    )
+                    ProvideTextStyle(MaterialTheme.typography.labelSmall.copy(color = statsColor)) {
+                        ExpandableCountText(
+                            value = message.characterCount(includeReasoning = false),
+                            suffix = " chars",
+                        )
+                    }
                 },
             )
         }

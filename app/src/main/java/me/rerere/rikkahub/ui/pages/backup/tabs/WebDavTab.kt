@@ -60,6 +60,7 @@ import me.rerere.rikkahub.data.sync.webdav.WebDavBackupItem
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.pages.backup.BackupVM
+import me.rerere.rikkahub.ui.pages.backup.components.RestoreWarningDialog
 import me.rerere.rikkahub.utils.UiState
 import me.rerere.rikkahub.utils.fileSizeToString
 import me.rerere.rikkahub.utils.onError
@@ -81,6 +82,7 @@ fun WebDavTab(
     val scope = rememberCoroutineScope()
     var showBackupFiles by remember { mutableStateOf(false) }
     var restoringItemId by remember { mutableStateOf<String?>(null) }
+    var pendingRestoreItem by remember { mutableStateOf<WebDavBackupItem?>(null) }
     val isBackingUp by vm.isBackupOrRestoreRunning.collectAsStateWithLifecycle()
 
     fun updateWebDavConfig(newConfig: WebDavConfig) {
@@ -353,28 +355,7 @@ fun WebDavTab(
                                     }
                                 },
                                 onRestore = { restoreItem ->
-                                    scope.launch {
-                                        restoringItemId = restoreItem.displayName
-                                        runCatching {
-                                            vm.restore(item = restoreItem)
-                                            toaster.show(
-                                                context.getString(R.string.backup_page_restore_success),
-                                                type = ToastType.Success
-                                            )
-                                            showBackupFiles = false
-                                            onShowRestartDialog()
-                                        }.onFailure { err ->
-                                            err.printStackTrace()
-                                            toaster.show(
-                                                context.getString(
-                                                    R.string.backup_page_restore_failed,
-                                                    err.message ?: ""
-                                                ),
-                                                type = ToastType.Error
-                                            )
-                                        }
-                                        restoringItemId = null
-                                    }
+                                    pendingRestoreItem = restoreItem
                                 },
                             )
                         }
@@ -400,6 +381,34 @@ fun WebDavTab(
             }
         }
     }
+
+    RestoreWarningDialog(
+        show = pendingRestoreItem != null,
+        onConfirm = {
+            val restoreItem = pendingRestoreItem ?: return@RestoreWarningDialog
+            pendingRestoreItem = null
+            scope.launch {
+                restoringItemId = restoreItem.displayName
+                runCatching {
+                    vm.restore(item = restoreItem)
+                    toaster.show(
+                        context.getString(R.string.backup_page_restore_success),
+                        type = ToastType.Success
+                    )
+                    showBackupFiles = false
+                    onShowRestartDialog()
+                }.onFailure { err ->
+                    err.printStackTrace()
+                    toaster.show(
+                        context.getString(R.string.backup_page_restore_failed, err.message ?: ""),
+                        type = ToastType.Error
+                    )
+                }
+                restoringItemId = null
+            }
+        },
+        onDismiss = { pendingRestoreItem = null },
+    )
 }
 
 @Composable

@@ -23,6 +23,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,6 +53,7 @@ import me.rerere.ai.ui.UIMessagePart
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Copy01
 import me.rerere.hugeicons.stroke.Idea01
+import me.rerere.hugeicons.stroke.Message01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.AssistantAffectScope
@@ -251,22 +253,45 @@ fun ChainOfThoughtScope.ChatMessageReasoningStep(
                         modifier = Modifier.shimmer(isLoading = loading),
                     )
                 }
-                Icon(
-                    imageVector = HugeIcons.Copy01,
-                    contentDescription = stringResource(R.string.copy),
-                    tint = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .clickable {
-                            scope.launch {
-                                clipboard.setClipEntry(
-                                    ClipEntry(ClipData.newPlainText("reasoning.md", reasoning.reasoning))
-                                )
+                if (!loading && state.expandState == ReasoningCardState.Expanded) {
+                    val characterCount = Character.codePointCount(
+                        reasoning.reasoning,
+                        0,
+                        reasoning.reasoning.length,
+                    )
+                    StatsItem(
+                        icon = {
+                            Icon(
+                                imageVector = HugeIcons.Message01,
+                                contentDescription = "Characters",
+                                modifier = Modifier.size(12.dp),
+                            )
+                        },
+                        content = {
+                            ProvideTextStyle(
+                                MaterialTheme.typography.labelSmall.copy(fontFamily = chatFontFamily)
+                            ) {
+                                ExpandableCountText(characterCount, " chars")
                             }
-                        }
-                        .padding(4.dp)
-                        .size(14.dp),
-                )
+                        },
+                    )
+                    Icon(
+                        imageVector = HugeIcons.Copy01,
+                        contentDescription = stringResource(R.string.copy),
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .clickable {
+                                scope.launch {
+                                    clipboard.setClipEntry(
+                                        ClipEntry(ClipData.newPlainText("reasoning.md", reasoning.reasoning))
+                                    )
+                                }
+                            }
+                            .padding(4.dp)
+                            .size(14.dp),
+                    )
+                }
             }
         },
         collapsedAdaptiveWidth = collapsedAdaptiveWidth,

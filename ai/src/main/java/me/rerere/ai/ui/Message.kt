@@ -168,7 +168,7 @@ data class UIMessage(
 
     fun isValidToUpload() = parts.any { part ->
         when (part) {
-            is UIMessagePart.Text -> part.text.isNotBlank()
+            is UIMessagePart.Text -> part.text.isNotEmpty()
             is UIMessagePart.Image -> part.url.isNotBlank()
             is UIMessagePart.Video -> part.url.isNotBlank()
             is UIMessagePart.Audio -> part.url.isNotBlank()
@@ -241,7 +241,7 @@ fun List<UIMessagePart>.isEmptyInputMessage(): Boolean {
     if (this.isEmpty()) return true
     return this.all { message ->
         when (message) {
-            is UIMessagePart.Text -> message.text.isBlank()
+            is UIMessagePart.Text -> message.text.isEmpty()
             is UIMessagePart.Image -> message.url.isBlank()
             is UIMessagePart.Document -> message.url.isBlank()
             is UIMessagePart.Video -> message.url.isBlank()
@@ -258,7 +258,7 @@ fun List<UIMessagePart>.isEmptyUIMessage(): Boolean {
     if (this.isEmpty()) return true
     return this.all { message ->
         when (message) {
-            is UIMessagePart.Text -> message.text.isBlank()
+            is UIMessagePart.Text -> message.text.isEmpty()
             is UIMessagePart.Image -> message.url.isBlank()
             is UIMessagePart.Document -> message.url.isBlank()
             is UIMessagePart.Reasoning -> message.reasoning.isBlank()

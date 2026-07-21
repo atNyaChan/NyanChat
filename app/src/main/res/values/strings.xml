@@ -208,6 +208,9 @@
   <string name="backup_page_restore_failed">Restore failed: %s</string>
   <string name="backup_page_restore_now">Restore</string>
   <string name="backup_page_restore_success">Restore successful</string>
+  <string name="backup_page_restore_warning_title">Overwrite existing data?</string>
+  <string name="backup_page_restore_warning_desc">Restoring will overwrite the existing configuration and data.</string>
+  <string name="backup_page_restore_warning_confirm">OK</string>
   <string name="backup_page_restoring">Restoring...</string>
   <string name="backup_page_s3_access_key_id">Access Key ID</string>
   <string name="backup_page_s3_backup">S3 Backup</string>
@@ -817,7 +820,7 @@
   <string name="setting_page_built_in_tools_search_desc">Enable Google Search integration</string>
   <string name="setting_page_built_in_tools_url_context">URL Context</string>
   <string name="setting_page_built_in_tools_url_context_desc">Enable URL content processing</string>
-  <string name="setting_page_chat_storage">Chat Storage</string>
+  <string name="setting_page_chat_storage">Chat File Storage</string>
   <string name="setting_page_chat_storage_desc">%1$d files, %2$.2f MB</string>
   <string name="setting_page_code_display_settings">Code Display</string>
   <string name="setting_page_color_mode">Color Mode</string>
@@ -827,8 +830,8 @@
   <string name="setting_page_config">Configure</string>
   <string name="setting_page_config_api_desc">You haven\'t configured API and model yet, please configure first</string>
   <string name="setting_page_config_api_title">Please configure API and model</string>
-  <string name="setting_page_data_backup">Data Backup</string>
-  <string name="setting_page_data_backup_desc">Backup and restore app data</string>
+  <string name="setting_page_data_backup">Backup and Restore</string>
+  <string name="setting_page_data_backup_desc">Back up or overwrite and restore the entire RikkaHub</string>
   <string name="setting_page_data_settings">Data Settings</string>
   <string name="setting_page_default_model">Default Model and Prompt</string>
   <string name="setting_page_default_model_desc">Set default models for each feature</string>
@@ -967,6 +970,12 @@
   <string name="setting_provider_page_model_id">Model ID</string>
   <string name="setting_provider_page_model_id_placeholder">e.g.: gpt-3.5-turbo</string>
   <string name="setting_provider_page_model_name">Model Name</string>
+  <string name="setting_provider_page_set_price">Set pricing</string>
+  <string name="setting_provider_page_price_unit">Prices are in USD per million tokens</string>
+  <string name="setting_provider_page_input_price">Input price</string>
+  <string name="setting_provider_page_output_price">Output price</string>
+  <string name="setting_provider_page_cache_read_price">Cache read price</string>
+  <string name="setting_provider_page_cache_write_price">Cache write price</string>
   <string name="setting_provider_page_model_type">Model Type</string>
   <string name="setting_provider_page_models">Models</string>
   <string name="setting_provider_page_name">Name</string>

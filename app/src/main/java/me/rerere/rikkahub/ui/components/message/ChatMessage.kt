@@ -217,6 +217,7 @@ fun ChatMessage(
                 ChatMessageNerdLine(
                     message = message,
                     loading = loading,
+                    model = model,
                 )
             }
         }

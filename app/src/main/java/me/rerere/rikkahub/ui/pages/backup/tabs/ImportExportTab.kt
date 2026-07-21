@@ -30,6 +30,7 @@ import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.StickyHeader
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.pages.backup.BackupVM
+import me.rerere.rikkahub.ui.pages.backup.components.RestoreWarningDialog
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -49,6 +50,7 @@ fun ImportExportTab(
 
     // 导入类型：local 为本地备份，chatbox 为 Chatbox 导入，cherry 为 Cherry Studio 导入
     var importType by remember { mutableStateOf("local") }
+    var confirmLocalRestore by remember { mutableStateOf(false) }
 
     // 创建文件保存的launcher
     val createDocumentLauncher = rememberLauncherForActivityResult(
@@ -215,8 +217,7 @@ fun ImportExportTab(
                 item(
                     onClick = if (!isRestoring) {
                         {
-                            importType = "local"
-                            openDocumentLauncher.launch(arrayOf("application/zip"))
+                            confirmLocalRestore = true
                         }
                     } else null,
                     headlineContent = { Text(stringResource(R.string.backup_page_local_backup_import)) },
@@ -286,4 +287,14 @@ fun ImportExportTab(
             }
         }
     }
+
+    RestoreWarningDialog(
+        show = confirmLocalRestore,
+        onConfirm = {
+            confirmLocalRestore = false
+            importType = "local"
+            openDocumentLauncher.launch(arrayOf("application/zip"))
+        },
+        onDismiss = { confirmLocalRestore = false },
+    )
 }

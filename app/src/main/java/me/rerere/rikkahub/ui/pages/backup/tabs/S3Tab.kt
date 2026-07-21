@@ -61,6 +61,7 @@ import me.rerere.rikkahub.data.sync.s3.S3Config
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.pages.backup.BackupVM
+import me.rerere.rikkahub.ui.pages.backup.components.RestoreWarningDialog
 import me.rerere.rikkahub.utils.UiState
 import me.rerere.rikkahub.utils.fileSizeToString
 import me.rerere.rikkahub.utils.onError
@@ -82,6 +83,7 @@ fun S3Tab(
     val scope = rememberCoroutineScope()
     var showBackupFiles by remember { mutableStateOf(false) }
     var restoringItemId by remember { mutableStateOf<String?>(null) }
+    var pendingRestoreItem by remember { mutableStateOf<S3BackupItem?>(null) }
     val isBackingUp by vm.isBackupOrRestoreRunning.collectAsStateWithLifecycle()
 
     fun updateS3Config(newConfig: S3Config) {
@@ -372,28 +374,7 @@ fun S3Tab(
                                     }
                                 },
                                 onRestore = { restoreItem ->
-                                    scope.launch {
-                                        restoringItemId = restoreItem.displayName
-                                        runCatching {
-                                            vm.restoreFromS3(item = restoreItem)
-                                            toaster.show(
-                                                context.getString(R.string.backup_page_restore_success),
-                                                type = ToastType.Success
-                                            )
-                                            showBackupFiles = false
-                                            onShowRestartDialog()
-                                        }.onFailure { err ->
-                                            err.printStackTrace()
-                                            toaster.show(
-                                                context.getString(
-                                                    R.string.backup_page_restore_failed,
-                                                    err.message ?: ""
-                                                ),
-                                                type = ToastType.Error
-                                            )
-                                        }
-                                        restoringItemId = null
-                                    }
+                                    pendingRestoreItem = restoreItem
                                 },
                             )
                         }
@@ -419,6 +400,34 @@ fun S3Tab(
             }
         }
     }
+
+    RestoreWarningDialog(
+        show = pendingRestoreItem != null,
+        onConfirm = {
+            val restoreItem = pendingRestoreItem ?: return@RestoreWarningDialog
+            pendingRestoreItem = null
+            scope.launch {
+                restoringItemId = restoreItem.displayName
+                runCatching {
+                    vm.restoreFromS3(item = restoreItem)
+                    toaster.show(
+                        context.getString(R.string.backup_page_restore_success),
+                        type = ToastType.Success
+                    )
+                    showBackupFiles = false
+                    onShowRestartDialog()
+                }.onFailure { err ->
+                    err.printStackTrace()
+                    toaster.show(
+                        context.getString(R.string.backup_page_restore_failed, err.message ?: ""),
+                        type = ToastType.Error
+                    )
+                }
+                restoringItemId = null
+            }
+        },
+        onDismiss = { pendingRestoreItem = null },
+    )
 }
 
 @Composable

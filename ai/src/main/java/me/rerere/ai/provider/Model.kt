@@ -17,6 +17,15 @@ data class Model(
     val abilities: List<ModelAbility> = emptyList(),
     val tools: Set<BuiltInTools> = emptySet(),
     val providerOverwrite: ProviderSetting? = null,
+    val price: ModelPrice? = null,
+)
+
+@Serializable
+data class ModelPrice(
+    val input: Double = 0.0,
+    val output: Double = 0.0,
+    val cacheRead: Double = 0.0,
+    val cacheWrite: Double = 0.0,
 )
 
 @Serializable
@@ -55,6 +64,5 @@ sealed class BuiltInTools {
     @SerialName("image_generation")
     data object ImageGeneration : BuiltInTools()
 }
-
 
 

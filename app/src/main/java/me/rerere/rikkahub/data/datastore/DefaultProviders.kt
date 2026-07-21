@@ -147,22 +147,6 @@ val DEFAULT_PROVIDERS = listOf(
         )
     ),
     ProviderSetting.OpenAI(
-        id = Uuid.parse("da020a90-f7b3-4c29-b90e-c511a0630630"),
-        name = "小马算力",
-        baseUrl = "https://api.tokenpony.cn/v1",
-        apiKey = "",
-        enabled = false,
-        builtIn = true,
-        description = {
-            MarkdownBlock(
-                content = """
-                    小马算力是一家提供国产模型的API网关服务，使用统一接口接入多种模型
-                    官网: [tokenpony.cn](https://www.tokenpony.cn/79clb)
-                """.trimIndent()
-            )
-        }
-    ),
-    ProviderSetting.OpenAI(
         id = Uuid.parse("f76cae46-069a-4334-ab8e-224e4979e58c"),
         name = "阿里云百炼",
         baseUrl = "https://dashscope.aliyuncs.com/compatible-mode/v1",
@@ -200,14 +184,6 @@ val DEFAULT_PROVIDERS = listOf(
         builtIn = true
     ),
     ProviderSetting.OpenAI(
-        id = Uuid.parse("f4f8870e-82d3-495b-9b64-d58e508b3b2c"),
-        name = "阶跃星辰",
-        baseUrl = "https://api.stepfun.com/v1",
-        apiKey = "",
-        enabled = false,
-        builtIn = true
-    ),
-    ProviderSetting.OpenAI(
         id = Uuid.parse("da93779f-3956-48cc-82ef-67bb482eaaf7"),
         name = "302.AI",
         baseUrl = "https://api.302.ai/v1",
@@ -228,14 +204,6 @@ val DEFAULT_PROVIDERS = listOf(
         }
     ),
     ProviderSetting.OpenAI(
-        id = Uuid.parse("ef5d149b-8e34-404b-818c-6ec242e5c3c5"),
-        name = "腾讯Hunyuan",
-        baseUrl = "https://api.hunyuan.cloud.tencent.com/v1",
-        apiKey = "",
-        enabled = false,
-        builtIn = true
-    ),
-    ProviderSetting.OpenAI(
         id = Uuid.parse("ff3cde7e-0f65-43d7-8fb2-6475c99f5990"),
         name = "xAI",
         baseUrl = "https://api.x.ai/v1",
@@ -243,32 +211,6 @@ val DEFAULT_PROVIDERS = listOf(
         enabled = false,
         builtIn = true,
         useResponseApi = true,
-    ),
-    ProviderSetting.OpenAI(
-        id = Uuid.parse("aecf04fd-cb5c-4582-aed2-e8bf393923fd"),
-        name = "随想AI网关",
-        baseUrl = "https://sui-xiang.com/v1",
-        apiKey = "",
-        enabled = false,
-        builtIn = true,
-        description = {
-            Text(
-                text = buildAnnotatedString {
-                    append("可靠高效的 API 中继服务，提供 Claude、Codex、Gemini 等中继服务。注重隐私·无数据倒卖·无模型掺水，充值额度 1:1，按量付费。多线路冗余、跨区域容灾、自动故障切换，长链路 SSE 不中断。\n")
-                    append("官网：")
-                    withLink(LinkAnnotation.Url("https://sui-xiang.com")) {
-                        withStyle(SpanStyle(MaterialTheme.colorScheme.primary)) {
-                            append("https://sui-xiang.com")
-                        }
-                    }
-                }
-            )
-        },
-        shortDescription = {
-            Text(
-                text = "Claude、Codex、Gemini 等中继服务，1:1 充值"
-            )
-        },
     ),
     ProviderSetting.Claude(
         id = Uuid.parse("b4deabea-20fb-4101-a74c-65679c7e4754"),
@@ -285,28 +227,5 @@ val DEFAULT_PROVIDERS = listOf(
         apiKey = "",
         enabled = false,
         builtIn = true,
-    ),
-    ProviderSetting.OpenAI(
-        id = Uuid.parse("53027b08-1b58-43d5-90ed-29173203e3d8"),
-        name = "AckAI",
-        baseUrl = "https://ackai.fun/v1",
-        apiKey = "",
-        enabled = false,
-        builtIn = true,
-        description = {
-            Text(
-                text = buildAnnotatedString {
-                    append(
-                        "所有AI大模型全都可以用！无需翻墙！价格是官方5折！\n" +
-                            "官网："
-                    )
-                    withLink(LinkAnnotation.Url("https://ackai.fun/register?aff=jxpP")) {
-                        withStyle(SpanStyle(MaterialTheme.colorScheme.primary)) {
-                            append("https://ackai.fun")
-                        }
-                    }
-                }
-            )
-        }
     ),
 )

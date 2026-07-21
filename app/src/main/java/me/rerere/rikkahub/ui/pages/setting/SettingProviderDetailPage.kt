@@ -95,6 +95,7 @@ import me.rerere.ai.provider.BuiltInTools
 import me.rerere.ai.provider.Modality
 import me.rerere.ai.provider.Model
 import me.rerere.ai.provider.ModelAbility
+import me.rerere.ai.provider.ModelPrice
 import me.rerere.ai.provider.ModelType
 import me.rerere.ai.provider.ProviderManager
 import me.rerere.ai.provider.ProviderSetting
@@ -624,6 +625,50 @@ private fun ModelSettingsForm(
                                 }
                             )
                         }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(stringResource(R.string.setting_provider_page_set_price))
+                                Text(
+                                    text = stringResource(R.string.setting_provider_page_price_unit),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            Switch(
+                                checked = model.price != null,
+                                onCheckedChange = { enabled ->
+                                    onModelChange(model.copy(price = if (enabled) ModelPrice() else null))
+                                },
+                            )
+                        }
+
+                        model.price?.let { price ->
+                            ModelPriceField(
+                                label = stringResource(R.string.setting_provider_page_input_price),
+                                value = price.input,
+                                onValueChange = { onModelChange(model.copy(price = price.copy(input = it))) },
+                            )
+                            ModelPriceField(
+                                label = stringResource(R.string.setting_provider_page_output_price),
+                                value = price.output,
+                                onValueChange = { onModelChange(model.copy(price = price.copy(output = it))) },
+                            )
+                            ModelPriceField(
+                                label = stringResource(R.string.setting_provider_page_cache_read_price),
+                                value = price.cacheRead,
+                                onValueChange = { onModelChange(model.copy(price = price.copy(cacheRead = it))) },
+                            )
+                            ModelPriceField(
+                                label = stringResource(R.string.setting_provider_page_cache_write_price),
+                                value = price.cacheWrite,
+                                onValueChange = { onModelChange(model.copy(price = price.copy(cacheWrite = it))) },
+                            )
+                        }
                     }
                 }
 
@@ -672,6 +717,30 @@ private fun ModelSettingsForm(
             }
         }
     }
+}
+
+@Composable
+private fun ModelPriceField(
+    label: String,
+    value: Double,
+    onValueChange: (Double) -> Unit,
+) {
+    var text by remember { mutableStateOf(value.toString()) }
+    OutlinedTextField(
+        value = text,
+        onValueChange = { newValue ->
+            if (newValue.matches(Regex("\\d*(\\.\\d*)?"))) {
+                text = newValue
+                onValueChange(newValue.toDoubleOrNull() ?: 0.0)
+            }
+        },
+        label = { Text(label) },
+        prefix = { Text("\$") },
+        suffix = { Text("/M") },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+        singleLine = true,
+        modifier = Modifier.fillMaxWidth(),
+    )
 }
 
 @Composable

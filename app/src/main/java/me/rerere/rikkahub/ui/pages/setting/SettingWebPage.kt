@@ -47,6 +47,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
@@ -217,7 +218,7 @@ fun SettingWebPage() {
                                     }
                                 },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                textStyle = MaterialTheme.typography.titleLarge,
+                                textStyle = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Normal),
                                 singleLine = true,
                                 isError = portText.toIntOrNull()?.let { it !in 1024..65535 } ?: true,
                                 modifier = Modifier.width(100.dp),
@@ -285,7 +286,7 @@ fun SettingWebPage() {
                                     }
                                 },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                                textStyle = MaterialTheme.typography.titleLarge,
+                                textStyle = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Normal),
                                 visualTransformation = if (passwordVisible) {
                                     VisualTransformation.None
                                 } else {
