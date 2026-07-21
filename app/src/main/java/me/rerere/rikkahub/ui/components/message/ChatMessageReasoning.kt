@@ -216,6 +216,7 @@ fun ChainOfThoughtScope.ChatMessageReasoningStep(
     val chatFontFamily = LocalTextStyle.current.fontFamily
     val clipboard = LocalClipboard.current
     val scope = rememberCoroutineScope()
+    val reasoningStatsColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
 
     ControlledChainOfThoughtStep(
         expanded = state.expandState == ReasoningCardState.Expanded,
@@ -244,7 +245,11 @@ fun ChainOfThoughtScope.ChatMessageReasoningStep(
             }
         },
         extra = {
-            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.padding(end = 4.dp),
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(6.dp),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            ) {
                 if (showThinkingTitle && state.duration > 0.seconds) {
                     Text(
                         text = state.duration.toString(DurationUnit.SECONDS, 1),
@@ -259,26 +264,29 @@ fun ChainOfThoughtScope.ChatMessageReasoningStep(
                         0,
                         reasoning.reasoning.length,
                     )
-                    StatsItem(
-                        icon = {
-                            Icon(
-                                imageVector = HugeIcons.Message01,
-                                contentDescription = "Characters",
-                                modifier = Modifier.size(12.dp),
-                            )
-                        },
-                        content = {
-                            ProvideTextStyle(
-                                MaterialTheme.typography.labelSmall.copy(fontFamily = chatFontFamily)
-                            ) {
-                                ExpandableCountText(characterCount, " chars")
-                            }
-                        },
-                    )
+                    ProvideTextStyle(
+                        MaterialTheme.typography.labelSmall.copy(
+                            color = reasoningStatsColor,
+                            fontFamily = chatFontFamily,
+                        )
+                    ) {
+                        ExpandableCountStatsItem(
+                            value = characterCount,
+                            suffix = " chars",
+                            icon = {
+                                Icon(
+                                    imageVector = HugeIcons.Message01,
+                                    contentDescription = "Characters",
+                                    modifier = Modifier.size(12.dp),
+                                    tint = reasoningStatsColor,
+                                )
+                            },
+                        )
+                    }
                     Icon(
                         imageVector = HugeIcons.Copy01,
                         contentDescription = stringResource(R.string.copy),
-                        tint = MaterialTheme.colorScheme.secondary,
+                        tint = reasoningStatsColor,
                         modifier = Modifier
                             .clip(CircleShape)
                             .clickable {

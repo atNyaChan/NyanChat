@@ -218,7 +218,7 @@ fun SettingWebPage() {
                                     }
                                 },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                textStyle = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Normal),
+                                textStyle = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Normal),
                                 singleLine = true,
                                 isError = portText.toIntOrNull()?.let { it !in 1024..65535 } ?: true,
                                 modifier = Modifier.width(100.dp),
@@ -286,7 +286,7 @@ fun SettingWebPage() {
                                     }
                                 },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                                textStyle = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Normal),
+                                textStyle = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Normal),
                                 visualTransformation = if (passwordVisible) {
                                     VisualTransformation.None
                                 } else {

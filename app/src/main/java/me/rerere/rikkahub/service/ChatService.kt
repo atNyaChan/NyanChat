@@ -1070,7 +1070,7 @@ class ChatService(
         val settings = settingsStore.settingsFlow.first()
         val assistant = settings.getAssistantById(currentConversation.assistantId)
             ?: settings.getCurrentAssistant()
-        val processedParts = preprocessUserInputParts(parts, assistant)
+        val processedUserParts = preprocessUserInputParts(parts, assistant)
         var edited = false
 
         val updatedNodes = currentConversation.messageNodes.map { node ->
@@ -1078,6 +1078,11 @@ class ChatService(
                 return@map node
             }
             edited = true
+            val processedParts = if (node.role == MessageRole.ASSISTANT) {
+                ThinkTagTransformer.parseEditedParts(parts)
+            } else {
+                processedUserParts
+            }
 
             node.copy(
                 messages = node.messages + UIMessage(

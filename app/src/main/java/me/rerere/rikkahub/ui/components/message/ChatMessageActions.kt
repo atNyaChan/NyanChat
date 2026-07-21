@@ -98,24 +98,20 @@ fun ColumnScope.ChatMessageActionButtons(
         val statsColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
 
         if (message.role == MessageRole.USER && settings.displaySetting.showTokenUsage) {
-            StatsItem(
-                icon = {
-                    Icon(
-                        imageVector = HugeIcons.Message01,
-                        contentDescription = "Characters",
-                        modifier = Modifier.size(12.dp),
-                        tint = statsColor,
-                    )
-                },
-                content = {
-                    ProvideTextStyle(MaterialTheme.typography.labelSmall.copy(color = statsColor)) {
-                        ExpandableCountText(
-                            value = message.characterCount(includeReasoning = false),
-                            suffix = " chars",
+            ProvideTextStyle(MaterialTheme.typography.labelSmall.copy(color = statsColor)) {
+                ExpandableCountStatsItem(
+                    value = message.characterCount(includeReasoning = false),
+                    suffix = " chars",
+                    icon = {
+                        Icon(
+                            imageVector = HugeIcons.Message01,
+                            contentDescription = "Characters",
+                            modifier = Modifier.size(12.dp),
+                            tint = statsColor,
                         )
-                    }
-                },
-            )
+                    },
+                )
+            }
         }
 
         Icon(

@@ -1,11 +1,18 @@
 package me.rerere.rikkahub.data.sync.webdav
 
 import android.content.Context
+import android.database.sqlite.SQLiteDatabase
+import android.net.Uri
 import android.util.Log
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
 import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.files.SkillPaths
 import me.rerere.rikkahub.data.datastore.Settings
@@ -332,7 +339,82 @@ class WebDavSync(
             }
         }
 
+        if (config.items.contains(WebDavConfig.BackupItem.DATABASE) &&
+            config.items.contains(WebDavConfig.BackupItem.FILES)
+        ) {
+            runCatching { rewriteRestoredImageUrls() }
+                .onFailure { Log.w(TAG, "Failed to rewrite restored image URLs", it) }
+        }
+
         Log.i(TAG, "restoreFromBackupFile: Restore completed successfully")
+    }
+
+    private fun rewriteRestoredImageUrls() {
+        val databaseFile = context.getDatabasePath("rikka_hub")
+        if (!databaseFile.exists()) return
+
+        val updates = mutableListOf<Pair<String, String>>()
+        val database = SQLiteDatabase.openDatabase(
+            databaseFile.absolutePath,
+            null,
+            SQLiteDatabase.OPEN_READWRITE,
+        )
+        try {
+            database.rawQuery("SELECT id, messages FROM message_node", null).use { cursor ->
+                val idIndex = cursor.getColumnIndexOrThrow("id")
+                val messagesIndex = cursor.getColumnIndexOrThrow("messages")
+                while (cursor.moveToNext()) {
+                    val id = cursor.getString(idIndex)
+                    val originalJson = cursor.getString(messagesIndex)
+                    val originalElement = runCatching { json.parseToJsonElement(originalJson) }.getOrNull()
+                        ?: continue
+                    val rewrittenElement = rewriteImageUrls(originalElement)
+                    if (rewrittenElement != originalElement) {
+                        updates += id to rewrittenElement.toString()
+                    }
+                }
+            }
+
+            database.beginTransaction()
+            try {
+                updates.forEach { (id, messages) ->
+                    database.execSQL(
+                        "UPDATE message_node SET messages = ? WHERE id = ?",
+                        arrayOf(messages, id),
+                    )
+                }
+                database.setTransactionSuccessful()
+            } finally {
+                database.endTransaction()
+            }
+        } finally {
+            database.close()
+        }
+        Log.i(TAG, "rewriteRestoredImageUrls: Updated ${updates.size} message nodes")
+    }
+
+    private fun rewriteImageUrls(element: JsonElement): JsonElement = when (element) {
+        is JsonArray -> JsonArray(element.map(::rewriteImageUrls))
+        is JsonObject -> {
+            val rewritten = element.mapValues { (_, value) -> rewriteImageUrls(value) }.toMutableMap()
+            if ((rewritten["type"] as? JsonPrimitive)?.contentOrNull == "image") {
+                val oldUrl = (rewritten["url"] as? JsonPrimitive)?.contentOrNull
+                val newUrl = oldUrl?.let(::relocateRestoredUploadUrl)
+                if (newUrl != null && newUrl != oldUrl) {
+                    rewritten["url"] = JsonPrimitive(newUrl)
+                }
+            }
+            JsonObject(rewritten)
+        }
+        else -> element
+    }
+
+    private fun relocateRestoredUploadUrl(url: String): String? {
+        val uri = runCatching { Uri.parse(url) }.getOrNull() ?: return null
+        if (uri.scheme != "file") return null
+        val fileName = uri.lastPathSegment?.takeIf { it.isNotBlank() } ?: return null
+        val restoredFile = File(context.filesDir, "${FileFolders.UPLOAD}/$fileName")
+        return if (restoredFile.isFile) Uri.fromFile(restoredFile).toString() else null
     }
 
     private fun addFileToZip(zipOut: ZipOutputStream, file: File, entryName: String) {

@@ -372,14 +372,20 @@ private fun MessagePartsBlock(
                                     onClick = { onUserMessageClick?.invoke() },
                                 ) {
                                     Column(modifier = Modifier.padding(8.dp)) {
-                                        MarkdownBlock(
-                                            content = part.text.replaceRegexes(
-                                                assistant = assistant,
-                                                scope = AssistantAffectScope.USER,
-                                                visual = true,
-                                            ),
-                                            onClickCitation = handleClickCitation
-                                        )
+                                        if (part.text.isBlank() && part.text.isNotEmpty()) {
+                                            // Markdown 会折叠纯空白内容；用不可见占位符保留正常文本行高。
+                                            // 这里只影响显示，消息存储及发送仍使用原始空白文本。
+                                            Text("\u00A0")
+                                        } else {
+                                            MarkdownBlock(
+                                                content = part.text.replaceRegexes(
+                                                    assistant = assistant,
+                                                    scope = AssistantAffectScope.USER,
+                                                    visual = true,
+                                                ),
+                                                onClickCitation = handleClickCitation
+                                            )
+                                        }
                                     }
                                 }
                             } else {

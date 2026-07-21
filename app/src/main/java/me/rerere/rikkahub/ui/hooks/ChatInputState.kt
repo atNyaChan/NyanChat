@@ -34,17 +34,31 @@ class ChatInputState {
         textContent.setTextAndPlaceCursorAtEnd(textContent.text.toString() + content)
     }
 
-    fun setContents(contents: List<UIMessagePart>) {
-        val lastTextIndex = contents.indexOfLast { it is UIMessagePart.Text }
+    fun setContents(contents: List<UIMessagePart>, reasoningAsThinkTags: Boolean = false) {
+        val editableContents = if (reasoningAsThinkTags) {
+            val editableText = contents.mapNotNull { part ->
+                when (part) {
+                    is UIMessagePart.Text -> part.text
+                    is UIMessagePart.Reasoning -> "<think>\n${part.reasoning}\n</think>"
+                    else -> null
+                }
+            }.joinToString("\n\n")
+            listOf(UIMessagePart.Text(editableText)) + contents.filter {
+                it !is UIMessagePart.Text && it !is UIMessagePart.Reasoning
+            }
+        } else {
+            contents
+        }
+        val lastTextIndex = editableContents.indexOfLast { it is UIMessagePart.Text }
         val text = if (lastTextIndex >= 0) {
-            (contents[lastTextIndex] as UIMessagePart.Text).text
+            (editableContents[lastTextIndex] as UIMessagePart.Text).text
         } else {
             ""
         }
         textContent.setTextAndPlaceCursorAtEnd(text)
-        messageContent = contents.filter { it !is UIMessagePart.Text }
-        editingParts = contents
-        editingAttachmentUrls = contents.mapNotNull { it.attachmentUrlOrNull() }.toSet()
+        messageContent = editableContents.filter { it !is UIMessagePart.Text }
+        editingParts = editableContents
+        editingAttachmentUrls = editableContents.mapNotNull { it.attachmentUrlOrNull() }.toSet()
     }
 
     fun getContents(): List<UIMessagePart> {

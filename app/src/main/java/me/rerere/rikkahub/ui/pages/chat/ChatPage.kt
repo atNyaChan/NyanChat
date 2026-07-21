@@ -55,6 +55,7 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import me.rerere.ai.core.MessageRole
 import me.rerere.ai.provider.Model
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.common.android.appTempFolder
@@ -426,7 +427,10 @@ private fun ChatPageContent(
                 },
                 onEdit = {
                     inputState.editingMessage = it.id
-                    inputState.setContents(it.parts)
+                    inputState.setContents(
+                        contents = it.parts,
+                        reasoningAsThinkTags = it.role == MessageRole.ASSISTANT,
+                    )
                 },
                 onForkMessage = {
                     scope.launch {
