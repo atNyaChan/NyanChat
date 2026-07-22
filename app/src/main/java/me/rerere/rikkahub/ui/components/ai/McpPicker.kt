@@ -186,9 +186,6 @@ fun McpPickerListItem(
                 )
             }
         },
-        headlineContent = {
-            Text(stringResource(R.string.mcp_picker_title))
-        },
         trailingContent = {
             if (enabledServers.isNotEmpty()) {
                 Text(
@@ -206,7 +203,7 @@ fun McpPickerListItem(
             .clickable {
                 showMcpPicker = true
             },
-    )
+    ) { Text(stringResource(R.string.mcp_picker_title)) }
 
     if (showMcpPicker) {
         McpPickerSheet(

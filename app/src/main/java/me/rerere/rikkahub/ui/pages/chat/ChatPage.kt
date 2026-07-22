@@ -6,6 +6,8 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyListState
@@ -28,7 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.adaptive.currentWindowDpSize
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -42,7 +43,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -133,9 +136,12 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
         }
     }
 
-    val windowAdaptiveInfo = currentWindowDpSize()
+    val windowSize = LocalWindowInfo.current.containerSize
+    val density = LocalDensity.current
+    val windowWidth = with(density) { windowSize.width.toDp() }
+    val windowHeight = with(density) { windowSize.height.toDp() }
     val isBigScreen =
-        windowAdaptiveInfo.width > windowAdaptiveInfo.height && windowAdaptiveInfo.width >= 1100.dp
+        windowWidth > windowHeight && windowWidth >= 1100.dp
 
     // 进入大屏（永久抽屉）模式时重置抽屉状态为关闭，
     // 避免从横屏旋转回竖屏后，模态抽屉残留为打开状态且无法关闭（#1304）
@@ -320,7 +326,10 @@ private fun ChatPageContent(
                     },
                     onUpdateTitle = {
                         vm.updateTitle(it)
-                    }
+                    },
+                    onGenerateTitle = { onResult ->
+                        vm.generateTitleCandidate(conversation, onResult)
+                    },
                 )
             },
             bottomBar = {
@@ -717,7 +726,8 @@ private fun TopBar(
     previewMode: Boolean,
     onClickMenu: () -> Unit,
     onNewChat: () -> Unit,
-    onUpdateTitle: (String) -> Unit
+    onUpdateTitle: (String) -> Unit,
+    onGenerateTitle: ((String) -> Unit) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
@@ -809,21 +819,19 @@ private fun TopBar(
                 )
             },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        titleState.confirm()
-                    }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    Text(stringResource(R.string.chat_page_save))
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        titleState.dismiss()
+                    TextButton(onClick = { titleState.dismiss() }) {
+                        Text(stringResource(R.string.chat_page_cancel))
                     }
-                ) {
-                    Text(stringResource(R.string.chat_page_cancel))
+                    TextButton(onClick = { onGenerateTitle(onUpdate) }) {
+                        Text("自动生成标题")
+                    }
+                    TextButton(onClick = { titleState.confirm() }) {
+                        Text(stringResource(R.string.confirm))
+                    }
                 }
             }
         )

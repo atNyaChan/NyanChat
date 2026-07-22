@@ -96,15 +96,14 @@ fun ShareHandlerPage(text: String, image: String?) {
                     shape = MaterialTheme.shapes.medium
                 ) {
                     ListItem(
-                        headlineContent = {
-                            Text(
-                                text = assistant.name.ifEmpty {
-                                    stringResource(R.string.assistant_page_default_assistant)
-                                },
-                                maxLines = 1
-                            )
-                        },
-                    )
+                    ) {
+                        Text(
+                            text = assistant.name.ifEmpty {
+                                stringResource(R.string.assistant_page_default_assistant)
+                            },
+                            maxLines = 1
+                        )
+                    }
                 }
             }
         }

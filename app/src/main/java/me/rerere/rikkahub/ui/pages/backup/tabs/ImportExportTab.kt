@@ -1,5 +1,7 @@
 package me.rerere.rikkahub.ui.pages.backup.tabs
 
+import android.provider.OpenableColumns
+
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.File01
 import me.rerere.hugeicons.stroke.FileImport
@@ -30,6 +32,7 @@ import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.StickyHeader
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.pages.backup.BackupVM
+import me.rerere.rikkahub.ui.pages.backup.components.BackupDialog
 import me.rerere.rikkahub.ui.pages.backup.components.RestoreWarningDialog
 import java.io.File
 import java.io.FileInputStream
@@ -40,13 +43,15 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ImportExportTab(
     vm: BackupVM,
-    onShowRestartDialog: () -> Unit
 ) {
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     var isExporting by remember { mutableStateOf(false) }
     var isRestoring by remember { mutableStateOf(false) }
+    var exportLegacy by remember { mutableStateOf(false) }
+    var showImportDialog by remember { mutableStateOf(false) }
+    var importSucceeded by remember { mutableStateOf(false) }
 
     // 导入类型：local 为本地备份，chatbox 为 Chatbox 导入，cherry 为 Cherry Studio 导入
     var importType by remember { mutableStateOf("local") }
@@ -54,7 +59,7 @@ fun ImportExportTab(
 
     // 创建文件保存的launcher
     val createDocumentLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("application/zip")
+        contract = ActivityResultContracts.CreateDocument("application/octet-stream")
     ) { uri ->
         uri?.let { targetUri ->
             scope.launch {
@@ -62,7 +67,7 @@ fun ImportExportTab(
                 vm.trackBackupOrRestore {
                     runCatching {
                         // 导出文件
-                        val exportFile = vm.exportToFile()
+                        val exportFile = if (exportLegacy) vm.exportLegacyToFile() else vm.exportToFile()
 
                         // 复制到用户选择的位置
                         context.contentResolver.openOutputStream(targetUri)?.use { outputStream ->
@@ -81,7 +86,7 @@ fun ImportExportTab(
                     }.onFailure { e ->
                         e.printStackTrace()
                         toaster.show(
-                            context.getString(R.string.backup_page_restore_failed, e.message ?: ""),
+                            "导出失败: ${e.message.orEmpty()}",
                             type = ToastType.Error
                         )
                     }
@@ -96,15 +101,27 @@ fun ImportExportTab(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
         uri?.let { sourceUri ->
+            showImportDialog = true
+            importSucceeded = false
             scope.launch {
                 isRestoring = true
-                vm.trackBackupOrRestore {
-                    runCatching {
-                        when (importType) {
+                runCatching {
+                    when (importType) {
                             "local" -> {
-                                // 本地备份导入：处理zip文件
-                                val tempFile =
-                                    File(context.cacheDir, "temp_restore_${System.currentTimeMillis()}.zip")
+                                val displayName = context.contentResolver.query(
+                                    sourceUri,
+                                    arrayOf(OpenableColumns.DISPLAY_NAME),
+                                    null,
+                                    null,
+                                    null,
+                                )?.use { cursor ->
+                                    if (cursor.moveToFirst()) cursor.getString(0) else null
+                                } ?: sourceUri.lastPathSegment.orEmpty()
+                                val suffix = if (displayName.endsWith(".tar", true)) ".tar" else ".zip"
+                                val tempFile = File(
+                                    context.cacheDir,
+                                    "temp_restore_${System.currentTimeMillis()}$suffix",
+                                )
 
                                 context.contentResolver.openInputStream(sourceUri)?.use { inputStream ->
                                     FileOutputStream(tempFile).use { outputStream ->
@@ -154,20 +171,20 @@ fun ImportExportTab(
                                 // 清理临时文件
                                 tempFile.delete()
                             }
-                        }
-
-                        toaster.show(
-                            context.getString(R.string.backup_page_restore_success),
-                            type = ToastType.Success
-                        )
-                        onShowRestartDialog()
-                    }.onFailure { e ->
-                        e.printStackTrace()
-                        toaster.show(
-                            context.getString(R.string.backup_page_restore_failed, e.message ?: ""),
-                            type = ToastType.Error
-                        )
                     }
+
+                    toaster.show(
+                        context.getString(R.string.backup_page_restore_success),
+                        type = ToastType.Success
+                    )
+                    importSucceeded = true
+                }.onFailure { e ->
+                    e.printStackTrace()
+                    showImportDialog = false
+                    toaster.show(
+                        "导入失败: ${e.message.orEmpty()}",
+                        type = ToastType.Error
+                    )
                 }
                 isRestoring = false
             }
@@ -181,7 +198,7 @@ fun ImportExportTab(
     ) {
         stickyHeader {
             StickyHeader {
-                Text(stringResource(R.string.backup_page_local_backup_export))
+                Text("类RikkaHub格式")
             }
         }
 
@@ -190,23 +207,52 @@ fun ImportExportTab(
                 item(
                     onClick = if (!isExporting) {
                         {
+                            exportLegacy = false
                             val timestamp = LocalDateTime.now()
                                 .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
-                            createDocumentLauncher.launch("rikkahub_backup_$timestamp.zip")
+                            createDocumentLauncher.launch("rikkahub_backup_$timestamp.tar")
                         }
                     } else null,
                     headlineContent = { Text(stringResource(R.string.backup_page_local_backup_export)) },
                     supportingContent = {
                         Text(
-                            if (isExporting) {
+                            if (isExporting && !exportLegacy) {
                                 stringResource(R.string.backup_page_exporting)
                             } else {
-                                stringResource(R.string.backup_page_export_desc)
+                                "导出APP数据为tar文件（不兼容RikkaHub）"
                             }
                         )
                     },
                     leadingContent = {
-                        if (isExporting) {
+                        if (isExporting && !exportLegacy) {
+                            CircularWavyProgressIndicator(modifier = Modifier.size(24.dp))
+                        } else {
+                            Icon(HugeIcons.File01, null)
+                        }
+                    },
+                )
+
+                item(
+                    onClick = if (!isExporting) {
+                        {
+                            exportLegacy = true
+                            val timestamp = LocalDateTime.now()
+                                .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
+                            createDocumentLauncher.launch("rikkahub_backup_legacy_$timestamp.zip")
+                        }
+                    } else null,
+                    headlineContent = { Text("导出旧版格式（RikkaHub兼容）") },
+                    supportingContent = {
+                        Text(
+                            if (isExporting && exportLegacy) {
+                                stringResource(R.string.backup_page_exporting)
+                            } else {
+                                "移除本 Fork 新增的不兼容设置字段"
+                            }
+                        )
+                    },
+                    leadingContent = {
+                        if (isExporting && exportLegacy) {
                             CircularWavyProgressIndicator(modifier = Modifier.size(24.dp))
                         } else {
                             Icon(HugeIcons.File01, null)
@@ -220,10 +266,10 @@ fun ImportExportTab(
                             confirmLocalRestore = true
                         }
                     } else null,
-                    headlineContent = { Text(stringResource(R.string.backup_page_local_backup_import)) },
+                    headlineContent = { Text("导入本地文件") },
                     supportingContent = {
                         Text(
-                            if (isRestoring) {
+                            if (isRestoring && importType == "local") {
                                 stringResource(R.string.backup_page_importing)
                             } else {
                                 stringResource(R.string.backup_page_import_desc)
@@ -231,11 +277,7 @@ fun ImportExportTab(
                         )
                     },
                     leadingContent = {
-                        if (isRestoring) {
-                            CircularWavyProgressIndicator(modifier = Modifier.size(24.dp))
-                        } else {
-                            Icon(HugeIcons.FileImport, null)
-                        }
+                        Icon(HugeIcons.FileImport, null)
                     },
                 )
             }
@@ -259,11 +301,7 @@ fun ImportExportTab(
                     headlineContent = { Text(stringResource(R.string.backup_page_import_from_chatbox)) },
                     supportingContent = { Text(stringResource(R.string.backup_page_import_chatbox_desc)) },
                     leadingContent = {
-                        if (isRestoring && importType == "chatbox") {
-                            CircularWavyProgressIndicator(modifier = Modifier.size(24.dp))
-                        } else {
-                            Icon(HugeIcons.FileImport, null)
-                        }
+                        Icon(HugeIcons.FileImport, null)
                     },
                 )
 
@@ -277,11 +315,7 @@ fun ImportExportTab(
                     headlineContent = { Text(stringResource(R.string.backup_page_import_from_cherry_studio)) },
                     supportingContent = { Text(stringResource(R.string.backup_page_import_cherry_studio_desc)) },
                     leadingContent = {
-                        if (isRestoring && importType == "cherry") {
-                            CircularWavyProgressIndicator(modifier = Modifier.size(24.dp))
-                        } else {
-                            Icon(HugeIcons.FileImport, null)
-                        }
+                        Icon(HugeIcons.FileImport, null)
                     },
                 )
             }
@@ -293,8 +327,14 @@ fun ImportExportTab(
         onConfirm = {
             confirmLocalRestore = false
             importType = "local"
-            openDocumentLauncher.launch(arrayOf("application/zip"))
+            openDocumentLauncher.launch(
+                arrayOf("application/x-tar", "application/zip", "application/octet-stream")
+            )
         },
         onDismiss = { confirmLocalRestore = false },
     )
+
+    if (showImportDialog) {
+        BackupDialog(importing = !importSucceeded)
+    }
 }

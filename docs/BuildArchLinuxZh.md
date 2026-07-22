@@ -1,13 +1,13 @@
 # Arch Linux 构建 arm64 Release APK
 
 当前分支已移除 Firebase，将应用 ID 改为 `moe.nyanw.rikkahub`，并且只打包
-`arm64-v8a`，并且改成用 openjdk17 。下面按实际下载顺序列出构建所需内容。
+`arm64-v8a`，并且改成用 OpenJDK 21。下面按实际下载顺序列出构建所需内容。
 
 ## 下载清单
 
 | 下载内容 | 下载源 | 下载量 | 安装后占用 | 下载命令 |
 |---|---|---:|---:|---|
-| Java 17、Node.js、pnpm 等 | Arch 软件源；是否为国内镜像取决于本机 pacman 配置 | 约 150–300 MB | 约 500 MB–1 GB | `sudo pacman -S --needed git jdk17-openjdk nodejs pnpm unzip wget` |
+| Java 21、Node.js、pnpm 等 | Arch 软件源；是否为国内镜像取决于本机 pacman 配置 | 约 150–300 MB | 约 500 MB–1 GB | `sudo pacman -S --needed git jdk21-openjdk nodejs pnpm unzip wget` |
 | Android Command-line Tools | Google，无可靠的新版本国内镜像 | 173 MB | 166 MB | 见下方命令 1 |
 | Android Platform、Build Tools、Platform Tools | Google `sdkmanager`，无可靠 API 37 国内镜像 | 约 143 MB | 327 MB | 见下方命令 2 |
 | NDK 28.2、CMake 3.22.1 | Google `sdkmanager`，无可靠新版本国内镜像 | 约 744 MB | 约 2.3 GB | 见下方命令 2 |

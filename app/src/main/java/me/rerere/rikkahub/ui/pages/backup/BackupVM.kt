@@ -100,6 +100,14 @@ class BackupVM(
         return file
     }
 
+    suspend fun exportLegacyToFile(): File {
+        val file = webDavSync.prepareLegacyBackupFile(
+            settings.value.webDavConfig.copy(items = WebDavConfig.BackupItem.entries)
+        )
+        recordBackupTime()
+        return file
+    }
+
     suspend fun restoreFromLocalFile(file: File) {
         webDavSync.restoreFromLocalFile(
             file = file,

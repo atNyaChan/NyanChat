@@ -36,13 +36,15 @@ class ChatInputState {
 
     fun setContents(contents: List<UIMessagePart>, reasoningAsThinkTags: Boolean = false) {
         val editableContents = if (reasoningAsThinkTags) {
-            val editableText = contents.mapNotNull { part ->
-                when (part) {
-                    is UIMessagePart.Text -> part.text
-                    is UIMessagePart.Reasoning -> "<think>\n${part.reasoning}\n</think>"
-                    else -> null
+            val editableText = buildString {
+                contents.forEach { part ->
+                    when (part) {
+                        is UIMessagePart.Text -> append(part.text)
+                        is UIMessagePart.Reasoning -> append("<think>\n${part.reasoning}\n</think>")
+                        else -> Unit
+                    }
                 }
-            }.joinToString("\n\n")
+            }
             listOf(UIMessagePart.Text(editableText)) + contents.filter {
                 it !is UIMessagePart.Text && it !is UIMessagePart.Reasoning
             }

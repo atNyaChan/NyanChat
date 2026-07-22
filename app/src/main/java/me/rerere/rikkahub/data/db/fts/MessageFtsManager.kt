@@ -25,6 +25,12 @@ enum class MessageSearchSort(val orderBy: String) {
     OLDEST_FIRST("update_at ASC, rank"),
 }
 
+enum class MessageSearchMode {
+    TITLE_ONLY,
+    EXACT,
+    FUZZY,
+}
+
 private const val TAG = "MessageFtsManager"
 
 class MessageFtsManager(private val database: AppDatabase) {
@@ -65,7 +71,11 @@ class MessageFtsManager(private val database: AppDatabase) {
     suspend fun search(
         keyword: String,
         sort: MessageSearchSort = MessageSearchSort.RELEVANCE,
+        mode: MessageSearchMode = MessageSearchMode.FUZZY,
     ): List<MessageSearchResult> = withContext(Dispatchers.IO) {
+        if (mode != MessageSearchMode.FUZZY) {
+            return@withContext searchExact(keyword, sort, mode)
+        }
         val results = mutableListOf<MessageSearchResult>()
         val cursor = db.query(
             """
@@ -94,6 +104,60 @@ class MessageFtsManager(private val database: AppDatabase) {
             }
         }
         results
+    }
+
+    private fun searchExact(
+        keyword: String,
+        sort: MessageSearchSort,
+        mode: MessageSearchMode,
+    ): List<MessageSearchResult> {
+        val titleOnly = mode == MessageSearchMode.TITLE_ONLY
+        val orderBy = when (sort) {
+            MessageSearchSort.RELEVANCE, MessageSearchSort.NEWEST_FIRST -> "update_at DESC"
+            MessageSearchSort.OLDEST_FIRST -> "update_at ASC"
+        }
+        val groupBy = if (titleOnly) "GROUP BY conversation_id" else ""
+        val cursor = db.query(
+            """
+            SELECT node_id, message_id, conversation_id, title, update_at, text
+            FROM message_fts
+            WHERE instr(${if (titleOnly) "title" else "text"}, ?) > 0
+            $groupBy
+            ORDER BY $orderBy
+            LIMIT 50
+            """.trimIndent(),
+            arrayOf(keyword),
+        )
+        return buildList {
+            cursor.use {
+                while (it.moveToNext()) {
+                    add(
+                        MessageSearchResult(
+                            nodeId = it.getString(0),
+                            messageId = it.getString(1),
+                            conversationId = it.getString(2),
+                            title = it.getString(3),
+                            updateAt = Instant.ofEpochMilli(it.getLong(4)),
+                            snippet = if (titleOnly) "" else it.getString(5).exactSnippet(keyword),
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun String.exactSnippet(keyword: String): String {
+    val matchStart = indexOf(keyword)
+    if (matchStart < 0) return take(200)
+    val start = (matchStart - 60).coerceAtLeast(0)
+    val end = (matchStart + keyword.length + 120).coerceAtMost(length)
+    return buildString {
+        if (start > 0) append("...")
+        append(this@exactSnippet, start, matchStart)
+        append('[').append(keyword).append(']')
+        append(this@exactSnippet, matchStart + keyword.length, end)
+        if (end < length) append("...")
     }
 }
 

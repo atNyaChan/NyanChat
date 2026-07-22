@@ -18,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +40,7 @@ import me.rerere.hugeicons.stroke.Zap
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.utils.formatNumber
 import me.rerere.rikkahub.utils.toFixed
+import me.rerere.rikkahub.utils.wordCount
 import java.time.Duration
 import java.time.LocalDateTime
 
@@ -56,6 +58,21 @@ fun ChatMessageNerdLine(
     val settings = LocalSettings.current.displaySetting
     var expanded by remember(message.id) { mutableStateOf(false) }
     val usage = message.usage
+    val latestMessage by rememberUpdatedState(message)
+    val wordCount by produceState(
+        initialValue = message.wordCount(includeReasoning = true),
+        key1 = message.id,
+        key2 = loading,
+    ) {
+        if (loading) {
+            while (isActive) {
+                value = latestMessage.wordCount(includeReasoning = true)
+                delay(100)
+            }
+        } else {
+            value = latestMessage.wordCount(includeReasoning = true)
+        }
+    }
     val elapsedMillis by produceState(
         initialValue = message.elapsedMillis(loading),
         key1 = message.createdAt,
@@ -76,31 +93,23 @@ fun ChatMessageNerdLine(
         CompositionLocalProvider(LocalContentColor provides color) {
             Column(
                 modifier = modifier
-                    .clickable(enabled = loading || usage != null) { expanded = !expanded }
+                    .clickable(
+                        enabled = wordCount > 10_000 || usage?.let {
+                            it.promptTokens > 10_000 || it.cachedTokens > 10_000 || it.completionTokens > 10_000
+                        } == true,
+                    ) { expanded = !expanded }
                     .padding(horizontal = 4.dp, vertical = 2.dp)
             ) {
                 if (settings.showTokenUsage) {
-                    val characterCount = message.characterCount(includeReasoning = true)
                     val seconds = elapsedMillis / 1000f
-                    val charactersPerSecond = if (elapsedMillis > 0) {
-                        characterCount.toFloat() / elapsedMillis * 1000
+                    val wordsPerSecond = if (elapsedMillis > 0) {
+                        wordCount.toFloat() / elapsedMillis * 1000
                     } else {
                         0f
                     }
                     val cost = if (!loading && usage != null) calculateCost(usage, model) else null
 
-                    if (!loading && usage == null) {
-                        StatsItem(
-                            icon = {
-                                Icon(
-                                    imageVector = HugeIcons.Message01,
-                                    contentDescription = "Characters",
-                                    modifier = Modifier.size(12.dp),
-                                )
-                            },
-                            content = { CountText(characterCount, expanded = false, suffix = " chars") },
-                        )
-                    } else if (expanded) {
+                    run {
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             itemVerticalAlignment = Alignment.CenterVertically,
@@ -109,11 +118,17 @@ fun ChatMessageNerdLine(
                                 icon = {
                                     Icon(
                                         imageVector = HugeIcons.Message01,
-                                        contentDescription = "Characters",
+                                        contentDescription = "Words",
                                         modifier = Modifier.size(12.dp),
                                     )
                                 },
-                                content = { CountText(characterCount, expanded = true, suffix = " chars") },
+                                content = {
+                                    if (loading && wordCount == 0) {
+                                        Text("waiting")
+                                    } else {
+                                        CountText(wordCount, expanded, suffix = " word")
+                                    }
+                                },
                             )
                             StatsItem(
                                 icon = {
@@ -125,16 +140,18 @@ fun ChatMessageNerdLine(
                                 },
                                 content = { Text(text = "${seconds.toFixed(1)}s") },
                             )
-                            StatsItem(
-                                icon = {
-                                    Icon(
-                                        imageVector = HugeIcons.Zap,
-                                        contentDescription = "Character speed",
-                                        modifier = Modifier.size(12.dp),
-                                    )
-                                },
-                                content = { Text(text = "${charactersPerSecond.toFixed(1)} chars/s") },
-                            )
+                            if (elapsedMillis >= 150 && wordCount > 0) {
+                                StatsItem(
+                                    icon = {
+                                        Icon(
+                                            imageVector = HugeIcons.Zap,
+                                            contentDescription = "Word speed",
+                                            modifier = Modifier.size(12.dp),
+                                        )
+                                    },
+                                    content = { Text(text = "${wordsPerSecond.toFixed(1)} word/s") },
+                                )
+                            }
                         }
                     }
 
@@ -169,51 +186,25 @@ fun ChatMessageNerdLine(
                                 },
                                 content = { CountText(usage.completionTokens, expanded, " token") },
                             )
-                            if (expanded) {
-                                StatsItem(
-                                    icon = {
-                                        Icon(
-                                            imageVector = HugeIcons.Zap,
-                                            contentDescription = "Token speed",
-                                            modifier = Modifier.size(12.dp),
-                                        )
-                                    },
-                                    content = {
-                                        val tokensPerSecond = if (elapsedMillis > 0) {
-                                            usage.completionTokens.toFloat() / elapsedMillis * 1000
-                                        } else {
-                                            0f
-                                        }
-                                        Text(text = "${tokensPerSecond.toFixed(1)} tok/s")
-                                    },
-                                )
-                            } else {
-                                StatsItem(
-                                    icon = {
-                                        Icon(
-                                            imageVector = HugeIcons.Clock02,
-                                            contentDescription = "Duration",
-                                            modifier = Modifier.size(12.dp),
-                                        )
-                                    },
-                                    content = { Text(text = "${seconds.toFixed(1)}s") },
-                                )
+                            if (elapsedMillis >= 150) {
+                                    StatsItem(
+                                        icon = {
+                                            Icon(
+                                                imageVector = HugeIcons.Zap,
+                                                contentDescription = "Token speed",
+                                                modifier = Modifier.size(12.dp),
+                                            )
+                                        },
+                                        content = {
+                                            val tokensPerSecond = usage.completionTokens.toFloat() / elapsedMillis * 1000
+                                            Text(text = "${tokensPerSecond.toFixed(1)} tok/s")
+                                        },
+                                    )
                             }
                             cost?.let {
                                 Text(text = "\$${formatCost(it)}")
                             }
                         }
-                    } else if (loading && !expanded) {
-                        StatsItem(
-                            icon = {
-                                Icon(
-                                    imageVector = HugeIcons.Clock02,
-                                    contentDescription = "Duration",
-                                    modifier = Modifier.size(12.dp),
-                                )
-                            },
-                            content = { Text(text = "${seconds.toFixed(1)}s") },
-                        )
                     }
                 }
             }
@@ -249,7 +240,7 @@ fun ExpandableCountStatsItem(
     modifier: Modifier = Modifier,
 ) {
     var expanded by remember(value) { mutableStateOf(false) }
-    val clickableModifier = if (value >= 1000) {
+    val clickableModifier = if (value > 10000) {
         Modifier.clickable { expanded = !expanded }
     } else {
         Modifier
@@ -269,13 +260,13 @@ private fun formatCost(cost: Double): String = when {
     else -> "%.6f".format(java.util.Locale.US, cost)
 }.trimEnd('0').trimEnd('.')
 
-internal fun UIMessage.characterCount(includeReasoning: Boolean): Int = parts.sumOf { part ->
+internal fun UIMessage.wordCount(includeReasoning: Boolean): Int = parts.sumOf { part ->
     val text = when (part) {
         is UIMessagePart.Text -> part.text
         is UIMessagePart.Reasoning -> if (includeReasoning) part.reasoning else ""
         else -> ""
     }
-    Character.codePointCount(text, 0, text.length)
+    text.wordCount()
 }
 
 private fun UIMessage.elapsedMillis(loading: Boolean): Long {

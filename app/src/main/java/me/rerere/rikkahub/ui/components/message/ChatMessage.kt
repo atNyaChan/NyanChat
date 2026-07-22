@@ -74,18 +74,14 @@ import me.rerere.hugeicons.stroke.File02
 import me.rerere.hugeicons.stroke.MusicNote03
 import me.rerere.hugeicons.stroke.Video01
 import me.rerere.rikkahub.R
-import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.AssistantAffectScope
 import me.rerere.rikkahub.data.model.MessageNode
 import me.rerere.rikkahub.data.model.replaceRegexes
 import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
 import me.rerere.rikkahub.ui.components.richtext.ZoomableAsyncImage
-import me.rerere.rikkahub.ui.components.richtext.buildMarkdownPreviewHtml
-import me.rerere.rikkahub.ui.components.webview.WebViewContentCache
 import me.rerere.rikkahub.ui.components.ui.ChainOfThought
 import me.rerere.rikkahub.ui.components.ui.Favicon
-import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.modifier.shimmer
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.LocalChatFontFamily
@@ -128,9 +124,7 @@ fun ChatMessage(
     )
     var showActionsSheet by remember { mutableStateOf(false) }
     var showSelectCopySheet by remember { mutableStateOf(false) }
-    val navController = LocalNavController.current
-    val context = LocalContext.current
-    val colorScheme = MaterialTheme.colorScheme
+    var showTranslateDialog by remember { mutableStateOf(false) }
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = if (message.role == MessageRole.USER) Alignment.End else Alignment.Start,
@@ -164,6 +158,7 @@ fun ChatMessage(
                 role = message.role,
                 parts = message.parts,
                 annotations = message.annotations,
+                messageEdited = !loading && message.usage == null,
                 loading = loading,
                 model = model,
                 onToolApproval = onToolApproval,
@@ -201,8 +196,6 @@ fun ChatMessage(
                     onOpenActionSheet = {
                         showActionsSheet = true
                     },
-                    onTranslate = onTranslate,
-                    onClearTranslation = onClearTranslation
                 )
             }
         }
@@ -236,24 +229,26 @@ fun ChatMessage(
             },
             isFavorite = isFavorite,
             onToggleFavorite = onToggleFavorite,
-            onWebViewPreview = {
-                val textContent = message.parts
-                    .filterIsInstance<UIMessagePart.Text>()
-                    .joinToString("\n\n") { it.text }
-                    .trim()
-                if (textContent.isNotBlank()) {
-                    val htmlContent = buildMarkdownPreviewHtml(
-                        context = context,
-                        markdown = textContent,
-                        colorScheme = colorScheme
-                    )
-                    val contentId = WebViewContentCache.store(context.cacheDir, htmlContent)
-                    navController.navigate(Screen.WebView(contentId = contentId))
-                }
-            },
+            onTranslateRequest = if (onTranslate != null) {
+                { showTranslateDialog = true }
+            } else null,
             onDismissRequest = {
                 showActionsSheet = false
             }
+        )
+    }
+
+    if (showTranslateDialog && onTranslate != null) {
+        LanguageSelectionDialog(
+            onLanguageSelected = {
+                showTranslateDialog = false
+                onTranslate(message, it)
+            },
+            onClearTranslation = {
+                showTranslateDialog = false
+                onClearTranslation(message)
+            },
+            onDismissRequest = { showTranslateDialog = false },
         )
     }
 
@@ -275,6 +270,7 @@ private fun MessagePartsBlock(
     model: Model?,
     parts: List<UIMessagePart>,
     annotations: List<UIMessageAnnotation>,
+    messageEdited: Boolean,
     loading: Boolean,
     onToolApproval: ((toolCallId: String, approved: Boolean, reason: String) -> Unit)? = null,
     onToolAnswer: ((toolCallId: String, answer: String) -> Unit)? = null,
@@ -340,6 +336,7 @@ private fun MessagePartsBlock(
                                         reasoning = step.reasoning,
                                         model = model,
                                         assistant = assistant,
+                                        messageEdited = messageEdited,
                                         collapsedAdaptiveWidth = isReasoningOnlyBlock,
                                     )
                                 }

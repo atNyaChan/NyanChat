@@ -85,7 +85,7 @@ class RikkaHubApp : Application() {
         // Start WebServer if enabled in settings
         startWebServerIfEnabled()
 
-        // Increment launch count
+        // Keep launch statistics; donation prompts are disabled separately.
         incrementLaunchCount()
 
         // Composer.setDiagnosticStackTraceMode(ComposeStackTraceMode.Auto)

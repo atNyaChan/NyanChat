@@ -323,7 +323,6 @@ private fun CustomThemeItem(
             .padding(horizontal = 8.dp)
             .clip(RoundedCornerShape(16.dp))
             .clickable { onSelect() },
-        headlineContent = { Text(theme.name.ifEmpty { "Unnamed" }) },
         leadingContent = {
             Box(contentAlignment = Alignment.Center) {
                 Canvas(
@@ -376,7 +375,7 @@ private fun CustomThemeItem(
             }
         },
         colors = CustomColors.listItemColors,
-    )
+    ) { Text(theme.name.ifEmpty { "Unnamed" }) }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -14,6 +14,7 @@ import me.rerere.ai.ui.UIMessage
 import me.rerere.rikkahub.data.db.AppDatabase
 import me.rerere.rikkahub.data.db.fts.MessageFtsManager
 import me.rerere.rikkahub.data.db.fts.MessageSearchSort
+import me.rerere.rikkahub.data.db.fts.MessageSearchMode
 import me.rerere.rikkahub.data.db.dao.ConversationDAO
 import me.rerere.rikkahub.data.db.dao.FavoriteDAO
 import me.rerere.rikkahub.data.db.dao.MessageNodeDAO
@@ -325,7 +326,8 @@ class ConversationRepository(
     suspend fun searchMessages(
         keyword: String,
         sort: MessageSearchSort = MessageSearchSort.RELEVANCE,
-    ) = messageFtsManager.search(keyword, sort)
+        mode: MessageSearchMode = MessageSearchMode.FUZZY,
+    ) = messageFtsManager.search(keyword, sort, mode)
 
     suspend fun rebuildAllIndexes(onProgress: (current: Int, total: Int) -> Unit = { _, _ -> }) {
         messageFtsManager.deleteAll()

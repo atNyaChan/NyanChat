@@ -1,11 +1,12 @@
 package me.rerere.rikkahub.ui.pages.chat
 
 import me.rerere.hugeicons.HugeIcons
-import me.rerere.hugeicons.stroke.Folder01
 import me.rerere.hugeicons.stroke.Forward02
+import me.rerere.hugeicons.stroke.CheckList
+import me.rerere.hugeicons.stroke.Cancel01
 import me.rerere.hugeicons.stroke.Pin
 import me.rerere.hugeicons.stroke.PinOff
-import me.rerere.hugeicons.stroke.Refresh01
+import me.rerere.hugeicons.stroke.PencilEdit01
 import me.rerere.hugeicons.stroke.Delete01
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.LocalIndication
@@ -15,6 +16,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,6 +29,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -80,12 +83,13 @@ fun ColumnScope.ConversationList(
     modifier: Modifier = Modifier,
     onClick: (Conversation) -> Unit = {},
     onDelete: (Conversation) -> Unit = {},
-    onRegenerateTitle: (Conversation) -> Unit = {},
+    onEditTitle: (Conversation) -> Unit = {},
     onPin: (Conversation) -> Unit = {},
-    onMoveToAssistant: (Conversation) -> Unit = {},
-    onMoveToFolder: (Conversation) -> Unit = {}
+    onMove: (List<Conversation>) -> Unit = {},
+    onDeleteSelected: (List<Conversation>) -> Unit = {},
 ) {
     var hasScrolledToCurrent by remember(current.id) { mutableStateOf(false) }
+    var selectedConversations by remember { mutableStateOf<Map<Uuid, Conversation>>(emptyMap()) }
 
     LaunchedEffect(current.id, conversations.itemCount, hasScrolledToCurrent) {
         if (hasScrolledToCurrent) return@LaunchedEffect
@@ -101,11 +105,35 @@ fun ColumnScope.ConversationList(
         }
     }
 
-    LazyColumn(
-        state = listState,
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
+    Column(modifier = modifier) {
+        if (selectedConversations.isNotEmpty()) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("已选${selectedConversations.size}项", modifier = Modifier.weight(1f))
+                IconButton(onClick = { selectedConversations = emptyMap() }) {
+                    Icon(HugeIcons.Cancel01, contentDescription = "取消多选")
+                }
+                IconButton(onClick = {
+                    onMove(selectedConversations.values.toList())
+                    selectedConversations = emptyMap()
+                }) {
+                    Icon(HugeIcons.Forward02, contentDescription = "移动到...")
+                }
+                IconButton(onClick = {
+                    onDeleteSelected(selectedConversations.values.toList())
+                    selectedConversations = emptyMap()
+                }) {
+                    Icon(HugeIcons.Delete01, contentDescription = "删除")
+                }
+            }
+        }
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
         if (conversations.itemCount == 0) {
             item {
                 Surface(
@@ -152,14 +180,24 @@ fun ColumnScope.ConversationList(
                 is ConversationListItem.Item -> {
                     ConversationItem(
                         conversation = item.conversation,
-                        selected = item.conversation.id == current.id,
+                        selected = if (selectedConversations.isEmpty()) {
+                            item.conversation.id == current.id
+                        } else item.conversation.id in selectedConversations,
+                        multiSelecting = selectedConversations.isNotEmpty(),
                         loading = item.conversation.id in conversationJobs,
-                        onClick = onClick,
+                        onClick = { conversation ->
+                            if (selectedConversations.isEmpty()) onClick(conversation)
+                            else selectedConversations = selectedConversations.toMutableMap().apply {
+                                if (remove(conversation.id) == null) put(conversation.id, conversation)
+                            }
+                        },
+                        onLongClick = { conversation ->
+                            selectedConversations = selectedConversations + (conversation.id to conversation)
+                        },
                         onDelete = onDelete,
-                        onRegenerateTitle = onRegenerateTitle,
+                        onEditTitle = onEditTitle,
                         onPin = onPin,
-                        onMoveToAssistant = onMoveToAssistant,
-                        onMoveToFolder = onMoveToFolder,
+                        onMove = { onMove(listOf(it)) },
                         modifier = Modifier.animateItem()
                     )
                 }
@@ -169,6 +207,7 @@ fun ColumnScope.ConversationList(
                 }
             }
         }
+    }
     }
 }
 
@@ -224,13 +263,14 @@ private fun PinnedHeader(
 private fun ConversationItem(
     conversation: Conversation,
     selected: Boolean,
+    multiSelecting: Boolean,
     loading: Boolean,
     modifier: Modifier = Modifier,
     onDelete: (Conversation) -> Unit = {},
-    onRegenerateTitle: (Conversation) -> Unit = {},
+    onEditTitle: (Conversation) -> Unit = {},
     onPin: (Conversation) -> Unit = {},
-    onMoveToAssistant: (Conversation) -> Unit = {},
-    onMoveToFolder: (Conversation) -> Unit = {},
+    onMove: (Conversation) -> Unit = {},
+    onLongClick: (Conversation) -> Unit = {},
     onClick: (Conversation) -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -250,7 +290,7 @@ private fun ConversationItem(
                 indication = LocalIndication.current,
                 onClick = { onClick(conversation) },
                 onLongClick = {
-                    showDropdownMenu = true
+                    if (multiSelecting) onLongClick(conversation) else showDropdownMenu = true
                 }
             )
             .background(backgroundColor),
@@ -293,6 +333,14 @@ private fun ConversationItem(
                 onDismissRequest = { showDropdownMenu = false },
             ) {
                 DropdownMenuItem(
+                    text = { Text("多选") },
+                    onClick = {
+                        onLongClick(conversation)
+                        showDropdownMenu = false
+                    },
+                    leadingIcon = { Icon(HugeIcons.CheckList, null) },
+                )
+                DropdownMenuItem(
                     text = {
                         Text(
                             if (conversation.isPinned) stringResource(R.string.unpin_chat) else stringResource(R.string.pin_chat)
@@ -312,40 +360,27 @@ private fun ConversationItem(
 
                 DropdownMenuItem(
                     text = {
-                        Text(stringResource(id = R.string.chat_page_regenerate_title))
+                        Text("编辑标题")
                     },
                     onClick = {
-                        onRegenerateTitle(conversation)
+                        onEditTitle(conversation)
                         showDropdownMenu = false
                     },
                     leadingIcon = {
-                        Icon(HugeIcons.Refresh01, null)
+                        Icon(HugeIcons.PencilEdit01, null)
                     }
                 )
 
                 DropdownMenuItem(
                     text = {
-                        Text(stringResource(R.string.chat_page_move_to_assistant))
+                        Text("移动到...")
                     },
                     onClick = {
-                        onMoveToAssistant(conversation)
+                        onMove(conversation)
                         showDropdownMenu = false
                     },
                     leadingIcon = {
                         Icon(HugeIcons.Forward02, null)
-                    }
-                )
-
-                DropdownMenuItem(
-                    text = {
-                        Text(stringResource(R.string.chat_page_move_to_folder))
-                    },
-                    onClick = {
-                        onMoveToFolder(conversation)
-                        showDropdownMenu = false
-                    },
-                    leadingIcon = {
-                        Icon(HugeIcons.Folder01, null)
                     }
                 )
 

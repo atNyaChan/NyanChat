@@ -11,6 +11,8 @@ import me.rerere.rikkahub.data.files.SkillPaths
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.datastore.migration.SettingsJsonMigrator
+import me.rerere.rikkahub.data.db.AppDatabase
+import me.rerere.rikkahub.data.sync.BackupArchive
 import me.rerere.rikkahub.data.sync.s3.S3Client
 import me.rerere.rikkahub.data.sync.s3.S3Config
 import me.rerere.rikkahub.utils.fileSizeToString
@@ -31,6 +33,7 @@ class S3Sync(
     private val json: Json,
     private val context: Context,
     private val httpClient: HttpClient,
+    private val database: AppDatabase,
 ) {
     private fun getS3Client(config: S3Config): S3Client {
         return S3Client(config, httpClient)
@@ -51,7 +54,7 @@ class S3Sync(
         client.putObject(
             key = key,
             file = file,
-            contentType = "application/zip"
+            contentType = "application/x-tar"
         ).getOrThrow()
 
         Log.i(TAG, "backupToS3: Uploaded ${file.name} (${file.length().fileSizeToString()})")
@@ -68,7 +71,10 @@ class S3Sync(
         ).getOrThrow()
 
         result.objects
-            .filter { it.key.startsWith("rikkahub_backups/backup_") && it.key.endsWith(".zip") }
+            .filter {
+                it.key.startsWith("rikkahub_backups/backup_") &&
+                    (it.key.endsWith(BackupArchive.EXTENSION) || it.key.endsWith(".zip"))
+            }
             .map { obj ->
                 S3BackupItem(
                     key = obj.key,
@@ -109,6 +115,20 @@ class S3Sync(
     }
 
     suspend fun prepareBackupFile(config: S3Config): File = withContext(Dispatchers.IO) {
+        val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
+        val backupFile = File(context.cacheDir, "backup_$timestamp${BackupArchive.EXTENSION}")
+        BackupArchive.create(
+            context = context,
+            output = backupFile,
+            settingsJson = json.encodeToString(settingsStore.settingsFlow.value),
+            includeDatabase = config.items.contains(S3Config.BackupItem.DATABASE),
+            includeFiles = config.items.contains(S3Config.BackupItem.FILES),
+        )
+        backupFile
+    }
+
+    @Suppress("unused")
+    private suspend fun prepareLegacyBackupFile(config: S3Config): File = withContext(Dispatchers.IO) {
         val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
         val backupFile = File(context.cacheDir, "backup_$timestamp.zip")
 
@@ -190,8 +210,20 @@ class S3Sync(
         backupFile
     }
 
-    private suspend fun restoreFromBackupFile(backupFile: File, config: S3Config) = withContext(Dispatchers.IO) {
+    private suspend fun restoreFromBackupFile(backupFile: File, config: S3Config): Unit =
+        withContext(Dispatchers.IO) {
         Log.i(TAG, "restoreFromBackupFile: Starting restore from ${backupFile.absolutePath}")
+
+        if (backupFile.extension.equals("tar", ignoreCase = true)) {
+            val legacyZip = File(context.cacheDir, "restore_${System.currentTimeMillis()}.zip")
+            try {
+                BackupArchive.toLegacyZip(backupFile, legacyZip)
+                restoreFromBackupFile(legacyZip, config)
+            } finally {
+                legacyZip.delete()
+            }
+            return@withContext
+        }
 
         ZipInputStream(FileInputStream(backupFile)).use { zipIn ->
             var entry: ZipEntry?
@@ -237,6 +269,11 @@ class S3Sync(
                                         "restoreFromBackupFile: Restoring ${zipEntry.name} to ${targetFile.absolutePath}"
                                     )
                                     targetFile.parentFile?.mkdirs()
+                                    if (zipEntry.name == "rikka_hub.db") {
+                                        database.close()
+                                        File(targetFile.parentFile, "rikka_hub-wal").delete()
+                                        File(targetFile.parentFile, "rikka_hub-shm").delete()
+                                    }
                                     FileOutputStream(targetFile).use { outputStream ->
                                         zipIn.copyTo(outputStream)
                                     }

@@ -30,6 +30,7 @@ sealed class LogEntry {
         val requestBody: String? = null,
         val responseCode: Int? = null,
         val responseHeaders: Map<String, String> = emptyMap(),
+        val responseBody: String? = null,
         val durationMs: Long? = null,
         val error: String? = null
     ) : LogEntry()
@@ -37,22 +38,12 @@ sealed class LogEntry {
 
 object Logging {
     private val recentLogs = arrayListOf<LogEntry>()
-    @Volatile
-    private var requestLoggingEnabled = true
-
     fun log(tag: String, message: String) {
         addLog(LogEntry.TextLog(tag = tag, message = message))
     }
 
     fun logRequest(entry: LogEntry.RequestLog) {
-        if (!requestLoggingEnabled) return
         addLog(entry)
-    }
-
-    fun isRequestLoggingEnabled(): Boolean = requestLoggingEnabled
-
-    fun setRequestLoggingEnabled(enabled: Boolean) {
-        requestLoggingEnabled = enabled
     }
 
     private fun addLog(entry: LogEntry) {

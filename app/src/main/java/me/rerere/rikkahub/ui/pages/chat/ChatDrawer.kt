@@ -24,14 +24,11 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,12 +58,9 @@ import me.rerere.hugeicons.stroke.FolderAdd
 import me.rerere.hugeicons.stroke.Image02
 import me.rerere.hugeicons.stroke.InLove
 import me.rerere.hugeicons.stroke.LanguageCircle
-import me.rerere.hugeicons.stroke.LookTop
 import me.rerere.hugeicons.stroke.PencilEdit01
 import me.rerere.hugeicons.stroke.Search01
 import me.rerere.hugeicons.stroke.Settings03
-import me.rerere.hugeicons.stroke.Sparkles
-import me.rerere.hugeicons.stroke.TransactionHistory
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.datastore.Settings
@@ -79,14 +73,12 @@ import me.rerere.rikkahub.ui.components.ui.BackupReminderCard
 import me.rerere.rikkahub.ui.components.ui.Greeting
 import me.rerere.rikkahub.ui.components.ui.Tooltip
 import me.rerere.rikkahub.ui.components.ui.UIAvatar
-import me.rerere.rikkahub.ui.components.ui.UpdateCard
 import androidx.compose.ui.draw.clip
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.context.Navigator
 import com.dokar.sonner.ToastType
 import me.rerere.rikkahub.ui.hooks.EditStateContent
 import me.rerere.rikkahub.ui.hooks.readBooleanPreference
-import me.rerere.rikkahub.ui.hooks.rememberIsPlayStoreVersion
 import me.rerere.rikkahub.ui.hooks.useEditState
 import me.rerere.rikkahub.ui.modifier.onClick
 import me.rerere.rikkahub.utils.navigateToChatPage
@@ -94,6 +86,12 @@ import me.rerere.rikkahub.utils.toDp
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import kotlin.uuid.Uuid
+
+private data class MoveTarget(
+    val assistantId: Uuid,
+    val folderId: Uuid?,
+    val label: String,
+)
 
 @Composable
 fun ChatDrawerContent(
@@ -105,7 +103,6 @@ fun ChatDrawerContent(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val toaster = LocalToaster.current
-    val isPlayStore = rememberIsPlayStoreVersion()
     val repo = koinInject<ConversationRepository>()
 
     val activity = context as ComponentActivity
@@ -114,6 +111,7 @@ fun ChatDrawerContent(
     val conversations = drawerVm.conversations.collectAsLazyPagingItems()
     val folders by drawerVm.folders.collectAsStateWithLifecycle()
     val selectedFolderId by drawerVm.selectedFolderId.collectAsStateWithLifecycle()
+    val allFolders by drawerVm.allFolders.collectAsStateWithLifecycle()
     val conversationListState = rememberLazyListState(
         initialFirstVisibleItemIndex = drawerVm.scrollIndex,
         initialFirstVisibleItemScrollOffset = drawerVm.scrollOffset,
@@ -145,21 +143,19 @@ fun ChatDrawerContent(
         )
     }
 
-    // 移动对话状态
-    var showMoveToAssistantSheet by remember { mutableStateOf(false) }
-    var conversationToMove by remember { mutableStateOf<Conversation?>(null) }
-    val bottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
-
     // 文件夹相关状态
-    var showMoveToFolderSheet by remember { mutableStateOf(false) }
-    var conversationToMoveFolder by remember { mutableStateOf<Conversation?>(null) }
-    val folderSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
     var showCreateFolderDialog by remember { mutableStateOf(false) }
     var folderToRename by remember { mutableStateOf<Folder?>(null) }
     var folderToDelete by remember { mutableStateOf<Folder?>(null) }
+    var conversationToDelete by remember { mutableStateOf<Conversation?>(null) }
+    var conversationsToDelete by remember { mutableStateOf<List<Conversation>>(emptyList()) }
+    var conversationsToMove by remember { mutableStateOf<List<Conversation>>(emptyList()) }
+    var moveCreateFolderAssistant by remember { mutableStateOf<Assistant?>(null) }
+    var pendingMoveTarget by remember { mutableStateOf<MoveTarget?>(null) }
+    var conversationToEditTitle by remember { mutableStateOf<Conversation?>(null) }
+    var editedTitle by remember { mutableStateOf("") }
 
     // Menu popup 状态
-    var showMenuPopup by remember { mutableStateOf(false) }
 
     ModalDrawerSheet(
         modifier = Modifier.width(300.dp)
@@ -168,10 +164,6 @@ fun ChatDrawerContent(
             modifier = Modifier.padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            if (settings.displaySetting.showUpdates && !isPlayStore) {
-                UpdateCard(vm)
-            }
-
             BackupReminderCard(
                 settings = settings,
                 onClick = { navController.navigate(Screen.Backup) },
@@ -256,31 +248,92 @@ fun ChatDrawerContent(
                 onClick = {
                     navigateToChatPage(navController, it.id)
                 },
-                onRegenerateTitle = {
-                    vm.generateTitle(it, true)
+                onEditTitle = {
+                    conversationToEditTitle = it
+                    editedTitle = it.title
                 },
                 onDelete = {
-                    vm.deleteConversation(it)
-                    // Refresh the conversation list to immediately remove the deleted item
-                    // This fixes the issue where deleted conversations sometimes remain visible
-                    // until manually clicked (issue #747)
-                    conversations.refresh()
-                    if (it.id == current.id) {
-                        navigateToChatPage(navController)
-                    }
+                    conversationToDelete = it
                 },
                 onPin = {
                     vm.updatePinnedStatus(it)
                 },
-                onMoveToAssistant = {
-                    conversationToMove = it
-                    showMoveToAssistantSheet = true
-                },
-                onMoveToFolder = {
-                    conversationToMoveFolder = it
-                    showMoveToFolderSheet = true
-                }
+                onMove = { conversationsToMove = it },
+                onDeleteSelected = { conversationsToDelete = it },
             )
+
+            conversationToDelete?.let { conversation ->
+                AlertDialog(
+                    onDismissRequest = { conversationToDelete = null },
+                    title = { Text(stringResource(R.string.chat_page_delete)) },
+                    text = { Text("确定删除聊天“${conversation.title}”吗？") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            vm.deleteConversation(conversation)
+                            conversationToDelete = null
+                            conversations.refresh()
+                            if (conversation.id == current.id) navigateToChatPage(navController)
+                        }) { Text(stringResource(R.string.chat_page_delete)) }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { conversationToDelete = null }) {
+                            Text(stringResource(R.string.cancel))
+                        }
+                    },
+                )
+            }
+
+            if (conversationsToDelete.isNotEmpty()) {
+                AlertDialog(
+                    onDismissRequest = { conversationsToDelete = emptyList() },
+                    title = { Text(stringResource(R.string.chat_page_delete)) },
+                    text = { Text("确定删除选中的 ${conversationsToDelete.size} 个聊天吗？") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            conversationsToDelete.forEach(vm::deleteConversation)
+                            conversationsToDelete = emptyList()
+                            conversations.refresh()
+                        }) { Text(stringResource(R.string.chat_page_delete)) }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { conversationsToDelete = emptyList() }) {
+                            Text(stringResource(R.string.cancel))
+                        }
+                    },
+                )
+            }
+
+            conversationToEditTitle?.let { conversation ->
+                AlertDialog(
+                    onDismissRequest = { conversationToEditTitle = null },
+                    title = { Text("编辑标题") },
+                    text = {
+                        OutlinedTextField(
+                            value = editedTitle,
+                            onValueChange = { editedTitle = it },
+                            singleLine = true,
+                        )
+                    },
+                    confirmButton = {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            TextButton(onClick = { conversationToEditTitle = null }) {
+                                Text(stringResource(R.string.cancel))
+                            }
+                            TextButton(onClick = {
+                                vm.generateTitleCandidate(conversation) { editedTitle = it }
+                            }) { Text("自动生成标题") }
+                            TextButton(onClick = {
+                                vm.updateConversationTitle(conversation, editedTitle)
+                                conversationToEditTitle = null
+                                conversations.refresh()
+                            }) { Text(stringResource(R.string.confirm)) }
+                        }
+                    },
+                )
+            }
 
             // 助手选择器
             AssistantPicker(
@@ -318,54 +371,16 @@ fun ChatDrawerContent(
                     .padding(horizontal = 8.dp)
             ) {
                 DrawerAction(
-                    icon = {
-                        Icon(
-                            imageVector = HugeIcons.LookTop,
-                            contentDescription = stringResource(R.string.assistant_page_title)
-                        )
-                    },
-                    label = {
-                        Text(stringResource(R.string.assistant_page_title))
-                    },
-                    onClick = {
-                        navController.navigate(Screen.Assistant)
-                    },
+                    icon = { Icon(HugeIcons.LanguageCircle, null) },
+                    label = { Text(stringResource(R.string.chat_page_menu_ai_translator)) },
+                    onClick = { navController.navigate(Screen.Translator) },
                 )
 
-                Box {
-                    DrawerAction(
-                        icon = {
-                            Icon(HugeIcons.Sparkles, "Menu")
-                        },
-                        label = {
-                            Text(stringResource(R.string.menu))
-                        },
-                        onClick = {
-                            showMenuPopup = true
-                        },
-                    )
-                    DropdownMenu(
-                        expanded = showMenuPopup,
-                        onDismissRequest = { showMenuPopup = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.chat_page_menu_ai_translator)) },
-                            leadingIcon = { Icon(HugeIcons.LanguageCircle, null) },
-                            onClick = {
-                                showMenuPopup = false
-                                navController.navigate(Screen.Translator)
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.chat_page_menu_image_generation)) },
-                            leadingIcon = { Icon(HugeIcons.Image02, null) },
-                            onClick = {
-                                showMenuPopup = false
-                                navController.navigate(Screen.ImageGen)
-                            }
-                        )
-                    }
-                }
+                DrawerAction(
+                    icon = { Icon(HugeIcons.Image02, null) },
+                    label = { Text(stringResource(R.string.chat_page_menu_image_generation)) },
+                    onClick = { navController.navigate(Screen.ImageGen) },
+                )
 
                 DrawerAction(
                     icon = {
@@ -443,103 +458,6 @@ fun ChatDrawerContent(
                 }
             }
         )
-    }
-
-    // 移动到文件夹 Bottom Sheet
-    if (showMoveToFolderSheet) {
-        val doMove: (Uuid?) -> Unit = { folderId ->
-            conversationToMoveFolder?.let { conversation ->
-                drawerVm.moveConversationToFolder(conversation.id, folderId)
-                scope.launch {
-                    folderSheetState.hide()
-                    showMoveToFolderSheet = false
-                    conversationToMoveFolder = null
-                    conversations.refresh()
-                }
-            }
-        }
-        ModalBottomSheet(
-            onDismissRequest = {
-                showMoveToFolderSheet = false
-                conversationToMoveFolder = null
-            },
-            sheetState = folderSheetState
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 400.dp)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.chat_page_move_to_folder),
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-
-                // 移出文件夹（未归类）
-                Surface(
-                    onClick = { doMove(null) },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    color = if (conversationToMoveFolder?.folderId == null) {
-                        MaterialTheme.colorScheme.surfaceVariant
-                    } else {
-                        MaterialTheme.colorScheme.surface
-                    },
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Icon(HugeIcons.Folder01, null)
-                        Text(
-                            text = stringResource(R.string.chat_page_remove_from_folder),
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                    }
-                }
-
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    items(folders) { folder ->
-                        val isCurrent = folder.id == conversationToMoveFolder?.folderId
-                        Surface(
-                            onClick = { doMove(folder.id) },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = MaterialTheme.shapes.medium,
-                            color = if (isCurrent) {
-                                MaterialTheme.colorScheme.surfaceVariant
-                            } else {
-                                MaterialTheme.colorScheme.surface
-                            },
-                            tonalElevation = if (isCurrent) 2.dp else 0.dp
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Icon(HugeIcons.Folder01, null)
-                                Text(
-                                    text = folder.name,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     // 新建文件夹对话框
@@ -631,50 +549,166 @@ fun ChatDrawerContent(
         )
     }
 
-    // 移动到助手 Bottom Sheet
-    if (showMoveToAssistantSheet) {
-        ModalBottomSheet(
-            onDismissRequest = {
-                showMoveToAssistantSheet = false
-                conversationToMove = null
-            },
-            sheetState = bottomSheetState
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 400.dp)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.chat_page_move_to_assistant),
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
+    val moveTo: (MoveTarget) -> Unit = { target ->
+        conversationsToMove.forEach {
+            if (it.id == current.id) {
+                drawerVm.selectFolderAfterAssistantChange(target.assistantId, target.folderId)
+            }
+            vm.moveConversationToAssistant(it, target.assistantId, target.folderId)
+        }
+        conversationsToMove = emptyList()
+        pendingMoveTarget = null
+        conversations.refresh()
+    }
 
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    items(settings.assistants) { assistant ->
-                        AssistantItem(
-                            assistant = assistant,
-                            isCurrentAssistant = assistant.id == conversationToMove?.assistantId,
-                            onClick = {
-                                conversationToMove?.let { conversation ->
-                                    vm.moveConversationToAssistant(conversation, assistant.id)
-                                    scope.launch {
-                                        bottomSheetState.hide()
-                                        showMoveToAssistantSheet = false
-                                        conversationToMove = null
+    if (conversationsToMove.isNotEmpty() && moveCreateFolderAssistant == null && pendingMoveTarget == null) {
+        AlertDialog(
+            onDismissRequest = { conversationsToMove = emptyList() },
+            title = { Text("移动到...") },
+            text = {
+                LazyColumn(modifier = Modifier.heightIn(max = 480.dp)) {
+                    settings.assistants.forEach { assistant ->
+                        item(key = "assistant_${assistant.id}") {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                UIAvatar(
+                                    name = assistant.name,
+                                    value = assistant.avatar,
+                                    modifier = Modifier.size(40.dp),
+                                )
+                                Text(
+                                    assistant.name.ifBlank { stringResource(R.string.assistant_page_default_assistant) },
+                                    style = MaterialTheme.typography.titleMedium,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                Icon(
+                                    HugeIcons.FolderAdd,
+                                    contentDescription = "新建文件夹",
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .clickable { moveCreateFolderAssistant = assistant }
+                                        .padding(8.dp)
+                                        .size(20.dp),
+                                )
+                            }
+                        }
+                        item(key = "unfiled_${assistant.id}") {
+                            val isCurrentPosition = conversationsToMove.all {
+                                it.assistantId == assistant.id && it.folderId == null
+                            }
+                            Row(
+                                    modifier = Modifier.fillMaxWidth().padding(start = 32.dp)
+                                        .clickable(enabled = !isCurrentPosition) {
+                                            pendingMoveTarget = MoveTarget(assistant.id, null, "${assistant.name} / 未归类")
+                                        }.padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                ) {
+                                    Icon(HugeIcons.Folder01, contentDescription = null)
+                                    Text("未归类", modifier = Modifier.weight(1f))
+                                    if (isCurrentPosition) {
+                                        Text(
+                                            "当前位置",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
+                                        )
                                     }
                                 }
+                        }
+                        items(
+                            items = allFolders[assistant.id].orEmpty(),
+                            key = { "folder_${it.id}" },
+                        ) { folder ->
+                            val isCurrentPosition = conversationsToMove.all {
+                                it.assistantId == assistant.id && it.folderId == folder.id
                             }
-                        )
+                            Row(
+                                    modifier = Modifier.fillMaxWidth().padding(start = 32.dp)
+                                        .clickable(enabled = !isCurrentPosition) {
+                                            pendingMoveTarget = MoveTarget(assistant.id, folder.id, "${assistant.name} / ${folder.name}")
+                                        }.padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                ) {
+                                    Icon(HugeIcons.Folder01, contentDescription = null)
+                                    Text(
+                                        folder.name,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                    if (isCurrentPosition) {
+                                        Text(
+                                            "当前位置",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
+                                        )
+                                    }
+                                }
+                        }
                     }
                 }
-            }
-        }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { conversationsToMove = emptyList() }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
+    }
+
+    pendingMoveTarget?.let { target ->
+        AlertDialog(
+            onDismissRequest = { pendingMoveTarget = null },
+            title = { Text("确认移动") },
+            text = { Text("将所选 ${conversationsToMove.size} 个聊天移动到“${target.label}”吗？") },
+            confirmButton = {
+                TextButton(onClick = { moveTo(target) }) { Text(stringResource(R.string.confirm)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingMoveTarget = null }) { Text(stringResource(R.string.cancel)) }
+            },
+        )
+    }
+
+    moveCreateFolderAssistant?.let { assistant ->
+        var name by remember(assistant.id) { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = { moveCreateFolderAssistant = null },
+            title = { Text("在“${assistant.name}”中新建文件夹") },
+            text = {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = name.isNotBlank(),
+                    onClick = {
+                        scope.launch {
+                            drawerVm.createFolder(assistant.id, name)?.let { folder ->
+                                moveCreateFolderAssistant = null
+                                pendingMoveTarget = MoveTarget(assistant.id, folder.id, "${assistant.name} / ${folder.name}")
+                            }
+                        }
+                    },
+                ) { Text(stringResource(R.string.confirm)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { moveCreateFolderAssistant = null }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
     }
 }
 
@@ -711,35 +745,6 @@ private fun DrawerActions(navController: Navigator) {
             }
         }
 
-        // 历史记录入口
-        Surface(
-            onClick = { navController.navigate(Screen.History) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp),
-            shape = MaterialTheme.shapes.medium,
-            color = MaterialTheme.colorScheme.surfaceContainerLow,
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Icon(
-                    imageVector = HugeIcons.TransactionHistory,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                    tint = MaterialTheme.colorScheme.onSurface,
-                )
-                Text(
-                    text = stringResource(R.string.chat_page_history),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-        }
     }
 }
 
@@ -878,57 +883,6 @@ private fun FolderChip(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-        }
-    }
-}
-
-@Composable
-private fun AssistantItem(
-    assistant: Assistant,
-    isCurrentAssistant: Boolean,
-    onClick: () -> Unit
-) {
-    Surface(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        color = if (isCurrentAssistant) {
-            MaterialTheme.colorScheme.surfaceVariant
-        } else {
-            MaterialTheme.colorScheme.surface
-        },
-        tonalElevation = if (isCurrentAssistant) 2.dp else 0.dp
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            UIAvatar(
-                name = assistant.name,
-                value = assistant.avatar,
-                onUpdate = {},
-                modifier = Modifier.size(40.dp),
-            )
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = assistant.name.ifBlank { stringResource(R.string.assistant_page_default_assistant) },
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                if (isCurrentAssistant) {
-                    Text(
-                        text = stringResource(R.string.assistant_page_current_assistant),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
         }
     }
 }

@@ -220,7 +220,8 @@ val dataSourceModule = module {
             settingsStore = get(),
             json = get(),
             context = get(),
-            httpClient = get()
+            httpClient = get(),
+            database = get(),
         )
     }
 
@@ -244,7 +245,8 @@ val dataSourceModule = module {
             settingsStore = get(),
             json = get(),
             context = get(),
-            httpClient = get()
+            httpClient = get(),
+            database = get(),
         )
     }
 

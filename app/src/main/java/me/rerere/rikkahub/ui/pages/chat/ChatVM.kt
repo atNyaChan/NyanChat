@@ -39,8 +39,6 @@ import me.rerere.rikkahub.service.ChatError
 import me.rerere.rikkahub.service.ChatService
 import me.rerere.rikkahub.ui.hooks.writeStringPreference
 import me.rerere.rikkahub.ui.hooks.ChatInputState
-import me.rerere.rikkahub.utils.UiState
-import me.rerere.rikkahub.utils.UpdateChecker
 import java.util.Locale
 import kotlin.uuid.Uuid
 
@@ -52,7 +50,6 @@ class ChatVM(
     private val settingsStore: SettingsStore,
     private val conversationRepo: ConversationRepository,
     private val chatService: ChatService,
-    val updateChecker: UpdateChecker,
     private val filesManager: FilesManager,
     private val favoriteRepository: FavoriteRepository,
 ) : ViewModel() {
@@ -161,10 +158,6 @@ class ChatVM(
         }
     }
 
-    // Update checker
-    val updateState =
-        updateChecker.checkUpdate().stateIn(viewModelScope, SharingStarted.Eagerly, UiState.Loading)
-
     /**
      * 处理消息发送
      *
@@ -262,19 +255,30 @@ class ChatVM(
         }
     }
 
+    fun updateConversationTitle(conversation: Conversation, title: String) {
+        viewModelScope.launch {
+            val full = conversationRepo.getConversationById(conversation.id) ?: return@launch
+            conversationRepo.updateConversation(full.copy(title = title))
+        }
+    }
+
     fun updatePinnedStatus(conversation: Conversation) {
         viewModelScope.launch {
             conversationRepo.togglePinStatus(conversation.id)
         }
     }
 
-    fun moveConversationToAssistant(conversation: Conversation, targetAssistantId: Uuid) {
+    fun moveConversationToAssistant(
+        conversation: Conversation,
+        targetAssistantId: Uuid,
+        targetFolderId: Uuid? = null,
+    ) {
         viewModelScope.launch {
             val conversationFull = conversationRepo.getConversationById(conversation.id) ?: return@launch
             // 文件夹是助手内分组，切换助手后原文件夹在新助手下不可见，需清空归属避免会话丢失
             val updatedConversation = conversationFull.copy(
                 assistantId = targetAssistantId,
-                folderId = null,
+                folderId = targetFolderId,
             )
             if (conversation.id == _conversationId) {
                 chatService.saveConversation(_conversationId, updatedConversation)
@@ -293,6 +297,13 @@ class ChatVM(
         viewModelScope.launch {
             val conversationFull = conversationRepo.getConversationById(conversation.id) ?: return@launch
             chatService.generateTitle(_conversationId, conversationFull, force)
+        }
+    }
+
+    fun generateTitleCandidate(conversation: Conversation, onResult: (String) -> Unit) {
+        viewModelScope.launch {
+            val full = conversationRepo.getConversationById(conversation.id) ?: return@launch
+            chatService.generateTitleCandidate(full)?.let(onResult)
         }
     }
 

@@ -11,12 +11,14 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import me.rerere.rikkahub.data.db.fts.MessageSearchResult
+import me.rerere.rikkahub.data.db.fts.MessageSearchMode
 import me.rerere.rikkahub.data.db.fts.MessageSearchSort
 import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.rikkahub.ui.hooks.readStringPreference
 import me.rerere.rikkahub.ui.hooks.writeStringPreference
 
 private const val SORT_ORDER_PREF_KEY = "search_page_sort_order"
+private const val SEARCH_MODE_PREF_KEY = "search_page_search_mode"
 
 class SearchVM(
     private val context: Application,
@@ -35,6 +37,14 @@ class SearchVM(
     )
         private set
     var results by mutableStateOf<List<MessageSearchResult>>(emptyList())
+        private set
+    var searchMode by mutableStateOf(
+        runCatching {
+            MessageSearchMode.valueOf(
+                context.readStringPreference(SEARCH_MODE_PREF_KEY, MessageSearchMode.FUZZY.name)!!
+            )
+        }.getOrDefault(MessageSearchMode.FUZZY)
+    )
         private set
     var isLoading by mutableStateOf(false)
         private set
@@ -60,6 +70,15 @@ class SearchVM(
         if (sortOrder == sort) return
         sortOrder = sort
         context.writeStringPreference(SORT_ORDER_PREF_KEY, sort.name)
+        viewModelScope.launch {
+            performSearch(searchQuery)
+        }
+    }
+
+    fun onSearchModeChange(mode: MessageSearchMode) {
+        if (searchMode == mode) return
+        searchMode = mode
+        context.writeStringPreference(SEARCH_MODE_PREF_KEY, mode.name)
         viewModelScope.launch {
             performSearch(searchQuery)
         }
@@ -92,7 +111,7 @@ class SearchVM(
         }
         isLoading = true
         try {
-            results = conversationRepo.searchMessages(query, sortOrder)
+            results = conversationRepo.searchMessages(query, sortOrder, searchMode)
         } finally {
             isLoading = false
         }

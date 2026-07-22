@@ -19,6 +19,8 @@ import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.datastore.WebDavConfig
 import me.rerere.rikkahub.data.datastore.migration.SettingsJsonMigrator
+import me.rerere.rikkahub.data.db.AppDatabase
+import me.rerere.rikkahub.data.sync.BackupArchive
 import me.rerere.rikkahub.utils.fileSizeToString
 import java.io.File
 import java.io.FileInputStream
@@ -37,6 +39,7 @@ class WebDavSync(
     private val json: Json,
     private val context: Context,
     private val httpClient: HttpClient,
+    private val database: AppDatabase,
 ) {
     private fun getClient(config: WebDavConfig): WebDavClient {
         return WebDavClient(config, httpClient)
@@ -60,7 +63,7 @@ class WebDavSync(
         client.put(
             path = file.name,
             file = file,
-            contentType = "application/zip"
+            contentType = "application/x-tar"
         ).getOrThrow()
 
         Log.i(TAG, "backup: Uploaded ${file.name} (${file.length().fileSizeToString()})")
@@ -78,7 +81,10 @@ class WebDavSync(
         val resources = client.list().getOrThrow()
 
         resources
-            .filter { !it.isCollection && it.displayName.startsWith("backup_") && it.displayName.endsWith(".zip") }
+            .filter {
+                !it.isCollection && it.displayName.startsWith("backup_") &&
+                    (it.displayName.endsWith(BackupArchive.EXTENSION) || it.displayName.endsWith(".zip"))
+            }
             .map { resource ->
                 WebDavBackupItem(
                     href = resource.href,
@@ -140,6 +146,19 @@ class WebDavSync(
 
     suspend fun prepareBackupFile(config: WebDavConfig): File = withContext(Dispatchers.IO) {
         val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
+        val backupFile = File(context.cacheDir, "backup_$timestamp${BackupArchive.EXTENSION}")
+        BackupArchive.create(
+            context = context,
+            output = backupFile,
+            settingsJson = json.encodeToString(settingsStore.settingsFlow.value),
+            includeDatabase = config.items.contains(WebDavConfig.BackupItem.DATABASE),
+            includeFiles = config.items.contains(WebDavConfig.BackupItem.FILES),
+        )
+        backupFile
+    }
+
+    suspend fun prepareLegacyBackupFile(config: WebDavConfig): File = withContext(Dispatchers.IO) {
+        val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
         val backupFile = File(context.cacheDir, "backup_$timestamp.zip")
 
         if (backupFile.exists()) {
@@ -151,7 +170,7 @@ class WebDavSync(
             addVirtualFileToZip(
                 zipOut = zipOut,
                 name = "settings.json",
-                content = json.encodeToString(settingsStore.settingsFlow.value)
+                content = legacyCompatibleSettingsJson()
             )
 
             // Backup database files
@@ -220,8 +239,33 @@ class WebDavSync(
         backupFile
     }
 
-    private suspend fun restoreFromBackupFile(backupFile: File, config: WebDavConfig) = withContext(Dispatchers.IO) {
+    private fun legacyCompatibleSettingsJson(): String {
+        fun strip(element: JsonElement): JsonElement = when (element) {
+            is JsonObject -> JsonObject(
+                element.filterKeys { it != "price" }.mapValues { (_, value) -> strip(value) }
+            )
+            is JsonArray -> JsonArray(element.map(::strip))
+            else -> element
+        }
+        return strip(
+            json.encodeToJsonElement(Settings.serializer(), settingsStore.settingsFlow.value)
+        ).toString()
+    }
+
+    private suspend fun restoreFromBackupFile(backupFile: File, config: WebDavConfig): Unit =
+        withContext(Dispatchers.IO) {
         Log.i(TAG, "restoreFromBackupFile: Starting restore from ${backupFile.absolutePath}")
+
+        if (backupFile.extension.equals("tar", ignoreCase = true)) {
+            val legacyZip = File(context.cacheDir, "restore_${System.currentTimeMillis()}.zip")
+            try {
+                BackupArchive.toLegacyZip(backupFile, legacyZip)
+                restoreFromBackupFile(legacyZip, config)
+            } finally {
+                legacyZip.delete()
+            }
+            return@withContext
+        }
 
         ZipInputStream(FileInputStream(backupFile)).use { zipIn ->
             var entry: ZipEntry?
@@ -267,6 +311,11 @@ class WebDavSync(
                                         "restoreFromBackupFile: Restoring ${zipEntry.name} to ${targetFile.absolutePath}"
                                     )
                                     targetFile.parentFile?.mkdirs()
+                                    if (zipEntry.name == "rikka_hub.db") {
+                                        database.close()
+                                        File(targetFile.parentFile, "rikka_hub-wal").delete()
+                                        File(targetFile.parentFile, "rikka_hub-shm").delete()
+                                    }
                                     FileOutputStream(targetFile).use { outputStream ->
                                         zipIn.copyTo(outputStream)
                                     }

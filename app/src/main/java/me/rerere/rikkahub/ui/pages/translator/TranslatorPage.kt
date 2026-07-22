@@ -19,6 +19,7 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -30,12 +31,12 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.res.stringResource
@@ -58,12 +60,14 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.ai.ModelSelector
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.context.LocalToaster
+import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.getText
 import org.koin.androidx.compose.koinViewModel
 import java.util.Locale
 
 @Composable
 fun TranslatorPage(vm: TranslatorVM = koinViewModel()) {
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val settings by vm.settings.collectAsStateWithLifecycle()
     val inputText by vm.inputText.collectAsStateWithLifecycle()
     val translatedText by vm.translatedText.collectAsStateWithLifecycle()
@@ -81,8 +85,9 @@ fun TranslatorPage(vm: TranslatorVM = koinViewModel()) {
     }
 
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(
+            LargeFlexibleTopAppBar(
                 title = {
                     Text(stringResource(R.string.translator_page_title))
                 },
@@ -99,7 +104,9 @@ fun TranslatorPage(vm: TranslatorVM = koinViewModel()) {
                         type = ModelType.CHAT,
                         onlyIcon = true,
                     )
-                }
+                },
+                scrollBehavior = scrollBehavior,
+                colors = CustomColors.topBarColors,
             )
         },
         bottomBar = {
@@ -116,7 +123,8 @@ fun TranslatorPage(vm: TranslatorVM = koinViewModel()) {
                 },
                 targetLanguage = targetLanguage
             )
-        }
+        },
+        containerColor = CustomColors.topBarColors.containerColor,
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -126,8 +134,11 @@ fun TranslatorPage(vm: TranslatorVM = koinViewModel()) {
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 输入区域
-            Column {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CustomColors.cardColorsOnSurfaceContainer,
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
                 OutlinedTextField(
                     value = inputText,
                     onValueChange = { vm.updateInputText(it) },
@@ -154,6 +165,7 @@ fun TranslatorPage(vm: TranslatorVM = koinViewModel()) {
                     Icon(HugeIcons.Clipboard, null)
                     Text("粘贴文本", modifier = Modifier.padding(start = 4.dp))
                 }
+                }
             }
 
             // 翻译进度条
@@ -169,35 +181,45 @@ fun TranslatorPage(vm: TranslatorVM = koinViewModel()) {
                 }
             }
 
-            // 翻译结果
-            SelectionContainer {
-                Text(
-                    text = translatedText.ifEmpty {
-                        stringResource(R.string.translator_page_result_placeholder)
-                    },
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                )
-            }
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CustomColors.cardColorsOnSurfaceContainer,
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    SelectionContainer {
+                        Text(
+                            text = translatedText.ifEmpty {
+                                stringResource(R.string.translator_page_result_placeholder)
+                            },
+                            style = MaterialTheme.typography.headlineSmall,
+                            modifier = Modifier.fillMaxWidth(),
+                            color = if (translatedText.isBlank()) {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
+                        )
+                    }
 
-            AnimatedVisibility(translatedText.isNotBlank()) {
-                FilledTonalButton(
-                    onClick = {
-                        scope.launch {
-                            clipboard.setClipEntry(
-                                ClipEntry(
-                                    ClipData.newPlainText(
-                                        null, translatedText
+                    AnimatedVisibility(translatedText.isNotBlank()) {
+                        FilledTonalButton(
+                            onClick = {
+                                scope.launch {
+                                    clipboard.setClipEntry(
+                                        ClipEntry(
+                                            ClipData.newPlainText(null, translatedText)
+                                        )
                                     )
-                                )
-                            )
+                                }
+                            }
+                        ) {
+                            Icon(HugeIcons.Clipboard, null)
+                            Text("复制翻译结果", modifier = Modifier.padding(start = 4.dp))
                         }
                     }
-                ) {
-                    Icon(HugeIcons.Clipboard, null)
-                    Text("复制翻译结果", modifier = Modifier.padding(start = 4.dp))
                 }
             }
         }
@@ -214,7 +236,7 @@ private val Locales by lazy {
         Locale.FRENCH,
         Locale.GERMAN,
         Locale.ITALIAN,
-        Locale("es", "ES")
+        Locale.Builder().setLanguage("es").setRegion("ES").build()
     )
 }
 
@@ -236,7 +258,7 @@ private fun LanguageSelector(
             Locale.FRENCH -> stringResource(R.string.language_french)
             Locale.GERMAN -> stringResource(R.string.language_german)
             Locale.ITALIAN -> stringResource(R.string.language_italian)
-            Locale("es", "ES") -> stringResource(R.string.language_spanish)
+            Locale.Builder().setLanguage("es").setRegion("ES").build() -> stringResource(R.string.language_spanish)
             else -> locale.getDisplayLanguage(Locale.getDefault())
         }
     }

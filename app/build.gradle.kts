@@ -75,15 +75,15 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     buildFeatures {
         compose = true
         buildConfig = true
     }
     sourceSets {
-        getByName("androidTest").assets.srcDirs("$projectDir/schemas")
+        getByName("androidTest").assets.directories.add("$projectDir/schemas")
     }
     androidResources {
         generateLocaleConfig = true
@@ -105,7 +105,8 @@ android {
         compilerOptions.optIn.add("kotlin.uuid.ExperimentalUuidApi")
         compilerOptions.optIn.add("kotlin.time.ExperimentalTime")
         compilerOptions.optIn.add("kotlinx.coroutines.ExperimentalCoroutinesApi")
-        compilerOptions.optIn.add("androidx.navigation3.runtime.ExperimentalNavigation3Api")
+        compilerOptions.optIn.add("kotlinx.coroutines.FlowPreview")
+        compilerOptions.optIn.add("coil3.annotation.ExperimentalCoilApi")
     }
 }
 
@@ -126,7 +127,7 @@ ksp {
 
 kotlin {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
+        jvmTarget.set(JvmTarget.JVM_21)
     }
 }
 
@@ -197,6 +198,9 @@ dependencies {
 
     // java-diff-utils (unified diff)
     implementation(libs.diffutils)
+    implementation(libs.commons.compress)
+    implementation("com.github.luben:zstd-jni:1.5.7-4@aar")
+    implementation("org.brotli:dec:0.1.2")
 
     // coil
     implementation(libs.coil.compose)

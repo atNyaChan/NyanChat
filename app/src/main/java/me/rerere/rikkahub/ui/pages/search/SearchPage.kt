@@ -2,6 +2,7 @@ package me.rerere.rikkahub.ui.pages.search
 
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Refresh01
+import me.rerere.hugeicons.stroke.Search01
 import me.rerere.hugeicons.stroke.Sorting01
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -50,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.db.fts.MessageSearchResult
+import me.rerere.rikkahub.data.db.fts.MessageSearchMode
 import me.rerere.rikkahub.data.db.fts.MessageSearchSort
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.context.LocalNavController
@@ -102,6 +104,10 @@ fun SearchPage(vm: SearchVM = koinViewModel()) {
                 navigationIcon = { BackButton() },
                 title = { Text(stringResource(R.string.search_page_title)) },
                 actions = {
+                    SearchModeMenuButton(
+                        current = vm.searchMode,
+                        onModeChange = vm::onSearchModeChange,
+                    )
                     SortMenuButton(
                         current = vm.sortOrder,
                         onSortChange = { vm.onSortChange(it) },
@@ -220,6 +226,49 @@ fun SearchPage(vm: SearchVM = koinViewModel()) {
 }
 
 @Composable
+private fun SearchModeMenuButton(
+    current: MessageSearchMode,
+    onModeChange: (MessageSearchMode) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { expanded = true }) {
+            Icon(
+                HugeIcons.Search01,
+                contentDescription = stringResource(R.string.search_page_mode),
+            )
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            MessageSearchMode.entries.forEach { mode ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            stringResource(
+                                when (mode) {
+                                    MessageSearchMode.TITLE_ONLY -> R.string.search_page_mode_title
+                                    MessageSearchMode.EXACT -> R.string.search_page_mode_exact
+                                    MessageSearchMode.FUZZY -> R.string.search_page_mode_fuzzy
+                                }
+                            )
+                        )
+                    },
+                    leadingIcon = {
+                        RadioButton(selected = mode == current, onClick = null)
+                    },
+                    onClick = {
+                        expanded = false
+                        onModeChange(mode)
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun SortMenuButton(
     current: MessageSearchSort,
     onSortChange: (MessageSearchSort) -> Unit,
@@ -316,11 +365,13 @@ private fun SearchResultItem(
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurface,
             )
-            Text(
-                text = snippetText,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
+            if (result.snippet.isNotEmpty()) {
+                Text(
+                    text = snippetText,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
             Text(
                 text = formattedTime,
                 style = MaterialTheme.typography.labelSmall,

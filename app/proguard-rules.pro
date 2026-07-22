@@ -45,3 +45,6 @@
 -keepattributes Signature, InnerClasses, EnclosingMethod
 -keep class com.fasterxml.jackson.** { *; }
 -keep class com.auth0.jwt.** { *; }
+
+# zstd-jni accesses these fields and methods by their original JNI names.
+-keep class com.github.luben.zstd.** { *; }

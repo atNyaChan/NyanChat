@@ -41,6 +41,7 @@ import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.NavigationBar
@@ -51,7 +52,6 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.SheetValue
@@ -67,10 +67,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -78,6 +76,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import me.rerere.rikkahub.utils.writeClipboardText
 import coil3.compose.AsyncImage
 import com.dokar.sonner.ToastType
 import kotlinx.coroutines.CoroutineScope
@@ -107,6 +106,7 @@ import me.rerere.rikkahub.ui.components.ui.FormItem
 import me.rerere.rikkahub.ui.components.ui.ImagePreviewDialog
 import me.rerere.rikkahub.ui.components.ui.OutlinedNumberInput
 import me.rerere.rikkahub.ui.context.LocalToaster
+import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.ImageUtils
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
@@ -138,7 +138,7 @@ fun ImageGenPage(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            LargeFlexibleTopAppBar(
                 title = {
                     Text(stringResource(R.string.imggen_page_title))
                 },
@@ -152,12 +152,14 @@ fun ImageGenPage(
                             contentDescription = "New session"
                         )
                     }
-                }
+                },
+                colors = CustomColors.topBarColors,
             )
         },
         bottomBar = {
             BottomBar(pagerState, scope)
         },
+        containerColor = CustomColors.topBarColors.containerColor,
     ) { innerPadding ->
         HorizontalPager(
             state = pagerState,
@@ -267,52 +269,79 @@ private fun ImageGenScreen(
             .padding(16.dp)
             .imePadding()
     ) {
-        Box(
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
-                .verticalScroll(rememberScrollState()),
+                .weight(1f),
+            colors = CustomColors.cardColorsOnSurfaceContainer,
         ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(12.dp)
+                    .verticalScroll(rememberScrollState()),
             ) {
-                (0 until minOf(2, currentGeneratedImages.size)).forEach { index ->
-                    val image = currentGeneratedImages[index]
-                    var showPreview by remember { mutableStateOf(false) }
-                    AsyncImage(
-                        model = File(image.filePath),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .weight(1f)
-                            .aspectRatio(1f)
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable { showPreview = true },
-                        contentScale = ContentScale.Crop
-                    )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    (0 until minOf(2, currentGeneratedImages.size)).forEach { index ->
+                        val image = currentGeneratedImages[index]
+                        var showPreview by remember { mutableStateOf(false) }
+                        AsyncImage(
+                            model = File(image.filePath),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .weight(1f)
+                                .aspectRatio(1f)
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { showPreview = true },
+                            contentScale = ContentScale.Crop
+                        )
 
-                    if (showPreview) {
-                        ImagePreviewDialog(
-                            images = listOf(image.filePath),
-                            onDismissRequest = { showPreview = false },
+                        if (showPreview) {
+                            ImagePreviewDialog(
+                                images = listOf(image.filePath),
+                                onDismissRequest = { showPreview = false },
+                            )
+                        }
+                    }
+                }
+                if (currentGeneratedImages.isEmpty() && !isGenerating) {
+                    Column(
+                        modifier = Modifier.align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Icon(
+                            imageVector = HugeIcons.Image03,
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            text = stringResource(R.string.imggen_page_prompt_placeholder),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
                         )
                     }
                 }
-            }
-            if (isGenerating) {
-                ContainedLoadingIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
+                if (isGenerating) {
+                    ContainedLoadingIndicator(modifier = Modifier.align(Alignment.Center))
+                }
             }
         }
-        InputBar(
-            prompt = prompt,
-            vm = vm,
-            isGenerating = isGenerating,
-            referenceImages = referenceImages,
-            settings = settings,
-            onShowSettings = { showSettingsSheet = true },
-            modifier = Modifier
-        )
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CustomColors.cardColorsOnSurfaceContainer,
+        ) {
+            InputBar(
+                prompt = prompt,
+                vm = vm,
+                isGenerating = isGenerating,
+                referenceImages = referenceImages,
+                settings = settings,
+                onShowSettings = { showSettingsSheet = true },
+                modifier = Modifier.padding(12.dp),
+            )
+        }
     }
 
     if (showSettingsSheet) {
@@ -520,7 +549,6 @@ private fun ImageGalleryScreen(
     val generatedImages = vm.generatedImages.collectAsLazyPagingItems()
     val context = LocalContext.current
     val filesManager: FilesManager = koinInject()
-    val clipboardManager = LocalClipboardManager.current
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
     val pullToRefreshState = rememberPullToRefreshState()
@@ -571,7 +599,8 @@ private fun ImageGalleryScreen(
                         var showPreview by remember { mutableStateOf(false) }
 
                         Card(
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CustomColors.cardColorsOnSurfaceContainer,
                         ) {
                             Column {
                                 AsyncImage(
@@ -607,7 +636,7 @@ private fun ImageGalleryScreen(
                                     Row {
                                         IconButton(
                                             onClick = {
-                                                clipboardManager.setText(AnnotatedString(it.prompt))
+                                                context.writeClipboardText(it.prompt)
                                                 toaster.show(
                                                     message = "Prompt copied to clipboard",
                                                     type = ToastType.Success

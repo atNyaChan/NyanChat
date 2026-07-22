@@ -2,6 +2,9 @@ package me.rerere.rikkahub.ui.pages.backup.components
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.ui.Modifier
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -10,18 +13,28 @@ import me.rerere.rikkahub.R
 import kotlin.system.exitProcess
 
 @Composable
-fun BackupDialog() {
+fun BackupDialog(importing: Boolean = false) {
     AlertDialog(
         onDismissRequest = {},
-        title = { Text(stringResource(R.string.backup_page_restart_app)) },
-        text = { Text(stringResource(R.string.backup_page_restart_desc)) },
+        title = {
+            Text(if (importing) "正在导入" else stringResource(R.string.backup_page_restore_success))
+        },
+        text = {
+            if (importing) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            } else {
+                Text(stringResource(R.string.backup_page_restart_desc))
+            }
+        },
         confirmButton = {
-            Button(
-                onClick = {
-                    exitProcess(0)
+            if (!importing) {
+                Button(
+                    onClick = {
+                        exitProcess(0)
+                    }
+                ) {
+                    Text(stringResource(R.string.backup_page_restart_app))
                 }
-            ) {
-                Text(stringResource(R.string.backup_page_restart_app))
             }
         },
     )

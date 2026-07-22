@@ -367,14 +367,11 @@ private fun StatCard(
 }
 
 private fun formatCount(count: Long): String = when {
-    count >= 1_000_000 -> "%.1fM".format(count / 1_000_000.0)
-    count >= 1_000 -> "%.1fK".format(count / 1_000.0)
+    count > 10_000 -> "%.1fK".format(count / 1_000.0)
     else -> count.toString()
 }
 
 private fun formatTokens(count: Long): String = when {
-    count >= 1_000_000_000 -> "%.2fB".format(count / 1_000_000_000.0)
-    count >= 1_000_000 -> "%.2fM".format(count / 1_000_000.0)
-    count >= 1_000 -> "%.1fK".format(count / 1_000.0)
+    count > 10_000 -> "%.1fK".format(count / 1_000.0)
     else -> count.toString()
 }

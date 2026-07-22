@@ -66,8 +66,8 @@ fun Int.formatNumber(): String {
     val sign = if (this < 0) "-" else ""
 
     return when {
-        absValue < 1000 -> this.toString()
-        absValue < 1000000 -> {
+        absValue <= 10000 -> this.toString()
+        else -> {
             val value = absValue / 1000.0
             if (value == value.toInt().toDouble()) {
                 "$sign${value.toInt()}K"
@@ -75,25 +75,22 @@ fun Int.formatNumber(): String {
                 "$sign${value.toFixed(1)}K"
             }
         }
-
-        absValue < 1000000000 -> {
-            val value = absValue / 1000000.0
-            if (value == value.toInt().toDouble()) {
-                "$sign${value.toInt()}M"
-            } else {
-                "$sign${value.toFixed(1)}M"
-            }
-        }
-
-        else -> {
-            val value = absValue / 1000000000.0
-            if (value == value.toInt().toDouble()) {
-                "$sign${value.toInt()}B"
-            } else {
-                "$sign${value.toFixed(1)}B"
-            }
-        }
     }
+}
+
+/** ASCII English letters form one word when adjacent; every other code point counts as one word. */
+fun String.wordCount(): Int {
+    var count = 0
+    var previousWasEnglishLetter = false
+    var index = 0
+    while (index < length) {
+        val codePoint = codePointAt(index)
+        val isEnglishLetter = codePoint in 'A'.code..'Z'.code || codePoint in 'a'.code..'z'.code
+        if (!isEnglishLetter || !previousWasEnglishLetter) count++
+        previousWasEnglishLetter = isEnglishLetter
+        index += Character.charCount(codePoint)
+    }
+    return count
 }
 
 fun Float.toFixed(digits: Int = 0) = "%.${digits}f".format(this)

@@ -13,6 +13,7 @@ import me.rerere.hugeicons.stroke.Image02
 import me.rerere.hugeicons.stroke.Search01
 import me.rerere.hugeicons.stroke.Wrench01
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedCard
@@ -123,6 +125,10 @@ fun ChatExportSheet(
     val density = LocalDensity.current
     val settings = LocalSettings.current
     var imageExportOptions by remember { mutableStateOf(ImageExportOptions()) }
+    var markdownIncludeReasoning by remember { mutableStateOf(true) }
+    var exportFormat by remember { mutableStateOf(ChatExportFormat.Markdown) }
+    val markdownSuccessMessage = stringResource(R.string.chat_page_export_success, "Markdown")
+    val imageSuccessMessage = stringResource(R.string.chat_page_export_success, "Image")
 
     if (visible) {
         ModalBottomSheet(
@@ -138,112 +144,111 @@ fun ChatExportSheet(
             ) {
                 Text(text = stringResource(id = R.string.chat_page_export_format))
 
-                val markdownSuccessMessage =
-                    stringResource(id = R.string.chat_page_export_success, "Markdown")
-                OutlinedCard(
-                    onClick = {
-                        exportToMarkdown(context, conversation, selectedMessages)
-                        toaster.show(
-                            markdownSuccessMessage,
-                            type = ToastType.Success
-                        )
-                        onDismissRequest()
-                    },
-                    modifier = Modifier.fillMaxWidth()
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    ListItem(
-                        headlineContent = {
-                            Text(stringResource(id = R.string.chat_page_export_markdown))
-                        },
-                        supportingContent = {
-                            Text(stringResource(id = R.string.chat_page_export_markdown_desc))
-                        },
-                        leadingContent = {
-                            Icon(HugeIcons.File02, contentDescription = null)
-                        }
-                    )
+                    OutlinedCard(
+                        onClick = { exportFormat = ChatExportFormat.Markdown },
+                        modifier = Modifier.weight(1f),
+                        colors = CardDefaults.outlinedCardColors(
+                            containerColor = if (exportFormat == ChatExportFormat.Markdown) {
+                                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.35f)
+                            } else MaterialTheme.colorScheme.surface
+                        ),
+                        border = BorderStroke(
+                            if (exportFormat == ChatExportFormat.Markdown) 2.dp else 1.dp,
+                            if (exportFormat == ChatExportFormat.Markdown) {
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.65f)
+                            } else MaterialTheme.colorScheme.outlineVariant,
+                        ),
+                    ) {
+                        ListItem(
+                            leadingContent = { Icon(HugeIcons.File02, contentDescription = null) },
+                            colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+                        ) { Text(stringResource(R.string.chat_page_export_markdown)) }
+                    }
+                    OutlinedCard(
+                        onClick = { exportFormat = ChatExportFormat.Image },
+                        modifier = Modifier.weight(1f),
+                        colors = CardDefaults.outlinedCardColors(
+                            containerColor = if (exportFormat == ChatExportFormat.Image) {
+                                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.35f)
+                            } else MaterialTheme.colorScheme.surface
+                        ),
+                        border = BorderStroke(
+                            if (exportFormat == ChatExportFormat.Image) 2.dp else 1.dp,
+                            if (exportFormat == ChatExportFormat.Image) {
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.65f)
+                            } else MaterialTheme.colorScheme.outlineVariant,
+                        ),
+                    ) {
+                        ListItem(
+                            leadingContent = { Icon(HugeIcons.Image02, contentDescription = null) },
+                            colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+                        ) { Text(stringResource(R.string.chat_page_export_image)) }
+                    }
                 }
 
-                val imageSuccessMessage =
-                    stringResource(id = R.string.chat_page_export_success, "Image")
-                OutlinedCard(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column {
-                        ListItem(
-                            headlineContent = {
-                                Text(stringResource(id = R.string.chat_page_export_image))
-                            },
-                            supportingContent = {
-                                Text(stringResource(id = R.string.chat_page_export_image_desc))
-                            },
-                            leadingContent = {
-                                Icon(HugeIcons.Image02, contentDescription = null)
-                            }
+                ListItem(
+                    trailingContent = {
+                        Switch(
+                            checked = markdownIncludeReasoning,
+                            onCheckedChange = { markdownIncludeReasoning = it },
                         )
+                    },
+                ) { Text(stringResource(R.string.chat_page_export_image_expand_reasoning)) }
 
-                        HorizontalDivider()
-
-                        ListItem(
-                            headlineContent = { Text(stringResource(R.string.chat_page_export_image_expand_reasoning)) },
-                            trailingContent = {
-                                Switch(
-                                    checked = imageExportOptions.expandReasoning,
-                                    onCheckedChange = {
-                                        imageExportOptions = imageExportOptions.copy(expandReasoning = it)
-                                    }
+                Button(
+                    onClick = {
+                        when (exportFormat) {
+                            ChatExportFormat.Markdown -> {
+                                exportToMarkdown(context, conversation, selectedMessages, markdownIncludeReasoning)
+                                toaster.show(
+                                    markdownSuccessMessage,
+                                    type = ToastType.Success,
                                 )
+                                onDismissRequest()
                             }
-                        )
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            Button(
-                                onClick = {
-                                    scope.launch {
-                                        runCatching {
-                                            exportToImage(
-                                                context = context,
-                                                scope = scope,
-                                                density = density,
-                                                conversation = conversation,
-                                                messages = selectedMessages,
-                                                settings = settings,
-                                                options = imageExportOptions
-                                            )
-                                        }.onFailure {
-                                            it.printStackTrace()
-                                            toaster.show(
-                                                message = "Failed to export image: ${it.message}",
-                                                type = ToastType.Error
-                                            )
-                                        }
-                                    }
+                            ChatExportFormat.Image -> scope.launch {
+                                runCatching {
+                                    exportToImage(
+                                        context = context,
+                                        scope = scope,
+                                        density = density,
+                                        conversation = conversation,
+                                        messages = selectedMessages,
+                                        settings = settings,
+                                        options = imageExportOptions.copy(expandReasoning = markdownIncludeReasoning),
+                                    )
+                                }.onSuccess {
                                     toaster.show(
                                         imageSuccessMessage,
-                                        type = ToastType.Success
+                                        type = ToastType.Success,
                                     )
                                     onDismissRequest()
+                                }.onFailure {
+                                    toaster.show("Failed to export image: ${it.message}", type = ToastType.Error)
                                 }
-                            ) {
-                                Text(stringResource(R.string.mermaid_export))
                             }
                         }
-                    }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.mermaid_export))
                 }
             }
         }
     }
 }
 
+private enum class ChatExportFormat { Markdown, Image }
+
 private fun exportToMarkdown(
     context: Context,
     conversation: Conversation,
-    messages: List<UIMessage>
+    messages: List<UIMessage>,
+    includeReasoning: Boolean,
 ) {
     val filename = "chat-export-${LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"))}.md"
 
@@ -267,14 +272,12 @@ private fun exportToMarkdown(
                     }
 
                     is UIMessagePart.Reasoning -> {
-                        part.reasoning.lines()
-                            .filter { it.isNotBlank() }
-                            .map { "> $it" }
-                            .forEach {
-                                append(it)
-                            }
-                        appendLine()
-                        appendLine()
+                        if (includeReasoning) {
+                            part.reasoning.lines()
+                                .filter { it.isNotBlank() }
+                                .forEach { appendLine("> $it") }
+                            appendLine()
+                        }
                     }
 
                     is UIMessagePart.Tool -> {
@@ -309,12 +312,11 @@ private fun exportToMarkdown(
                                     }
 
                                     is UIMessagePart.Reasoning -> {
-                                        outputPart.reasoning.lines()
-                                            .filter { it.isNotBlank() }
-                                            .forEach {
-                                                append("> $it")
-                                                appendLine()
-                                            }
+                                        if (includeReasoning) {
+                                            outputPart.reasoning.lines()
+                                                .filter { it.isNotBlank() }
+                                                .forEach { appendLine("> $it") }
+                                        }
                                     }
 
                                     is UIMessagePart.Image -> {

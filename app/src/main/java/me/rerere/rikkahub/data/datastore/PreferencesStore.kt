@@ -190,7 +190,7 @@ class SettingsStore(
                 } ?: emptyList(),
                 providers = JsonInstant.decodeFromString(preferences[PROVIDERS] ?: "[]"),
                 assistants = JsonInstant.decodeFromString(preferences[ASSISTANTS] ?: "[]"),
-                dynamicColor = preferences[DYNAMIC_COLOR] != false,
+                dynamicColor = preferences[DYNAMIC_COLOR] == true,
                 themeId = preferences[THEME_ID] ?: PresetThemes[0].id,
                 customThemes = preferences[CUSTOM_THEMES]?.let {
                     JsonInstant.decodeFromString(it)
@@ -390,9 +390,7 @@ class SettingsStore(
             preferences[WEBDAV_CONFIG] = JsonInstant.encodeToString(settings.webDavConfig)
             preferences[S3_CONFIG] = JsonInstant.encodeToString(settings.s3Config)
             preferences[TTS_PROVIDERS] = JsonInstant.encodeToString(settings.ttsProviders)
-            settings.selectedTTSProviderId?.let {
-                preferences[SELECTED_TTS_PROVIDER] = it.toString()
-            } ?: preferences.remove(SELECTED_TTS_PROVIDER)
+            preferences[SELECTED_TTS_PROVIDER] = settings.selectedTTSProviderId.toString()
             preferences[ASR_PROVIDERS] = JsonInstant.encodeToString(settings.asrProviders)
             settings.selectedASRProviderId?.let {
                 preferences[SELECTED_ASR_PROVIDER] = it.toString()
@@ -505,7 +503,7 @@ class SettingsStore(
 data class Settings(
     @Transient
     val init: Boolean = false,
-    val dynamicColor: Boolean = true,
+    val dynamicColor: Boolean = false,
     val themeId: String = PresetThemes[0].id,
     val customThemes: List<CustomTheme> = emptyList(),
     val developerMode: Boolean = false,
@@ -584,7 +582,6 @@ data class DisplaySetting(
     val showTokenUsage: Boolean = true,
     val showThinkingContent: Boolean = true,
     val autoCloseThinking: Boolean = true,
-    val showUpdates: Boolean = true,
     val showMessageJumper: Boolean = false,
     val messageJumperOnLeft: Boolean = false,
     val fontSizeRatio: Float = 1.0f,
@@ -671,9 +668,7 @@ fun Settings.getQuickMessagesOfAssistant(assistant: Assistant) =
     quickMessages.filter { it.id in assistant.quickMessageIds }
 
 fun Settings.getSelectedTTSProvider(): TTSProviderSetting? {
-    return selectedTTSProviderId?.let { id ->
-        ttsProviders.find { it.id == id }
-    } ?: ttsProviders.firstOrNull()
+    return ttsProviders.find { it.id == selectedTTSProviderId } ?: ttsProviders.firstOrNull()
 }
 
 fun Settings.getSelectedASRProvider(): ASRProviderSetting? {

@@ -101,7 +101,6 @@ import me.rerere.rikkahub.ui.pages.extensions.workspace.WorkspaceFileEditorPage
 import me.rerere.rikkahub.ui.pages.extensions.workspace.WorkspaceTerminalPage
 import me.rerere.workspace.WorkspaceStorageArea
 import me.rerere.rikkahub.ui.pages.favorite.FavoritePage
-import me.rerere.rikkahub.ui.pages.history.HistoryPage
 import me.rerere.rikkahub.ui.pages.imggen.ImageGenPage
 import me.rerere.rikkahub.ui.pages.log.LogPage
 import me.rerere.rikkahub.ui.pages.search.SearchPage
@@ -338,10 +337,6 @@ class RouteActivity : ComponentActivity() {
                                     text = key.text,
                                     image = key.streamUri
                                 )
-                            }
-
-                            entry<Screen.History> {
-                                HistoryPage()
                             }
 
                             entry<Screen.Favorite> {
@@ -590,9 +585,6 @@ sealed interface Screen : NavKey {
 
     @Serializable
     data class ShareHandler(val text: String, val streamUri: String? = null) : Screen
-
-    @Serializable
-    data object History : Screen
 
     @Serializable
     data object Favorite : Screen

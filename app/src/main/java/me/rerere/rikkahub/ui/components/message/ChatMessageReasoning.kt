@@ -31,6 +31,8 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -63,6 +65,7 @@ import me.rerere.rikkahub.ui.components.ui.ChainOfThoughtScope
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.modifier.shimmer
 import me.rerere.rikkahub.utils.extractThinkingTitle
+import me.rerere.rikkahub.utils.wordCount
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -207,6 +210,7 @@ fun ChainOfThoughtScope.ChatMessageReasoningStep(
     reasoning: UIMessagePart.Reasoning,
     model: Model?,
     assistant: Assistant?,
+    messageEdited: Boolean,
     fadeHeight: Float = 64f,
     collapsedAdaptiveWidth: Boolean = false,
 ) {
@@ -215,8 +219,26 @@ fun ChainOfThoughtScope.ChatMessageReasoningStep(
     val showThinkingTitle = loading && thinkingTitle != null
     val chatFontFamily = LocalTextStyle.current.fontFamily
     val clipboard = LocalClipboard.current
+    val settings = LocalSettings.current
     val scope = rememberCoroutineScope()
     val reasoningStatsColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
+    val latestReasoning by rememberUpdatedState(reasoning.reasoning)
+    val wordCount by produceState(
+        initialValue = reasoning.reasoning.wordCount(),
+        key1 = reasoning.createdAt,
+        key2 = loading,
+    ) {
+        if (loading) {
+            while (isActive) {
+                val text = latestReasoning
+                value = text.wordCount()
+                delay(100)
+            }
+        } else {
+            val text = latestReasoning
+            value = text.wordCount()
+        }
+    }
 
     ControlledChainOfThoughtStep(
         expanded = state.expandState == ReasoningCardState.Expanded,
@@ -231,7 +253,13 @@ fun ChainOfThoughtScope.ChatMessageReasoningStep(
         },
         label = {
             if (showThinkingTitle) {
-                ReasoningTitle(title = thinkingTitle!!)
+                ReasoningTitle(title = thinkingTitle)
+            } else if (messageEdited && !loading && state.duration <= Duration.ZERO) {
+                Text(
+                    text = "思考",
+                    style = MaterialTheme.typography.titleSmall.copy(fontFamily = chatFontFamily),
+                    color = MaterialTheme.colorScheme.secondary,
+                )
             } else {
                 Text(
                     text = stringResource(
@@ -258,25 +286,20 @@ fun ChainOfThoughtScope.ChatMessageReasoningStep(
                         modifier = Modifier.shimmer(isLoading = loading),
                     )
                 }
-                if (!loading && state.expandState == ReasoningCardState.Expanded) {
-                    val characterCount = Character.codePointCount(
-                        reasoning.reasoning,
-                        0,
-                        reasoning.reasoning.length,
-                    )
-                    ProvideTextStyle(
+                if (state.expandState.expanded) {
+                    if (settings.displaySetting.showTokenUsage) ProvideTextStyle(
                         MaterialTheme.typography.labelSmall.copy(
                             color = reasoningStatsColor,
                             fontFamily = chatFontFamily,
                         )
                     ) {
                         ExpandableCountStatsItem(
-                            value = characterCount,
-                            suffix = " chars",
+                            value = wordCount,
+                            suffix = " word",
                             icon = {
                                 Icon(
                                     imageVector = HugeIcons.Message01,
-                                    contentDescription = "Characters",
+                                    contentDescription = "Words",
                                     modifier = Modifier.size(12.dp),
                                     tint = reasoningStatsColor,
                                 )

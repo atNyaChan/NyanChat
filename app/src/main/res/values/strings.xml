@@ -5,7 +5,6 @@
   <string name="about_page_system">System</string>
   <string name="about_page_title">About</string>
   <string name="about_page_version">Version</string>
-  <string name="about_page_website">Website</string>
   <string name="add">Add</string>
   <string name="app_name">RikkaHub</string>
   <string name="asr_button_content_description">Speech Recognition</string>
@@ -604,6 +603,10 @@
   <string name="search_page_sort_newest">Newest first</string>
   <string name="search_page_sort_oldest">Oldest first</string>
   <string name="search_page_sort_relevance">Relevance</string>
+  <string name="search_page_mode">Search mode</string>
+  <string name="search_page_mode_title">Title only</string>
+  <string name="search_page_mode_exact">Exact match</string>
+  <string name="search_page_mode_fuzzy">Fuzzy search</string>
   <string name="search_page_title">Search Messages</string>
   <string name="search_page_untitled">Untitled</string>
   <string name="search_picker_title">Search Settings</string>
@@ -831,7 +834,7 @@
   <string name="setting_page_config_api_desc">You haven\'t configured API and model yet, please configure first</string>
   <string name="setting_page_config_api_title">Please configure API and model</string>
   <string name="setting_page_data_backup">Backup and Restore</string>
-  <string name="setting_page_data_backup_desc">Back up or overwrite and restore the entire RikkaHub</string>
+  <string name="setting_page_data_backup_desc">Back up or overwrite and restore the entire RikkaHub (workspace environments are not included)</string>
   <string name="setting_page_data_settings">Data Settings</string>
   <string name="setting_page_default_model">Default Model and Prompt</string>
   <string name="setting_page_default_model_desc">Set default models for each feature</string>

@@ -40,9 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -65,6 +63,7 @@ import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.plus
+import me.rerere.rikkahub.utils.writeClipboardText
 import me.rerere.rikkahub.web.WebServerManager
 import me.rerere.rikkahub.web.formatWebServerUrl
 import org.koin.compose.koinInject
@@ -78,7 +77,6 @@ fun SettingWebPage() {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val clipboardManager = LocalClipboardManager.current
     val toaster = LocalToaster.current
     val copiedText = stringResource(R.string.copied)
     var portText by remember(settings.webServerPort) {
@@ -125,7 +123,7 @@ fun SettingWebPage() {
     }
 
     fun copyUrl(url: String) {
-        clipboardManager.setText(AnnotatedString(url))
+        context.writeClipboardText(url)
         toaster.show(copiedText)
     }
 

@@ -48,7 +48,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
 
       # web 模块的 preBuild 会执行 `pnpm run build` 构建前端，必须准备好 Node + pnpm
       - name: Set up pnpm

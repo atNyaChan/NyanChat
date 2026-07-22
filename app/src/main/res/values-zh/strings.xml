@@ -5,7 +5,6 @@
   <string name="about_page_system">系统</string>
   <string name="about_page_title">关于</string>
   <string name="about_page_version">版本</string>
-  <string name="about_page_website">官网</string>
   <string name="add">添加</string>
   <string name="app_name">RikkaHub</string>
   <string name="asr_button_content_description">语音识别</string>
@@ -598,6 +597,10 @@
   <string name="search_page_sort_newest">最新优先</string>
   <string name="search_page_sort_oldest">最旧优先</string>
   <string name="search_page_sort_relevance">相关性</string>
+  <string name="search_page_mode">搜索方式</string>
+  <string name="search_page_mode_title">只匹配标题</string>
+  <string name="search_page_mode_exact">精准匹配</string>
+  <string name="search_page_mode_fuzzy">模糊搜索</string>
   <string name="search_page_title">搜索消息</string>
   <string name="search_page_untitled">无标题</string>
   <string name="search_picker_title">搜索设置</string>
@@ -822,7 +825,7 @@
   <string name="setting_page_config_api_desc">你还没有配置API和模型，请先配置</string>
   <string name="setting_page_config_api_title">请配置API和模型</string>
   <string name="setting_page_data_backup">备份与恢复</string>
-  <string name="setting_page_data_backup_desc">备份或覆盖还原整个RikkaHub</string>
+  <string name="setting_page_data_backup_desc">备份或覆盖还原整个RikkaHub（不包含工作区环境）</string>
   <string name="setting_page_data_settings">数据设置</string>
   <string name="setting_page_default_model">默认模型和提示词</string>
   <string name="setting_page_default_model_desc">设置各个功能的默认模型</string>

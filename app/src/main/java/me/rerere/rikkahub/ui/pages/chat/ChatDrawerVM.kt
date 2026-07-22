@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import me.rerere.rikkahub.R
@@ -53,6 +54,19 @@ class ChatDrawerVM(
     val folders: StateFlow<List<Folder>> = assistantIdFlow
         .flatMapLatest { folderRepo.getFoldersOfAssistant(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val allFolders: StateFlow<Map<Uuid, List<Folder>>> = settingsStore.settingsFlow
+        .flatMapLatest { settings ->
+            val assistants = settings.assistants
+            if (assistants.isEmpty()) {
+                flowOf(emptyMap<Uuid, List<Folder>>())
+            } else {
+                combine(assistants.map { folderRepo.getFoldersOfAssistant(it.id) }) { lists ->
+                    assistants.mapIndexed { index, assistant -> assistant.id to lists[index] }.toMap()
+                }
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     val conversations: Flow<PagingData<ConversationListItem>> =
         combine(assistantIdFlow, _selectedFolderId) { assistantId, folderId ->
@@ -142,6 +156,13 @@ class ChatDrawerVM(
         _selectedFolderId.value = folderId
     }
 
+    fun selectFolderAfterAssistantChange(assistantId: Uuid, folderId: Uuid?) {
+        viewModelScope.launch {
+            assistantIdFlow.first { it == assistantId }
+            _selectedFolderId.value = folderId
+        }
+    }
+
     fun createFolder(name: String) {
         val trimmed = name.trim()
         if (trimmed.isEmpty()) return
@@ -149,6 +170,12 @@ class ChatDrawerVM(
             val assistantId = assistantIdFlow.first()
             folderRepo.createFolder(assistantId, trimmed)
         }
+    }
+
+    suspend fun createFolder(assistantId: Uuid, name: String): Folder? {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return null
+        return folderRepo.createFolder(assistantId, trimmed)
     }
 
     fun renameFolder(folderId: Uuid, name: String) {

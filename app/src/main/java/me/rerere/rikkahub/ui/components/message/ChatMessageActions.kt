@@ -39,7 +39,6 @@ import kotlinx.datetime.toJavaLocalDateTime
 import me.rerere.ai.core.MessageRole
 import me.rerere.ai.provider.Model
 import me.rerere.ai.ui.UIMessage
-import me.rerere.ai.ui.UIMessagePart
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Copy01
 import me.rerere.hugeicons.stroke.Delete01
@@ -54,7 +53,6 @@ import me.rerere.hugeicons.stroke.StopCircle
 import me.rerere.hugeicons.stroke.TextSelection
 import me.rerere.hugeicons.stroke.Translate
 import me.rerere.hugeicons.stroke.VolumeHigh
-import me.rerere.hugeicons.stroke.WebDesign01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.model.MessageNode
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
@@ -65,7 +63,6 @@ import me.rerere.rikkahub.utils.extractQuotedContentAsText
 import me.rerere.rikkahub.utils.removeBracketedContent
 import me.rerere.rikkahub.utils.toLocalString
 import me.rerere.rikkahub.utils.toMessageTimeString
-import java.util.Locale
 
 @Composable
 fun ColumnScope.ChatMessageActionButtons(
@@ -74,13 +71,10 @@ fun ColumnScope.ChatMessageActionButtons(
     onUpdate: (MessageNode) -> Unit,
     onRegenerate: () -> Unit,
     onOpenActionSheet: () -> Unit,
-    onTranslate: ((UIMessage, Locale) -> Unit)? = null,
-    onClearTranslation: (UIMessage) -> Unit = {},
 ) {
     val context = LocalContext.current
     val settings = LocalSettings.current
     var isPendingDelete by remember { mutableStateOf(false) }
-    var showTranslateDialog by remember { mutableStateOf(false) }
     var showRegenerateConfirm by remember { mutableStateOf(false) }
 
     LaunchedEffect(isPendingDelete) {
@@ -100,12 +94,12 @@ fun ColumnScope.ChatMessageActionButtons(
         if (message.role == MessageRole.USER && settings.displaySetting.showTokenUsage) {
             ProvideTextStyle(MaterialTheme.typography.labelSmall.copy(color = statsColor)) {
                 ExpandableCountStatsItem(
-                    value = message.characterCount(includeReasoning = false),
-                    suffix = " chars",
+                    value = message.wordCount(includeReasoning = false),
+                    suffix = " word",
                     icon = {
                         Icon(
                             imageVector = HugeIcons.Message01,
-                            contentDescription = "Characters",
+                            contentDescription = "Words",
                             modifier = Modifier.size(12.dp),
                             tint = statsColor,
                         )
@@ -176,25 +170,6 @@ fun ColumnScope.ChatMessageActionButtons(
                 tint = if (isAvailable) actionIconColor else actionIconColor.copy(alpha = 0.38f)
             )
 
-            // Translation button
-            if (onTranslate != null) {
-                Icon(
-                    imageVector = HugeIcons.Translate,
-                    contentDescription = stringResource(R.string.translate),
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = LocalIndication.current,
-                            onClick = {
-                                showTranslateDialog = true
-                            }
-                        )
-                        .padding(8.dp)
-                        .size(16.dp),
-                    tint = actionIconColor
-                )
-            }
         }
 
         Icon(
@@ -229,23 +204,6 @@ fun ColumnScope.ChatMessageActionButtons(
         }
     }
 
-    // Translation dialog
-    if (showTranslateDialog && onTranslate != null) {
-        LanguageSelectionDialog(
-            onLanguageSelected = { language ->
-                showTranslateDialog = false
-                onTranslate(message, language)
-            },
-            onClearTranslation = {
-                showTranslateDialog = false
-                onClearTranslation(message)
-            },
-            onDismissRequest = {
-                showTranslateDialog = false
-            },
-        )
-    }
-
     // Regenerate confirmation dialog
     RikkaConfirmDialog(
         show = showRegenerateConfirm,
@@ -272,9 +230,10 @@ fun ChatMessageActionsSheet(
     onSelectAndCopy: () -> Unit,
     isFavorite: Boolean = false,
     onToggleFavorite: (() -> Unit)? = null,
-    onWebViewPreview: () -> Unit,
+    onTranslateRequest: (() -> Unit)? = null,
     onDismissRequest: () -> Unit
 ) {
+    var showDeleteConfirm by remember { mutableStateOf(false) }
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)),
@@ -313,38 +272,6 @@ fun ChatMessageActionsSheet(
                 }
             }
 
-            // WebView Preview (only show if message has text content)
-            val hasTextContent = message.parts.filterIsInstance<UIMessagePart.Text>()
-                .any { it.text.isNotBlank() }
-
-            if (hasTextContent) {
-                Card(
-                    onClick = {
-                        onDismissRequest()
-                        onWebViewPreview()
-                    },
-                    shape = MaterialTheme.shapes.medium
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth()
-                    ) {
-                        Icon(
-                            imageVector = HugeIcons.WebDesign01,
-                            contentDescription = null,
-                            modifier = Modifier.padding(4.dp)
-                        )
-                        Text(
-                            text = stringResource(R.string.render_with_webview),
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                    }
-                }
-            }
-
             // Edit
             Card(
                 onClick = {
@@ -369,6 +296,26 @@ fun ChatMessageActionsSheet(
                         text = stringResource(R.string.edit),
                         style = MaterialTheme.typography.titleMedium,
                     )
+                }
+            }
+
+            // Translation
+            if (message.role == MessageRole.ASSISTANT && onTranslateRequest != null) {
+                Card(
+                    onClick = {
+                        onDismissRequest()
+                        onTranslateRequest()
+                    },
+                    shape = MaterialTheme.shapes.medium,
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                    ) {
+                        Icon(HugeIcons.Translate, contentDescription = null, modifier = Modifier.padding(4.dp))
+                        Text(stringResource(R.string.translate), style = MaterialTheme.typography.titleMedium)
+                    }
                 }
             }
 
@@ -459,10 +406,7 @@ fun ChatMessageActionsSheet(
 
             // Delete
             Card(
-                onClick = {
-                    onDismissRequest()
-                    onDelete()
-                },
+                onClick = { showDeleteConfirm = true },
                 shape = MaterialTheme.shapes.medium,
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.errorContainer
@@ -496,4 +440,17 @@ fun ChatMessageActionsSheet(
             }
         }
     }
+    RikkaConfirmDialog(
+        show = showDeleteConfirm,
+        title = stringResource(R.string.delete),
+        confirmText = stringResource(R.string.confirm),
+        dismissText = stringResource(R.string.cancel),
+        onConfirm = {
+            showDeleteConfirm = false
+            onDismissRequest()
+            onDelete()
+        },
+        onDismiss = { showDeleteConfirm = false },
+        text = { Text("确定删除这条消息吗？") },
+    )
 }

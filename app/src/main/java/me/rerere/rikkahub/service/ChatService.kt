@@ -40,6 +40,7 @@ import me.rerere.ai.ui.canResumeToolExecution
 import me.rerere.ai.ui.finishPendingTools
 import me.rerere.ai.ui.finishReasoning
 import me.rerere.ai.ui.isEmptyInputMessage
+import me.rerere.ai.ui.isEmptyUIMessage
 import me.rerere.common.android.Logging
 import me.rerere.rikkahub.AppScope
 import me.rerere.rikkahub.R
@@ -383,8 +384,47 @@ class ChatService(
                 } else {
                     if (regenerateAssistantMsg) {
                         val node = conversation.getMessageNodeByMessage(message)
+                            ?: return@launch
                         val nodeIndex = conversation.messageNodes.indexOf(node)
-                        handleMessageComplete(conversationId, messageRange = 0..<nodeIndex)
+                        val pendingResponse = UIMessage.assistant("")
+                        val pendingNode = node.copy(
+                            messages = node.messages + pendingResponse,
+                            selectIndex = node.messages.size,
+                        )
+                        updateConversation(
+                            conversationId,
+                            conversation.copy(
+                                messageNodes = conversation.messageNodes.toMutableList().also {
+                                    it[nodeIndex] = pendingNode
+                                }
+                            )
+                        )
+                        val succeeded = handleMessageComplete(
+                            conversationId,
+                            messageRange = 0..<nodeIndex,
+                            pendingResponse = pendingResponse,
+                        )
+                        if (!succeeded) {
+                            val failedConversation = getConversationFlow(conversationId).value
+                            val failedNode = failedConversation.messageNodes.getOrNull(nodeIndex)
+                            val pendingMessage = failedNode?.messages?.find { it.id == pendingResponse.id }
+                            if (failedNode != null && pendingMessage?.parts?.isEmptyUIMessage() == true) {
+                                val restoredMessages = failedNode.messages.filterNot { it.id == pendingResponse.id }
+                                val restoredIndex = restoredMessages.indexOfFirst { it.id == message.id }
+                                    .coerceAtLeast(0)
+                                updateConversation(
+                                    conversationId,
+                                    failedConversation.copy(
+                                        messageNodes = failedConversation.messageNodes.toMutableList().also {
+                                            it[nodeIndex] = failedNode.copy(
+                                                messages = restoredMessages,
+                                                selectIndex = restoredIndex,
+                                            )
+                                        }
+                                    )
+                                )
+                            }
+                        }
                     } else {
                         saveConversation(conversationId, conversation)
                     }
@@ -466,13 +506,14 @@ class ChatService(
 
     private suspend fun handleMessageComplete(
         conversationId: Uuid,
-        messageRange: ClosedRange<Int>? = null
-    ) {
+        messageRange: ClosedRange<Int>? = null,
+        pendingResponse: UIMessage? = null,
+    ): Boolean {
         val settings = settingsStore.settingsFlow.first()
         val initialConversation = getConversationFlow(conversationId).value
         val assistant = settings.getAssistantById(initialConversation.assistantId)
             ?: settings.getCurrentAssistant()
-        val model = settings.findModelById(assistant.chatModelId ?: settings.chatModelId) ?: return
+        val model = settings.findModelById(assistant.chatModelId ?: settings.chatModelId) ?: return false
 
         val senderName = if (assistant.useAssistantAvatar) {
             assistant.name.ifEmpty { context.getString(R.string.assistant_page_default_assistant) }
@@ -480,7 +521,7 @@ class ChatService(
             model.displayName
         }
 
-        runCatching {
+        return runCatching {
 
             // reset suggestions
             updateConversation(conversationId, initialConversation.copy(chatSuggestions = emptyList()))
@@ -553,16 +594,12 @@ class ChatService(
                             .distinct()
                             .filter { name -> name.isEmpty() || !name.all { it in 'a'..'z' || it in 'A'..'Z' || it in '0'..'9' } }
                         if (invalidNames.isNotEmpty()) {
-                            addError(
-                                error = IllegalStateException(
-                                    context.getString(
-                                        R.string.error_mcp_invalid_server_name,
-                                        invalidNames.joinToString(", ")
-                                    )
-                                ),
-                                conversationId = conversationId,
+                            error(
+                                context.getString(
+                                    R.string.error_mcp_invalid_server_name,
+                                    invalidNames.joinToString(", ")
+                                )
                             )
-                            return
                         }
                     }.forEach { (serverId, serverName, tool) ->
                         add(
@@ -600,13 +637,24 @@ class ChatService(
             }.collect { chunk ->
                 when (chunk) {
                     is GenerationChunk.Messages -> {
+                        val messages = if (
+                            pendingResponse != null &&
+                            chunk.messages.lastOrNull()?.role == MessageRole.ASSISTANT
+                        ) {
+                            chunk.messages.dropLast(1) + chunk.messages.last().copy(
+                                id = pendingResponse.id,
+                                createdAt = pendingResponse.createdAt,
+                            )
+                        } else {
+                            chunk.messages
+                        }
                         val updatedConversation = getConversationFlow(conversationId).value
-                            .updateCurrentMessages(chunk.messages)
+                            .updateCurrentMessages(messages)
                         updateConversation(conversationId, updatedConversation)
 
                         // 通知等边缘副作用由 ChatNotificationManager 消费；
                         // tryEmit 不挂起，事件丢失只影响单次通知更新，不能反压生成链
-                        chunk.messages.lastOrNull()?.let { lastMessage ->
+                        messages.lastOrNull()?.let { lastMessage ->
                             appEventBus.tryEmit(
                                 AppEvent.ChatGenerationUpdate(conversationId, lastMessage, senderName)
                             )
@@ -632,7 +680,7 @@ class ChatService(
             launchWithConversationReference(conversationId) {
                 generateSuggestion(conversationId, finalConversation)
             }
-        }
+        }.isSuccess
     }
 
     private suspend fun createWorkspaceToolsIfReady(workspaceId: String?, cwd: String? = null): List<Tool> {
@@ -743,9 +791,27 @@ class ChatService(
         if (!shouldGenerate) return
 
         runCatching {
+            val title = generateTitleCandidate(conversation) ?: return
+            conversationRepo.getConversationById(conversation.id)?.let {
+                saveConversation(conversationId, it.copy(title = title))
+            }
+        }.onFailure {
+            it.printStackTrace()
+            addError(
+                error = it,
+                conversationId = conversationId,
+                title = context.getString(R.string.error_title_generate_title),
+                solution = ChatErrorSolution.CheckTitleModelSettings,
+            )
+        }
+    }
+
+    suspend fun generateTitleCandidate(conversation: Conversation): String? {
+        return runCatching {
             val settings = settingsStore.settingsFlow.first()
-            val model = settings.findModelById(settings.titleModelId, fallback = settings.fastModelId) ?: return
-            val provider = model.findProvider(settings.providers) ?: return
+            val model = settings.findModelById(settings.titleModelId, fallback = settings.fastModelId)
+                ?: return null
+            val provider = model.findProvider(settings.providers) ?: return null
 
             val providerHandler = providerManager.getProviderByType(provider)
             val result = providerHandler.generateText(
@@ -761,22 +827,8 @@ class ChatService(
                 params = backgroundTextGenerationParams(model),
             )
 
-            // 生成完，conversation可能不是最新了，因此需要重新获取
-            conversationRepo.getConversationById(conversation.id)?.let {
-                saveConversation(
-                    conversationId,
-                    it.copy(title = result.choices[0].message?.toText()?.trim() ?: "")
-                )
-            }
-        }.onFailure {
-            it.printStackTrace()
-            addError(
-                error = it,
-                conversationId = conversationId,
-                title = context.getString(R.string.error_title_generate_title),
-                solution = ChatErrorSolution.CheckTitleModelSettings,
-            )
-        }
+            result.choices[0].message?.toText()?.trim()
+        }.getOrNull()
     }
 
     // ---- 生成建议 ----

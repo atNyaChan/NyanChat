@@ -2,15 +2,21 @@ package me.rerere.rikkahub.ui.pages.log
 
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Delete01
+import me.rerere.hugeicons.stroke.Copy01
+import me.rerere.hugeicons.stroke.ArrowDown01
+import me.rerere.hugeicons.stroke.ArrowRight01
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
@@ -24,7 +30,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.SheetValue
-import androidx.compose.material3.Switch
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,27 +38,37 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import me.rerere.common.android.LogEntry
 import me.rerere.common.android.Logging
-import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.JsonTree
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.utils.JsonInstantPretty
+import me.rerere.rikkahub.utils.writeClipboardText
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @Composable
 fun LogPage() {
-    var logs by remember { mutableStateOf(Logging.getRecentLogs()) }
-    var requestLoggingEnabled by remember { mutableStateOf(Logging.isRequestLoggingEnabled()) }
+    var logs by remember { mutableStateOf(Logging.getRequestLogs()) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
@@ -65,7 +80,7 @@ fun LogPage() {
                     IconButton(
                         onClick = {
                             Logging.clear()
-                            logs = Logging.getRecentLogs()
+                            logs = Logging.getRequestLogs()
                         }
                     ) {
                         Icon(HugeIcons.Delete01, null)
@@ -80,11 +95,6 @@ fun LogPage() {
     ) { contentPadding ->
         UnifiedLogList(
             logs = logs,
-            requestLoggingEnabled = requestLoggingEnabled,
-            onRequestLoggingChange = {
-                requestLoggingEnabled = it
-                Logging.setRequestLoggingEnabled(it)
-            },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
@@ -94,9 +104,7 @@ fun LogPage() {
 
 @Composable
 private fun UnifiedLogList(
-    logs: List<LogEntry>,
-    requestLoggingEnabled: Boolean,
-    onRequestLoggingChange: (Boolean) -> Unit,
+    logs: List<LogEntry.RequestLog>,
     modifier: Modifier = Modifier
 ) {
     var selectedLog by remember { mutableStateOf<LogEntry.RequestLog?>(null) }
@@ -104,29 +112,27 @@ private fun UnifiedLogList(
     val scope = rememberCoroutineScope()
     val sortedLogs = remember(logs) { logs.sortedByDescending { it.timestamp } }
 
-    LazyColumn(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(16.dp)
-    ) {
-        item {
-            RequestLoggingSwitchCard(
-                enabled = requestLoggingEnabled,
-                onEnabledChange = onRequestLoggingChange
+    if (sortedLogs.isEmpty()) {
+        Box(modifier = modifier, contentAlignment = Alignment.Center) {
+            Text(
+                text = "暂无请求记录",
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
             )
         }
-
-        items(sortedLogs, key = { it.id }, contentType = { it.javaClass.simpleName }) { log ->
-            when (log) {
-                is LogEntry.RequestLog -> RequestLogCard(
+    } else {
+        LazyColumn(
+            modifier = modifier,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(16.dp)
+        ) {
+            items(sortedLogs, key = { it.id }, contentType = { it.javaClass.simpleName }) { log ->
+                RequestLogCard(
                     log = log,
                     onClick = {
                         selectedLog = log
                         scope.launch { sheetState.show() }
                     }
                 )
-
-                is LogEntry.TextLog -> TextLogCard(log = log)
             }
         }
     }
@@ -137,41 +143,6 @@ private fun UnifiedLogList(
             sheetState = sheetState
         ) {
             RequestLogDetail(log)
-        }
-    }
-}
-
-@Composable
-private fun RequestLoggingSwitchCard(
-    enabled: Boolean,
-    onEnabledChange: (Boolean) -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CustomColors.cardColorsOnSurfaceContainer,
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.log_page_record_requests),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = stringResource(R.string.log_page_record_requests_desc),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Switch(
-                checked = enabled,
-                onCheckedChange = onEnabledChange
-            )
         }
     }
 }
@@ -251,6 +222,10 @@ private fun RequestLogCard(log: LogEntry.RequestLog, onClick: () -> Unit) {
 @Composable
 private fun RequestLogDetail(log: LogEntry.RequestLog) {
     val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault()) }
+    val context = LocalContext.current
+    val responseMessage = remember(log.responseBody) {
+        log.responseBody?.let(::extractResponseMessage).orEmpty()
+    }
 
     SelectionContainer {
         LazyColumn(
@@ -259,172 +234,296 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                Text(
-                    text = "Request Details",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            item {
-                DetailSection("Time", dateFormat.format(Date(log.timestamp)))
-            }
-
-            item {
-                DetailSection("URL", log.url)
-            }
-
-            item {
-                DetailSection("Method", log.method)
-            }
-
-            log.responseCode?.let { code ->
-                item {
-                    DetailSection("Status Code", code.toString())
-                }
-            }
-
-            log.durationMs?.let { duration ->
-                item {
-                    DetailSection("Duration", "${duration}ms")
-                }
-            }
-
-            log.error?.let { error ->
-                item {
-                    DetailSection("Error", error)
-                }
-            }
-
-            if (log.requestHeaders.isNotEmpty()) {
-                item {
-                    HorizontalDivider()
-                    Text(
-                        text = "Request Headers",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-                }
-                log.requestHeaders.forEach { (key, value) ->
-                    item {
-                        HeaderItem(key, value)
+                CollapsibleLogSection("Details") {
+                    DetailSection("Time", dateFormat.format(Date(log.timestamp)))
+                    DetailSection("URL", log.url)
+                    DetailSection("Method", log.method)
+                    log.responseCode?.let { code ->
+                        DetailSection("Status Code", code.toString())
                     }
+                    log.durationMs?.let { duration ->
+                        DetailSection("Duration", "${duration}ms")
+                    }
+                    log.error?.let { error -> DetailSection("Error", error) }
                 }
             }
 
-            log.requestBody?.let { body ->
-                item {
-                    HorizontalDivider()
-                    Text(
-                        text = "Request Body",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-                    val jsonElement = remember(body) {
-                        runCatching { JsonInstantPretty.parseToJsonElement(body) }.getOrNull()
-                    }
+            if (log.requestHeaders.isNotEmpty()) item {
+                CollapsibleLogSection(
+                    title = "Request Headers",
+                    onCopy = { context.writeClipboardText(headersText(log.requestHeaders)) },
+                ) {
+                    HighlightedHeaders(log.requestHeaders)
+                }
+            }
+
+            log.requestBody?.let { body -> item {
+                CollapsibleLogSection(
+                    title = "Request Body",
+                    onCopy = { context.writeClipboardText(body) },
+                ) {
+                    val jsonElement = remember(body) { parseResponseJson(body) }
                     if (jsonElement != null) {
-                        JsonTree(
-                            json = jsonElement,
-                            modifier = Modifier.padding(top = 4.dp),
-                            initialExpandLevel = 2
-                        )
+                        JsonTree(jsonElement, initialExpandLevel = 0)
                     } else {
-                        Text(
-                            text = body,
-                            fontFamily = JetbrainsMono,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
+                        Text(body, fontFamily = JetbrainsMono)
                     }
+                }
+            } }
+
+            if (log.responseHeaders.isNotEmpty()) item {
+                CollapsibleLogSection(
+                    title = "Response Headers",
+                    onCopy = { context.writeClipboardText(headersText(log.responseHeaders)) },
+                ) {
+                    HighlightedHeaders(log.responseHeaders)
                 }
             }
 
-            if (log.responseHeaders.isNotEmpty()) {
-                item {
-                    HorizontalDivider()
-                    Text(
-                        text = "Response Headers",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-                }
-                log.responseHeaders.forEach { (key, value) ->
-                    item {
-                        HeaderItem(key, value)
+            log.responseBody?.let { body -> item {
+                CollapsibleLogSection(
+                    title = "Response Body",
+                    onCopy = { context.writeClipboardText(body) },
+                ) {
+                    val jsonElement = remember(body) { parseResponseJson(body) }
+                    if (jsonElement != null) {
+                        JsonTree(jsonElement, initialExpandLevel = 0)
+                    } else {
+                        Text(body, fontFamily = JetbrainsMono)
                     }
+                }
+            } }
+
+            if (responseMessage.isNotBlank()) item {
+                CollapsibleLogSection(
+                    title = "Content",
+                    initiallyExpanded = true,
+                    onCopy = { context.writeClipboardText(responseMessage) },
+                ) {
+                    Text(responseMessage, fontFamily = JetbrainsMono)
                 }
             }
         }
     }
+}
+
+@Composable
+private fun CollapsibleLogSection(
+    title: String,
+    initiallyExpanded: Boolean = false,
+    onCopy: (() -> Unit)? = null,
+    content: @Composable () -> Unit,
+) {
+    var expanded by remember { mutableStateOf(initiallyExpanded) }
+    Column {
+        HorizontalDivider()
+        Row(
+        modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(top = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                if (expanded) HugeIcons.ArrowDown01 else HugeIcons.ArrowRight01,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+            )
+            Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f).padding(start = 8.dp))
+            onCopy?.let { copy ->
+                IconButton(onClick = copy, modifier = Modifier.size(32.dp)) {
+                    Icon(HugeIcons.Copy01, contentDescription = "Copy", modifier = Modifier.size(16.dp))
+                }
+            }
+        }
+        AnimatedVisibility(expanded) {
+            Column(modifier = Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                content()
+            }
+        }
+    }
+}
+
+private fun headersText(headers: Map<String, String>): String =
+    headers.entries.joinToString("\n") { (name, value) -> "$name: $value" }
+
+private fun extractResponseMessage(body: String): String? {
+    val payloads = body.lineSequence()
+        .map { it.trim() }
+        .filter { it.startsWith("data:") }
+        .map { it.removePrefix("data:").trim() }
+        .filter { it.isNotBlank() && it != "[DONE]" }
+        .toList()
+        .ifEmpty { listOf(body) }
+    val elements = payloads.mapNotNull {
+        runCatching { JsonInstantPretty.parseToJsonElement(it) }.getOrNull()
+    }
+    if (elements.isEmpty()) return null
+    val hasLlmEvents = elements.any(::looksLikeLlmEvent)
+    if (!hasLlmEvents) return null
+
+    return LlmTextBuilder().also { builder ->
+        elements.forEach { appendLlmContent(it, builder) }
+    }.toString().trim().takeIf { it.isNotEmpty() }
+}
+
+private fun looksLikeLlmEvent(element: JsonElement): Boolean = when (element) {
+    is JsonArray -> element.any(::looksLikeLlmEvent)
+    is JsonObject -> {
+        val type = (element["type"] as? JsonPrimitive)?.contentOrNull.orEmpty().lowercase()
+        val role = (element["role"] as? JsonPrimitive)?.contentOrNull.orEmpty().lowercase()
+        element.keys.any { it in setOf("choices", "candidates", "content_block", "tool_calls", "reasoning") } ||
+            type.contains("content_block") || type.contains("output_text") ||
+            type.contains("tool_use") || type.contains("reasoning") || type.contains("thinking") ||
+            (role == "assistant" && element.containsKey("content")) ||
+            element.values.any(::looksLikeLlmEvent)
+    }
+    else -> false
+}
+
+private enum class LlmContentKind { TEXT, REASONING }
+
+private fun appendLlmContent(
+    element: JsonElement,
+    output: LlmTextBuilder,
+    inheritedKind: LlmContentKind? = null,
+) {
+    when (element) {
+        JsonNull -> Unit
+        is JsonArray -> element.forEach { appendLlmContent(it, output, inheritedKind) }
+        is JsonObject -> {
+            val type = (element["type"] as? JsonPrimitive)?.contentOrNull.orEmpty().lowercase()
+            val isTool = type.contains("tool_use") || type.contains("tool_call") ||
+                type.contains("function_call") || type.contains("tool_result") ||
+                type.contains("input_json") || element.containsKey("tool_calls") ||
+                element.containsKey("function_call") || element.containsKey("functionCall") ||
+                element.containsKey("functionResponse")
+            if (isTool) {
+                output.appendLabeled("工具", element.withoutNulls().toString() + "\n")
+                return
+            }
+            val kind = when {
+                type.contains("reasoning") || type.contains("thinking") -> LlmContentKind.REASONING
+                (element["thought"] as? JsonPrimitive)?.contentOrNull == "true" -> LlmContentKind.REASONING
+                type.contains("text_delta") || type.contains("output_text") || type == "text" -> LlmContentKind.TEXT
+                else -> inheritedKind
+            }
+            element.forEach { (key, value) ->
+                when {
+                    key == "reasoning" || key == "reasoning_content" || key == "thinking" ->
+                        jsonText(value)?.let { output.appendLabeled("思考", it) }
+                    (key == "text" || key == "content" || key == "output_text") && value is JsonPrimitive ->
+                        value.contentOrNull?.let {
+                            if (kind == LlmContentKind.REASONING) output.appendLabeled("思考", it)
+                            else output.appendText(it)
+                        }
+                    key == "arguments" || key == "input_json_delta" ->
+                        jsonText(value)?.let { output.appendLabeled("工具", it) }
+                    key == "delta" && value is JsonPrimitive -> value.contentOrNull?.let {
+                        if (kind == LlmContentKind.REASONING) output.appendLabeled("思考", it)
+                        else if (kind == LlmContentKind.TEXT) output.appendText(it)
+                    }
+                    key !in setOf("type", "id", "index", "role", "model", "usage") ->
+                        appendLlmContent(value, output, kind)
+                }
+            }
+        }
+        else -> Unit
+    }
+}
+
+private fun jsonText(element: JsonElement): String? = when (element) {
+    JsonNull -> null
+    is JsonPrimitive -> element.contentOrNull
+    else -> element.withoutNulls().toString()
+}
+
+private fun JsonElement.withoutNulls(): JsonElement = when (this) {
+    JsonNull -> JsonNull
+    is JsonArray -> JsonArray(mapNotNull { child ->
+        child.takeUnless { it is JsonNull }?.withoutNulls()
+    })
+    is JsonObject -> JsonObject(mapNotNull { (key, child) ->
+        child.takeUnless { it is JsonNull }?.let { key to it.withoutNulls() }
+    }.toMap())
+    else -> this
+}
+
+private class LlmTextBuilder {
+    private val output = StringBuilder()
+    private var section: String? = null
+
+    fun appendText(value: String) {
+        if (value.isEmpty()) return
+        if (section != null) appendSectionBreak()
+        if (section != null || output.isEmpty()) output.appendLine("[正文]")
+        section = null
+        output.append(value)
+    }
+
+    fun appendLabeled(label: String, value: String) {
+        if (value.isBlank()) return
+        if (section != label) {
+            appendSectionBreak()
+            output.append("[").append(label).appendLine("]")
+            section = label
+        }
+        output.append(value)
+    }
+
+    private fun appendSectionBreak() {
+        if (output.isEmpty()) return
+        if (output.endsWith("\n\n")) return
+        if (output.last() != '\n') output.appendLine()
+        output.appendLine()
+    }
+
+    override fun toString(): String = output.toString()
+}
+
+private fun parseResponseJson(body: String): JsonElement? {
+    runCatching { JsonInstantPretty.parseToJsonElement(body) }.getOrNull()?.let { return it }
+    val events = body.lineSequence()
+        .map { it.trim() }
+        .filter { it.startsWith("data:") }
+        .map { it.removePrefix("data:").trim() }
+        .filter { it.isNotBlank() && it != "[DONE]" }
+        .mapNotNull { runCatching { JsonInstantPretty.parseToJsonElement(it) }.getOrNull() }
+        .toList()
+    return events.takeIf { it.isNotEmpty() }?.let(::JsonArray)
 }
 
 @Composable
 private fun DetailSection(label: String, value: String) {
-    Column {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            fontFamily = JetbrainsMono
-        )
-    }
+    val keyColor = MaterialTheme.colorScheme.primary
+    val colonColor = MaterialTheme.colorScheme.tertiary
+    val valueColor = MaterialTheme.colorScheme.onSurfaceVariant
+    Text(
+        text = buildAnnotatedString {
+            withStyle(SpanStyle(color = keyColor, fontWeight = FontWeight.SemiBold)) { append(label) }
+            withStyle(SpanStyle(color = colonColor)) { append(": ") }
+            withStyle(SpanStyle(color = valueColor)) { append(value) }
+        },
+        fontFamily = JetbrainsMono,
+        fontSize = 10.sp,
+        lineHeight = 14.sp,
+    )
 }
 
 @Composable
-private fun HeaderItem(key: String, value: String) {
-    Column(modifier = Modifier.padding(vertical = 2.dp)) {
-        Text(
-            text = key,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodySmall,
-            fontFamily = JetbrainsMono
-        )
-    }
-}
-
-@Composable
-private fun TextLogCard(log: LogEntry.TextLog) {
-    val dateFormat = remember { SimpleDateFormat("HH:mm:ss", Locale.getDefault()) }
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CustomColors.cardColorsOnSurfaceContainer,
-    ) {
-        SelectionContainer {
-            Column(modifier = Modifier.padding(12.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = log.tag,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = dateFormat.format(Date(log.timestamp)),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Text(
-                    text = log.message,
-                    style = MaterialTheme.typography.bodySmall,
-                    fontFamily = JetbrainsMono
-                )
+private fun HighlightedHeaders(headers: Map<String, String>) {
+    val keyColor = MaterialTheme.colorScheme.primary
+    val colonColor = MaterialTheme.colorScheme.tertiary
+    val valueColor = MaterialTheme.colorScheme.onSurfaceVariant
+    Text(
+        text = buildAnnotatedString {
+            headers.entries.forEachIndexed { index, (key, value) ->
+                if (index > 0) appendLine()
+                withStyle(SpanStyle(color = keyColor, fontWeight = FontWeight.SemiBold)) { append(key) }
+                withStyle(SpanStyle(color = colonColor)) { append(":") }
+                withStyle(SpanStyle(color = valueColor)) { append(" $value") }
             }
-        }
-    }
+        },
+        fontFamily = JetbrainsMono,
+        fontSize = 10.sp,
+        lineHeight = 14.sp,
+    )
 }
