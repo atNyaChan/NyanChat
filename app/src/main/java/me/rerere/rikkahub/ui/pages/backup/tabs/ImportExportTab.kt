@@ -65,14 +65,17 @@ fun ImportExportTab(
             scope.launch {
                 isExporting = true
                 vm.trackBackupOrRestore {
+                    val previousBackupTime = vm.updateBackupTimeBeforeExport()
                     runCatching {
                         // 导出文件
                         val exportFile = if (exportLegacy) vm.exportLegacyToFile() else vm.exportToFile()
 
                         // 复制到用户选择的位置
-                        context.contentResolver.openOutputStream(targetUri)?.use { outputStream ->
+                        val outputStream = context.contentResolver.openOutputStream(targetUri)
+                            ?: error("Unable to open backup destination")
+                        outputStream.use {
                             FileInputStream(exportFile).use { inputStream ->
-                                inputStream.copyTo(outputStream)
+                                inputStream.copyTo(it)
                             }
                         }
 
@@ -84,9 +87,10 @@ fun ImportExportTab(
                             type = ToastType.Success
                         )
                     }.onFailure { e ->
+                        vm.restoreBackupTime(previousBackupTime)
                         e.printStackTrace()
                         toaster.show(
-                            "导出失败: ${e.message.orEmpty()}",
+                            context.getString(R.string.backup_page_export_failed_detail, e.message.orEmpty()),
                             type = ToastType.Error
                         )
                     }
@@ -182,7 +186,7 @@ fun ImportExportTab(
                     e.printStackTrace()
                     showImportDialog = false
                     toaster.show(
-                        "导入失败: ${e.message.orEmpty()}",
+                        context.getString(R.string.backup_page_import_failed_detail, e.message.orEmpty()),
                         type = ToastType.Error
                     )
                 }
@@ -198,7 +202,7 @@ fun ImportExportTab(
     ) {
         stickyHeader {
             StickyHeader {
-                Text("类RikkaHub格式")
+                Text(stringResource(R.string.backup_page_rikkahub_format))
             }
         }
 
@@ -219,7 +223,7 @@ fun ImportExportTab(
                             if (isExporting && !exportLegacy) {
                                 stringResource(R.string.backup_page_exporting)
                             } else {
-                                "导出APP数据为tar文件（不兼容RikkaHub）"
+                                stringResource(R.string.backup_page_tar_desc)
                             }
                         )
                     },
@@ -241,13 +245,13 @@ fun ImportExportTab(
                             createDocumentLauncher.launch("rikkahub_backup_legacy_$timestamp.zip")
                         }
                     } else null,
-                    headlineContent = { Text("导出旧版格式（RikkaHub兼容）") },
+                    headlineContent = { Text(stringResource(R.string.backup_page_legacy_export)) },
                     supportingContent = {
                         Text(
                             if (isExporting && exportLegacy) {
                                 stringResource(R.string.backup_page_exporting)
                             } else {
-                                "移除本 Fork 新增的不兼容设置字段"
+                                stringResource(R.string.backup_page_legacy_export_desc)
                             }
                         )
                     },
@@ -266,7 +270,7 @@ fun ImportExportTab(
                             confirmLocalRestore = true
                         }
                     } else null,
-                    headlineContent = { Text("导入本地文件") },
+                    headlineContent = { Text(stringResource(R.string.backup_page_import_local)) },
                     supportingContent = {
                         Text(
                             if (isRestoring && importType == "local") {

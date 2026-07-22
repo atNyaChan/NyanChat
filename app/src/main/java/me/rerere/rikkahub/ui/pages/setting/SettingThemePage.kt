@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,7 +35,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -42,7 +43,6 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -57,6 +57,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -73,6 +74,7 @@ import me.rerere.hugeicons.stroke.PlusSign
 import me.rerere.hugeicons.stroke.Tick01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.pages.setting.components.PresetThemeButtonGroup
@@ -122,6 +124,21 @@ fun SettingThemePage(vm: SettingVM = koinViewModel()) {
             contentPadding = innerPadding + PaddingValues(8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            item("dynamicColor") {
+                CardGroup(modifier = Modifier.padding(horizontal = 8.dp)) {
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_page_dynamic_color)) },
+                        supportingContent = { Text(stringResource(R.string.setting_page_dynamic_color_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = settings.dynamicColor,
+                                onCheckedChange = { vm.updateSettings(settings.copy(dynamicColor = it)) },
+                            )
+                        },
+                    )
+                }
+            }
+
             if (settings.dynamicColor) {
                 item("dynamicColorHint") {
                     Box(
@@ -547,129 +564,62 @@ private fun ColorPickerRow(
     val hsl = remember(color) {
         FloatArray(3).also { ColorUtils.colorToHSL(color.toArgb(), it) }
     }
-    var hue by remember(color) { mutableFloatStateOf(hsl[0]) }
-    var saturation by remember(color) { mutableFloatStateOf(hsl[1]) }
-    var lightness by remember(color) { mutableFloatStateOf(hsl[2]) }
-    var hslCode by remember(color) { mutableStateOf(formatHslCode(hsl[0], hsl[1], hsl[2])) }
-    var hslCodeError by remember(color) { mutableStateOf(false) }
+    var hueInput by remember(color) { mutableStateOf(hsl[0].roundToInt().toString()) }
+    var saturationInput by remember(color) { mutableStateOf((hsl[1] * 100).roundToInt().toString()) }
+    var lightnessInput by remember(color) { mutableStateOf((hsl[2] * 100).roundToInt().toString()) }
 
-    fun updateColor(newHue: Float, newSaturation: Float, newLightness: Float) {
-        hue = newHue
-        saturation = newSaturation
-        lightness = newLightness
-        hslCode = formatHslCode(newHue, newSaturation, newLightness)
-        hslCodeError = false
-        onColorChange(Color(ColorUtils.HSLToColor(floatArrayOf(newHue, newSaturation, newLightness))))
-    }
-
-    Column(
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Canvas(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-            ) {
-                drawCircle(color = color)
-            }
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("H", style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(16.dp))
-                    Slider(
-                        value = hue,
-                        onValueChange = {
-                            updateColor(it, saturation, lightness)
-                        },
-                        valueRange = 0f..360f,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("S", style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(16.dp))
-                    Slider(
-                        value = saturation,
-                        onValueChange = {
-                            updateColor(hue, it, lightness)
-                        },
-                        valueRange = 0f..1f,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("L", style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(16.dp))
-                    Slider(
-                        value = lightness,
-                        onValueChange = {
-                            updateColor(hue, saturation, it)
-                        },
-                        valueRange = 0f..1f,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-            }
-        }
-
-        OutlinedTextField(
-            value = hslCode,
-            onValueChange = { value ->
-                hslCode = value
-                val parsedHsl = parseHslCode(value)
-                hslCodeError = parsedHsl == null
-                if (parsedHsl != null) {
-                    hue = parsedHsl[0]
-                    saturation = parsedHsl[1]
-                    lightness = parsedHsl[2]
-                    onColorChange(Color(ColorUtils.HSLToColor(parsedHsl)))
-                }
-            },
-            label = { Text("HSL") },
-            placeholder = { Text("hsl(267 36% 48%)") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            isError = hslCodeError,
-            supportingText = if (hslCodeError) {
-                { Text("Use hsl(267 36% 48%)") }
-            } else {
-                null
-            },
+    fun updateColorFromInputs() {
+        val hue = hueInput.toIntOrNull()?.takeIf { it in 0..360 } ?: return
+        val saturation = saturationInput.toIntOrNull()?.takeIf { it in 0..100 } ?: return
+        val lightness = lightnessInput.toIntOrNull()?.takeIf { it in 0..100 } ?: return
+        onColorChange(
+            Color(
+                ColorUtils.HSLToColor(
+                    floatArrayOf(hue.toFloat(), saturation / 100f, lightness / 100f)
+                )
+            )
         )
     }
-}
 
-private val hslNumberRegex = Regex("""[-+]?\d*\.?\d+""")
-
-private fun parseHslCode(value: String): FloatArray? {
-    val values = buildList {
-        for (match in hslNumberRegex.findAll(value)) {
-            add(match.value.toFloatOrNull() ?: return null)
-            if (size == 3) break
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Canvas(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+        ) {
+            drawCircle(color = color)
+        }
+        listOf(
+            Triple("H", hueInput, 360),
+            Triple("S", saturationInput, 100),
+            Triple("L", lightnessInput, 100),
+        ).forEach { (label, value, maxValue) ->
+            OutlinedTextField(
+                value = value,
+                onValueChange = { input ->
+                    if (input.all(Char::isDigit)) {
+                        when (label) {
+                            "H" -> hueInput = input
+                            "S" -> saturationInput = input
+                            "L" -> lightnessInput = input
+                        }
+                        updateColorFromInputs()
+                    }
+                },
+                label = { Text(label) },
+                modifier = Modifier.weight(1f),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                isError = value.toIntOrNull()?.let { it !in 0..maxValue } ?: true,
+                supportingText = {
+                    Text("0–$maxValue")
+                }
+            )
         }
     }
-
-    if (values.size != 3) return null
-
-    val hue = values[0].coerceIn(0f, 360f)
-    val saturation = parseHslPercentOrFraction(values[1]) ?: return null
-    val lightness = parseHslPercentOrFraction(values[2]) ?: return null
-
-    return floatArrayOf(hue, saturation, lightness)
-}
-
-private fun parseHslPercentOrFraction(value: Float): Float? {
-    if (!value.isFinite()) return null
-    return if (value > 1f) {
-        (value / 100f).coerceIn(0f, 1f)
-    } else {
-        value.coerceIn(0f, 1f)
-    }
-}
-
-private fun formatHslCode(hue: Float, saturation: Float, lightness: Float): String {
-    return "hsl(${hue.roundToInt()} ${(saturation * 100).roundToInt()}% ${(lightness * 100).roundToInt()}%)"
 }
 
 @Composable

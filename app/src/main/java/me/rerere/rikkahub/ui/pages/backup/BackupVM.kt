@@ -77,8 +77,9 @@ class BackupVM(
 
     suspend fun backup() {
         trackBackupOrRestore {
-            webDavSync.backup(settings.value.webDavConfig)
-            recordBackupTime()
+            withUpdatedBackupTime {
+                webDavSync.backup(settings.value.webDavConfig)
+            }
         }
     }
 
@@ -93,19 +94,15 @@ class BackupVM(
     }
 
     suspend fun exportToFile(): File {
-        val file = webDavSync.prepareBackupFile(
+        return webDavSync.prepareBackupFile(
             settings.value.webDavConfig.copy(items = WebDavConfig.BackupItem.entries)
         )
-        recordBackupTime()
-        return file
     }
 
     suspend fun exportLegacyToFile(): File {
-        val file = webDavSync.prepareLegacyBackupFile(
+        return webDavSync.prepareLegacyBackupFile(
             settings.value.webDavConfig.copy(items = WebDavConfig.BackupItem.entries)
         )
-        recordBackupTime()
-        return file
     }
 
     suspend fun restoreFromLocalFile(file: File) {
@@ -201,8 +198,9 @@ class BackupVM(
 
     suspend fun backupToS3() {
         trackBackupOrRestore {
-            s3Sync.backupToS3(settings.value.s3Config)
-            recordBackupTime()
+            withUpdatedBackupTime {
+                s3Sync.backupToS3(settings.value.s3Config)
+            }
         }
     }
 
@@ -225,11 +223,31 @@ class BackupVM(
         }
     }
 
-    private suspend fun recordBackupTime() {
+    suspend fun updateBackupTimeBeforeExport(): Long {
+        val previousTime = settings.value.backupReminderConfig.lastBackupTime
+        recordBackupTime(System.currentTimeMillis())
+        return previousTime
+    }
+
+    suspend fun restoreBackupTime(previousTime: Long) {
+        recordBackupTime(previousTime)
+    }
+
+    private suspend fun <T> withUpdatedBackupTime(block: suspend () -> T): T {
+        val previousTime = updateBackupTimeBeforeExport()
+        return try {
+            block()
+        } catch (error: Throwable) {
+            restoreBackupTime(previousTime)
+            throw error
+        }
+    }
+
+    private suspend fun recordBackupTime(time: Long) {
         settingsStore.update { settings ->
             settings.copy(
                 backupReminderConfig = settings.backupReminderConfig.copy(
-                    lastBackupTime = System.currentTimeMillis()
+                    lastBackupTime = time
                 )
             )
         }

@@ -162,7 +162,7 @@ fun UIAvatar(
                         AsyncImage(
                             model = value.url,
                             contentDescription = null,
-                            modifier = Modifier.fillMaxSize(0.75f),
+                            modifier = Modifier.fillMaxSize(0.9f),
                             contentScale = ContentScale.Crop,
                         )
                     }
@@ -184,7 +184,7 @@ fun UIAvatar(
                         Image(
                             painter = painterResource(R.drawable.small_icon),
                             contentDescription = null,
-                            modifier = Modifier.fillMaxSize(0.75f),
+                            modifier = Modifier.fillMaxSize(0.9f),
                             contentScale = ContentScale.Crop,
                         )
                     }

@@ -137,6 +137,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.browser)
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.profileinstaller)
     implementation(libs.termux.terminal.view)
     implementation(libs.guava.listenablefuture)

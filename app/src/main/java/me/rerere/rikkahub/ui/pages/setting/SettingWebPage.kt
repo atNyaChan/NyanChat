@@ -55,6 +55,7 @@ import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.service.WebServerService
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CompactNumberField
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionLocalNetwork
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionManager
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionNotification
@@ -204,7 +205,7 @@ fun SettingWebPage() {
                         headlineContent = { Text(stringResource(R.string.setting_page_web_server_port)) },
                         supportingContent = { Text(stringResource(R.string.setting_page_web_server_port_desc)) },
                         trailingContent = {
-                            TextField(
+                            CompactNumberField(
                                 value = portText,
                                 onValueChange = { value ->
                                     portText = value.filter { it.isDigit() }
@@ -215,19 +216,8 @@ fun SettingWebPage() {
                                         }
                                     }
                                 },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                textStyle = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Normal),
-                                singleLine = true,
                                 isError = portText.toIntOrNull()?.let { it !in 1024..65535 } ?: true,
-                                modifier = Modifier.width(100.dp),
                                 enabled = !serverState.isRunning,
-                                shape = CircleShape,
-                                colors = TextFieldDefaults.colors(
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent,
-                                    errorIndicatorColor = Color.Transparent,
-                                    disabledIndicatorColor = Color.Transparent
-                                )
                             )
                         },
                     )
@@ -325,7 +315,7 @@ fun SettingWebPage() {
                             val urlsText = urls.joinToString("\n")
                             item(
                                 onClick = { copyUrl(urlsText) },
-                                headlineContent = { Text("网址") },
+                                headlineContent = { Text(stringResource(R.string.setting_page_web_server_url)) },
                                 supportingContent = { Text(urlsText) },
                             )
                         }

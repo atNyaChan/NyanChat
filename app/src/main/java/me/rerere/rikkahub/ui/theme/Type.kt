@@ -13,6 +13,39 @@ import me.rerere.rikkahub.R
 val base = Typography()
 val Typography = Typography()
 
+fun Typography.withFontFamily(fontFamily: FontFamily): Typography = copy(
+    displayLarge = displayLarge.copy(fontFamily = fontFamily),
+    displayMedium = displayMedium.copy(fontFamily = fontFamily),
+    displaySmall = displaySmall.copy(fontFamily = fontFamily),
+    headlineLarge = headlineLarge.copy(fontFamily = fontFamily),
+    headlineMedium = headlineMedium.copy(fontFamily = fontFamily),
+    headlineSmall = headlineSmall.copy(fontFamily = fontFamily),
+    titleLarge = titleLarge.copy(fontFamily = fontFamily),
+    titleMedium = titleMedium.copy(fontFamily = fontFamily),
+    titleSmall = titleSmall.copy(fontFamily = fontFamily),
+    bodyLarge = bodyLarge.copy(fontFamily = fontFamily),
+    bodyMedium = bodyMedium.copy(fontFamily = fontFamily),
+    bodySmall = bodySmall.copy(fontFamily = fontFamily),
+    labelLarge = labelLarge.copy(fontFamily = fontFamily),
+    labelMedium = labelMedium.copy(fontFamily = fontFamily),
+    labelSmall = labelSmall.copy(fontFamily = fontFamily),
+    displayLargeEmphasized = displayLargeEmphasized.copy(fontFamily = fontFamily),
+    displayMediumEmphasized = displayMediumEmphasized.copy(fontFamily = fontFamily),
+    displaySmallEmphasized = displaySmallEmphasized.copy(fontFamily = fontFamily),
+    headlineLargeEmphasized = headlineLargeEmphasized.copy(fontFamily = fontFamily),
+    headlineMediumEmphasized = headlineMediumEmphasized.copy(fontFamily = fontFamily),
+    headlineSmallEmphasized = headlineSmallEmphasized.copy(fontFamily = fontFamily),
+    titleLargeEmphasized = titleLargeEmphasized.copy(fontFamily = fontFamily),
+    titleMediumEmphasized = titleMediumEmphasized.copy(fontFamily = fontFamily),
+    titleSmallEmphasized = titleSmallEmphasized.copy(fontFamily = fontFamily),
+    bodyLargeEmphasized = bodyLargeEmphasized.copy(fontFamily = fontFamily),
+    bodyMediumEmphasized = bodyMediumEmphasized.copy(fontFamily = fontFamily),
+    bodySmallEmphasized = bodySmallEmphasized.copy(fontFamily = fontFamily),
+    labelLargeEmphasized = labelLargeEmphasized.copy(fontFamily = fontFamily),
+    labelMediumEmphasized = labelMediumEmphasized.copy(fontFamily = fontFamily),
+    labelSmallEmphasized = labelSmallEmphasized.copy(fontFamily = fontFamily),
+)
+
 // Set of Material typography styles to start with
 //val Typography = Typography(
 //    displayLargeEmphasized = base.displayLargeEmphasized.copy(

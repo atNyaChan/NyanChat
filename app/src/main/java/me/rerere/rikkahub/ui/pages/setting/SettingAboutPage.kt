@@ -120,13 +120,8 @@ fun SettingAboutPage() {
                         )
 
                         Text(
-                            text = "RikkaHub",
+                            text = stringResource(R.string.app_name),
                             style = MaterialTheme.typography.displaySmall,
-                        )
-                        Text(
-                            text = "Modified By Nyanw",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
@@ -161,24 +156,43 @@ fun SettingAboutPage() {
                         modifier = Modifier.padding(horizontal = 8.dp),
                     ) {
                         item(
-                            onClick = { context.openUrl("https://github.com/MaNunCyan/rikkahub") },
+                            onClick = { context.openUrl("https://github.com/atNyaChan/NyanChat") },
                             leadingContent = { Icon(HugeIcons.Github, null) },
-                            supportingContent = { Text("https://github.com/MaNunCyan/rikkahub") },
+                            supportingContent = { Text("https://github.com/atNyaChan/NyanChat") },
                             headlineContent = { Text(stringResource(R.string.about_page_github)) },
                         )
                         item(
-                            onClick = { context.openUrl("https://github.com/rikkahub/rikkahub/blob/master/LICENSE") },
+                            onClick = { context.openUrl("https://github.com/atNyaChan/NyanChat/blob/master/LICENSE") },
                             leadingContent = { Icon(HugeIcons.File02, null) },
-                            supportingContent = { Text("https://github.com/rikkahub/rikkahub/blob/master/LICENSE") },
+                            supportingContent = { Text("https://github.com/atNyaChan/NyanChat/blob/master/LICENSE") },
                             headlineContent = { Text(stringResource(R.string.about_page_license)) },
                         )
                         item(
                             onClick = { context.openUrl("https://github.com/rikkahub/rikkahub") },
                             leadingContent = { Icon(HugeIcons.Github, null) },
                             supportingContent = { Text("https://github.com/rikkahub/rikkahub") },
-                            headlineContent = { Text("原项目GitHub") },
+                            headlineContent = { Text(stringResource(R.string.about_page_original_github)) },
+                        )
+                        item(
+                            onClick = { context.openUrl("https://rikka-ai.com") },
+                            leadingContent = { Icon(HugeIcons.SmartPhone01, null) },
+                            supportingContent = { Text("https://rikka-ai.com") },
+                            headlineContent = { Text(stringResource(R.string.about_page_original_website)) },
                         )
                     }
+                }
+
+                item {
+                    Text(
+                        text = "NyanChat is a modified version of RikkaHub\n" +
+                            "Modified by Nyanw, since 2026-07-20\n" +
+                            "Licensed under AGPL-3.0",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
         }

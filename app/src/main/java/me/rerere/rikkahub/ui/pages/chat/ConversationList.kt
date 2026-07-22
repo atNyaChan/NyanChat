@@ -111,21 +111,24 @@ fun ColumnScope.ConversationList(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("已选${selectedConversations.size}项", modifier = Modifier.weight(1f))
+                Text(
+                    stringResource(R.string.conversation_selected_count, selectedConversations.size),
+                    modifier = Modifier.weight(1f),
+                )
                 IconButton(onClick = { selectedConversations = emptyMap() }) {
-                    Icon(HugeIcons.Cancel01, contentDescription = "取消多选")
+                    Icon(HugeIcons.Cancel01, contentDescription = stringResource(R.string.conversation_cancel_selection))
                 }
                 IconButton(onClick = {
                     onMove(selectedConversations.values.toList())
                     selectedConversations = emptyMap()
                 }) {
-                    Icon(HugeIcons.Forward02, contentDescription = "移动到...")
+                    Icon(HugeIcons.Forward02, contentDescription = stringResource(R.string.conversation_move_to))
                 }
                 IconButton(onClick = {
                     onDeleteSelected(selectedConversations.values.toList())
                     selectedConversations = emptyMap()
                 }) {
-                    Icon(HugeIcons.Delete01, contentDescription = "删除")
+                    Icon(HugeIcons.Delete01, contentDescription = stringResource(R.string.delete))
                 }
             }
         }
@@ -333,12 +336,20 @@ private fun ConversationItem(
                 onDismissRequest = { showDropdownMenu = false },
             ) {
                 DropdownMenuItem(
-                    text = { Text("多选") },
+                    text = { Text(stringResource(R.string.conversation_multi_select)) },
                     onClick = {
                         onLongClick(conversation)
                         showDropdownMenu = false
                     },
                     leadingIcon = { Icon(HugeIcons.CheckList, null) },
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.conversation_move_to)) },
+                    onClick = {
+                        onMove(conversation)
+                        showDropdownMenu = false
+                    },
+                    leadingIcon = { Icon(HugeIcons.Forward02, null) },
                 )
                 DropdownMenuItem(
                     text = {
@@ -360,7 +371,7 @@ private fun ConversationItem(
 
                 DropdownMenuItem(
                     text = {
-                        Text("编辑标题")
+                        Text(stringResource(R.string.chat_page_edit_title))
                     },
                     onClick = {
                         onEditTitle(conversation)
@@ -368,19 +379,6 @@ private fun ConversationItem(
                     },
                     leadingIcon = {
                         Icon(HugeIcons.PencilEdit01, null)
-                    }
-                )
-
-                DropdownMenuItem(
-                    text = {
-                        Text("移动到...")
-                    },
-                    onClick = {
-                        onMove(conversation)
-                        showDropdownMenu = false
-                    },
-                    leadingIcon = {
-                        Icon(HugeIcons.Forward02, null)
                     }
                 )
 

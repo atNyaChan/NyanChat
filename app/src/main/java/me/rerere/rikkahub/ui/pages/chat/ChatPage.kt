@@ -285,6 +285,7 @@ private fun ChatPageContent(
 ) {
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
+    val selectModelFirstMessage = stringResource(R.string.chat_page_select_model_first)
     val workspaceRepository: WorkspaceRepository = koinInject()
     var previewMode by rememberSaveable { mutableStateOf(false) }
     val hazeState = rememberHazeState()
@@ -359,7 +360,10 @@ private fun ChatPageContent(
                     },
                     onSendClick = {
                         if (currentChatModel == null) {
-                            toaster.show("请先选择模型", type = ToastType.Error)
+                            toaster.show(
+                                selectModelFirstMessage,
+                                type = ToastType.Error,
+                            )
                             return@ChatInput
                         }
                         if (inputState.isEditing()) {
@@ -827,7 +831,7 @@ private fun TopBar(
                         Text(stringResource(R.string.chat_page_cancel))
                     }
                     TextButton(onClick = { onGenerateTitle(onUpdate) }) {
-                        Text("自动生成标题")
+                        Text(stringResource(R.string.chat_page_auto_generate_title))
                     }
                     TextButton(onClick = { titleState.confirm() }) {
                         Text(stringResource(R.string.confirm))

@@ -26,6 +26,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -40,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.SpanStyle
@@ -50,6 +52,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import me.rerere.common.android.LogEntry
 import me.rerere.common.android.Logging
+import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.JsonTree
 import me.rerere.rikkahub.ui.theme.CustomColors
@@ -115,7 +118,7 @@ private fun UnifiedLogList(
     if (sortedLogs.isEmpty()) {
         Box(modifier = modifier, contentAlignment = Alignment.Center) {
             Text(
-                text = "暂无请求记录",
+                text = stringResource(R.string.log_page_empty),
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
             )
         }
@@ -209,8 +212,13 @@ private fun RequestLogCard(log: LogEntry.RequestLog, onClick: () -> Unit) {
             }
 
             log.error?.let { error ->
+                val displayError = if (error == "stream_response_interrupted") {
+                    stringResource(R.string.log_page_stream_interrupted)
+                } else {
+                    error
+                }
                 Text(
-                    text = "Error: $error",
+                    text = "Error: $displayError",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.error
                 )
@@ -223,8 +231,16 @@ private fun RequestLogCard(log: LogEntry.RequestLog, onClick: () -> Unit) {
 private fun RequestLogDetail(log: LogEntry.RequestLog) {
     val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault()) }
     val context = LocalContext.current
-    val responseMessage = remember(log.responseBody) {
-        log.responseBody?.let(::extractResponseMessage).orEmpty()
+    val labels = LlmLabels(
+        text = stringResource(R.string.log_page_content_text),
+        reasoning = stringResource(R.string.log_page_content_reasoning),
+        tool = stringResource(R.string.log_page_content_tool),
+    )
+    val responseMessage = remember(log.url, log.method, log.responseBody, labels) {
+        log.responseBody
+            ?.takeIf { log.method.equals("POST", ignoreCase = true) && isLlmGenerationUrl(log.url) }
+            ?.let { extractResponseMessage(it, labels) }
+            .orEmpty()
     }
 
     SelectionContainer {
@@ -335,8 +351,15 @@ private fun CollapsibleLogSection(
             }
         }
         AnimatedVisibility(expanded) {
-            Column(modifier = Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                content()
+            ProvideTextStyle(
+                MaterialTheme.typography.bodySmall.copy(
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp,
+                )
+            ) {
+                Column(modifier = Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    content()
+                }
             }
         }
     }
@@ -345,7 +368,21 @@ private fun CollapsibleLogSection(
 private fun headersText(headers: Map<String, String>): String =
     headers.entries.joinToString("\n") { (name, value) -> "$name: $value" }
 
-private fun extractResponseMessage(body: String): String? {
+private fun isLlmGenerationUrl(url: String): Boolean {
+    val path = url.substringBefore('?').trimEnd('/').lowercase()
+    return path.endsWith("/chat/completions") ||
+        path.endsWith("/completions") ||
+        path.endsWith("/responses") ||
+        path.endsWith("/messages") ||
+        path.endsWith("/api/chat") ||
+        path.endsWith("/api/generate") ||
+        path.endsWith(":generatecontent") ||
+        path.endsWith(":streamgeneratecontent") ||
+        path.endsWith("/chat") ||
+        path.endsWith("/generate")
+}
+
+private fun extractResponseMessage(body: String, labels: LlmLabels): String? {
     val payloads = body.lineSequence()
         .map { it.trim() }
         .filter { it.startsWith("data:") }
@@ -360,8 +397,8 @@ private fun extractResponseMessage(body: String): String? {
     val hasLlmEvents = elements.any(::looksLikeLlmEvent)
     if (!hasLlmEvents) return null
 
-    return LlmTextBuilder().also { builder ->
-        elements.forEach { appendLlmContent(it, builder) }
+    return LlmTextBuilder(labels).also { builder ->
+        elements.forEach { appendLlmContent(it, builder, labels = labels) }
     }.toString().trim().takeIf { it.isNotEmpty() }
 }
 
@@ -385,10 +422,11 @@ private fun appendLlmContent(
     element: JsonElement,
     output: LlmTextBuilder,
     inheritedKind: LlmContentKind? = null,
+    labels: LlmLabels,
 ) {
     when (element) {
         JsonNull -> Unit
-        is JsonArray -> element.forEach { appendLlmContent(it, output, inheritedKind) }
+        is JsonArray -> element.forEach { appendLlmContent(it, output, inheritedKind, labels) }
         is JsonObject -> {
             val type = (element["type"] as? JsonPrimitive)?.contentOrNull.orEmpty().lowercase()
             val isTool = type.contains("tool_use") || type.contains("tool_call") ||
@@ -397,7 +435,7 @@ private fun appendLlmContent(
                 element.containsKey("function_call") || element.containsKey("functionCall") ||
                 element.containsKey("functionResponse")
             if (isTool) {
-                output.appendLabeled("工具", element.withoutNulls().toString() + "\n")
+                output.appendLabeled(labels.tool, element.withoutNulls().toString() + "\n")
                 return
             }
             val kind = when {
@@ -409,20 +447,20 @@ private fun appendLlmContent(
             element.forEach { (key, value) ->
                 when {
                     key == "reasoning" || key == "reasoning_content" || key == "thinking" ->
-                        jsonText(value)?.let { output.appendLabeled("思考", it) }
+                        jsonText(value)?.let { output.appendLabeled(labels.reasoning, it) }
                     (key == "text" || key == "content" || key == "output_text") && value is JsonPrimitive ->
                         value.contentOrNull?.let {
-                            if (kind == LlmContentKind.REASONING) output.appendLabeled("思考", it)
+                            if (kind == LlmContentKind.REASONING) output.appendLabeled(labels.reasoning, it)
                             else output.appendText(it)
                         }
                     key == "arguments" || key == "input_json_delta" ->
-                        jsonText(value)?.let { output.appendLabeled("工具", it) }
+                        jsonText(value)?.let { output.appendLabeled(labels.tool, it) }
                     key == "delta" && value is JsonPrimitive -> value.contentOrNull?.let {
-                        if (kind == LlmContentKind.REASONING) output.appendLabeled("思考", it)
+                        if (kind == LlmContentKind.REASONING) output.appendLabeled(labels.reasoning, it)
                         else if (kind == LlmContentKind.TEXT) output.appendText(it)
                     }
                     key !in setOf("type", "id", "index", "role", "model", "usage") ->
-                        appendLlmContent(value, output, kind)
+                        appendLlmContent(value, output, kind, labels)
                 }
             }
         }
@@ -447,14 +485,16 @@ private fun JsonElement.withoutNulls(): JsonElement = when (this) {
     else -> this
 }
 
-private class LlmTextBuilder {
+private data class LlmLabels(val text: String, val reasoning: String, val tool: String)
+
+private class LlmTextBuilder(private val labels: LlmLabels) {
     private val output = StringBuilder()
     private var section: String? = null
 
     fun appendText(value: String) {
         if (value.isEmpty()) return
         if (section != null) appendSectionBreak()
-        if (section != null || output.isEmpty()) output.appendLine("[正文]")
+        if (section != null || output.isEmpty()) output.appendLine("[${labels.text}]")
         section = null
         output.append(value)
     }
@@ -503,8 +543,8 @@ private fun DetailSection(label: String, value: String) {
             withStyle(SpanStyle(color = valueColor)) { append(value) }
         },
         fontFamily = JetbrainsMono,
-        fontSize = 10.sp,
-        lineHeight = 14.sp,
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
     )
 }
 
@@ -523,7 +563,7 @@ private fun HighlightedHeaders(headers: Map<String, String>) {
             }
         },
         fontFamily = JetbrainsMono,
-        fontSize = 10.sp,
-        lineHeight = 14.sp,
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
     )
 }

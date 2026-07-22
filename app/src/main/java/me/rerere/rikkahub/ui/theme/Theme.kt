@@ -46,6 +46,14 @@ fun RikkahubTheme(
     content: @Composable () -> Unit
 ) {
     val settings by rememberUserSettingsState()
+    val appFontFamily = rememberChatFontFamily(settings.displaySetting)
+    val typography = remember(settings.displaySetting.useChatFontGlobally, appFontFamily) {
+        if (settings.displaySetting.useChatFontGlobally) {
+            Typography.withFontFamily(appFontFamily)
+        } else {
+            Typography
+        }
+    }
 
     val darkTheme = when (colorMode) {
         ColorMode.SYSTEM -> isSystemInDarkTheme()
@@ -96,7 +104,7 @@ fun RikkahubTheme(
     ) {
         MaterialExpressiveTheme(
             colorScheme = colorSchemeConverted,
-            typography = Typography,
+            typography = typography,
             content = content,
             motionScheme = MotionScheme.expressive()
         )

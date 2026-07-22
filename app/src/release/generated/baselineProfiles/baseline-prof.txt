@@ -43116,7 +43116,6 @@ Lme/rerere/rikkahub/Screen$Prompts;
 Lme/rerere/rikkahub/Screen$QuickMessages;
 Lme/rerere/rikkahub/Screen$Setting;
 Lme/rerere/rikkahub/Screen$SettingAbout;
-Lme/rerere/rikkahub/Screen$SettingDonate;
 Lme/rerere/rikkahub/Screen$SettingFiles;
 Lme/rerere/rikkahub/Screen$SettingMcp;
 Lme/rerere/rikkahub/Screen$SettingModels;
@@ -43302,7 +43301,6 @@ Lme/rerere/rikkahub/data/ai/transformers/WorkspaceReminderTransformer;
 SPLme/rerere/rikkahub/data/ai/transformers/WorkspaceReminderTransformer;-><clinit>()V
 SPLme/rerere/rikkahub/data/ai/transformers/WorkspaceReminderTransformer;-><init>(Lme/rerere/rikkahub/data/repository/WorkspaceRepository;)V
 Lme/rerere/rikkahub/data/api/RikkaHubAPI;
-Lme/rerere/rikkahub/data/api/SponsorAPI;
 Lme/rerere/rikkahub/data/datastore/BackupReminderConfig;
 SPLme/rerere/rikkahub/data/datastore/BackupReminderConfig;-><clinit>()V
 SPLme/rerere/rikkahub/data/datastore/BackupReminderConfig;-><init>(IZIJLkotlinx/serialization/internal/SerializationConstructorMarker;)V
@@ -43469,7 +43467,6 @@ SPLme/rerere/rikkahub/data/datastore/Settings;->getSearchServiceSelected()I
 SPLme/rerere/rikkahub/data/datastore/Settings;->getSearchServices()Ljava/util/List;
 SPLme/rerere/rikkahub/data/datastore/Settings;->getSelectedASRProviderId()Lkotlin/uuid/Uuid;
 SPLme/rerere/rikkahub/data/datastore/Settings;->getSelectedTTSProviderId()Lkotlin/uuid/Uuid;
-SPLme/rerere/rikkahub/data/datastore/Settings;->getSponsorAlertDismissedAt()I
 SPLme/rerere/rikkahub/data/datastore/Settings;->getSuggestionModelId()Lkotlin/uuid/Uuid;
 SPLme/rerere/rikkahub/data/datastore/Settings;->getSuggestionPrompt()Ljava/lang/String;
 SPLme/rerere/rikkahub/data/datastore/Settings;->getThemeId()Ljava/lang/String;
@@ -43547,7 +43544,6 @@ SPLme/rerere/rikkahub/data/datastore/SettingsStore;->access$getSELECTED_ASR_PROV
 SPLme/rerere/rikkahub/data/datastore/SettingsStore;->access$getSELECTED_TTS_PROVIDER$cp()Landroidx/datastore/preferences/core/Preferences$Key;
 SPLme/rerere/rikkahub/data/datastore/SettingsStore;->access$getSELECT_ASSISTANT$cp()Landroidx/datastore/preferences/core/Preferences$Key;
 SPLme/rerere/rikkahub/data/datastore/SettingsStore;->access$getSELECT_MODEL$cp()Landroidx/datastore/preferences/core/Preferences$Key;
-SPLme/rerere/rikkahub/data/datastore/SettingsStore;->access$getSPONSOR_ALERT_DISMISSED_AT$cp()Landroidx/datastore/preferences/core/Preferences$Key;
 SPLme/rerere/rikkahub/data/datastore/SettingsStore;->access$getSUGGESTION_MODEL$cp()Landroidx/datastore/preferences/core/Preferences$Key;
 SPLme/rerere/rikkahub/data/datastore/SettingsStore;->access$getSUGGESTION_PROMPT$cp()Landroidx/datastore/preferences/core/Preferences$Key;
 SPLme/rerere/rikkahub/data/datastore/SettingsStore;->access$getTHEME_ID$cp()Landroidx/datastore/preferences/core/Preferences$Key;
@@ -43602,7 +43598,6 @@ SPLme/rerere/rikkahub/data/datastore/SettingsStore$Companion;->getSELECTED_ASR_P
 SPLme/rerere/rikkahub/data/datastore/SettingsStore$Companion;->getSELECTED_TTS_PROVIDER()Landroidx/datastore/preferences/core/Preferences$Key;
 SPLme/rerere/rikkahub/data/datastore/SettingsStore$Companion;->getSELECT_ASSISTANT()Landroidx/datastore/preferences/core/Preferences$Key;
 SPLme/rerere/rikkahub/data/datastore/SettingsStore$Companion;->getSELECT_MODEL()Landroidx/datastore/preferences/core/Preferences$Key;
-SPLme/rerere/rikkahub/data/datastore/SettingsStore$Companion;->getSPONSOR_ALERT_DISMISSED_AT()Landroidx/datastore/preferences/core/Preferences$Key;
 SPLme/rerere/rikkahub/data/datastore/SettingsStore$Companion;->getSUGGESTION_MODEL()Landroidx/datastore/preferences/core/Preferences$Key;
 SPLme/rerere/rikkahub/data/datastore/SettingsStore$Companion;->getSUGGESTION_PROMPT()Landroidx/datastore/preferences/core/Preferences$Key;
 SPLme/rerere/rikkahub/data/datastore/SettingsStore$Companion;->getTHEME_ID()Landroidx/datastore/preferences/core/Preferences$Key;

@@ -3,6 +3,8 @@ package me.rerere.rikkahub.ui.pages.setting
 import android.content.Context
 import android.graphics.Typeface
 import android.net.Uri
+import android.os.Build
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -13,10 +15,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
@@ -34,7 +38,9 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dokar.sonner.ToastType
 import kotlinx.coroutines.Dispatchers
@@ -52,7 +58,13 @@ import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.Select
+import me.rerere.rikkahub.ui.components.ui.permission.PermissionManager
+import me.rerere.rikkahub.ui.components.ui.permission.PermissionNotification
+import me.rerere.rikkahub.ui.components.ui.permission.rememberPermissionState
 import me.rerere.rikkahub.ui.context.LocalToaster
+import me.rerere.rikkahub.ui.hooks.rememberAmoledDarkMode
+import me.rerere.rikkahub.ui.hooks.rememberSharedPreferenceBoolean
+import me.rerere.rikkahub.ui.hooks.rememberSharedPreferenceString
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.rememberChatFontFamily
 import me.rerere.rikkahub.utils.plus
@@ -60,13 +72,47 @@ import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
 @Composable
-fun SettingPreferencesUIPage(vm: SettingVM = koinViewModel()) {
+fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
     val settings by vm.settings.collectAsStateWithLifecycle()
     var displaySetting by remember(settings) { mutableStateOf(settings.displaySetting) }
     val context = LocalContext.current
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
     val chatFontFamily = rememberChatFontFamily(displaySetting)
+    val customChatFontFamily = rememberChatFontFamily(
+        displaySetting.copy(chatFontFamily = ChatFontFamily.CUSTOM)
+    )
+    var amoledDarkMode by rememberAmoledDarkMode()
+    var appLanguage by rememberSharedPreferenceString(APP_LANGUAGE_KEY, "")
+    val selectedLanguage = AppLanguage.entries.firstOrNull { it.tag == appLanguage } ?: AppLanguage.SYSTEM
+    val notificationMode = when {
+        !displaySetting.enableNotificationOnMessageGeneration -> NotificationMode.OFF
+        displaySetting.enableLiveUpdateNotification -> NotificationMode.REALTIME
+        else -> NotificationMode.AFTER_GENERATION
+    }
+    val pasteLongTextThreshold = if (displaySetting.pasteLongTextAsFile) {
+        displaySetting.pasteLongTextThreshold
+    } else {
+        null
+    }
+    var pasteLongTextThresholdInput by remember(pasteLongTextThreshold) {
+        mutableStateOf(pasteLongTextThreshold?.toString().orEmpty())
+    }
+    val volumeKeyScrollMode = if (!displaySetting.enableVolumeKeyScroll) {
+        VolumeKeyScrollMode.OFF
+    } else {
+        VolumeKeyScrollMode.entries.minBy { mode ->
+            kotlin.math.abs((mode.ratio ?: 0f) - displaySetting.volumeKeyScrollRatio)
+        }
+    }
+    val permissionState = rememberPermissionState(
+        permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            setOf(PermissionNotification)
+        } else {
+            emptySet()
+        },
+    )
+    PermissionManager(permissionState = permissionState)
 
     fun updateDisplaySetting(setting: DisplaySetting) {
         displaySetting = setting
@@ -105,7 +151,7 @@ fun SettingPreferencesUIPage(vm: SettingVM = koinViewModel()) {
         topBar = {
             LargeFlexibleTopAppBar(
                 title = {
-                    Text(stringResource(R.string.setting_page_preferences_ui))
+                    Text(stringResource(R.string.setting_page_more_settings))
                 },
                 navigationIcon = {
                     BackButton()
@@ -123,19 +169,120 @@ fun SettingPreferencesUIPage(vm: SettingVM = koinViewModel()) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                CardGroup(
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                    title = { Text(stringResource(R.string.setting_page_message_display_settings)) },
-                ) {
+                var createNewConversationOnStart by rememberSharedPreferenceBoolean(
+                    "create_new_conversation_on_start",
+                    true,
+                )
+                CardGroup(modifier = Modifier.padding(horizontal = 8.dp)) {
                     item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_user_avatar_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_show_user_avatar_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_general_language)) },
+                        trailingContent = {
+                            Select(
+                                options = AppLanguage.entries,
+                                selectedOption = selectedLanguage,
+                                onOptionSelected = { language ->
+                                    appLanguage = language.tag
+                                    AppCompatDelegate.setApplicationLocales(
+                                        LocaleListCompat.forLanguageTags(language.tag)
+                                    )
+                                },
+                                optionToString = { stringResource(it.labelRes) },
+                                modifier = Modifier.fillMaxWidth(0.55f),
+                            )
+                        },
+                    )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_create_new_conversation_on_start_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_create_new_conversation_on_start_desc)) },
                         trailingContent = {
                             Switch(
-                                checked = displaySetting.showUserAvatar,
+                                checked = createNewConversationOnStart,
+                                onCheckedChange = { createNewConversationOnStart = it },
+                            )
+                        },
+                    )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_send_on_enter_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_send_on_enter_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.sendOnEnter,
                                 onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(showUserAvatar = it))
-                                }
+                                    updateDisplaySetting(displaySetting.copy(sendOnEnter = it))
+                                },
+                            )
+                        },
+                    )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_enable_auto_scroll_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_enable_auto_scroll_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.enableAutoScroll,
+                                onCheckedChange = {
+                                    updateDisplaySetting(displaySetting.copy(enableAutoScroll = it))
+                                },
+                            )
+                        },
+                    )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_enable_blur_effect_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_enable_blur_effect_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.enableBlurEffect,
+                                onCheckedChange = {
+                                    updateDisplaySetting(displaySetting.copy(enableBlurEffect = it))
+                                },
+                            )
+                        },
+                    )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_enable_message_generation_haptic_effect_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_enable_message_generation_haptic_effect_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.enableMessageGenerationHapticEffect,
+                                onCheckedChange = {
+                                    updateDisplaySetting(
+                                        displaySetting.copy(enableMessageGenerationHapticEffect = it)
+                                    )
+                                },
+                            )
+                        },
+                    )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_notification_message_generated)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_notification_message_generated_desc)) },
+                        trailingContent = {
+                            Select(
+                                options = NotificationMode.entries,
+                                selectedOption = notificationMode,
+                                onOptionSelected = { mode ->
+                                    if (mode != NotificationMode.OFF && !permissionState.allPermissionsGranted) {
+                                        permissionState.requestPermissions()
+                                    }
+                                    updateDisplaySetting(
+                                        displaySetting.copy(
+                                            enableNotificationOnMessageGeneration = mode != NotificationMode.OFF,
+                                            enableLiveUpdateNotification = mode == NotificationMode.REALTIME,
+                                        )
+                                    )
+                                },
+                                optionToString = { stringResource(it.labelRes) },
+                                fitToOptions = true,
+                            )
+                        },
+                    )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_skip_crop_image_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_skip_crop_image_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.skipCropImage,
+                                onCheckedChange = {
+                                    updateDisplaySetting(displaySetting.copy(skipCropImage = it))
+                                },
                             )
                         },
                     )
@@ -185,42 +332,6 @@ fun SettingPreferencesUIPage(vm: SettingVM = koinViewModel()) {
                         },
                     )
                     item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_model_name_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_show_model_name_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.showModelName,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(showModelName = it))
-                                }
-                            )
-                        },
-                    )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_datetime_in_message_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_show_datetime_in_message_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.showDateTimeInMessage,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(showDateTimeInMessage = it))
-                                }
-                            )
-                        },
-                    )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_token_usage_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_show_token_usage_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.showTokenUsage,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(showTokenUsage = it))
-                                }
-                            )
-                        },
-                    )
-                    item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_show_thinking_content_title)) },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_show_thinking_content_desc)) },
                         trailingContent = {
@@ -245,20 +356,87 @@ fun SettingPreferencesUIPage(vm: SettingVM = koinViewModel()) {
                         },
                     )
                     item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_enable_latex_rendering_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_enable_latex_rendering_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_paste_long_text_as_file_title)) },
+                        supportingContent = {
+                            Column {
+                                Text(stringResource(R.string.setting_display_page_paste_long_text_as_file_desc))
+                                OutlinedTextField(
+                                    value = pasteLongTextThresholdInput,
+                                    onValueChange = { value ->
+                                        if (value.all(Char::isDigit)) {
+                                            pasteLongTextThresholdInput = value
+                                            if (value.isBlank()) {
+                                                updateDisplaySetting(
+                                                    displaySetting.copy(
+                                                        pasteLongTextAsFile = false,
+                                                    )
+                                                )
+                                            } else {
+                                                value.toIntOrNull()?.takeIf { it > 0 }?.let { threshold ->
+                                                    updateDisplaySetting(
+                                                        displaySetting.copy(
+                                                            pasteLongTextAsFile = true,
+                                                            pasteLongTextThreshold = threshold,
+                                                        )
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .padding(top = 8.dp)
+                                        .fillMaxWidth(),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    singleLine = true,
+                                    isError = pasteLongTextThresholdInput.isNotBlank() &&
+                                        pasteLongTextThresholdInput.toIntOrNull()?.takeIf { it > 0 } == null,
+                                )
+                            }
+                        },
+                    )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_volume_key_scroll_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_volume_key_scroll_desc)) },
                         trailingContent = {
-                            Switch(
-                                checked = displaySetting.enableLatexRendering,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(enableLatexRendering = it))
-                                }
+                            Select(
+                                options = VolumeKeyScrollMode.entries,
+                                selectedOption = volumeKeyScrollMode,
+                                onOptionSelected = { mode ->
+                                    updateDisplaySetting(
+                                        displaySetting.copy(
+                                            enableVolumeKeyScroll = mode != VolumeKeyScrollMode.OFF,
+                                            volumeKeyScrollRatio = mode.ratio
+                                                ?: displaySetting.volumeKeyScrollRatio,
+                                        )
+                                    )
+                                },
+                                optionToString = { mode ->
+                                    mode.ratio?.let { ratio ->
+                                        "${(ratio * 100).toInt()}%"
+                                    } ?: stringResource(R.string.setting_notification_mode_off)
+                                },
+                                fitToOptions = true,
                             )
                         },
                     )
                     item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_amoled_dark_mode_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_amoled_dark_mode_desc)) },
+                        trailingContent = {
+                            Switch(checked = amoledDarkMode, onCheckedChange = { amoledDarkMode = it })
+                        },
+                    )
+                }
+            }
+
+            item {
+                CardGroup(
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    title = { Text(stringResource(R.string.setting_page_message_display_settings)) },
+                ) {
+                    item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_chat_font_family_title)) },
-                        supportingContent = {
+                        trailingContent = {
                             Select(
                                 options = ChatFontFamily.entries,
                                 selectedOption = displaySetting.chatFontFamily,
@@ -269,14 +447,18 @@ fun SettingPreferencesUIPage(vm: SettingVM = koinViewModel()) {
                                         updateDisplaySetting(displaySetting.copy(chatFontFamily = family))
                                     }
                                 },
-                                modifier = Modifier
-                                    .padding(top = 4.dp)
-                                    .fillMaxWidth(),
+                                fitToOptions = true,
                                 optionToString = { it.labelUI() },
+                                leading = {
+                                    Text(
+                                        text = "Aa",
+                                        fontFamily = displaySetting.chatFontFamily.toFontFamilyUI(customChatFontFamily),
+                                    )
+                                },
                                 optionLeading = { family ->
                                     Text(
                                         text = "Aa",
-                                        fontFamily = family.toFontFamilyUI(chatFontFamily),
+                                        fontFamily = family.toFontFamilyUI(customChatFontFamily),
                                     )
                                 }
                             )
@@ -330,6 +512,22 @@ fun SettingPreferencesUIPage(vm: SettingVM = koinViewModel()) {
                         }
                     )
                     item(
+                        headlineContent = {
+                            Text(stringResource(R.string.setting_display_page_use_chat_font_globally_title))
+                        },
+                        supportingContent = {
+                            Text(stringResource(R.string.setting_display_page_use_chat_font_globally_desc))
+                        },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.useChatFontGlobally,
+                                onCheckedChange = {
+                                    updateDisplaySetting(displaySetting.copy(useChatFontGlobally = it))
+                                },
+                            )
+                        },
+                    )
+                    item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_font_size_title)) },
                         supportingContent = {
                             Column {
@@ -360,14 +558,18 @@ fun SettingPreferencesUIPage(vm: SettingVM = koinViewModel()) {
                             }
                         }
                     )
-                }
-            }
-
-            item {
-                CardGroup(
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                    title = { Text(stringResource(R.string.setting_page_code_display_settings)) },
-                ) {
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_enable_latex_rendering_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_enable_latex_rendering_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.enableLatexRendering,
+                                onCheckedChange = {
+                                    updateDisplaySetting(displaySetting.copy(enableLatexRendering = it))
+                                }
+                            )
+                        },
+                    )
                     item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_code_block_auto_wrap_title)) },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_code_block_auto_wrap_desc)) },
@@ -401,6 +603,50 @@ fun SettingPreferencesUIPage(vm: SettingVM = koinViewModel()) {
                                 onCheckedChange = {
                                     updateDisplaySetting(displaySetting.copy(showLineNumbers = it))
                                 }
+                            )
+                        },
+                    )
+                }
+            }
+
+            item {
+                CardGroup(
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    title = { Text(stringResource(R.string.setting_page_tts_settings)) },
+                ) {
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_tts_only_read_quoted_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_tts_only_read_quoted_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.ttsOnlyReadQuoted,
+                                onCheckedChange = {
+                                    updateDisplaySetting(displaySetting.copy(ttsOnlyReadQuoted = it))
+                                },
+                            )
+                        },
+                    )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_tts_read_outside_brackets_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_tts_read_outside_brackets_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.ttsOnlyReadOutsideBrackets,
+                                onCheckedChange = {
+                                    updateDisplaySetting(displaySetting.copy(ttsOnlyReadOutsideBrackets = it))
+                                },
+                            )
+                        },
+                    )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_auto_play_tts_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_auto_play_tts_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.autoPlayTTSAfterGeneration,
+                                onCheckedChange = {
+                                    updateDisplaySetting(displaySetting.copy(autoPlayTTSAfterGeneration = it))
+                                },
                             )
                         },
                     )
@@ -507,4 +753,30 @@ private fun deleteCustomChatFontInternal(context: Context, relativePath: String)
     if (fontFile.path.startsWith("${filesDir.path}${File.separator}")) {
         fontFile.delete()
     }
+}
+
+internal const val APP_LANGUAGE_KEY = "app_language"
+
+private enum class NotificationMode(val labelRes: Int) {
+    OFF(R.string.setting_notification_mode_off),
+    REALTIME(R.string.setting_notification_mode_realtime),
+    AFTER_GENERATION(R.string.setting_notification_mode_after_generation),
+}
+
+private enum class VolumeKeyScrollMode(val ratio: Float?) {
+    OFF(null),
+    PERCENT_25(0.25f),
+    PERCENT_50(0.5f),
+    PERCENT_75(0.75f),
+    PERCENT_100(1f),
+}
+
+internal enum class AppLanguage(val tag: String, val labelRes: Int) {
+    SYSTEM("", R.string.setting_general_language_system),
+    ENGLISH("en", R.string.language_english),
+    SIMPLIFIED_CHINESE("zh-CN", R.string.language_simplified_chinese),
+    TRADITIONAL_CHINESE("zh-TW", R.string.language_traditional_chinese),
+    JAPANESE("ja", R.string.language_japanese),
+    KOREAN("ko-KR", R.string.language_korean),
+    RUSSIAN("ru", R.string.language_russian),
 }

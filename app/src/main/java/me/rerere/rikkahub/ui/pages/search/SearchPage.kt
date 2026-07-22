@@ -208,6 +208,8 @@ fun SearchPage(vm: SearchVM = koinViewModel()) {
                             items(vm.results) { result ->
                                 SearchResultItem(
                                     result = result,
+                                    query = vm.searchQuery,
+                                    highlightTitle = vm.searchMode == MessageSearchMode.TITLE_ONLY,
                                     onClick = {
                                         navigateToChatPage(
                                             navController,
@@ -317,6 +319,8 @@ private fun SortMenuButton(
 @Composable
 private fun SearchResultItem(
     result: MessageSearchResult,
+    query: String,
+    highlightTitle: Boolean,
     onClick: () -> Unit,
 ) {
     val highlightColor = MaterialTheme.colorScheme.tertiaryContainer
@@ -348,6 +352,26 @@ private fun SearchResultItem(
     val formattedTime = remember(result.updateAt) {
         result.updateAt.toLocalDateTime()
     }
+    val displayTitle = result.title.ifBlank { untitled }
+    val titleText = if (highlightTitle && result.title.isNotBlank() && query.isNotEmpty()) {
+        buildAnnotatedString {
+            var index = 0
+            while (index < displayTitle.length) {
+                val matchStart = displayTitle.indexOf(query, startIndex = index)
+                if (matchStart < 0) {
+                    append(displayTitle.substring(index))
+                    break
+                }
+                append(displayTitle.substring(index, matchStart))
+                withStyle(SpanStyle(background = highlightColor)) {
+                    append(displayTitle.substring(matchStart, matchStart + query.length))
+                }
+                index = matchStart + query.length
+            }
+        }
+    } else {
+        buildAnnotatedString { append(displayTitle) }
+    }
 
     Surface(
         onClick = onClick,
@@ -361,7 +385,7 @@ private fun SearchResultItem(
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
-                text = result.title.ifBlank { untitled },
+                text = titleText,
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurface,
             )

@@ -10,7 +10,6 @@ import me.rerere.hugeicons.stroke.Tools
 import me.rerere.hugeicons.stroke.Share01
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.Cancel01
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,9 +23,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -36,14 +37,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.FloatingToolbarDefaults.ScreenOffset
-import androidx.compose.material3.FloatingToolbarDefaults.floatingToolbarVerticalNestedScroll
-import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearWavyProgressIndicator
@@ -53,6 +49,7 @@ import androidx.compose.material3.MultiChoiceSegmentedButtonRow
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecondaryTabRow
@@ -75,7 +72,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -398,7 +394,6 @@ private fun ModelList(
             it.printStackTrace()
         }
     }
-    var expanded by rememberSaveable { mutableStateOf(true) }
     val lazyListState = rememberLazyListState()
     val reorderableLazyListState = rememberReorderableLazyListState(lazyListState) { from, to ->
         onUpdateProvider(providerSetting.moveMove(from.index, to.index))
@@ -407,12 +402,7 @@ private fun ModelList(
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
-                .floatingToolbarVerticalNestedScroll(
-                    expanded = expanded,
-                    onExpand = { expanded = true },
-                    onCollapse = { expanded = false },
-                ),
+                .fillMaxSize(),
             contentPadding = PaddingValues(16.dp) + PaddingValues(bottom = 128.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -471,11 +461,14 @@ private fun ModelList(
                 }
             }
         }
-        HorizontalFloatingToolbar(
-            expanded = expanded,
+        Surface(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .offset(y = -ScreenOffset),
+                .padding(horizontal = 16.dp)
+                .offset(y = (-16).dp),
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            tonalElevation = 3.dp,
         ) {
             AddModelButton(
                 models = modelList,
@@ -486,7 +479,6 @@ private fun ModelList(
                 onRemoveModel = {
                     onUpdateProvider(providerSetting.delModel(it))
                 },
-                expanded = expanded,
                 parentProvider = providerSetting,
                 onUpdateProvider = onUpdateProvider
             )
@@ -747,7 +739,6 @@ private fun ModelPriceField(
 private fun AddModelButton(
     models: List<Model>,
     selectedModels: List<Model>,
-    expanded: Boolean,
     onAddModel: (Model) -> Unit,
     onRemoveModel: (Model) -> Unit,
     parentProvider: ProviderSetting,
@@ -756,28 +747,37 @@ private fun AddModelButton(
     val dialogState = useEditState<Model> { onAddModel(it) }
     val scope = rememberCoroutineScope()
 
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
+        modifier = Modifier
+            .width(IntrinsicSize.Max)
+            .padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
+        OutlinedButton(
+            onClick = {
+                dialogState.open(Model())
+            },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Icon(HugeIcons.Add01, contentDescription = null)
+            Spacer(modifier = Modifier.size(8.dp))
+            Text(stringResource(R.string.setting_provider_page_add_new_model))
+        }
+
         ModelPicker(
             models = models,
             selectedModels = selectedModels,
             onModelSelected = { model ->
-                val inputModalities = ModelRegistry.MODEL_INPUT_MODALITIES.getData(model.modelId)
-                val outputModalities = ModelRegistry.MODEL_OUTPUT_MODALITIES.getData(model.modelId)
-                val abilities = ModelRegistry.MODEL_ABILITIES.getData(model.modelId)
                 onAddModel(
                     model.copy(
-                        inputModalities = inputModalities,
-                        outputModalities = outputModalities,
-                        abilities = abilities
+                        inputModalities = ModelRegistry.MODEL_INPUT_MODALITIES.getData(model.modelId),
+                        outputModalities = ModelRegistry.MODEL_OUTPUT_MODALITIES.getData(model.modelId),
+                        abilities = ModelRegistry.MODEL_ABILITIES.getData(model.modelId),
                     )
                 )
             },
-            onModelDeselected = { model ->
-                onRemoveModel(model)
-            },
+            onModelDeselected = onRemoveModel,
             onAllModelSelected = {
                 onUpdateProvider(
                     parentProvider.copyProvider(
@@ -787,7 +787,7 @@ private fun AddModelButton(
                             model.copy(
                                 inputModalities = ModelRegistry.MODEL_INPUT_MODALITIES.getData(model.modelId),
                                 outputModalities = ModelRegistry.MODEL_OUTPUT_MODALITIES.getData(model.modelId),
-                                abilities = ModelRegistry.MODEL_ABILITIES.getData(model.modelId)
+                                abilities = ModelRegistry.MODEL_ABILITIES.getData(model.modelId),
                             )
                         }
                     )
@@ -801,32 +801,8 @@ private fun AddModelButton(
                         }
                     )
                 )
-            }
+            },
         )
-
-        Button(
-            onClick = {
-                dialogState.open(Model())
-            }
-        ) {
-            Row(
-                modifier = Modifier,
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    HugeIcons.Add01,
-                    contentDescription = stringResource(R.string.setting_provider_page_add_model)
-                )
-                AnimatedVisibility(expanded) {
-                    Spacer(modifier = Modifier.size(8.dp))
-                    Text(
-                        stringResource(R.string.setting_provider_page_add_new_model),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            }
-        }
     }
 
     if (dialogState.isEditing) {
@@ -1061,21 +1037,16 @@ private fun ModelPicker(
             }
         }
     }
-    BadgedBox(
-        badge = {
-            if (models.isNotEmpty()) {
-                Badge {
-                    Text(models.size.toString())
-                }
-            }
-        }
+    Button(
+        onClick = { showModal = true },
+        modifier = Modifier.fillMaxWidth(),
     ) {
-        IconButton(
-            onClick = {
-                showModal = true
-            }
-        ) {
-            Icon(HugeIcons.Package01, null)
+        Icon(HugeIcons.Package01, contentDescription = null)
+        Spacer(modifier = Modifier.size(8.dp))
+        Text(stringResource(R.string.model_list_select_model))
+        if (models.isNotEmpty()) {
+            Spacer(modifier = Modifier.size(8.dp))
+            Text("(${models.size})")
         }
     }
 }

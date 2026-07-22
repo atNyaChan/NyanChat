@@ -17,7 +17,10 @@ fun BackupDialog(importing: Boolean = false) {
     AlertDialog(
         onDismissRequest = {},
         title = {
-            Text(if (importing) "正在导入" else stringResource(R.string.backup_page_restore_success))
+            Text(
+                if (importing) stringResource(R.string.backup_page_importing)
+                else stringResource(R.string.backup_page_restore_success)
+            )
         },
         text = {
             if (importing) {

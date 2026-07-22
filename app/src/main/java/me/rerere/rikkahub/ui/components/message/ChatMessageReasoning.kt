@@ -256,7 +256,7 @@ fun ChainOfThoughtScope.ChatMessageReasoningStep(
                 ReasoningTitle(title = thinkingTitle)
             } else if (messageEdited && !loading && state.duration <= Duration.ZERO) {
                 Text(
-                    text = "思考",
+                    text = stringResource(R.string.reasoning_title),
                     style = MaterialTheme.typography.titleSmall.copy(fontFamily = chatFontFamily),
                     color = MaterialTheme.colorScheme.secondary,
                 )

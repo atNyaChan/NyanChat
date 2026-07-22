@@ -106,6 +106,10 @@ internal fun AssistantBasicContent(
     onUpdate: (Assistant) -> Unit,
     vm: AssistantDetailVM
 ) {
+    var contextMessageSizeInput by remember(assistant.id, assistant.contextMessageSize) {
+        mutableStateOf(assistant.contextMessageSize.takeIf { it > 0 }?.toString().orEmpty())
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -376,36 +380,30 @@ internal fun AssistantBasicContent(
                     )
                 }
             ) {
-                Slider(
-                    value = assistant.contextMessageSize.toFloat(),
-                    onValueChange = {
-                        onUpdate(
-                            assistant.copy(
-                                contextMessageSize = it.roundToInt()
-                            )
-                        )
+                OutlinedTextField(
+                    value = contextMessageSizeInput,
+                    onValueChange = { value ->
+                        if (value.all(Char::isDigit)) {
+                            contextMessageSizeInput = value
+                            if (value.isBlank()) {
+                                onUpdate(assistant.copy(contextMessageSize = 0))
+                            } else {
+                                value.toIntOrNull()?.takeIf { it > 0 }?.let { count ->
+                                    onUpdate(assistant.copy(contextMessageSize = count))
+                                }
+                            }
+                        }
                     },
-                    valueRange = 0f..512f,
-                    steps = 0,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    isError = contextMessageSizeInput.isNotBlank() &&
+                        contextMessageSizeInput.toIntOrNull()?.takeIf { it > 0 } == null,
+                    placeholder = {
+                        Text(stringResource(R.string.assistant_page_max_tokens_no_limit))
+                    },
                 )
 
-                Text(
-                    text = if (assistant.contextMessageSize > 0) stringResource(
-                        R.string.assistant_page_context_message_count,
-                        assistant.contextMessageSize
-                    ) else stringResource(R.string.assistant_page_context_message_unlimited),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.75f),
-                )
-
-                if (assistant.contextMessageSize > 0) {
-                    Text(
-                        text = stringResource(R.string.assistant_page_context_message_truncation_warning),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
             }
             HorizontalDivider()
             FormItem(
@@ -468,15 +466,10 @@ internal fun AssistantBasicContent(
                         )
                     },
                     modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
                     placeholder = {
                         Text(stringResource(R.string.assistant_page_max_tokens_no_limit))
-                    },
-                    supportingText = {
-                        if (assistant.maxTokens != null) {
-                            Text(stringResource(R.string.assistant_page_max_tokens_limit, assistant.maxTokens))
-                        } else {
-                            Text(stringResource(R.string.assistant_page_max_tokens_no_token_limit))
-                        }
                     }
                 )
             }
@@ -525,7 +518,7 @@ internal fun AssistantBasicContent(
             }
 
             if (!assistant.useGradientBackground && assistant.background != null) {
-                val backgroundOpacity = assistant.backgroundOpacity.coerceIn(0f, 1f)
+                val backgroundOpacity = assistant.backgroundOpacity.coerceIn(0.1f, 1f)
                 HorizontalDivider()
                 FormItem(
                     modifier = Modifier.padding(8.dp),
@@ -541,12 +534,12 @@ internal fun AssistantBasicContent(
                         onValueChange = {
                             onUpdate(
                                 assistant.copy(
-                                    backgroundOpacity = it.toFixed(2).toFloatOrNull()?.coerceIn(0f, 1f) ?: 1.0f
+                                    backgroundOpacity = it.toFixed(2).toFloatOrNull()?.coerceIn(0.1f, 1f) ?: 1.0f
                                 )
                             )
                         },
-                        valueRange = 0f..1f,
-                        steps = 19,
+                        valueRange = 0.1f..1f,
+                        steps = 8,
                         modifier = Modifier.fillMaxWidth()
                     )
                     Text(

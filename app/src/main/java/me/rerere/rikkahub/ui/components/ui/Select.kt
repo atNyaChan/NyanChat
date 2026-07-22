@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -21,6 +22,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import me.rerere.hugeicons.HugeIcons
@@ -33,15 +37,30 @@ fun <T> Select(
     selectedOption: T,
     onOptionSelected: (T) -> Unit,
     modifier: Modifier = Modifier,
+    fitToOptions: Boolean = false,
     optionToString: @Composable (T) -> String = { it.toString() },
     optionLeading: @Composable ((T) -> Unit)? = null,
     leading: @Composable () -> Unit = {},
     trailing: @Composable () -> Unit = {}
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val optionLabels = options.map { optionToString(it) }
+    val textStyle = MaterialTheme.typography.bodyMedium
+    val textMeasurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    val longestOptionWidth = with(density) {
+        optionLabels.maxOfOrNull { label ->
+            textMeasurer.measure(AnnotatedString(label), style = textStyle).size.width
+        }?.toDp() ?: 0.dp
+    }
+    val fittedModifier = if (fitToOptions) {
+        modifier.width(longestOptionWidth + 74.dp + if (optionLeading != null) 30.dp else 0.dp)
+    } else {
+        modifier
+    }
 
     ExposedDropdownMenuBox(
-        modifier = modifier,
+        modifier = fittedModifier,
         expanded = expanded,
         onExpandedChange = { expanded = it }
     ) {
@@ -61,8 +80,8 @@ fun <T> Select(
             ) {
                 leading()
                 Text(
-                    text = optionToString(selectedOption),
-                    style = MaterialTheme.typography.bodyMedium,
+                    text = optionLabels.getOrElse(options.indexOf(selectedOption)) { selectedOption.toString() },
+                    style = textStyle,
                     modifier = Modifier.weight(1f)
                 )
                 trailing()
@@ -85,7 +104,10 @@ fun <T> Select(
                         expanded = false
                     },
                     text = {
-                        Text(text = optionToString(option), maxLines = 1)
+                        Text(
+                            text = optionLabels.getOrElse(options.indexOf(option)) { option.toString() },
+                            maxLines = 1,
+                        )
                     },
                     leadingIcon = optionLeading?.let {
                         { it(option) }

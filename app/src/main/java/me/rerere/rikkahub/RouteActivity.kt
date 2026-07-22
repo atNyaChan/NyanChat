@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
@@ -40,6 +39,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
@@ -106,12 +108,8 @@ import me.rerere.rikkahub.ui.pages.log.LogPage
 import me.rerere.rikkahub.ui.pages.search.SearchPage
 import me.rerere.rikkahub.ui.pages.setting.SettingAboutPage
 import me.rerere.rikkahub.ui.pages.setting.SettingPreferencesPage
-import me.rerere.rikkahub.ui.pages.setting.SettingPreferencesThemePage
-import me.rerere.rikkahub.ui.pages.setting.SettingPreferencesNotificationPage
-import me.rerere.rikkahub.ui.pages.setting.SettingPreferencesGeneralPage
-import me.rerere.rikkahub.ui.pages.setting.SettingPreferencesUIPage
+import me.rerere.rikkahub.ui.pages.setting.SettingPreferencesMorePage
 import me.rerere.rikkahub.ui.pages.setting.SettingThemePage
-import me.rerere.rikkahub.ui.pages.setting.SettingDonatePage
 import me.rerere.rikkahub.ui.pages.setting.SettingFilesPage
 import me.rerere.rikkahub.ui.pages.setting.SettingMcpPage
 import me.rerere.rikkahub.ui.pages.setting.SettingModelPage
@@ -137,7 +135,7 @@ import kotlin.uuid.Uuid
 
 private const val TAG = "RouteActivity"
 
-class RouteActivity : ComponentActivity() {
+class RouteActivity : AppCompatActivity() {
     private val highlighter by inject<Highlighter>()
     private val okHttpClient by inject<OkHttpClient>()
     private val settingsStore by inject<SettingsStore>()
@@ -160,6 +158,9 @@ class RouteActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        AppCompatDelegate.setApplicationLocales(
+            LocaleListCompat.forLanguageTags(readStringPreference("app_language", "").orEmpty())
+        )
         enableEdgeToEdge()
         disableNavigationBarContrast()
         super.onCreate(savedInstanceState)
@@ -407,20 +408,8 @@ class RouteActivity : ComponentActivity() {
                                 SettingPreferencesPage()
                             }
 
-                            entry<Screen.SettingPreferencesTheme> {
-                                SettingPreferencesThemePage()
-                            }
-
-                            entry<Screen.SettingPreferencesNotification> {
-                                SettingPreferencesNotificationPage()
-                            }
-
-                            entry<Screen.SettingPreferencesGeneral> {
-                                SettingPreferencesGeneralPage()
-                            }
-
-                            entry<Screen.SettingPreferencesUI> {
-                                SettingPreferencesUIPage()
+                            entry<Screen.SettingPreferencesMore> {
+                                SettingPreferencesMorePage()
                             }
 
                             entry<Screen.SettingProvider> {
@@ -457,9 +446,6 @@ class RouteActivity : ComponentActivity() {
                                 SettingMcpPage()
                             }
 
-                            entry<Screen.SettingDonate> {
-                                SettingDonatePage()
-                            }
 
                             entry<Screen.SettingFiles> {
                                 SettingFilesPage()
@@ -638,16 +624,7 @@ sealed interface Screen : NavKey {
     data object SettingPreferences : Screen
 
     @Serializable
-    data object SettingPreferencesTheme : Screen
-
-    @Serializable
-    data object SettingPreferencesNotification : Screen
-
-    @Serializable
-    data object SettingPreferencesGeneral : Screen
-
-    @Serializable
-    data object SettingPreferencesUI : Screen
+    data object SettingPreferencesMore : Screen
 
     @Serializable
     data object SettingProvider : Screen
@@ -672,9 +649,6 @@ sealed interface Screen : NavKey {
 
     @Serializable
     data object SettingMcp : Screen
-
-    @Serializable
-    data object SettingDonate : Screen
 
     @Serializable
     data object SettingFiles : Screen

@@ -41,9 +41,9 @@ class SearchVM(
     var searchMode by mutableStateOf(
         runCatching {
             MessageSearchMode.valueOf(
-                context.readStringPreference(SEARCH_MODE_PREF_KEY, MessageSearchMode.FUZZY.name)!!
+                context.readStringPreference(SEARCH_MODE_PREF_KEY, MessageSearchMode.EXACT.name)!!
             )
-        }.getOrDefault(MessageSearchMode.FUZZY)
+        }.getOrDefault(MessageSearchMode.EXACT)
     )
         private set
     var isLoading by mutableStateOf(false)

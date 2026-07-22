@@ -451,6 +451,6 @@ fun ChatMessageActionsSheet(
             onDelete()
         },
         onDismiss = { showDeleteConfirm = false },
-        text = { Text("确定删除这条消息吗？") },
+        text = { Text(stringResource(R.string.chat_page_delete_message_confirm)) },
     )
 }

@@ -266,7 +266,7 @@ fun ChatDrawerContent(
                 AlertDialog(
                     onDismissRequest = { conversationToDelete = null },
                     title = { Text(stringResource(R.string.chat_page_delete)) },
-                    text = { Text("确定删除聊天“${conversation.title}”吗？") },
+                    text = { Text(stringResource(R.string.chat_page_delete_conversation_confirm, conversation.title)) },
                     confirmButton = {
                         TextButton(onClick = {
                             vm.deleteConversation(conversation)
@@ -287,7 +287,7 @@ fun ChatDrawerContent(
                 AlertDialog(
                     onDismissRequest = { conversationsToDelete = emptyList() },
                     title = { Text(stringResource(R.string.chat_page_delete)) },
-                    text = { Text("确定删除选中的 ${conversationsToDelete.size} 个聊天吗？") },
+                    text = { Text(stringResource(R.string.chat_page_delete_selected_confirm, conversationsToDelete.size)) },
                     confirmButton = {
                         TextButton(onClick = {
                             conversationsToDelete.forEach(vm::deleteConversation)
@@ -306,7 +306,7 @@ fun ChatDrawerContent(
             conversationToEditTitle?.let { conversation ->
                 AlertDialog(
                     onDismissRequest = { conversationToEditTitle = null },
-                    title = { Text("编辑标题") },
+                    title = { Text(stringResource(R.string.chat_page_edit_title)) },
                     text = {
                         OutlinedTextField(
                             value = editedTitle,
@@ -324,7 +324,7 @@ fun ChatDrawerContent(
                             }
                             TextButton(onClick = {
                                 vm.generateTitleCandidate(conversation) { editedTitle = it }
-                            }) { Text("自动生成标题") }
+                            }) { Text(stringResource(R.string.chat_page_auto_generate_title)) }
                             TextButton(onClick = {
                                 vm.updateConversationTitle(conversation, editedTitle)
                                 conversationToEditTitle = null
@@ -396,10 +396,10 @@ fun ChatDrawerContent(
 
                 DrawerAction(
                     icon = {
-                        Icon(HugeIcons.ChartColumn, "统计数据")
+                        Icon(HugeIcons.ChartColumn, stringResource(R.string.stats_page_title))
                     },
                     label = {
-                        Text("统计数据")
+                        Text(stringResource(R.string.stats_page_title))
                     },
                     onClick = {
                         navController.navigate(Screen.Stats)
@@ -564,7 +564,7 @@ fun ChatDrawerContent(
     if (conversationsToMove.isNotEmpty() && moveCreateFolderAssistant == null && pendingMoveTarget == null) {
         AlertDialog(
             onDismissRequest = { conversationsToMove = emptyList() },
-            title = { Text("移动到...") },
+            title = { Text(stringResource(R.string.conversation_move_to)) },
             text = {
                 LazyColumn(modifier = Modifier.heightIn(max = 480.dp)) {
                     settings.assistants.forEach { assistant ->
@@ -588,7 +588,7 @@ fun ChatDrawerContent(
                                 )
                                 Icon(
                                     HugeIcons.FolderAdd,
-                                    contentDescription = "新建文件夹",
+                                    contentDescription = stringResource(R.string.chat_page_create_folder),
                                     modifier = Modifier
                                         .clip(CircleShape)
                                         .clickable { moveCreateFolderAssistant = assistant }
@@ -604,16 +604,20 @@ fun ChatDrawerContent(
                             Row(
                                     modifier = Modifier.fillMaxWidth().padding(start = 32.dp)
                                         .clickable(enabled = !isCurrentPosition) {
-                                            pendingMoveTarget = MoveTarget(assistant.id, null, "${assistant.name} / 未归类")
+                                            pendingMoveTarget = MoveTarget(
+                                                assistant.id,
+                                                null,
+                                                "${assistant.name} / ${context.getString(R.string.chat_page_uncategorized)}",
+                                            )
                                         }.padding(12.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                                 ) {
                                     Icon(HugeIcons.Folder01, contentDescription = null)
-                                    Text("未归类", modifier = Modifier.weight(1f))
+                                    Text(stringResource(R.string.chat_page_uncategorized), modifier = Modifier.weight(1f))
                                     if (isCurrentPosition) {
                                         Text(
-                                            "当前位置",
+                                            stringResource(R.string.chat_page_current_location),
                                             style = MaterialTheme.typography.labelSmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
                                         )
@@ -644,7 +648,7 @@ fun ChatDrawerContent(
                                     )
                                     if (isCurrentPosition) {
                                         Text(
-                                            "当前位置",
+                                            stringResource(R.string.chat_page_current_location),
                                             style = MaterialTheme.typography.labelSmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
                                         )
@@ -666,8 +670,10 @@ fun ChatDrawerContent(
     pendingMoveTarget?.let { target ->
         AlertDialog(
             onDismissRequest = { pendingMoveTarget = null },
-            title = { Text("确认移动") },
-            text = { Text("将所选 ${conversationsToMove.size} 个聊天移动到“${target.label}”吗？") },
+            title = { Text(stringResource(R.string.chat_page_confirm_move)) },
+            text = {
+                Text(stringResource(R.string.chat_page_confirm_move_desc, conversationsToMove.size, target.label))
+            },
             confirmButton = {
                 TextButton(onClick = { moveTo(target) }) { Text(stringResource(R.string.confirm)) }
             },
@@ -681,7 +687,7 @@ fun ChatDrawerContent(
         var name by remember(assistant.id) { mutableStateOf("") }
         AlertDialog(
             onDismissRequest = { moveCreateFolderAssistant = null },
-            title = { Text("在“${assistant.name}”中新建文件夹") },
+            title = { Text(stringResource(R.string.chat_page_create_folder_in, assistant.name)) },
             text = {
                 OutlinedTextField(
                     value = name,

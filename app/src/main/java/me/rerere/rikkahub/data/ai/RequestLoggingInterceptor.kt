@@ -50,12 +50,22 @@ class RequestLoggingInterceptor : Interceptor {
 
         val responseHeaders = response.headers.toMap()
         val body = response.body
-        return response.newBuilder().body(LoggingResponseBody(body) { responseBytes, error ->
+        return response.newBuilder().body(LoggingResponseBody(body) { responseBytes, error, closedBeforeEof ->
             val responseBody = responseBytes?.let {
                 decodeTextBody(it, responseHeaders, body.contentType())
             }
+            val isEventStream = body.contentType()?.toString()
+                ?.contains("event-stream", ignoreCase = true) == true
+            val streamCompleted = !isEventStream || responseBody.hasStreamCompletionMarker()
+            val effectiveError = when {
+                error != null && (!isBenignStreamCancellation(error) || streamCompleted) ->
+                    error.takeUnless { isBenignStreamCancellation(it) && streamCompleted }
+                error != null || closedBeforeEof && !streamCompleted ->
+                    StreamInterruptedException()
+                else -> null
+            }
             logCompleted(request.url.toString(), request.method, requestHeaders, requestBody, response, responseHeaders,
-                startTime, responseBody, error?.takeUnless(::isBenignStreamCancellation))
+                startTime, responseBody, effectiveError)
         }).build()
     }
 
@@ -90,6 +100,15 @@ class RequestLoggingInterceptor : Interceptor {
         return message.contains("stream was reset") &&
             (message.contains("cancel") || message.contains("canceled"))
     }
+
+    private fun String?.hasStreamCompletionMarker(): Boolean {
+        if (this == null) return false
+        return contains("[DONE]") ||
+            contains("response.completed") ||
+            contains("message_stop")
+    }
+
+    private class StreamInterruptedException : Exception("stream_response_interrupted")
 
     private fun okhttp3.Headers.toMap(): Map<String, String> {
         return names().associateWith { name -> values(name).joinToString("\n") }
@@ -126,7 +145,7 @@ class RequestLoggingInterceptor : Interceptor {
 
     private class LoggingResponseBody(
         private val delegate: ResponseBody,
-        private val onComplete: (ByteArray?, Throwable?) -> Unit,
+        private val onComplete: (ByteArray?, Throwable?, Boolean) -> Unit,
     ) : ResponseBody() {
         private val captured = Buffer()
         private var completed = false
@@ -135,10 +154,10 @@ class RequestLoggingInterceptor : Interceptor {
                 override fun read(sink: Buffer, byteCount: Long): Long = try {
                     super.read(sink, byteCount).also { read ->
                         if (read > 0) sink.copyTo(captured, sink.size - read, read)
-                        if (read == -1L) complete(null)
+                        if (read == -1L) complete(error = null, closedBeforeEof = false)
                     }
                 } catch (error: Throwable) {
-                    complete(error)
+                    complete(error = error, closedBeforeEof = true)
                     throw error
                 }
 
@@ -146,7 +165,7 @@ class RequestLoggingInterceptor : Interceptor {
                     try {
                         super.close()
                     } finally {
-                        complete(null)
+                        complete(error = null, closedBeforeEof = true)
                     }
                 }
             }.buffer()
@@ -156,10 +175,10 @@ class RequestLoggingInterceptor : Interceptor {
         override fun contentLength(): Long = delegate.contentLength()
         override fun source(): BufferedSource = loggingSource
 
-        private fun complete(error: Throwable?) {
+        private fun complete(error: Throwable?, closedBeforeEof: Boolean) {
             if (completed) return
             completed = true
-            onComplete(captured.clone().readByteArray(), error)
+            onComplete(captured.clone().readByteArray(), error, closedBeforeEof)
         }
     }
 }

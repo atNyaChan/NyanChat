@@ -144,7 +144,7 @@ class McpOAuthClient(
         val body = json.encodeToString(
             ClientRegistrationRequest.serializer(),
             ClientRegistrationRequest(
-                clientName = clientName.ifBlank { "RikkaHub" },
+                clientName = clientName.ifBlank { "NyanChat" },
                 redirectUris = listOf(redirectUri),
                 scope = scope,
             )
