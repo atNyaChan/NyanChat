@@ -10,6 +10,7 @@ import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import me.rerere.ai.core.MessageRole
 import me.rerere.ai.ui.UIMessage
 import me.rerere.rikkahub.data.db.AppDatabase
 import me.rerere.rikkahub.data.db.fts.MessageFtsManager
@@ -327,7 +328,24 @@ class ConversationRepository(
         keyword: String,
         sort: MessageSearchSort = MessageSearchSort.RELEVANCE,
         mode: MessageSearchMode = MessageSearchMode.FUZZY,
-    ) = messageFtsManager.search(keyword, sort, mode)
+        limit: Int = 50,
+        offset: Int = 0,
+    ) = messageFtsManager.search(keyword, sort, mode, limit, offset)
+
+    suspend fun searchMessagesByModel(modelId: Uuid, sort: MessageSearchSort, limit: Int = 50, offset: Int = 0) =
+        messageFtsManager.searchByModel(modelId, sort, limit, offset)
+
+    suspend fun countMessagesByModel(modelId: Uuid): Int = messageFtsManager.countByModel(modelId)
+
+    suspend fun getUsedMessageModelIds(): List<Uuid> = messageFtsManager.getUsedModelIds()
+
+    suspend fun searchManuallyEditedMessages(sort: MessageSearchSort, limit: Int = 50, offset: Int = 0) =
+        messageFtsManager.searchManuallyEdited(sort, limit, offset)
+
+    suspend fun countManuallyEditedMessages(): Int = messageFtsManager.countManuallyEdited()
+
+    suspend fun countSearchMessages(keyword: String, mode: MessageSearchMode): Int =
+        messageFtsManager.countSearch(keyword, mode)
 
     suspend fun rebuildAllIndexes(onProgress: (current: Int, total: Int) -> Unit = { _, _ -> }) {
         messageFtsManager.deleteAll()
@@ -339,6 +357,42 @@ class ConversationRepository(
             val conversation = conversationEntityToConversation(entity, nodes)
             messageFtsManager.indexConversation(conversation)
             onProgress(index + 1, total)
+        }
+    }
+
+    suspend fun migrateMessageModelId(sourceModelId: Uuid, targetModelId: Uuid): Int {
+        if (sourceModelId == targetModelId) return 0
+
+        return database.withTransaction {
+            var migratedMessageCount = 0
+            conversationDAO.getAllIds().forEach { conversationId ->
+                var offset = 0
+                val pageSize = 64
+                while (true) {
+                    val page = messageNodeDAO.getNodesOfConversationPaged(conversationId, pageSize, offset)
+                    if (page.isEmpty()) break
+                    page.forEach { entity ->
+                        val messages = JsonInstant.decodeFromString<List<UIMessage>>(entity.messages)
+                        var nodeChanged = false
+                        val migratedMessages = messages.map { message ->
+                            if (message.role == MessageRole.ASSISTANT && message.modelId == sourceModelId) {
+                                nodeChanged = true
+                                migratedMessageCount++
+                                message.copy(modelId = targetModelId)
+                            } else {
+                                message
+                            }
+                        }
+                        if (nodeChanged) {
+                            messageNodeDAO.update(
+                                entity.copy(messages = JsonInstant.encodeToString(migratedMessages))
+                            )
+                        }
+                    }
+                    offset += page.size
+                }
+            }
+            migratedMessageCount
         }
     }
 

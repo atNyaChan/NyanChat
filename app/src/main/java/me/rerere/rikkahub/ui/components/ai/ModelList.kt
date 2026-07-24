@@ -96,7 +96,7 @@ import kotlin.uuid.Uuid
 class ModelListState internal constructor(
     modelId: Uuid?,
     providers: List<ProviderSetting>,
-    type: ModelType,
+    type: ModelType?,
 ) {
     var modelId by mutableStateOf(modelId)
         private set
@@ -115,7 +115,7 @@ class ModelListState internal constructor(
 
     val filteredProviders: List<ProviderSetting>
         get() = providers.fastFilter { provider ->
-            provider.enabled && provider.models.fastAny { model -> model.type == type }
+            provider.enabled && provider.models.fastAny { model -> type == null || model.type == type }
         }
 
     fun open() {
@@ -129,7 +129,7 @@ class ModelListState internal constructor(
     internal fun update(
         modelId: Uuid?,
         providers: List<ProviderSetting>,
-        type: ModelType,
+        type: ModelType?,
     ) {
         this.modelId = modelId
         this.providers = providers
@@ -141,7 +141,7 @@ class ModelListState internal constructor(
 fun rememberModelListState(
     modelId: Uuid?,
     providers: List<ProviderSetting>,
-    type: ModelType,
+    type: ModelType?,
 ): ModelListState {
     return remember {
         ModelListState(
@@ -294,7 +294,7 @@ fun ModelListSheet(
 private fun ColumnScope.ModelList(
     currentModel: Uuid? = null,
     providers: List<ProviderSetting>,
-    modelType: ModelType,
+    modelType: ModelType?,
     onSelect: (Model) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -305,7 +305,7 @@ private fun ColumnScope.ModelList(
 
     val favoriteModels = settings.value.favoriteModels.mapNotNull { modelId ->
         val model = settings.value.providers.findModelById(modelId) ?: return@mapNotNull null
-        if (model.type != modelType) return@mapNotNull null
+        if (modelType != null && model.type != modelType) return@mapNotNull null
         val provider = model.findProvider(providers = settings.value.providers, checkOverwrite = false) ?: return@mapNotNull null
         model to provider
     }
@@ -314,14 +314,14 @@ private fun ColumnScope.ModelList(
 
     val typeFilteredModelsByProvider = remember(providers, modelType) {
         providers.associate { provider ->
-            provider.id to provider.models.fastFilter { it.type == modelType }
+            provider.id to provider.models.fastFilter { modelType == null || it.type == modelType }
         }
     }
 
     val searchFilteredModelsByProvider = remember(providers, modelType, searchKeywords) {
         providers.associate { provider ->
             provider.id to provider.models.fastFilter {
-                it.type == modelType && it.displayName.contains(searchKeywords, true)
+                (modelType == null || it.type == modelType) && it.displayName.contains(searchKeywords, true)
             }
         }
     }

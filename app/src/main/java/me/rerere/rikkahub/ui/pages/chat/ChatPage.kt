@@ -481,6 +481,9 @@ private fun ChatPageContent(
                 onClearTranslation = { message ->
                     vm.clearTranslationField(message.id)
                 },
+                onCancelTranslation = { message ->
+                    vm.cancelTranslation(message.id)
+                },
                 onJumpToMessage = { index ->
                     previewMode = false
                     scope.launch {
@@ -828,13 +831,13 @@ private fun TopBar(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     TextButton(onClick = { titleState.dismiss() }) {
-                        Text(stringResource(R.string.chat_page_cancel))
+                        Text(stringResource(R.string.common_cancel))
                     }
                     TextButton(onClick = { onGenerateTitle(onUpdate) }) {
                         Text(stringResource(R.string.chat_page_auto_generate_title))
                     }
                     TextButton(onClick = { titleState.confirm() }) {
-                        Text(stringResource(R.string.confirm))
+                        Text(stringResource(R.string.common_confirm_action))
                     }
                 }
             }

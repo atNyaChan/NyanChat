@@ -85,4 +85,11 @@ class SkillDetailVM(
             withContext(Dispatchers.Main) { onResult(success) }
         }
     }
+
+    fun deleteSkill(onResult: (Boolean) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val success = skillManager.deleteSkill(skillName)
+            withContext(Dispatchers.Main) { onResult(success) }
+        }
+    }
 }

@@ -44,6 +44,7 @@ import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.findModelById
 import me.rerere.rikkahub.data.datastore.findProvider
 import me.rerere.rikkahub.data.model.Assistant
+import me.rerere.rikkahub.data.model.ContextCache
 import me.rerere.rikkahub.data.model.AssistantMemory
 import me.rerere.rikkahub.data.repository.MemoryRepository
 import me.rerere.rikkahub.utils.applyPlaceholders
@@ -413,6 +414,19 @@ class GenerationHandler(
             customBody = buildList {
                 addAll(assistant.customBodies)
                 addAll(model.customBodies)
+                if (assistant.contextCache != ContextCache.OFF) {
+                    add(
+                        CustomBody(
+                            key = "cache_control",
+                            value = buildJsonObject {
+                                put("type", JsonPrimitive("ephemeral"))
+                                if (assistant.contextCache == ContextCache.ONE_HOUR) {
+                                    put("ttl", JsonPrimitive("1h"))
+                                }
+                            }
+                        )
+                    )
+                }
             }
         )
         if (stream) {

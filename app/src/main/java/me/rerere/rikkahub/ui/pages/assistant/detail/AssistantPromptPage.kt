@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -26,7 +27,6 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
@@ -51,7 +51,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -69,6 +68,7 @@ import me.rerere.ai.provider.Model
 import me.rerere.ai.ui.UIMessage
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.ai.transformers.DefaultPlaceholderProvider
 import me.rerere.rikkahub.data.ai.transformers.TemplateTransformer
 import me.rerere.rikkahub.data.ai.transformers.TransformerContext
@@ -76,14 +76,15 @@ import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.AssistantAffectScope
 import me.rerere.rikkahub.data.model.AssistantRegex
-import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.data.model.toMessageNode
 import me.rerere.rikkahub.ui.components.message.ChatMessage
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.FormItem
+import me.rerere.rikkahub.ui.components.ui.ExtensionSelector
 import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.components.ui.Tag
 import me.rerere.rikkahub.ui.components.ui.TextArea
+import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.theme.ChatFontProvider
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
@@ -140,6 +141,7 @@ private fun AssistantPromptContent(
     onUpdate: (Assistant) -> Unit
 ) {
     val context = LocalContext.current
+    val navController = LocalNavController.current
     val templateTransformer = koinInject<TemplateTransformer>()
 
     Column(
@@ -148,6 +150,7 @@ private fun AssistantPromptContent(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp)
             .padding(innerPadding)
+            .padding(bottom = 16.dp)
             .imePadding(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -226,11 +229,7 @@ private fun AssistantPromptContent(
                     )
                 }
             )
-        }
-
-        Card(
-            colors = CustomColors.cardColorsOnSurfaceContainer
-        ) {
+            androidx.compose.material3.HorizontalDivider()
             FormItem(
                 modifier = Modifier.padding(8.dp),
                 label = {
@@ -257,7 +256,43 @@ private fun AssistantPromptContent(
         Card(
             colors = CustomColors.cardColorsOnSurfaceContainer
         ) {
-            FormItem(
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(420.dp)
+                    .padding(8.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.assistant_page_tab_extensions),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                )
+                ExtensionSelector(
+                    modifier = Modifier.weight(1f),
+                    assistant = assistant,
+                    settings = settings,
+                    onUpdate = onUpdate,
+                    onNavigateToQuickMessages = {
+                        navController.navigate(Screen.QuickMessages)
+                    },
+                    onNavigateToModeInjections = {
+                        navController.navigate(Screen.ModeInjections)
+                    },
+                    onNavigateToLorebooks = {
+                        navController.navigate(Screen.Lorebooks)
+                    },
+                    onNavigateToSkills = {
+                        navController.navigate(Screen.Skills)
+                    },
+                )
+            }
+        }
+
+        val messageTemplateCard: @Composable () -> Unit = {
+            Card(
+                colors = CustomColors.cardColorsOnSurfaceContainer
+            ) {
+                FormItem(
                 modifier = Modifier.padding(8.dp),
                 label = {
                     Row(
@@ -333,15 +368,15 @@ private fun AssistantPromptContent(
                         }
                     })
                 }
-            )
-            Column(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .clip(MaterialTheme.shapes.small)
-                    .background(MaterialTheme.colorScheme.background)
-                    .padding(8.dp)
-                    .fillMaxWidth()
-            ) {
+                )
+                Column(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .clip(MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(8.dp)
+                        .fillMaxWidth()
+                ) {
                 Text(
                     text = stringResource(R.string.assistant_page_template_preview),
                     style = MaterialTheme.typography.titleSmall
@@ -388,9 +423,11 @@ private fun AssistantPromptContent(
                                 onDelete = {},
                                 onUpdate = {},
                                 lastMessage = false,
+                                showNerdLine = true,
                             )
                         }
                     }
+                }
                 }
             }
         }
@@ -511,7 +548,7 @@ private fun AssistantPromptContent(
             )
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.padding(horizontal = 8.dp)
+                modifier = Modifier.padding(16.dp)
             ) {
                 assistant.regexes.fastForEachIndexed { index, regex ->
                     AssistantRegexCard(
@@ -537,6 +574,8 @@ private fun AssistantPromptContent(
                 }
             }
         }
+
+        messageTemplateCard()
     }
 }
 
@@ -745,7 +784,7 @@ private fun AssistantRegexCard(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         Icon(HugeIcons.Delete01, null)
-                        Text(stringResource(R.string.delete))
+                        Text(stringResource(R.string.common_delete))
                     }
                 }
             }

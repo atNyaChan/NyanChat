@@ -761,7 +761,7 @@ private fun FullScreenEditor(
                             onClick = {
                                 onDone()
                             }) {
-                            Text(stringResource(R.string.chat_page_save))
+                            Text(stringResource(R.string.common_save))
                         }
                     }
                     TextField(

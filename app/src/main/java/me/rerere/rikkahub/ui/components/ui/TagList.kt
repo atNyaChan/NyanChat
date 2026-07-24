@@ -84,7 +84,7 @@ fun TagsInput(
                 .clickable { showAddDialog = true }) {
             Icon(
                 imageVector = HugeIcons.Add01,
-                contentDescription = stringResource(R.string.add),
+                contentDescription = stringResource(R.string.common_add),
                 modifier = Modifier
                     .padding(6.dp)
                     .size(16.dp),
@@ -193,7 +193,7 @@ fun TagsInput(
                     }
                 }, enabled = tagName.isNotBlank()
             ) {
-                Text(stringResource(R.string.confirm))
+                Text(stringResource(R.string.common_confirm_action))
             }
         }, dismissButton = {
             TextButton(
@@ -202,7 +202,7 @@ fun TagsInput(
                     tagName = ""
                     showError = false
                 }) {
-                Text(stringResource(R.string.cancel))
+                Text(stringResource(R.string.common_cancel))
             }
         })
     }

@@ -8,21 +8,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -30,21 +28,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.launch
 import me.rerere.ai.provider.Model
 import me.rerere.ai.provider.ModelType
 import me.rerere.ai.provider.ProviderSetting
 import me.rerere.hugeicons.HugeIcons
-import me.rerere.hugeicons.stroke.AiBrain01
-import me.rerere.hugeicons.stroke.AiEditing
 import me.rerere.hugeicons.stroke.ArrowRight01
 import me.rerere.hugeicons.stroke.Cancel01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.ui.components.ai.ModelListSheet
+import me.rerere.rikkahub.ui.components.ai.ReasoningButton
 import me.rerere.rikkahub.ui.components.ai.rememberModelListState
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CardGroupScope
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.plus
 import org.koin.androidx.compose.koinViewModel
@@ -54,8 +51,6 @@ import kotlin.uuid.Uuid
 fun SettingModelPage(vm: SettingVM = koinViewModel()) {
     val settings by vm.settings.collectAsStateWithLifecycle()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    val pagerState = rememberPagerState { 2 }
-    val scope = rememberCoroutineScope()
 
     Scaffold(
         containerColor = CustomColors.topBarColors.containerColor,
@@ -67,40 +62,16 @@ fun SettingModelPage(vm: SettingVM = koinViewModel()) {
                 colors = CustomColors.topBarColors,
             )
         },
-        bottomBar = {
-            BottomAppBar(
-                containerColor = CustomColors.cardColorsOnSurfaceContainer.containerColor
-            ) {
-                NavigationBarItem(
-                    selected = pagerState.currentPage == 0,
-                    onClick = { scope.launch { pagerState.animateScrollToPage(0) } },
-                    icon = { Icon(HugeIcons.AiBrain01, null) },
-                    label = { Text(stringResource(R.string.setting_model_page_tab_model)) }
-                )
-                NavigationBarItem(
-                    selected = pagerState.currentPage == 1,
-                    onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
-                    icon = { Icon(HugeIcons.AiEditing, null) },
-                    label = { Text(stringResource(R.string.setting_model_page_tab_prompt)) }
-                )
-            }
-        },
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     ) { contentPadding ->
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxSize(),
-        ) { page ->
-            when (page) {
-                0 -> ModelSettingsPage(settings = settings, vm = vm, contentPadding = contentPadding)
-                1 -> PromptSettingsPage(settings = settings, vm = vm, contentPadding = contentPadding)
-            }
-        }
+        ModelSettingsPage(settings = settings, vm = vm, contentPadding = contentPadding)
     }
 }
 
 @Composable
 private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding: PaddingValues) {
+    var editingPrompt by remember { mutableStateOf<PromptType?>(null) }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = contentPadding + PaddingValues(horizontal = 16.dp),
@@ -132,12 +103,15 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
                 providers = settings.providers,
                 onSelect = { vm.updateSettings(settings.copy(titleModelId = it.id)) },
                 onClear = { vm.updateSettings(settings.copy(titleModelId = null)) },
+                promptType = PromptType.TITLE,
+                onEditPrompt = { editingPrompt = it },
             )
         }
         item {
             SuggestionModelSettingItem(
                 settings = settings,
                 vm = vm,
+                onEditPrompt = { editingPrompt = it },
             )
         }
         item {
@@ -147,6 +121,25 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
                 modelId = settings.translateModeId,
                 providers = settings.providers,
                 onSelect = { vm.updateSettings(settings.copy(translateModeId = it.id)) },
+                promptType = PromptType.TRANSLATION,
+                onEditPrompt = { editingPrompt = it },
+                beforePrompt = {
+                    item(
+                        headlineContent = { Text(stringResource(R.string.assistant_page_thinking_budget)) },
+                        trailingContent = {
+                            ReasoningButton(
+                                reasoningLevel = me.rerere.ai.core.ReasoningLevel.fromBudgetTokens(
+                                    settings.translateThinkingBudget
+                                ),
+                                onUpdateReasoningLevel = {
+                                    vm.updateSettings(
+                                        settings.copy(translateThinkingBudget = it.budgetTokens)
+                                    )
+                                },
+                            )
+                        },
+                    )
+                },
             )
         }
         item {
@@ -156,6 +149,8 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
                 modelId = settings.ocrModelId,
                 providers = settings.providers,
                 onSelect = { vm.updateSettings(settings.copy(ocrModelId = it.id)) },
+                promptType = PromptType.OCR,
+                onEditPrompt = { editingPrompt = it },
             )
         }
         item {
@@ -165,8 +160,19 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
                 modelId = settings.compressModelId,
                 providers = settings.providers,
                 onSelect = { vm.updateSettings(settings.copy(compressModelId = it.id)) },
+                promptType = PromptType.COMPRESS,
+                onEditPrompt = { editingPrompt = it },
             )
         }
+    }
+
+    editingPrompt?.let { type ->
+        PromptEditor(
+            type = type,
+            settings = settings,
+            vm = vm,
+            onDismiss = { editingPrompt = null },
+        )
     }
 }
 
@@ -174,6 +180,7 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
 private fun SuggestionModelSettingItem(
     settings: Settings,
     vm: SettingVM,
+    onEditPrompt: (PromptType) -> Unit,
 ) {
     val title = stringResource(R.string.setting_model_page_suggestion_model)
     val state = rememberModelListState(
@@ -183,7 +190,7 @@ private fun SuggestionModelSettingItem(
     )
 
     Column {
-        CardGroup(title = { Text(title) }) {
+        CardGroup {
             item(
                 headlineContent = { Text(stringResource(R.string.setting_model_page_enable_suggestion)) },
                 trailingContent = {
@@ -230,6 +237,7 @@ private fun SuggestionModelSettingItem(
                     },
                 )
             }
+            promptSettingItem(PromptType.SUGGESTION) { onEditPrompt(PromptType.SUGGESTION) }
         }
         Text(
             text = stringResource(R.string.setting_model_page_suggestion_model_desc),
@@ -250,6 +258,9 @@ private fun ModelSettingItem(
     providers: List<ProviderSetting>,
     onSelect: (Model) -> Unit,
     onClear: (() -> Unit)? = null,
+    promptType: PromptType? = null,
+    onEditPrompt: (PromptType) -> Unit = {},
+    beforePrompt: CardGroupScope.() -> Unit = {},
 ) {
     val state = rememberModelListState(
         modelId = modelId,
@@ -258,7 +269,7 @@ private fun ModelSettingItem(
     )
 
     Column {
-        CardGroup(title = { Text(title) }) {
+        CardGroup {
             item(
                 onClick = { state.open() },
                 headlineContent = { Text(title) },
@@ -289,6 +300,10 @@ private fun ModelSettingItem(
                     }
                 },
             )
+            beforePrompt()
+            if (promptType != null) {
+                promptSettingItem(promptType) { onEditPrompt(promptType) }
+            }
         }
         Text(
             text = description,

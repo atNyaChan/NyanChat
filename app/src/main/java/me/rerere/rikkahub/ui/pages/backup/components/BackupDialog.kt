@@ -62,7 +62,7 @@ fun RestoreWarningDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel))
+                Text(stringResource(R.string.common_cancel))
             }
         },
     )

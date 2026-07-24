@@ -50,7 +50,6 @@ import me.rerere.hugeicons.stroke.MoreVertical
 import me.rerere.hugeicons.stroke.Refresh03
 import me.rerere.hugeicons.stroke.Share04
 import me.rerere.hugeicons.stroke.StopCircle
-import me.rerere.hugeicons.stroke.TextSelection
 import me.rerere.hugeicons.stroke.Translate
 import me.rerere.hugeicons.stroke.VolumeHigh
 import me.rerere.rikkahub.R
@@ -208,8 +207,8 @@ fun ColumnScope.ChatMessageActionButtons(
     RikkaConfirmDialog(
         show = showRegenerateConfirm,
         title = stringResource(R.string.regenerate),
-        confirmText = stringResource(R.string.confirm),
-        dismissText = stringResource(R.string.cancel),
+        confirmText = stringResource(R.string.common_confirm_action),
+        dismissText = stringResource(R.string.common_cancel),
         onConfirm = {
             showRegenerateConfirm = false
             onRegenerate()
@@ -227,7 +226,6 @@ fun ChatMessageActionsSheet(
     onEdit: () -> Unit,
     onShare: () -> Unit,
     onFork: () -> Unit,
-    onSelectAndCopy: () -> Unit,
     isFavorite: Boolean = false,
     onToggleFavorite: (() -> Unit)? = null,
     onTranslateRequest: (() -> Unit)? = null,
@@ -245,33 +243,6 @@ fun ChatMessageActionsSheet(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // Select and Copy
-            Card(
-                onClick = {
-                    onDismissRequest()
-                    onSelectAndCopy()
-                },
-                shape = MaterialTheme.shapes.medium
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = HugeIcons.TextSelection,
-                        contentDescription = null,
-                        modifier = Modifier.padding(4.dp)
-                    )
-                    Text(
-                        text = stringResource(R.string.select_and_copy),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                }
-            }
-
             // Edit
             Card(
                 onClick = {
@@ -340,7 +311,7 @@ fun ChatMessageActionsSheet(
                         modifier = Modifier.padding(4.dp)
                     )
                     Text(
-                        text = stringResource(R.string.share),
+                        text = stringResource(R.string.common_share),
                         style = MaterialTheme.typography.titleMedium,
                     )
                 }
@@ -425,7 +396,7 @@ fun ChatMessageActionsSheet(
                         modifier = Modifier.padding(4.dp)
                     )
                     Text(
-                        text = stringResource(R.string.delete),
+                        text = stringResource(R.string.common_delete),
                         style = MaterialTheme.typography.titleMedium,
                     )
                 }
@@ -442,9 +413,9 @@ fun ChatMessageActionsSheet(
     }
     RikkaConfirmDialog(
         show = showDeleteConfirm,
-        title = stringResource(R.string.delete),
-        confirmText = stringResource(R.string.confirm),
-        dismissText = stringResource(R.string.cancel),
+        title = stringResource(R.string.common_delete),
+        confirmText = stringResource(R.string.common_confirm_action),
+        dismissText = stringResource(R.string.common_cancel),
         onConfirm = {
             showDeleteConfirm = false
             onDismissRequest()

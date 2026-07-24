@@ -128,7 +128,7 @@ fun ColumnScope.ConversationList(
                     onDeleteSelected(selectedConversations.values.toList())
                     selectedConversations = emptyMap()
                 }) {
-                    Icon(HugeIcons.Delete01, contentDescription = stringResource(R.string.delete))
+                    Icon(HugeIcons.Delete01, contentDescription = stringResource(R.string.common_delete))
                 }
             }
         }
@@ -384,7 +384,7 @@ private fun ConversationItem(
 
                 DropdownMenuItem(
                     text = {
-                        Text(stringResource(id = R.string.chat_page_delete))
+                        Text(stringResource(id = R.string.common_delete))
                     },
                     onClick = {
                         onDelete(conversation)

@@ -187,7 +187,7 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                                     )
                                 },
                                 optionToString = { stringResource(it.labelRes) },
-                                modifier = Modifier.fillMaxWidth(0.55f),
+                                fitToOptions = true,
                             )
                         },
                     )
@@ -387,6 +387,13 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                                         .padding(top = 8.dp)
                                         .fillMaxWidth(),
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    placeholder = {
+                                        Text(
+                                            stringResource(
+                                                R.string.common_off
+                                            )
+                                        )
+                                    },
                                     singleLine = true,
                                     isError = pasteLongTextThresholdInput.isNotBlank() &&
                                         pasteLongTextThresholdInput.toIntOrNull()?.takeIf { it > 0 } == null,
@@ -413,7 +420,7 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                                 optionToString = { mode ->
                                     mode.ratio?.let { ratio ->
                                         "${(ratio * 100).toInt()}%"
-                                    } ?: stringResource(R.string.setting_notification_mode_off)
+                                    } ?: stringResource(R.string.common_off)
                                 },
                                 fitToOptions = true,
                             )
@@ -758,7 +765,7 @@ private fun deleteCustomChatFontInternal(context: Context, relativePath: String)
 internal const val APP_LANGUAGE_KEY = "app_language"
 
 private enum class NotificationMode(val labelRes: Int) {
-    OFF(R.string.setting_notification_mode_off),
+    OFF(R.string.common_off),
     REALTIME(R.string.setting_notification_mode_realtime),
     AFTER_GENERATION(R.string.setting_notification_mode_after_generation),
 }

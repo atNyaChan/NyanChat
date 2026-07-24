@@ -2,6 +2,7 @@ package me.rerere.rikkahub.ui.pages.assistant.detail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,11 +10,16 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -23,10 +29,12 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -36,10 +44,19 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.ai.provider.ModelType
+import me.rerere.hugeicons.HugeIcons
+import me.rerere.hugeicons.stroke.ArrowRight01
+import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
 import me.rerere.rikkahub.data.model.Assistant
-import me.rerere.rikkahub.ui.components.ai.ModelSelector
+import me.rerere.rikkahub.data.datastore.DEFAULT_ASSISTANTS_IDS
+import me.rerere.rikkahub.ui.pages.assistant.AssistantVM
+import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.context.LocalNavController
+import me.rerere.rikkahub.ui.components.ai.ModelListSheet
+import me.rerere.rikkahub.ui.components.ai.rememberModelListState
+import me.rerere.rikkahub.ui.components.ai.ContextCachePicker
 import me.rerere.rikkahub.ui.components.ai.ReasoningButton
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.FormItem
@@ -56,12 +73,17 @@ import kotlin.uuid.Uuid
 import me.rerere.rikkahub.data.model.Tag as DataTag
 
 @Composable
-fun AssistantBasicPage(id: String) {
+fun AssistantBasicPage(
+    id: String,
+    focusContextMessageSize: Boolean = false,
+) {
     val vm: AssistantDetailVM = koinViewModel(
         parameters = {
             parametersOf(id)
         }
     )
+    val assistantVm: AssistantVM = koinViewModel()
+    val navController = LocalNavController.current
     val assistant by vm.assistant.collectAsStateWithLifecycle()
     val providers by vm.providers.collectAsStateWithLifecycle()
     val tags by vm.tags.collectAsStateWithLifecycle()
@@ -91,7 +113,12 @@ fun AssistantBasicPage(id: String) {
             tags = tags,
             workspaces = workspaces,
             onUpdate = { vm.update(it) },
-            vm = vm
+            vm = vm,
+            focusContextMessageSize = focusContextMessageSize,
+            onDelete = {
+                assistantVm.removeAssistant(assistant)
+                navController.popBackStack()
+            },
         )
     }
 }
@@ -104,10 +131,25 @@ internal fun AssistantBasicContent(
     tags: List<DataTag>,
     workspaces: List<WorkspaceEntity>,
     onUpdate: (Assistant) -> Unit,
-    vm: AssistantDetailVM
+    vm: AssistantDetailVM,
+    focusContextMessageSize: Boolean = false,
+    onDelete: () -> Unit = {},
 ) {
     var contextMessageSizeInput by remember(assistant.id, assistant.contextMessageSize) {
         mutableStateOf(assistant.contextMessageSize.takeIf { it > 0 }?.toString().orEmpty())
+    }
+    val contextMessageSizeRequester = remember { BringIntoViewRequester() }
+    val chatModelState = rememberModelListState(
+        modelId = assistant.chatModelId,
+        providers = providers,
+        type = ModelType.CHAT,
+    )
+    var showDeleteConfirm by remember { mutableStateOf(false) }
+    LaunchedEffect(focusContextMessageSize) {
+        if (focusContextMessageSize) {
+            withFrameNanos { }
+            contextMessageSizeRequester.bringIntoView()
+        }
     }
 
     Column(
@@ -129,6 +171,7 @@ internal fun AssistantBasicContent(
             UIAvatar(
                 value = assistant.avatar,
                 name = assistant.name.ifBlank { stringResource(R.string.assistant_page_default_assistant) },
+                invertDefaultAvatarInDarkMode = true,
                 onUpdate = { avatar ->
                     onUpdate(
                         assistant.copy(
@@ -247,19 +290,27 @@ internal fun AssistantBasicContent(
                 description = {
                     Text(stringResource(R.string.assistant_page_chat_model_desc))
                 },
-                content = {
-                    ModelSelector(
-                        modelId = assistant.chatModelId,
-                        providers = providers,
-                        type = ModelType.CHAT,
-                        onSelect = {
-                            onUpdate(
-                                assistant.copy(
-                                    chatModelId = it.id
-                                )
-                            )
-                        },
-                    )
+                tail = {
+                    Row(
+                        modifier = Modifier
+                            .clickable { chatModelState.open() }
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Text(
+                            text = chatModelState.currentModel?.displayName
+                                ?: stringResource(R.string.model_list_select_model),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                        )
+                        Icon(
+                            HugeIcons.ArrowRight01,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                        )
+                    }
                 }
             )
             HorizontalDivider()
@@ -372,43 +423,6 @@ internal fun AssistantBasicContent(
             FormItem(
                 modifier = Modifier.padding(8.dp),
                 label = {
-                    Text(stringResource(R.string.assistant_page_context_message_size))
-                },
-                description = {
-                    Text(
-                        text = stringResource(R.string.assistant_page_context_message_desc),
-                    )
-                }
-            ) {
-                OutlinedTextField(
-                    value = contextMessageSizeInput,
-                    onValueChange = { value ->
-                        if (value.all(Char::isDigit)) {
-                            contextMessageSizeInput = value
-                            if (value.isBlank()) {
-                                onUpdate(assistant.copy(contextMessageSize = 0))
-                            } else {
-                                value.toIntOrNull()?.takeIf { it > 0 }?.let { count ->
-                                    onUpdate(assistant.copy(contextMessageSize = count))
-                                }
-                            }
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    isError = contextMessageSizeInput.isNotBlank() &&
-                        contextMessageSizeInput.toIntOrNull()?.takeIf { it > 0 } == null,
-                    placeholder = {
-                        Text(stringResource(R.string.assistant_page_max_tokens_no_limit))
-                    },
-                )
-
-            }
-            HorizontalDivider()
-            FormItem(
-                modifier = Modifier.padding(8.dp),
-                label = {
                     Text(stringResource(R.string.assistant_page_stream_output))
                 },
                 description = {
@@ -433,14 +447,29 @@ internal fun AssistantBasicContent(
                 label = {
                     Text(stringResource(R.string.assistant_page_thinking_budget))
                 },
-            ) {
-                ReasoningButton(
-                    reasoningLevel = assistant.reasoningLevel,
-                    onUpdateReasoningLevel = { level ->
-                        onUpdate(assistant.copy(reasoningLevel = level))
-                    }
-                )
-            }
+                tail = {
+                    ReasoningButton(
+                        reasoningLevel = assistant.reasoningLevel,
+                        onUpdateReasoningLevel = { level ->
+                            onUpdate(assistant.copy(reasoningLevel = level))
+                        }
+                    )
+                },
+            )
+            HorizontalDivider()
+            FormItem(
+                modifier = Modifier.padding(8.dp),
+                label = { Text("上下文缓存") },
+                description = {
+                    Text("适配 Claude / GPT-5.6，其它模型也可以看情况开启")
+                },
+                tail = {
+                    ContextCachePicker(
+                        value = assistant.contextCache,
+                        onValueChange = { onUpdate(assistant.copy(contextCache = it)) },
+                    )
+                },
+            )
             HorizontalDivider()
             FormItem(
                 modifier = Modifier.padding(8.dp),
@@ -471,6 +500,44 @@ internal fun AssistantBasicContent(
                     placeholder = {
                         Text(stringResource(R.string.assistant_page_max_tokens_no_limit))
                     }
+                )
+            }
+            HorizontalDivider()
+            FormItem(
+                modifier = Modifier
+                    .bringIntoViewRequester(contextMessageSizeRequester)
+                    .padding(8.dp),
+                label = {
+                    Text(stringResource(R.string.assistant_page_context_message_size))
+                },
+                description = {
+                    Text(
+                        text = stringResource(R.string.assistant_page_context_message_desc),
+                    )
+                }
+            ) {
+                OutlinedTextField(
+                    value = contextMessageSizeInput,
+                    onValueChange = { value ->
+                        if (value.all(Char::isDigit)) {
+                            contextMessageSizeInput = value
+                            if (value.isBlank()) {
+                                onUpdate(assistant.copy(contextMessageSize = 0))
+                            } else {
+                                value.toIntOrNull()?.takeIf { it > 0 }?.let { count ->
+                                    onUpdate(assistant.copy(contextMessageSize = count))
+                                }
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    isError = contextMessageSizeInput.isNotBlank() &&
+                        contextMessageSizeInput.toIntOrNull()?.takeIf { it > 0 } == null,
+                    placeholder = {
+                        Text(stringResource(R.string.assistant_page_max_tokens_no_limit))
+                    },
                 )
             }
         }
@@ -553,5 +620,63 @@ internal fun AssistantBasicContent(
                 }
             }
         }
+
+        Card(
+            colors = CustomColors.cardColorsOnSurfaceContainer
+        ) {
+            FormItem(
+                modifier = Modifier.padding(8.dp),
+                label = { Text(stringResource(R.string.assistant_page_custom_headers)) },
+            ) {
+                CustomHeaders(
+                    headers = assistant.customHeaders,
+                    onUpdate = { onUpdate(assistant.copy(customHeaders = it)) },
+                )
+            }
+            HorizontalDivider()
+            FormItem(
+                modifier = Modifier.padding(8.dp),
+                label = { Text(stringResource(R.string.assistant_page_custom_bodies)) },
+            ) {
+                CustomBodies(
+                    customBodies = assistant.customBodies,
+                    onUpdate = { onUpdate(assistant.copy(customBodies = it)) },
+                )
+            }
+        }
+
+        if (assistant.id !in DEFAULT_ASSISTANTS_IDS) {
+            Button(
+                onClick = { showDeleteConfirm = true },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError,
+                ),
+            ) {
+                Icon(HugeIcons.Delete01, contentDescription = null)
+                Text(
+                    stringResource(R.string.assistant_page_delete_assistant),
+                    modifier = Modifier.padding(start = 8.dp),
+                )
+            }
+        }
+    }
+    ModelListSheet(
+        state = chatModelState,
+        onSelect = { onUpdate(assistant.copy(chatModelId = it.id)) },
+    )
+    RikkaConfirmDialog(
+        show = showDeleteConfirm,
+        title = stringResource(R.string.assistant_page_delete_assistant),
+        confirmText = stringResource(R.string.common_delete),
+        dismissText = stringResource(R.string.common_cancel),
+        onConfirm = {
+            showDeleteConfirm = false
+            onDelete()
+        },
+        onDismiss = { showDeleteConfirm = false },
+    ) {
+        Text(stringResource(R.string.assistant_page_delete_dialog_text))
     }
 }

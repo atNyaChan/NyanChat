@@ -46,6 +46,7 @@ fun ChatMessageUserAvatar(
                 modifier = Modifier.size(28.dp),
                 value = avatar,
                 loading = false,
+                invertDefaultAvatarInDarkMode = true,
             )
         }
     }
@@ -75,6 +76,7 @@ fun ChatMessageAssistantAvatar(
                         modifier = Modifier.size(28.dp),
                         value = assistant.avatar,
                         loading = loading,
+                        invertDefaultAvatarInDarkMode = true,
                     )
                 }
                 Row(

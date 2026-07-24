@@ -30,6 +30,8 @@ import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.context.LocalNavController
+import me.rerere.rikkahub.ui.hooks.rememberColorMode
+import me.rerere.rikkahub.ui.theme.ColorMode
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.plus
 import org.koin.androidx.compose.koinViewModel
@@ -40,6 +42,12 @@ fun SettingPreferencesPage(vm: SettingVM = koinViewModel()) {
     var displaySetting by remember(settings) { mutableStateOf(settings.displaySetting) }
     val navController = LocalNavController.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    var colorMode by rememberColorMode()
+    val selectedColorModeText = when (colorMode) {
+        ColorMode.SYSTEM -> stringResource(R.string.setting_page_color_mode_system)
+        ColorMode.LIGHT -> stringResource(R.string.setting_page_color_mode_light)
+        ColorMode.DARK -> stringResource(R.string.setting_page_color_mode_dark)
+    }
     val messageJumperMode = when {
         !displaySetting.showMessageJumper -> MessageJumperMode.OFF
         displaySetting.messageJumperOnLeft -> MessageJumperMode.LEFT
@@ -70,6 +78,32 @@ fun SettingPreferencesPage(vm: SettingVM = koinViewModel()) {
         ) {
             item {
                 CardGroup(modifier = Modifier.padding(horizontal = 8.dp)) {
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_page_color_mode)) },
+                        supportingContent = { Text(selectedColorModeText) },
+                        trailingContent = {
+                            Select(
+                                options = ColorMode.entries,
+                                selectedOption = colorMode,
+                                onOptionSelected = {
+                                    colorMode = it
+                                    navController.navigate(Screen.SettingPreferences) {
+                                        popUpTo(Screen.SettingPreferences) {
+                                            inclusive = true
+                                        }
+                                    }
+                                },
+                                optionToString = {
+                                    when (it) {
+                                        ColorMode.SYSTEM -> stringResource(R.string.setting_page_color_mode_system)
+                                        ColorMode.LIGHT -> stringResource(R.string.setting_page_color_mode_light)
+                                        ColorMode.DARK -> stringResource(R.string.setting_page_color_mode_dark)
+                                    }
+                                },
+                                fitToOptions = true,
+                            )
+                        },
+                    )
                     item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_show_user_avatar_title)) },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_show_user_avatar_desc)) },
@@ -155,7 +189,7 @@ fun SettingPreferencesPage(vm: SettingVM = koinViewModel()) {
 }
 
 private enum class MessageJumperMode(val labelRes: Int) {
-    OFF(R.string.setting_display_page_message_jumper_off),
+    OFF(R.string.common_off),
     RIGHT(R.string.setting_display_page_message_jumper_right),
     LEFT(R.string.setting_display_page_message_jumper_left),
 }

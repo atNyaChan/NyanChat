@@ -180,6 +180,7 @@ fun ChatDrawerContent(
                 UIAvatar(
                     name = settings.displaySetting.userNickname.ifBlank { stringResource(R.string.user_default_name) },
                     value = settings.displaySetting.userAvatar,
+                    invertDefaultAvatarInDarkMode = true,
                     onUpdate = { newAvatar ->
                         vm.updateSettings(
                             settings.copy(
@@ -265,7 +266,7 @@ fun ChatDrawerContent(
             conversationToDelete?.let { conversation ->
                 AlertDialog(
                     onDismissRequest = { conversationToDelete = null },
-                    title = { Text(stringResource(R.string.chat_page_delete)) },
+                    title = { Text(stringResource(R.string.common_delete)) },
                     text = { Text(stringResource(R.string.chat_page_delete_conversation_confirm, conversation.title)) },
                     confirmButton = {
                         TextButton(onClick = {
@@ -273,11 +274,11 @@ fun ChatDrawerContent(
                             conversationToDelete = null
                             conversations.refresh()
                             if (conversation.id == current.id) navigateToChatPage(navController)
-                        }) { Text(stringResource(R.string.chat_page_delete)) }
+                        }) { Text(stringResource(R.string.common_delete)) }
                     },
                     dismissButton = {
                         TextButton(onClick = { conversationToDelete = null }) {
-                            Text(stringResource(R.string.cancel))
+                            Text(stringResource(R.string.common_cancel))
                         }
                     },
                 )
@@ -286,18 +287,18 @@ fun ChatDrawerContent(
             if (conversationsToDelete.isNotEmpty()) {
                 AlertDialog(
                     onDismissRequest = { conversationsToDelete = emptyList() },
-                    title = { Text(stringResource(R.string.chat_page_delete)) },
+                    title = { Text(stringResource(R.string.common_delete)) },
                     text = { Text(stringResource(R.string.chat_page_delete_selected_confirm, conversationsToDelete.size)) },
                     confirmButton = {
                         TextButton(onClick = {
                             conversationsToDelete.forEach(vm::deleteConversation)
                             conversationsToDelete = emptyList()
                             conversations.refresh()
-                        }) { Text(stringResource(R.string.chat_page_delete)) }
+                        }) { Text(stringResource(R.string.common_delete)) }
                     },
                     dismissButton = {
                         TextButton(onClick = { conversationsToDelete = emptyList() }) {
-                            Text(stringResource(R.string.cancel))
+                            Text(stringResource(R.string.common_cancel))
                         }
                     },
                 )
@@ -320,7 +321,7 @@ fun ChatDrawerContent(
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
                             TextButton(onClick = { conversationToEditTitle = null }) {
-                                Text(stringResource(R.string.cancel))
+                                Text(stringResource(R.string.common_cancel))
                             }
                             TextButton(onClick = {
                                 vm.generateTitleCandidate(conversation) { editedTitle = it }
@@ -329,7 +330,7 @@ fun ChatDrawerContent(
                                 vm.updateConversationTitle(conversation, editedTitle)
                                 conversationToEditTitle = null
                                 conversations.refresh()
-                            }) { Text(stringResource(R.string.confirm)) }
+                            }) { Text(stringResource(R.string.common_confirm_action)) }
                         }
                     },
                 )
@@ -445,7 +446,7 @@ fun ChatDrawerContent(
                         nicknameEditState.confirm()
                     }
                 ) {
-                    Text(stringResource(R.string.chat_page_save))
+                    Text(stringResource(R.string.common_save))
                 }
             },
             dismissButton = {
@@ -454,7 +455,7 @@ fun ChatDrawerContent(
                         nicknameEditState.dismiss()
                     }
                 ) {
-                    Text(stringResource(R.string.chat_page_cancel))
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -482,11 +483,11 @@ fun ChatDrawerContent(
                         showCreateFolderDialog = false
                     },
                     enabled = name.isNotBlank()
-                ) { Text(stringResource(R.string.chat_page_save)) }
+                ) { Text(stringResource(R.string.common_save)) }
             },
             dismissButton = {
                 TextButton(onClick = { showCreateFolderDialog = false }) {
-                    Text(stringResource(R.string.chat_page_cancel))
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -513,11 +514,11 @@ fun ChatDrawerContent(
                         folderToRename = null
                     },
                     enabled = name.isNotBlank()
-                ) { Text(stringResource(R.string.chat_page_save)) }
+                ) { Text(stringResource(R.string.common_save)) }
             },
             dismissButton = {
                 TextButton(onClick = { folderToRename = null }) {
-                    Text(stringResource(R.string.chat_page_cancel))
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -539,11 +540,11 @@ fun ChatDrawerContent(
                             toaster.show(context.getString(R.string.chat_page_delete_folder_generating), type = ToastType.Warning)
                         }
                     }
-                ) { Text(stringResource(R.string.chat_page_delete)) }
+                ) { Text(stringResource(R.string.common_delete)) }
             },
             dismissButton = {
                 TextButton(onClick = { folderToDelete = null }) {
-                    Text(stringResource(R.string.chat_page_cancel))
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -577,6 +578,7 @@ fun ChatDrawerContent(
                                 UIAvatar(
                                     name = assistant.name,
                                     value = assistant.avatar,
+                                    invertDefaultAvatarInDarkMode = true,
                                     modifier = Modifier.size(40.dp),
                                 )
                                 Text(
@@ -661,7 +663,7 @@ fun ChatDrawerContent(
             confirmButton = {},
             dismissButton = {
                 TextButton(onClick = { conversationsToMove = emptyList() }) {
-                    Text(stringResource(R.string.cancel))
+                    Text(stringResource(R.string.common_cancel))
                 }
             },
         )
@@ -675,10 +677,10 @@ fun ChatDrawerContent(
                 Text(stringResource(R.string.chat_page_confirm_move_desc, conversationsToMove.size, target.label))
             },
             confirmButton = {
-                TextButton(onClick = { moveTo(target) }) { Text(stringResource(R.string.confirm)) }
+                TextButton(onClick = { moveTo(target) }) { Text(stringResource(R.string.common_confirm_action)) }
             },
             dismissButton = {
-                TextButton(onClick = { pendingMoveTarget = null }) { Text(stringResource(R.string.cancel)) }
+                TextButton(onClick = { pendingMoveTarget = null }) { Text(stringResource(R.string.common_cancel)) }
             },
         )
     }
@@ -707,11 +709,11 @@ fun ChatDrawerContent(
                             }
                         }
                     },
-                ) { Text(stringResource(R.string.confirm)) }
+                ) { Text(stringResource(R.string.common_confirm_action)) }
             },
             dismissButton = {
                 TextButton(onClick = { moveCreateFolderAssistant = null }) {
-                    Text(stringResource(R.string.cancel))
+                    Text(stringResource(R.string.common_cancel))
                 }
             },
         )
@@ -723,7 +725,7 @@ private fun DrawerActions(navController: Navigator) {
     Column {
         // 搜索入口
         Surface(
-            onClick = { navController.navigate(Screen.MessageSearch) },
+            onClick = { navController.navigate(Screen.MessageSearch()) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 4.dp),
@@ -823,7 +825,7 @@ private fun FolderBar(
                     onDismissRequest = { menuExpanded = false },
                 ) {
                     DropdownMenuItem(
-                        text = { Text(stringResource(R.string.chat_page_rename)) },
+                        text = { Text(stringResource(R.string.common_rename)) },
                         leadingIcon = { Icon(HugeIcons.PencilEdit01, null) },
                         onClick = {
                             onRename(folder)
@@ -831,7 +833,7 @@ private fun FolderBar(
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text(stringResource(R.string.chat_page_delete)) },
+                        text = { Text(stringResource(R.string.common_delete)) },
                         leadingIcon = { Icon(HugeIcons.Delete01, null) },
                         onClick = {
                             onDelete(folder)

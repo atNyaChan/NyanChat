@@ -140,7 +140,7 @@ private fun AssistantMemoryContent(
                         memoryDialogState.confirm()
                     }
                 ) {
-                    Text(stringResource(R.string.assistant_page_save))
+                    Text(stringResource(R.string.common_save))
                 }
             },
             dismissButton = {
@@ -149,7 +149,7 @@ private fun AssistantMemoryContent(
                         memoryDialogState.dismiss()
                     }
                 ) {
-                    Text(stringResource(R.string.assistant_page_cancel))
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -292,8 +292,8 @@ private fun AssistantMemoryContent(
     RikkaConfirmDialog(
         show = pendingDeleteMemory != null,
         title = stringResource(R.string.confirm_delete),
-        confirmText = stringResource(R.string.confirm),
-        dismissText = stringResource(R.string.cancel),
+        confirmText = stringResource(R.string.common_confirm_action),
+        dismissText = stringResource(R.string.common_cancel),
         onConfirm = {
             pendingDeleteMemory?.let(onDeleteMemory)
             pendingDeleteMemory = null
@@ -352,7 +352,7 @@ private fun MemoryItem(
             ) {
                 Icon(
                     HugeIcons.Delete01,
-                    stringResource(R.string.assistant_page_delete)
+                    stringResource(R.string.common_delete)
                 )
             }
         }

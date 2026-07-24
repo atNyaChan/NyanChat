@@ -51,7 +51,7 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.richtext.HighlightCodeVisualTransformation
 import me.rerere.rikkahub.ui.components.ui.FormItem
-import me.rerere.rikkahub.ui.components.ui.OutlinedNumberInput
+import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
@@ -76,6 +76,7 @@ fun SettingSearchDetailPage(
     val service = settings.searchServices.find { it.id == serviceId } ?: return
     val serviceIndex = settings.searchServices.indexOf(service)
     var options by remember(service) { mutableStateOf(service) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
 
     fun save(updated: SearchServiceOptions) {
         options = updated
@@ -96,16 +97,11 @@ fun SettingSearchDetailPage(
                 actions = {
                     if (settings.searchServices.size > 1) {
                         IconButton(
-                            onClick = {
-                                val newServices = settings.searchServices.toMutableList()
-                                newServices.removeAt(serviceIndex)
-                                vm.updateSettings(settings.copy(searchServices = newServices))
-                                nav.popBackStack()
-                            }
+                            onClick = { showDeleteConfirm = true }
                         ) {
                             Icon(
                                 imageVector = HugeIcons.Delete01,
-                                contentDescription = stringResource(R.string.delete)
+                                contentDescription = stringResource(R.string.common_delete)
                             )
                         }
                     }
@@ -161,6 +157,22 @@ fun SettingSearchDetailPage(
                 )
             }
         }
+    }
+    RikkaConfirmDialog(
+        show = showDeleteConfirm,
+        title = stringResource(R.string.common_delete),
+        confirmText = stringResource(R.string.common_delete),
+        dismissText = stringResource(R.string.common_cancel),
+        onConfirm = {
+            showDeleteConfirm = false
+            val newServices = settings.searchServices.toMutableList()
+            newServices.removeAt(serviceIndex)
+            vm.updateSettings(settings.copy(searchServices = newServices))
+            nav.popBackStack()
+        },
+        onDismiss = { showDeleteConfirm = false },
+    ) {
+        Text(stringResource(R.string.setting_page_search_delete_confirm, options.displayName))
     }
 }
 

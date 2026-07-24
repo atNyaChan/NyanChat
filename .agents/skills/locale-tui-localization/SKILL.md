@@ -1,6 +1,6 @@
 ---
 name: locale-tui-localization
-description: Use this skill when users request manual i18n/localization updates for Android string resources.
+description: Use this skill when users request i18n/localization updates for Android string resources.
 ---
 
 # Manual Android Localization

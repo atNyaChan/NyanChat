@@ -102,12 +102,12 @@ fun SettingFilesPage(
                         }
                     }
                 ) {
-                    Text(stringResource(R.string.setting_files_page_delete_action))
+                    Text(stringResource(R.string.common_delete))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { pendingDelete = null }) {
-                    Text(stringResource(R.string.setting_files_page_cancel_action))
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -133,7 +133,7 @@ fun SettingFilesPage(
             },
             dismissButton = {
                 TextButton(onClick = { showCleanDialog = false }) {
-                    Text(stringResource(R.string.setting_files_page_cancel_action))
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -286,7 +286,7 @@ private fun FileItem(
                 ) {
                     Icon(
                         HugeIcons.Delete01,
-                        contentDescription = stringResource(R.string.setting_files_page_delete_content_description)
+                        contentDescription = stringResource(R.string.common_delete)
                     )
                 }
             }

@@ -47,13 +47,6 @@ class SkillsVM(
         }
     }
 
-    fun deleteSkill(name: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            skillManager.deleteSkill(name)
-            _skills.value = skillManager.listSkills()
-        }
-    }
-
     fun getSkillsDir() = skillManager.getSkillsDir()
 
     fun importSkillFromFile(context: Context, uri: Uri, onResult: (Boolean, String) -> Unit) {

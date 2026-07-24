@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.layout.ContentScale
@@ -55,6 +56,7 @@ import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.model.Avatar
 import me.rerere.rikkahub.ui.components.ai.useCropLauncher
 import me.rerere.rikkahub.ui.hooks.rememberAvatarShape
+import me.rerere.rikkahub.ui.theme.LocalDarkMode
 import org.koin.compose.koinInject
 import java.io.File
 
@@ -93,6 +95,7 @@ fun UIAvatar(
     value: Avatar,
     modifier: Modifier = Modifier,
     loading: Boolean = false,
+    invertDefaultAvatarInDarkMode: Boolean = false,
     onUpdate: ((Avatar) -> Unit)? = null,
     onClick: (() -> Unit)? = null
 ) {
@@ -186,6 +189,11 @@ fun UIAvatar(
                             contentDescription = null,
                             modifier = Modifier.fillMaxSize(0.9f),
                             contentScale = ContentScale.Crop,
+                            colorFilter = if (invertDefaultAvatarInDarkMode && LocalDarkMode.current) {
+                                ColorFilter.tint(Color.White)
+                            } else {
+                                null
+                            },
                         )
                     }
                 }
@@ -271,7 +279,7 @@ fun UIAvatar(
                         showPickOption = false
                     }
                 ) {
-                    Text(stringResource(id = R.string.avatar_cancel))
+                    Text(stringResource(id = R.string.common_cancel))
                 }
             }
         )
@@ -323,7 +331,7 @@ fun UIAvatar(
                         }
                     }
                 ) {
-                    Text(stringResource(id = R.string.avatar_url_confirm))
+                    Text(stringResource(id = R.string.common_confirm_action))
                 }
             },
             dismissButton = {
@@ -332,7 +340,7 @@ fun UIAvatar(
                         showUrlInput = false
                     }
                 ) {
-                    Text(stringResource(id = R.string.avatar_cancel))
+                    Text(stringResource(id = R.string.common_cancel))
                 }
             }
         )

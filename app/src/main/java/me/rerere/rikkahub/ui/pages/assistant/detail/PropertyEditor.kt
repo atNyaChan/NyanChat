@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -45,13 +43,7 @@ private val jsonLenient = Json {
 
 @Composable
 fun CustomHeaders(headers: List<CustomHeader>, onUpdate: (List<CustomHeader>) -> Unit) {
-    Column(
-        modifier = Modifier.padding(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(stringResource(R.string.assistant_page_custom_headers))
-        Spacer(Modifier.height(8.dp))
-
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         headers.forEachIndexed { index, header ->
             var headerName by remember(header.name) { mutableStateOf(header.name) }
             var headerValue by remember(header.value) { mutableStateOf(header.value) }
@@ -123,13 +115,7 @@ fun CustomHeaders(headers: List<CustomHeader>, onUpdate: (List<CustomHeader>) ->
 @Composable
 fun CustomBodies(customBodies: List<CustomBody>, onUpdate: (List<CustomBody>) -> Unit) {
     val context = LocalContext.current
-    Column(
-        modifier = Modifier.padding(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(stringResource(R.string.assistant_page_custom_bodies))
-        Spacer(Modifier.height(8.dp))
-
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         customBodies.forEachIndexed { index, body ->
             var bodyKey by remember(body.key) { mutableStateOf(body.key) }
             var bodyValueString by remember(body.value) {

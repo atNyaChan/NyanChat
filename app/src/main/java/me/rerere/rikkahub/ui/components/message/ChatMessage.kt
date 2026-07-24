@@ -111,8 +111,10 @@ fun ChatMessage(
     onToggleFavorite: (() -> Unit)? = null,
     onTranslate: ((UIMessage, Locale) -> Unit)? = null,
     onClearTranslation: (UIMessage) -> Unit = {},
+    onCancelTranslation: (UIMessage) -> Unit = {},
     onToolApproval: ((toolCallId: String, approved: Boolean, reason: String) -> Unit)? = null,
     onToolAnswer: ((toolCallId: String, answer: String) -> Unit)? = null,
+    showNerdLine: Boolean = true,
 ) {
     val message = node.messages[node.selectIndex]
     val settings = LocalSettings.current.displaySetting
@@ -123,7 +125,6 @@ fun ChatMessage(
         fontFamily = chatFontFamily
     )
     var showActionsSheet by remember { mutableStateOf(false) }
-    var showSelectCopySheet by remember { mutableStateOf(false) }
     var showTranslateDialog by remember { mutableStateOf(false) }
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -169,6 +170,9 @@ fun ChatMessage(
             message.translation?.let { translation ->
                 CollapsibleTranslationText(
                     content = translation,
+                    isTranslating = translation == stringResource(R.string.translating),
+                    onCancelTranslation = { onCancelTranslation(message) },
+                    onDeleteTranslation = { onClearTranslation(message) },
                     onClickCitation = {}
                 )
             }
@@ -206,7 +210,7 @@ fun ChatMessage(
         )
 
         ProvideTextStyle(textStyle) {
-            if (message.role == MessageRole.ASSISTANT) {
+            if (message.role == MessageRole.ASSISTANT && showNerdLine) {
                 ChatMessageNerdLine(
                     message = message,
                     loading = loading,
@@ -224,9 +228,6 @@ fun ChatMessage(
             onShare = onShare,
             onFork = onFork,
             model = model,
-            onSelectAndCopy = {
-                showSelectCopySheet = true
-            },
             isFavorite = isFavorite,
             onToggleFavorite = onToggleFavorite,
             onTranslateRequest = if (onTranslate != null) {
@@ -244,22 +245,10 @@ fun ChatMessage(
                 showTranslateDialog = false
                 onTranslate(message, it)
             },
-            onClearTranslation = {
-                showTranslateDialog = false
-                onClearTranslation(message)
-            },
             onDismissRequest = { showTranslateDialog = false },
         )
     }
 
-    if (showSelectCopySheet) {
-        ChatMessageCopySheet(
-            message = message,
-            onDismissRequest = {
-                showSelectCopySheet = false
-            }
-        )
-    }
 }
 
 @OptIn(FlowPreview::class)

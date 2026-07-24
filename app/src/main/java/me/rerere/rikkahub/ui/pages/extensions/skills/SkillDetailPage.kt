@@ -26,6 +26,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -50,7 +52,6 @@ import me.rerere.rikkahub.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.composables.icons.lucide.ChevronDown
 import com.composables.icons.lucide.ChevronRight
-import com.composables.icons.lucide.FilePen
 import com.composables.icons.lucide.FileText
 import com.composables.icons.lucide.Folder
 import com.composables.icons.lucide.FolderOpen
@@ -72,10 +73,12 @@ fun SkillDetailPage(skillName: String) {
     val tree by vm.tree.collectAsStateWithLifecycle()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val toaster = LocalToaster.current
+    val navController = me.rerere.rikkahub.ui.context.LocalNavController.current
 
     var editingFile by remember { mutableStateOf<SkillFile?>(null) }
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
     var deleteTarget by remember { mutableStateOf<SkillFile?>(null) }
+    var showDeleteSkillConfirm by rememberSaveable { mutableStateOf(false) }
     val deleteFailedMsg = stringResource(R.string.skill_detail_page_delete_failed)
 
     val scrollState = rememberScrollState()
@@ -93,6 +96,15 @@ fun SkillDetailPage(skillName: String) {
             LargeFlexibleTopAppBar(
                 title = { Text(skillName) },
                 navigationIcon = { BackButton() },
+                actions = {
+                    IconButton(onClick = { showDeleteSkillConfirm = true }) {
+                        Icon(
+                            Lucide.Trash2,
+                            contentDescription = stringResource(R.string.common_delete),
+                            tint = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                },
                 scrollBehavior = scrollBehavior,
                 colors = CustomColors.topBarColors,
             )
@@ -155,8 +167,8 @@ fun SkillDetailPage(skillName: String) {
     RikkaConfirmDialog(
         show = deleteTarget != null,
         title = stringResource(R.string.skill_detail_page_delete_file),
-        confirmText = stringResource(R.string.delete),
-        dismissText = stringResource(R.string.cancel),
+        confirmText = stringResource(R.string.common_delete),
+        dismissText = stringResource(R.string.common_cancel),
         onConfirm = {
             deleteTarget?.let { skillFile ->
                 vm.deleteFile(skillFile) { success ->
@@ -168,6 +180,22 @@ fun SkillDetailPage(skillName: String) {
         onDismiss = { deleteTarget = null },
     ) {
         Text(stringResource(R.string.skill_detail_page_delete_confirm, deleteTarget?.relativePath ?: ""))
+    }
+
+    RikkaConfirmDialog(
+        show = showDeleteSkillConfirm,
+        title = stringResource(R.string.skills_page_delete_title),
+        confirmText = stringResource(R.string.common_delete),
+        dismissText = stringResource(R.string.common_cancel),
+        onConfirm = {
+            showDeleteSkillConfirm = false
+            vm.deleteSkill { success ->
+                if (success) navController.popBackStack() else toaster.show(deleteFailedMsg)
+            }
+        },
+        onDismiss = { showDeleteSkillConfirm = false },
+    ) {
+        Text(stringResource(R.string.skills_page_delete_message, skillName))
     }
 }
 
@@ -204,14 +232,19 @@ private fun FileItem(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
+    Card(
+        onClick = onEdit,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 3.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        ),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = (16 + depth * 20).dp, end = 4.dp, top = 2.dp, bottom = 2.dp),
+                .padding(start = (16 + depth * 20).dp, end = 8.dp, top = 10.dp, bottom = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
@@ -233,18 +266,11 @@ private fun FileItem(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            IconButton(onClick = onEdit, modifier = Modifier.size(36.dp)) {
-                Icon(
-                    imageVector = Lucide.FilePen,
-                    contentDescription = stringResource(R.string.edit),
-                    modifier = Modifier.size(16.dp),
-                )
-            }
             if (skillFile.relativePath != "SKILL.md") {
                 IconButton(onClick = onDelete, modifier = Modifier.size(36.dp)) {
                     Icon(
                         imageVector = Lucide.Trash2,
-                        contentDescription = stringResource(R.string.delete),
+                        contentDescription = stringResource(R.string.common_delete),
                         modifier = Modifier.size(16.dp),
                         tint = MaterialTheme.colorScheme.error,
                     )
@@ -334,10 +360,10 @@ private fun EditFileDialog(
             )
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(content) }) { Text(stringResource(R.string.skill_detail_page_save)) }
+            TextButton(onClick = { onConfirm(content) }) { Text(stringResource(R.string.common_save)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) }
         },
     )
 }
@@ -393,7 +419,7 @@ private fun AddFileDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) }
         },
     )
 }

@@ -111,6 +111,20 @@ class WorkspaceDetailVM(
         }
     }
 
+    fun renameWorkspace(name: String) {
+        viewModelScope.launch {
+            runCatching { repository.rename(id, name) }
+                .onSuccess { loadWorkspace() }
+        }
+    }
+
+    fun deleteWorkspace(onComplete: () -> Unit) {
+        viewModelScope.launch {
+            runCatching { repository.delete(id) }
+                .onSuccess { onComplete() }
+        }
+    }
+
     fun importFile(inputStream: InputStream, fileName: String) {
         viewModelScope.launch {
             runCatching {

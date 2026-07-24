@@ -32,7 +32,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -46,7 +45,6 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -54,7 +52,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberBottomSheetState
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -83,12 +80,10 @@ import me.rerere.hugeicons.stroke.Add01
 import me.rerere.hugeicons.stroke.AlertCircle
 import me.rerere.hugeicons.stroke.ArrowDown01
 import me.rerere.hugeicons.stroke.ArrowUp01
-import me.rerere.hugeicons.stroke.Cancel01
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.FileImport
 import me.rerere.hugeicons.stroke.McpServer
 import me.rerere.hugeicons.stroke.MessageBlocked
-import me.rerere.hugeicons.stroke.Settings03
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.ai.mcp.McpCommonOptions
 import me.rerere.rikkahub.data.ai.mcp.McpManager
@@ -97,6 +92,7 @@ import me.rerere.rikkahub.data.ai.mcp.McpStatus
 import me.rerere.rikkahub.data.ai.mcp.McpTool
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.FormItem
+import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.components.ui.Switch
 import me.rerere.rikkahub.ui.components.ui.SwitchSize
 import me.rerere.rikkahub.ui.components.ui.Tag
@@ -200,13 +196,6 @@ fun SettingMcpPage(vm: SettingVM = koinViewModel()) {
                         onEdit = {
                             editState.open(mcpConfig)
                         },
-                        onDelete = {
-                            vm.updateSettings(
-                                settings.copy(
-                                    mcpServers = mcpConfigs.filter { it.id != mcpConfig.id }
-                                )
-                            )
-                        },
                         modifier = Modifier.animateItem()
                     )
                 }
@@ -228,7 +217,15 @@ fun SettingMcpPage(vm: SettingVM = koinViewModel()) {
         }
     }
     McpServerConfigModal(creationState)
-    McpServerConfigModal(editState)
+    McpServerConfigModal(
+        state = editState,
+        onDelete = { config ->
+            vm.updateSettings(
+                settings.copy(mcpServers = mcpConfigs.filter { it.id != config.id })
+            )
+            editState.dismiss()
+        },
+    )
     if (showImportDialog) {
         McpImportModal(
             onDismiss = { showImportDialog = false },
@@ -246,13 +243,10 @@ fun SettingMcpPage(vm: SettingVM = koinViewModel()) {
 private fun McpServerItem(
     item: McpServerConfig,
     modifier: Modifier = Modifier,
-    onDelete: () -> Unit,
     onEdit: (McpServerConfig) -> Unit,
 ) {
     val mcpManager = koinInject<McpManager>()
     val status by mcpManager.getStatus(item).collectAsStateWithLifecycle(McpStatus.Idle)
-    val dismissBoxState = rememberSwipeToDismissBoxState()
-    val scope = rememberCoroutineScope()
     var errorDetail by remember { mutableStateOf<McpStatus.Error?>(null) }
 
     errorDetail?.let { error ->
@@ -284,51 +278,24 @@ private fun McpServerItem(
             },
             dismissButton = {
                 TextButton(onClick = { errorDetail = null }) {
-                    Text(stringResource(R.string.cancel))
+                    Text(stringResource(R.string.common_cancel))
                 }
             },
         )
     }
-    SwipeToDismissBox(
-        state = dismissBoxState,
-        backgroundContent = {
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
-            ) {
-                FilledTonalIconButton(
-                    onClick = {
-                        scope.launch { dismissBoxState.reset() }
-                    }
-                ) {
-                    Icon(HugeIcons.Cancel01, null)
-                }
-                FilledTonalIconButton(
-                    onClick = {
-                        onDelete()
-                    }
-                ) {
-                    Icon(HugeIcons.Delete01, null)
-                }
-            }
-        },
-        enableDismissFromStartToEnd = false,
-        enableDismissFromEndToStart = true,
-        modifier = modifier
+    Card(
+        modifier = modifier.clickable { onEdit(item) },
+        colors = CardDefaults.cardColors(
+            containerColor = CustomColors.listItemColors.containerColor
+        )
     ) {
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = CustomColors.listItemColors.containerColor
-            )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
                 when (status) {
                     McpStatus.Idle -> Icon(HugeIcons.MessageBlocked, null)
                     McpStatus.Connecting -> CircularProgressIndicator(
@@ -348,10 +315,10 @@ private fun McpServerItem(
                     )
                 }
 
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -420,25 +387,20 @@ private fun McpServerItem(
                             Text("取消授权")
                         }
                     }
-                }
-
-                IconButton(
-                    onClick = {
-                        onEdit(item)
-                    }
-                ) {
-                    Icon(HugeIcons.Settings03, null)
-                }
             }
         }
     }
 }
 
 @Composable
-private fun McpServerConfigModal(state: EditState<McpServerConfig>) {
+private fun McpServerConfigModal(
+    state: EditState<McpServerConfig>,
+    onDelete: ((McpServerConfig) -> Unit)? = null,
+) {
     state.EditStateContent { config, updateValue ->
         val pagerState = rememberPagerState { 2 }
         val scope = rememberCoroutineScope()
+        var showDeleteConfirm by remember { mutableStateOf(false) }
         ModalBottomSheet(
             onDismissRequest = {
                 state.dismiss()
@@ -505,6 +467,12 @@ private fun McpServerConfigModal(state: EditState<McpServerConfig>) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                 ) {
+                    if (onDelete != null) {
+                        IconButton(onClick = { showDeleteConfirm = true }) {
+                            Icon(HugeIcons.Delete01, stringResource(R.string.common_delete))
+                        }
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
                     TextButton(
                         onClick = {
                             if (config.commonOptions.name.isNotBlank() && isValidMcpName(config.commonOptions.name)) {
@@ -512,10 +480,28 @@ private fun McpServerConfigModal(state: EditState<McpServerConfig>) {
                             }
                         }
                     ) {
-                        Text(stringResource(R.string.setting_mcp_page_save))
+                        Text(stringResource(R.string.common_save))
                     }
                 }
             }
+        }
+        RikkaConfirmDialog(
+            show = showDeleteConfirm,
+            title = stringResource(R.string.common_delete),
+            confirmText = stringResource(R.string.common_delete),
+            dismissText = stringResource(R.string.common_cancel),
+            onConfirm = {
+                showDeleteConfirm = false
+                onDelete?.invoke(config)
+            },
+            onDismiss = { showDeleteConfirm = false },
+        ) {
+            Text(
+                stringResource(
+                    R.string.setting_mcp_page_delete_confirm,
+                    config.commonOptions.name,
+                )
+            )
         }
     }
 }
@@ -1063,7 +1049,7 @@ private fun McpImportModal(
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
             ) {
                 TextButton(onClick = onDismiss) {
-                    Text(stringResource(R.string.cancel))
+                    Text(stringResource(R.string.common_cancel))
                 }
                 Button(
                     onClick = {

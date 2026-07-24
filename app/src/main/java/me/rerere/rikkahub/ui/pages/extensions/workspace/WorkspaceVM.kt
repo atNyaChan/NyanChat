@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.workspace.RootfsInstallProgress
 
@@ -25,15 +24,4 @@ class WorkspaceVM(
         }
     }
 
-    fun rename(workspace: WorkspaceEntity, name: String) {
-        viewModelScope.launch {
-            runCatching { repository.rename(workspace.id, name) }
-        }
-    }
-
-    fun delete(workspace: WorkspaceEntity) {
-        viewModelScope.launch {
-            repository.delete(workspace.id)
-        }
-    }
 }

@@ -161,7 +161,7 @@ fun BackgroundPicker(
                         showPickOption = false
                     }
                 ) {
-                    Text(stringResource(R.string.assistant_page_cancel))
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -194,7 +194,7 @@ fun BackgroundPicker(
                         }
                     }
                 ) {
-                    Text(stringResource(R.string.assistant_page_confirm))
+                    Text(stringResource(R.string.common_confirm_action))
                 }
             },
             dismissButton = {
@@ -203,7 +203,7 @@ fun BackgroundPicker(
                         showUrlInput = false
                     }
                 ) {
-                    Text(stringResource(R.string.assistant_page_cancel))
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )

@@ -1,6 +1,5 @@
 package me.rerere.rikkahub.ui.components.ui
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.pager.HorizontalPager
@@ -15,7 +14,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -44,7 +42,8 @@ fun ExtensionSelector(
     conversation: Conversation? = null,
     onUpdateConversation: ((Conversation) -> Unit)? = null,
     onNavigateToQuickMessages: () -> Unit = {},
-    onNavigateToPrompts: () -> Unit = {},
+    onNavigateToModeInjections: () -> Unit = {},
+    onNavigateToLorebooks: () -> Unit = {},
     onNavigateToSkills: () -> Unit = {},
 ) {
     val skillManager: SkillManager = koinInject()
@@ -136,7 +135,7 @@ fun ExtensionSelector(
                     } else {
                         ExtensionEmptyState(
                             message = stringResource(R.string.extension_selector_quick_messages_empty),
-                            buttonText = stringResource(R.string.extension_selector_go_to_extensions),
+                            buttonText = stringResource(R.string.extension_selector_manage_quick_messages),
                             onAction = onNavigateToQuickMessages,
                         )
                     }
@@ -159,13 +158,13 @@ fun ExtensionSelector(
                                     onUpdate(assistant.copy(modeInjectionIds = newIds))
                                 }
                             },
-                            onManage = onNavigateToPrompts,
+                            onManage = onNavigateToModeInjections,
                         )
                     } else {
                         ExtensionEmptyState(
                             message = stringResource(R.string.extension_selector_mode_injections_empty),
-                            buttonText = stringResource(R.string.extension_selector_go_to_extensions),
-                            onAction = onNavigateToPrompts,
+                            buttonText = stringResource(R.string.extension_selector_manage_mode_injections),
+                            onAction = onNavigateToModeInjections,
                         )
                     }
                 }
@@ -187,13 +186,13 @@ fun ExtensionSelector(
                                     onUpdate(assistant.copy(lorebookIds = newIds))
                                 }
                             },
-                            onManage = onNavigateToPrompts,
+                            onManage = onNavigateToLorebooks,
                         )
                     } else {
                         ExtensionEmptyState(
                             message = stringResource(R.string.extension_selector_lorebooks_empty),
-                            buttonText = stringResource(R.string.extension_selector_go_to_extensions),
-                            onAction = onNavigateToPrompts,
+                            buttonText = stringResource(R.string.extension_selector_manage_lorebooks),
+                            onAction = onNavigateToLorebooks,
                         )
                     }
                 }
@@ -216,7 +215,7 @@ fun ExtensionSelector(
                     } else {
                         ExtensionEmptyState(
                             message = stringResource(R.string.extension_selector_skills_empty),
-                            buttonText = stringResource(R.string.extension_selector_go_to_skills),
+                            buttonText = stringResource(R.string.extension_selector_manage_skills),
                             onAction = onNavigateToSkills,
                         )
                     }

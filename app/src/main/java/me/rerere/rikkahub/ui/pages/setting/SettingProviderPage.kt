@@ -3,7 +3,6 @@ package me.rerere.rikkahub.ui.pages.setting
 import android.net.Uri
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Camera01
-import me.rerere.hugeicons.stroke.DragDropHorizontal
 import me.rerere.hugeicons.stroke.Image02
 import me.rerere.hugeicons.stroke.FileImport
 import me.rerere.hugeicons.stroke.Add01
@@ -90,14 +89,6 @@ fun SettingProviderPage(vm: SettingVM = koinViewModel()) {
     val navController = LocalNavController.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     var searchQuery by remember { mutableStateOf("") }
-    val lazyListState = rememberLazyListState()
-    val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
-        val newProviders = settings.providers.toMutableList().apply {
-            add(to.index, removeAt(from.index))
-        }
-        vm.updateSettings(settings.copy(providers = newProviders))
-    }
-
     val filteredProviders = remember(settings.providers, searchQuery) {
         if (searchQuery.isBlank()) {
             settings.providers
@@ -106,6 +97,20 @@ fun SettingProviderPage(vm: SettingVM = koinViewModel()) {
                 provider.name.contains(searchQuery, ignoreCase = true)
             }
         }
+    }
+    val lazyListState = rememberLazyListState()
+    val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
+        val fromProvider = filteredProviders.getOrNull(from.index)
+            ?: return@rememberReorderableLazyListState
+        val toProvider = filteredProviders.getOrNull(to.index)
+            ?: return@rememberReorderableLazyListState
+        val fromIndex = settings.providers.indexOfFirst { it.id == fromProvider.id }
+        val toIndex = settings.providers.indexOfFirst { it.id == toProvider.id }
+        if (fromIndex < 0 || toIndex < 0) return@rememberReorderableLazyListState
+        val newProviders = settings.providers.toMutableList().apply {
+            add(toIndex, removeAt(fromIndex))
+        }
+        vm.updateSettings(settings.copy(providers = newProviders))
     }
 
     Scaffold(
@@ -183,31 +188,20 @@ fun SettingProviderPage(vm: SettingVM = koinViewModel()) {
                         state = reorderableState,
                         key = provider.id
                     ) { isDragging ->
+                        val haptic = LocalHapticFeedback.current
                         ProviderItem(
                             modifier = Modifier
                                 .scale(if (isDragging) 0.95f else 1f)
-                                .fillMaxWidth(),
+                                .fillMaxWidth()
+                                .longPressDraggableHandle(
+                                    onDragStarted = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
+                                    },
+                                    onDragStopped = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
+                                    },
+                                ),
                             provider = provider,
-                            dragHandle = {
-                                val haptic = LocalHapticFeedback.current
-                                IconButton(
-                                    onClick = {},
-                                    modifier = Modifier
-                                        .longPressDraggableHandle(
-                                            onDragStarted = {
-                                                haptic.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
-                                            },
-                                            onDragStopped = {
-                                                haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
-                                            }
-                                        )
-                                ) {
-                                    Icon(
-                                        imageVector = HugeIcons.DragDropHorizontal,
-                                        contentDescription = null
-                                    )
-                                }
-                            },
                             onClick = {
                                 navController.navigate(Screen.SettingProviderDetail(providerId = provider.id.toString()))
                             }
@@ -341,7 +335,7 @@ private fun ImportProviderButton(
                     shape = MaterialTheme.shapes.large
                 ) {
                     Text(
-                        text = stringResource(R.string.cancel),
+                        text = stringResource(R.string.common_cancel),
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
@@ -461,7 +455,7 @@ private fun AddButton(onAdd: (ProviderSetting) -> Unit) {
                         dialogState.confirm()
                     }
                 ) {
-                    Text(stringResource(R.string.setting_provider_page_add))
+                    Text(stringResource(R.string.common_add))
                 }
             },
             dismissButton = {
@@ -470,7 +464,7 @@ private fun AddButton(onAdd: (ProviderSetting) -> Unit) {
                         dialogState.dismiss()
                     }
                 ) {
-                    Text(stringResource(R.string.cancel))
+                    Text(stringResource(R.string.common_cancel))
                 }
             },
         )
@@ -481,7 +475,6 @@ private fun AddButton(onAdd: (ProviderSetting) -> Unit) {
 private fun ProviderItem(
     provider: ProviderSetting,
     modifier: Modifier = Modifier,
-    dragHandle: @Composable () -> Unit,
     onClick: () -> Unit
 ) {
     Card(
@@ -541,7 +534,6 @@ private fun ProviderItem(
                     }
                 }
             }
-            dragHandle()
         }
     }
 }

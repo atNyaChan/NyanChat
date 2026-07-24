@@ -11,6 +11,7 @@ import kotlinx.serialization.json.encodeToJsonElement
 import me.rerere.rikkahub.data.model.InjectionPosition
 import me.rerere.rikkahub.data.model.Lorebook
 import me.rerere.rikkahub.data.model.PromptInjection
+import me.rerere.rikkahub.data.model.QuickMessage
 import me.rerere.rikkahub.utils.toLocalString
 import java.time.LocalDateTime
 import kotlin.uuid.Uuid
@@ -96,6 +97,28 @@ object ModeInjectionSerializer : ExportSerializer<PromptInjection.ModeInjection>
                 .decodeFromJsonElement<PromptInjection.ModeInjection>(exportData.data)
                 .copy(id = Uuid.random())
         }.getOrNull()
+    }
+}
+
+object QuickMessageSerializer : ExportSerializer<QuickMessage> {
+    override val type = "quick_message"
+
+    override fun getExportFileName(data: QuickMessage): String =
+        "${data.title.ifEmpty { type }}.json"
+
+    override fun export(data: QuickMessage): ExportData = ExportData(
+        type = type,
+        data = ExportSerializer.DefaultJson.encodeToJsonElement(data),
+    )
+
+    override fun import(context: Context, uri: Uri): Result<QuickMessage> = runCatching {
+        val exportData = ExportSerializer.DefaultJson.decodeFromString(
+            ExportData.serializer(),
+            readUri(context, uri),
+        )
+        require(exportData.type == type) { "Unsupported format" }
+        ExportSerializer.DefaultJson.decodeFromJsonElement<QuickMessage>(exportData.data)
+            .copy(id = Uuid.random())
     }
 }
 

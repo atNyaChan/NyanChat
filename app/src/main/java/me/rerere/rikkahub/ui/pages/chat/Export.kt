@@ -235,7 +235,7 @@ fun ChatExportSheet(
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(stringResource(R.string.mermaid_export))
+                    Text(stringResource(R.string.common_export))
                 }
             }
         }

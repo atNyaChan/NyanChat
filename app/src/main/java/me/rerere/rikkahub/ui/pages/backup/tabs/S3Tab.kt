@@ -509,7 +509,7 @@ private fun S3BackupItemCard(
                             },
                             enabled = !isRestoring
                         ) {
-                            Text(stringResource(R.string.backup_page_delete))
+                            Text(stringResource(R.string.common_delete))
                         }
                         Button(
                             onClick = {

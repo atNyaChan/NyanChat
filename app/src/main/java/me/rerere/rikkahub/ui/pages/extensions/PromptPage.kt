@@ -1,16 +1,12 @@
 package me.rerere.rikkahub.ui.pages.extensions
 
 import me.rerere.hugeicons.HugeIcons
-import me.rerere.hugeicons.stroke.Book01
 import me.rerere.hugeicons.stroke.ArrowDown01
-import me.rerere.hugeicons.stroke.Download01
-import me.rerere.hugeicons.stroke.FileDownload
 import me.rerere.hugeicons.stroke.FileImport
 import me.rerere.hugeicons.stroke.Add01
 import me.rerere.hugeicons.stroke.Tools
 import me.rerere.hugeicons.stroke.Share03
 import me.rerere.hugeicons.stroke.Delete01
-import me.rerere.hugeicons.stroke.MagicWand01
 import me.rerere.hugeicons.stroke.Cancel01
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -29,19 +25,18 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FloatingToolbarDefaults.ScreenOffset
 import androidx.compose.material3.FloatingToolbarDefaults.floatingToolbarVerticalNestedScroll
 import androidx.compose.material3.HorizontalFloatingToolbar
@@ -51,24 +46,22 @@ import androidx.compose.material3.InputChip
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -96,6 +89,7 @@ import me.rerere.rikkahub.ui.components.ui.FormItem
 import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.components.ui.Tag
 import me.rerere.rikkahub.ui.components.ui.TagType
+import me.rerere.rikkahub.ui.components.ui.TextArea
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.hooks.useEditState
 import me.rerere.rikkahub.ui.theme.CustomColors
@@ -105,61 +99,61 @@ import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @Composable
-fun PromptPage(vm: PromptVM = koinViewModel()) {
+fun ModeInjectionPage(vm: PromptVM = koinViewModel()) {
     val settings by vm.settings.collectAsStateWithLifecycle()
-    val pagerState = rememberPagerState { 2 }
-    val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
         topBar = {
             LargeFlexibleTopAppBar(
                 navigationIcon = { BackButton() },
-                title = { Text(stringResource(R.string.prompt_page_title)) },
+                title = { Text(stringResource(R.string.prompt_page_mode_injection_tab)) },
                 scrollBehavior = scrollBehavior,
                 colors = CustomColors.topBarColors,
             )
         },
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = pagerState.currentPage == 0,
-                    label = { Text(stringResource(R.string.prompt_page_mode_injection_tab)) },
-                    icon = { Icon(HugeIcons.MagicWand01, null) },
-                    onClick = {
-                        scope.launch { pagerState.animateScrollToPage(0) }
-                    }
-                )
-                NavigationBarItem(
-                    selected = pagerState.currentPage == 1,
-                    label = { Text(stringResource(R.string.prompt_page_lorebook_tab)) },
-                    icon = { Icon(HugeIcons.Book01, null) },
-                    onClick = {
-                        scope.launch { pagerState.animateScrollToPage(1) }
-                    }
-                )
-            }
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        containerColor = CustomColors.topBarColors.containerColor,
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+        ) {
+            ModeInjectionTab(
+                modeInjections = settings.modeInjections,
+                onUpdate = { vm.updateSettings(settings.copy(modeInjections = it)) },
+            )
+        }
+    }
+}
+
+@Composable
+fun LorebookPage(vm: PromptVM = koinViewModel()) {
+    val settings by vm.settings.collectAsStateWithLifecycle()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
+    Scaffold(
+        topBar = {
+            LargeFlexibleTopAppBar(
+                navigationIcon = { BackButton() },
+                title = { Text(stringResource(R.string.prompt_page_lorebook_tab)) },
+                scrollBehavior = scrollBehavior,
+                colors = CustomColors.topBarColors,
+            )
         },
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = CustomColors.topBarColors.containerColor,
     ) { innerPadding ->
-        HorizontalPager(
-            state = pagerState,
+        Box(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-        ) { page ->
-            when (page) {
-                0 -> ModeInjectionTab(
-                    modeInjections = settings.modeInjections,
-                    onUpdate = { vm.updateSettings(settings.copy(modeInjections = it)) }
-                )
-
-                1 -> LorebookTab(
-                    lorebooks = settings.lorebooks,
-                    onUpdate = { vm.updateSettings(settings.copy(lorebooks = it)) }
-                )
-            }
+        ) {
+            LorebookTab(
+                lorebooks = settings.lorebooks,
+                onUpdate = { vm.updateSettings(settings.copy(lorebooks = it)) },
+            )
         }
     }
 }
@@ -247,9 +241,8 @@ private fun ModeInjectionTab(
                                         scaleX = 1.05f
                                         scaleY = 1.05f
                                     }
-                                },
+                            },
                             onEdit = { editState.open(injection) },
-                            onDelete = { onUpdate(modeInjections - injection) }
                         )
                     }
                 }
@@ -290,7 +283,15 @@ private fun ModeInjectionTab(
                 injection = state,
                 onDismiss = { editState.dismiss() },
                 onConfirm = { editState.confirm() },
-                onEdit = { editState.currentState = it }
+                onEdit = { editState.currentState = it },
+                onDelete = modeInjections
+                    .firstOrNull { it.id == state.id }
+                    ?.let { original ->
+                        {
+                            onUpdate(modeInjections - original)
+                            editState.dismiss()
+                        }
+                    },
             )
         }
     }
@@ -301,44 +302,13 @@ private fun ModeInjectionCard(
     injection: PromptInjection.ModeInjection,
     modifier: Modifier = Modifier,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
 ) {
-    val swipeState = rememberSwipeToDismissBoxState()
-    val scope = rememberCoroutineScope()
-    var showExportDialog by remember { mutableStateOf(false) }
-    val exporter = rememberExporter(injection, ModeInjectionSerializer)
-
-    SwipeToDismissBox(
-        state = swipeState,
-        backgroundContent = {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = { scope.launch { swipeState.reset() } }) {
-                    Icon(HugeIcons.Cancel01, null)
-                }
-                FilledIconButton(onClick = {
-                    scope.launch {
-                        onDelete()
-                        swipeState.reset()
-                    }
-                }) {
-                    Icon(HugeIcons.Delete01, stringResource(R.string.prompt_page_delete))
-                }
-            }
-        },
-        enableDismissFromStartToEnd = false,
-        modifier = modifier
+    Card(
+        modifier = modifier.clickable(onClick = onEdit),
+        colors = CardDefaults.cardColors(
+            containerColor = CustomColors.listItemColors.containerColor
+        )
     ) {
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = CustomColors.listItemColors.containerColor
-            )
-        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -372,22 +342,8 @@ private fun ModeInjectionCard(
                         }
                     }
                 }
-                IconButton(onClick = { showExportDialog = true }) {
-                    Icon(HugeIcons.Share03, stringResource(R.string.export_title))
-                }
-                IconButton(onClick = onEdit) {
-                    Icon(HugeIcons.Tools, stringResource(R.string.prompt_page_edit))
-                }
             }
         }
-    }
-
-    if (showExportDialog) {
-        ExportDialog(
-            exporter = exporter,
-            onDismiss = { showExportDialog = false }
-        )
-    }
 }
 
 @Composable
@@ -395,10 +351,22 @@ private fun ModeInjectionEditSheet(
     injection: PromptInjection.ModeInjection,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
-    onEdit: (PromptInjection.ModeInjection) -> Unit
+    onEdit: (PromptInjection.ModeInjection) -> Unit,
+    onDelete: (() -> Unit)?,
 ) {
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     val scope = rememberCoroutineScope()
+    var showExportDialog by remember { mutableStateOf(false) }
+    val exporter = rememberExporter(injection, ModeInjectionSerializer)
+    val contentState = rememberTextFieldState(injection.content)
+    val currentInjection by rememberUpdatedState(injection)
+    LaunchedEffect(injection.id) {
+        snapshotFlow { contentState.text.toString() }.collect { content ->
+            if (content != currentInjection.content) {
+                onEdit(currentInjection.copy(content = content))
+            }
+        }
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -495,29 +463,44 @@ private fun ModeInjectionEditSheet(
                     }
                 }
 
-                OutlinedTextField(
-                    value = injection.content,
-                    onValueChange = { onEdit(injection.copy(content = it)) },
-                    label = { Text(stringResource(R.string.prompt_page_injection_content)) },
+                TextArea(
+                    state = contentState,
+                    label = stringResource(R.string.prompt_page_injection_content),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp),
-                    minLines = 5
+                    minLines = 5,
+                    maxLines = 8,
+                    enableImport = false,
+                    fullscreenButtonInsideField = true,
                 )
             }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
+                IconButton(onClick = { showExportDialog = true }) {
+                    Icon(HugeIcons.Share03, stringResource(R.string.common_export))
+                }
+                if (onDelete != null) {
+                    IconButton(onClick = onDelete) {
+                        Icon(HugeIcons.Delete01, stringResource(R.string.common_delete))
+                    }
+                }
+                Spacer(modifier = Modifier.weight(1f))
                 TextButton(onClick = onDismiss) {
-                    Text(stringResource(R.string.prompt_page_cancel))
+                    Text(stringResource(R.string.common_cancel))
                 }
                 TextButton(onClick = onConfirm) {
-                    Text(stringResource(R.string.prompt_page_confirm))
+                    Text(stringResource(R.string.common_confirm_action))
                 }
             }
         }
+    }
+    if (showExportDialog) {
+        ExportDialog(exporter = exporter, onDismiss = { showExportDialog = false })
     }
 }
 
@@ -659,9 +642,8 @@ private fun LorebookTab(
                                         scaleX = 1.05f
                                         scaleY = 1.05f
                                     }
-                                },
+                            },
                             onEdit = { editState.open(book) },
-                            onDelete = { onUpdate(lorebooks - book) }
                         )
                     }
                 }
@@ -702,7 +684,15 @@ private fun LorebookTab(
                 book = state,
                 onDismiss = { editState.dismiss() },
                 onConfirm = { editState.confirm() },
-                onEdit = { editState.currentState = it }
+                onEdit = { editState.currentState = it },
+                onDelete = lorebooks
+                    .firstOrNull { it.id == state.id }
+                    ?.let { original ->
+                        {
+                            onUpdate(lorebooks - original)
+                            editState.dismiss()
+                        }
+                    },
             )
         }
     }
@@ -713,44 +703,13 @@ private fun LorebookCard(
     book: Lorebook,
     modifier: Modifier = Modifier,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
 ) {
-    val swipeState = rememberSwipeToDismissBoxState()
-    val scope = rememberCoroutineScope()
-    var showExportDialog by remember { mutableStateOf(false) }
-    val exporter = rememberExporter(book, LorebookSerializer)
-
-    SwipeToDismissBox(
-        state = swipeState,
-        backgroundContent = {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = { scope.launch { swipeState.reset() } }) {
-                    Icon(HugeIcons.Cancel01, null)
-                }
-                FilledIconButton(onClick = {
-                    scope.launch {
-                        onDelete()
-                        swipeState.reset()
-                    }
-                }) {
-                    Icon(HugeIcons.Delete01, stringResource(R.string.prompt_page_delete))
-                }
-            }
-        },
-        enableDismissFromStartToEnd = false,
-        modifier = modifier
+    Card(
+        modifier = modifier.clickable(onClick = onEdit),
+        colors = CardDefaults.cardColors(
+            containerColor = CustomColors.listItemColors.containerColor
+        )
     ) {
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = CustomColors.listItemColors.containerColor
-            )
-        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -795,22 +754,8 @@ private fun LorebookCard(
                         }
                     }
                 }
-                IconButton(onClick = { showExportDialog = true }) {
-                    Icon(HugeIcons.Share03, stringResource(R.string.export_title))
-                }
-                IconButton(onClick = onEdit) {
-                    Icon(HugeIcons.Tools, stringResource(R.string.prompt_page_edit))
-                }
             }
         }
-    }
-
-    if (showExportDialog) {
-        ExportDialog(
-            exporter = exporter,
-            onDismiss = { showExportDialog = false }
-        )
-    }
 }
 
 @Composable
@@ -818,10 +763,13 @@ private fun LorebookEditSheet(
     book: Lorebook,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
-    onEdit: (Lorebook) -> Unit
+    onEdit: (Lorebook) -> Unit,
+    onDelete: (() -> Unit)?,
 ) {
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     val scope = rememberCoroutineScope()
+    var showExportDialog by remember { mutableStateOf(false) }
+    val exporter = rememberExporter(book, LorebookSerializer)
     val entryEditState = useEditState<PromptInjection.RegexInjection> { edited ->
         val index = book.entries.indexOfFirst { it.id == edited.id }
         if (index >= 0) {
@@ -919,16 +867,29 @@ private fun LorebookEditSheet(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
+                IconButton(onClick = { showExportDialog = true }) {
+                    Icon(HugeIcons.Share03, stringResource(R.string.common_export))
+                }
+                if (onDelete != null) {
+                    IconButton(onClick = onDelete) {
+                        Icon(HugeIcons.Delete01, stringResource(R.string.common_delete))
+                    }
+                }
+                Spacer(modifier = Modifier.weight(1f))
                 TextButton(onClick = onDismiss) {
-                    Text(stringResource(R.string.prompt_page_cancel))
+                    Text(stringResource(R.string.common_cancel))
                 }
                 TextButton(onClick = onConfirm) {
-                    Text(stringResource(R.string.prompt_page_confirm))
+                    Text(stringResource(R.string.common_confirm_action))
                 }
             }
         }
+    }
+    if (showExportDialog) {
+        ExportDialog(exporter = exporter, onDismiss = { showExportDialog = false })
     }
 
     if (entryEditState.isEditing) {
@@ -988,7 +949,7 @@ private fun RegexInjectionEntryCard(
                 Icon(HugeIcons.Tools, stringResource(R.string.prompt_page_edit))
             }
             IconButton(onClick = onDelete) {
-                Icon(HugeIcons.Delete01, stringResource(R.string.prompt_page_delete))
+                Icon(HugeIcons.Delete01, stringResource(R.string.common_delete))
             }
         }
     }
@@ -1107,7 +1068,7 @@ private fun RegexInjectionEditDialog(
                             }
                         }
                     ) {
-                        Icon(HugeIcons.Add01, stringResource(R.string.prompt_page_add))
+                        Icon(HugeIcons.Add01, stringResource(R.string.common_add))
                     }
                 }
 
@@ -1182,12 +1143,12 @@ private fun RegexInjectionEditDialog(
                 onClick = onConfirm,
                 enabled = canSave
             ) {
-                Text(stringResource(R.string.prompt_page_confirm))
+                Text(stringResource(R.string.common_confirm_action))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.prompt_page_cancel))
+                Text(stringResource(R.string.common_cancel))
             }
         }
     )

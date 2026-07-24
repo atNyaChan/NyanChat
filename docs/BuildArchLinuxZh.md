@@ -1,6 +1,6 @@
 # Arch Linux 构建 arm64 Release APK
 
-当前分支已移除 Firebase，将应用 ID 改为 `moe.nyanw.rikkahub`，并且只打包
+当前分支已移除 Firebase，将应用 ID 改为 `moe.nyanw.nyanchat`，并且只打包
 `arm64-v8a`，并且改成用 OpenJDK 21。下面按实际下载顺序列出构建所需内容。
 
 ## 下载清单

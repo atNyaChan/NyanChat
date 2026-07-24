@@ -317,6 +317,10 @@ class ChatVM(
         chatService.clearTranslationField(_conversationId, messageId)
     }
 
+    fun cancelTranslation(messageId: Uuid) {
+        chatService.cancelTranslation(_conversationId, messageId)
+    }
+
     fun updateConversation(newConversation: Conversation) {
         chatService.updateConversationState(_conversationId) {
             newConversation

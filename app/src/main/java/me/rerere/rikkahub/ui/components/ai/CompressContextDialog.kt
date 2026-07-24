@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.ui.OutlinedNumberInput
-import me.rerere.rikkahub.ui.components.ui.RabbitLoadingIndicator
+import me.rerere.rikkahub.ui.components.ui.AppLoadingIndicator
 
 @Composable
 fun CompressContextDialog(
@@ -72,7 +72,7 @@ fun CompressContextDialog(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        RabbitLoadingIndicator(
+                        AppLoadingIndicator(
                             modifier = Modifier.size(32.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
@@ -140,20 +140,20 @@ fun CompressContextDialog(
                     currentJob?.cancel()
                     currentJob = null
                 }) {
-                    Text(stringResource(R.string.cancel))
+                    Text(stringResource(R.string.common_cancel))
                 }
             } else {
                 TextButton(onClick = {
                     currentJob = onConfirm(additionalPrompt, selectedTokens, keepRecentMessages)
                 }) {
-                    Text(stringResource(R.string.confirm))
+                    Text(stringResource(R.string.common_confirm_action))
                 }
             }
         },
         dismissButton = {
             if (!isLoading) {
                 TextButton(onClick = onDismiss) {
-                    Text(stringResource(R.string.cancel))
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         }

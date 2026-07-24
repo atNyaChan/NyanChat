@@ -94,7 +94,7 @@ fun ConversationSystemPromptButton(
                             expanded = false
                         },
                     ) {
-                        Text(stringResource(R.string.chat_page_conversation_system_prompt_save))
+                        Text(stringResource(R.string.common_save))
                     }
                 }
             }

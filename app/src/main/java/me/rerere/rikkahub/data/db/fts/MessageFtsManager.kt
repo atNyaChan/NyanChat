@@ -7,8 +7,9 @@ import me.rerere.ai.ui.UIMessage
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.rikkahub.data.db.AppDatabase
 import me.rerere.rikkahub.data.model.Conversation
-import me.rerere.rikkahub.data.model.MessageNode
+import me.rerere.rikkahub.utils.JsonInstant
 import java.time.Instant
+import kotlin.uuid.Uuid
 
 data class MessageSearchResult(
     val nodeId: String,
@@ -72,9 +73,11 @@ class MessageFtsManager(private val database: AppDatabase) {
         keyword: String,
         sort: MessageSearchSort = MessageSearchSort.RELEVANCE,
         mode: MessageSearchMode = MessageSearchMode.FUZZY,
+        limit: Int = 50,
+        offset: Int = 0,
     ): List<MessageSearchResult> = withContext(Dispatchers.IO) {
         if (mode != MessageSearchMode.FUZZY) {
-            return@withContext searchExact(keyword, sort, mode)
+            return@withContext searchExact(keyword, sort, mode, limit, offset)
         }
         val results = mutableListOf<MessageSearchResult>()
         val cursor = db.query(
@@ -84,9 +87,9 @@ class MessageFtsManager(private val database: AppDatabase) {
             FROM message_fts
             WHERE text MATCH jieba_query(?)
             ORDER BY ${sort.orderBy}
-            LIMIT 50
+            LIMIT ? OFFSET ?
             """.trimIndent(),
-            arrayOf(keyword)
+            arrayOf<Any?>(keyword, limit, offset)
         )
         Log.i(TAG, "search: $keyword")
         cursor.use {
@@ -106,10 +109,159 @@ class MessageFtsManager(private val database: AppDatabase) {
         results
     }
 
+    suspend fun searchByModel(
+        modelId: Uuid,
+        sort: MessageSearchSort = MessageSearchSort.NEWEST_FIRST,
+        limit: Int = 50,
+        offset: Int = 0,
+    ): List<MessageSearchResult> = withContext(Dispatchers.IO) {
+        val orderBy = when (sort) {
+            MessageSearchSort.RELEVANCE, MessageSearchSort.NEWEST_FIRST -> "c.update_at DESC"
+            MessageSearchSort.OLDEST_FIRST -> "c.update_at ASC"
+        }
+        val cursor = db.query(
+            """
+            SELECT mn.id, j.value, mn.conversation_id, c.title, c.update_at
+            FROM message_node mn
+            JOIN conversationentity c ON c.id = mn.conversation_id,
+                 json_each(mn.messages) j
+            WHERE json_extract(j.value, '$.role') = 'assistant'
+              AND json_extract(j.value, '$.modelId') = ?
+            ORDER BY $orderBy
+            LIMIT ? OFFSET ?
+            """.trimIndent(),
+            arrayOf<Any?>(modelId.toString(), limit, offset),
+        )
+        buildList {
+            cursor.use {
+                while (it.moveToNext()) {
+                    val message = JsonInstant.decodeFromString<UIMessage>(it.getString(1))
+                    add(
+                        MessageSearchResult(
+                            nodeId = it.getString(0),
+                            messageId = message.id.toString(),
+                            conversationId = it.getString(2),
+                            title = it.getString(3),
+                            updateAt = Instant.ofEpochMilli(it.getLong(4)),
+                            snippet = message.extractFtsText(),
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    suspend fun countByModel(modelId: Uuid): Int = withContext(Dispatchers.IO) {
+        val cursor = db.query(
+            """
+            SELECT COUNT(*)
+            FROM message_node mn, json_each(mn.messages) j
+            WHERE json_extract(j.value, '$.role') = 'assistant'
+              AND json_extract(j.value, '$.modelId') = ?
+            """.trimIndent(),
+            arrayOf(modelId.toString()),
+        )
+        cursor.use { if (it.moveToFirst()) it.getInt(0) else 0 }
+    }
+
+    suspend fun getUsedModelIds(): List<Uuid> = withContext(Dispatchers.IO) {
+        val cursor = db.query(
+            """
+            SELECT DISTINCT json_extract(j.value, '$.modelId')
+            FROM message_node mn, json_each(mn.messages) j
+            WHERE json_extract(j.value, '$.role') = 'assistant'
+              AND json_extract(j.value, '$.modelId') IS NOT NULL
+            """.trimIndent()
+        )
+        buildList {
+            cursor.use {
+                while (it.moveToNext()) {
+                    runCatching { Uuid.parse(it.getString(0)) }.getOrNull()?.let(::add)
+                }
+            }
+        }
+    }
+
+    suspend fun searchManuallyEdited(
+        sort: MessageSearchSort = MessageSearchSort.NEWEST_FIRST,
+        limit: Int = 50,
+        offset: Int = 0,
+    ): List<MessageSearchResult> = withContext(Dispatchers.IO) {
+        val orderBy = when (sort) {
+            MessageSearchSort.RELEVANCE, MessageSearchSort.NEWEST_FIRST -> "c.update_at DESC"
+            MessageSearchSort.OLDEST_FIRST -> "c.update_at ASC"
+        }
+        val cursor = db.query(
+            """
+            SELECT mn.id, j.value, mn.conversation_id, c.title, c.update_at
+            FROM message_node mn
+            JOIN conversationentity c ON c.id = mn.conversation_id,
+                 json_each(mn.messages) j
+            WHERE json_extract(j.value, '$.role') = 'assistant'
+              AND json_extract(j.value, '$.modelId') IS NULL
+            ORDER BY $orderBy
+            LIMIT ? OFFSET ?
+            """.trimIndent(),
+            arrayOf(limit, offset),
+        )
+        buildList {
+            cursor.use {
+                while (it.moveToNext()) {
+                    val message = JsonInstant.decodeFromString<UIMessage>(it.getString(1))
+                    add(
+                        MessageSearchResult(
+                            nodeId = it.getString(0),
+                            messageId = message.id.toString(),
+                            conversationId = it.getString(2),
+                            title = it.getString(3),
+                            updateAt = Instant.ofEpochMilli(it.getLong(4)),
+                            snippet = message.extractFtsText(),
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    suspend fun countManuallyEdited(): Int = withContext(Dispatchers.IO) {
+        val cursor = db.query(
+            """
+            SELECT COUNT(*)
+            FROM message_node mn, json_each(mn.messages) j
+            WHERE json_extract(j.value, '$.role') = 'assistant'
+              AND json_extract(j.value, '$.modelId') IS NULL
+            """.trimIndent()
+        )
+        cursor.use { if (it.moveToFirst()) it.getInt(0) else 0 }
+    }
+
+    suspend fun countSearch(keyword: String, mode: MessageSearchMode): Int = withContext(Dispatchers.IO) {
+        val cursor = if (mode == MessageSearchMode.FUZZY) {
+            db.query(
+                "SELECT COUNT(*) FROM message_fts WHERE text MATCH jieba_query(?)",
+                arrayOf(keyword),
+            )
+        } else {
+            val column = if (mode == MessageSearchMode.TITLE_ONLY) "title" else "text"
+            val countTarget = if (mode == MessageSearchMode.TITLE_ONLY) {
+                "COUNT(DISTINCT conversation_id)"
+            } else {
+                "COUNT(*)"
+            }
+            db.query(
+                "SELECT $countTarget FROM message_fts WHERE instr($column, ?) > 0",
+                arrayOf(keyword),
+            )
+        }
+        cursor.use { if (it.moveToFirst()) it.getInt(0) else 0 }
+    }
+
     private fun searchExact(
         keyword: String,
         sort: MessageSearchSort,
         mode: MessageSearchMode,
+        limit: Int,
+        offset: Int,
     ): List<MessageSearchResult> {
         val titleOnly = mode == MessageSearchMode.TITLE_ONLY
         val orderBy = when (sort) {
@@ -124,9 +276,9 @@ class MessageFtsManager(private val database: AppDatabase) {
             WHERE instr(${if (titleOnly) "title" else "text"}, ?) > 0
             $groupBy
             ORDER BY $orderBy
-            LIMIT 50
+            LIMIT ? OFFSET ?
             """.trimIndent(),
-            arrayOf(keyword),
+            arrayOf<Any?>(keyword, limit, offset),
         )
         return buildList {
             cursor.use {

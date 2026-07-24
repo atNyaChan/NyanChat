@@ -33,6 +33,8 @@ data class Assistant(
     val quickMessageIds: Set<Uuid> = emptySet(),
     val regexes: List<AssistantRegex> = emptyList(),
     val reasoningLevel: ReasoningLevel = ReasoningLevel.AUTO,
+    // 适配 Claude / GPT-5.6，其它模型也可以看情况开启
+    val contextCache: ContextCache = ContextCache.OFF,
     val maxTokens: Int? = null,
     val customHeaders: List<CustomHeader> = emptyList(),
     val customBodies: List<CustomBody> = emptyList(),
@@ -50,6 +52,13 @@ data class Assistant(
     val allowConversationSystemPrompt: Boolean = false, // 允许对话单独重写 system prompt
     val allowConversationPromptInjection: Boolean = false, // 允许对话单独绑定提示词注入
 )
+
+@Serializable
+enum class ContextCache {
+    OFF,
+    FIVE_MINUTES,
+    ONE_HOUR,
+}
 
 @Serializable
 data class QuickMessage(

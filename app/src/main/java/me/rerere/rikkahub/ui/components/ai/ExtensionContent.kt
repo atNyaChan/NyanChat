@@ -24,8 +24,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.ExternalLink
 import com.composables.icons.lucide.Lucide
-import me.rerere.hugeicons.HugeIcons
-import me.rerere.hugeicons.stroke.Link01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.files.SkillMetadata
 import me.rerere.rikkahub.data.model.Lorebook
@@ -176,6 +174,9 @@ fun QuickMessagesContent(
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
             ) { Text(quickMessage.title.ifBlank { stringResource(R.string.extension_content_unnamed) }) }
         }
+        if (onManage != null) {
+            item { ManageButton(onClick = onManage) }
+        }
     }
 }
 
@@ -218,7 +219,7 @@ fun ExtensionEmptyState(
         )
         if (buttonText != null && onAction != null) {
             TextButton(onClick = onAction) {
-                Icon(HugeIcons.Link01, contentDescription = null)
+                Icon(Lucide.ExternalLink, contentDescription = null, modifier = Modifier.size(16.dp))
                 Text(buttonText)
             }
         }

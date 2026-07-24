@@ -1,7 +1,6 @@
 package me.rerere.rikkahub.service
 
 import android.app.Application
-import android.content.Context
 import android.util.Log
 import androidx.core.net.toUri
 import kotlinx.coroutines.CancellationException
@@ -155,6 +154,7 @@ class ChatService(
 
     // 统一会话管理
     private val sessions = ConcurrentHashMap<Uuid, ConversationSession>()
+    private val translationJobs = ConcurrentHashMap<Pair<Uuid, Uuid>, Job>()
     private val _sessionsVersion = MutableStateFlow(0L)
 
     // 错误状态
@@ -1052,7 +1052,9 @@ class ChatService(
         message: UIMessage,
         targetLanguage: Locale
     ) {
-        appScope.launch(Dispatchers.IO) {
+        val key = conversationId to message.id
+        translationJobs.remove(key)?.cancel()
+        val job = appScope.launch(Dispatchers.IO) {
             try {
                 val settings = settingsStore.settingsFlow.first()
 
@@ -1077,11 +1079,29 @@ class ChatService(
 
                 // Save the conversation after translation is complete
                 saveConversation(conversationId, getConversationFlow(conversationId).value)
+            } catch (_: CancellationException) {
+                saveConversation(conversationId, getConversationFlow(conversationId).value)
             } catch (e: Exception) {
                 // Clear translation field on error
                 clearTranslationField(conversationId, message.id)
                 addError(e, conversationId, title = context.getString(R.string.error_title_translate_message))
             }
+        }
+        translationJobs[key] = job
+        job.invokeOnCompletion {
+            translationJobs.remove(key, job)
+        }
+    }
+
+    fun cancelTranslation(conversationId: Uuid, messageId: Uuid) {
+        translationJobs.remove(conversationId to messageId)?.cancel()
+        val translation = getConversationFlow(conversationId).value.messageNodes
+            .asSequence()
+            .flatMap { it.messages }
+            .firstOrNull { it.id == messageId }
+            ?.translation
+        if (translation == context.getString(R.string.translating)) {
+            clearTranslationField(conversationId, messageId)
         }
     }
 
@@ -1180,6 +1200,7 @@ class ChatService(
         val forkConversation = Conversation(
             id = Uuid.random(),
             assistantId = currentConversation.assistantId,
+            folderId = currentConversation.folderId,
             messageNodes = copiedNodes,
             customSystemPrompt = currentConversation.customSystemPrompt,
             modeInjectionIds = currentConversation.modeInjectionIds,
@@ -1308,6 +1329,9 @@ class ChatService(
         }
 
         updateConversation(conversationId, currentConversation.copy(messageNodes = updatedNodes))
+        appScope.launch(Dispatchers.IO) {
+            saveConversation(conversationId, getConversationFlow(conversationId).value)
+        }
     }
 
     // 停止当前会话生成任务（不清理会话缓存）

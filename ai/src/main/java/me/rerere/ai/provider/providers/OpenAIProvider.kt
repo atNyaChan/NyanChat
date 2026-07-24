@@ -111,7 +111,7 @@ class OpenAIProvider(
                     (balance["total_balance"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0)
             }
             return@withContext listOf("CNY", "USD").joinToString("+") { currency ->
-                "%.1f%s".format(java.util.Locale.US, balances[currency] ?: 0.0, currency)
+                "%.2f%s".format(java.util.Locale.US, balances[currency] ?: 0.0, currency)
             }
         }
         val value = bodyJson.getByKey(providerSetting.balanceOption.resultPath)

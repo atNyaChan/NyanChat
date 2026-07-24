@@ -202,7 +202,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(stringResource(R.string.cancel))
+                        Text(stringResource(R.string.common_cancel))
                     }
 
                     TextButton(
@@ -215,7 +215,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(stringResource(R.string.chat_page_save))
+                        Text(stringResource(R.string.common_save))
                     }
                 }
             }
@@ -265,7 +265,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(stringResource(R.string.cancel))
+                        Text(stringResource(R.string.common_cancel))
                     }
 
                     TextButton(
@@ -278,7 +278,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(stringResource(R.string.chat_page_save))
+                        Text(stringResource(R.string.common_save))
                     }
                 }
             }
@@ -499,7 +499,7 @@ private fun AddTTSProviderButton(onAdd: (TTSProviderSetting) -> Unit) {
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(stringResource(R.string.cancel))
+                        Text(stringResource(R.string.common_cancel))
                     }
 
                     TextButton(
@@ -509,7 +509,7 @@ private fun AddTTSProviderButton(onAdd: (TTSProviderSetting) -> Unit) {
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(stringResource(R.string.setting_tts_page_add))
+                        Text(stringResource(R.string.common_add))
                     }
                 }
             }
@@ -617,7 +617,7 @@ private fun AddASRProviderButton(onAdd: (ASRProviderSetting) -> Unit) {
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(stringResource(R.string.cancel))
+                        Text(stringResource(R.string.common_cancel))
                     }
 
                     TextButton(
@@ -627,7 +627,7 @@ private fun AddASRProviderButton(onAdd: (ASRProviderSetting) -> Unit) {
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(stringResource(R.string.setting_tts_page_add))
+                        Text(stringResource(R.string.common_add))
                     }
                 }
             }
@@ -768,7 +768,7 @@ private fun TTSProviderItem(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text(stringResource(R.string.delete)) },
+                            text = { Text(stringResource(R.string.common_delete)) },
                             onClick = {
                                 showDropdownMenu = false
                                 onDelete()
@@ -888,7 +888,7 @@ private fun ASRProviderItem(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text(stringResource(R.string.delete)) },
+                            text = { Text(stringResource(R.string.common_delete)) },
                             onClick = {
                                 showDropdownMenu = false
                                 onDelete()

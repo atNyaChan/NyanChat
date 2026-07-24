@@ -77,6 +77,8 @@ fun TextArea(
     readOnly: Boolean = false,
     supportedFileTypes: Array<String> = arrayOf("text/*", "application/json"),
     enableFullscreen: Boolean = true,
+    fullscreenButtonInsideField: Boolean = false,
+    enableImport: Boolean = true,
     onImportError: ((String) -> Unit)? = null
 ) {
     val context = LocalContext.current
@@ -131,7 +133,7 @@ fun TextArea(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
-                    if (enableFullscreen) {
+                    if (enableFullscreen && !fullscreenButtonInsideField) {
                         Icon(
                             imageVector = HugeIcons.FullScreen,
                             contentDescription = stringResource(R.string.text_area_fullscreen_edit),
@@ -143,15 +145,17 @@ fun TextArea(
                         )
                     }
 
-                    Icon(
-                        imageVector = HugeIcons.FileImport,
-                        contentDescription = stringResource(R.string.text_area_import_from_file),
-                        modifier = Modifier
-                            .onClick(onClick = {
-                                filePickerLauncher.launch(supportedFileTypes)
-                            })
-                            .size(24.dp)
-                    )
+                    if (enableImport) {
+                        Icon(
+                            imageVector = HugeIcons.FileImport,
+                            contentDescription = stringResource(R.string.text_area_import_from_file),
+                            modifier = Modifier
+                                .onClick(onClick = {
+                                    filePickerLauncher.launch(supportedFileTypes)
+                                })
+                                .size(24.dp)
+                        )
+                    }
                 }
             }
 
@@ -168,7 +172,18 @@ fun TextArea(
                     maxHeightInLines = maxLines
                 ),
                 enabled = enabled,
-                readOnly = readOnly
+                readOnly = readOnly,
+                trailingIcon = if (enableFullscreen && fullscreenButtonInsideField) {
+                    {
+                        Icon(
+                            imageVector = HugeIcons.FullScreen,
+                            contentDescription = stringResource(R.string.text_area_fullscreen_edit),
+                            modifier = Modifier
+                                .onClick { isFullScreen = true }
+                                .size(24.dp)
+                        )
+                    }
+                } else null
             )
         }
     }
@@ -225,7 +240,7 @@ private fun FullScreenTextEditor(
                                 onDismiss()
                             }
                         ) {
-                            Text(stringResource(R.string.text_area_save))
+                            Text(stringResource(R.string.common_save))
                         }
                     }
                     TextField(

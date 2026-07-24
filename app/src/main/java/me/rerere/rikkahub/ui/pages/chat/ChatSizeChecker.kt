@@ -78,7 +78,7 @@ fun ConversationSizeWarningDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.confirm))
+                Text(stringResource(R.string.common_confirm_action))
             }
         }
     )

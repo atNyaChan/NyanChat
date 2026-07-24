@@ -280,7 +280,7 @@ private fun ReasoningIcon(level: ReasoningLevel) {
 
 @Composable
 private fun ReasoningLevel.label(): String = when (this) {
-    ReasoningLevel.OFF -> stringResource(R.string.reasoning_off)
+    ReasoningLevel.OFF -> stringResource(R.string.common_off)
     ReasoningLevel.AUTO -> stringResource(R.string.reasoning_auto)
     ReasoningLevel.LOW -> stringResource(R.string.reasoning_light)
     ReasoningLevel.MEDIUM -> stringResource(R.string.reasoning_medium)

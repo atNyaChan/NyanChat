@@ -17,7 +17,7 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "moe.nyanw.rikkahub"
+        applicationId = "moe.nyanw.nyanchat"
         minSdk = 26
         targetSdk = 37
         versionCode = 170

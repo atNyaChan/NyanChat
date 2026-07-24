@@ -48,15 +48,16 @@ import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.ArrowDown01
 import me.rerere.hugeicons.stroke.ArrowUp01
 import me.rerere.hugeicons.stroke.Cancel01
+import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.LanguageCircle
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
+import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import java.util.Locale
 
 @Composable
 fun LanguageSelectionDialog(
     onLanguageSelected: (Locale) -> Unit,
-    onClearTranslation: () -> Unit = {},
     onDismissRequest: () -> Unit
 ) {
     // 支持的语言列表
@@ -139,32 +140,6 @@ fun LanguageSelectionDialog(
                         }
                     }
                 }
-
-                item {
-                    Card(
-                        onClick = {
-                            onClearTranslation()
-                        },
-                        shape = MaterialTheme.shapes.medium
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .fillMaxWidth()
-                        ) {
-                            Icon(
-                                imageVector = HugeIcons.Cancel01,
-                                contentDescription = null,
-                            )
-                            Text(
-                                text = stringResource(R.string.translation_clear),
-                                style = MaterialTheme.typography.titleMedium,
-                            )
-                        }
-                    }
-                }
             }
         }
     }
@@ -173,10 +148,14 @@ fun LanguageSelectionDialog(
 @Composable
 fun CollapsibleTranslationText(
     content: String,
+    isTranslating: Boolean,
+    onCancelTranslation: () -> Unit,
+    onDeleteTranslation: () -> Unit,
     onClickCitation: (String) -> Unit
 ) {
     if (content.isNotBlank()) {
         var isCollapsed by remember { mutableStateOf(false) }
+        var showDeleteConfirm by remember { mutableStateOf(false) }
 
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -210,18 +189,29 @@ fun CollapsibleTranslationText(
             }
 
             // 折叠/展开按钮
-            IconButton(
-                onClick = { isCollapsed = !isCollapsed },
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = if (isCollapsed) HugeIcons.ArrowDown01 else HugeIcons.ArrowUp01,
-                    contentDescription = if (isCollapsed) stringResource(R.string.expand_translation) else stringResource(
-                        R.string.collapse_translation
-                    ),
-                    modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            Row {
+                if (!isTranslating) {
+                    IconButton(onClick = { showDeleteConfirm = true }, modifier = Modifier.size(32.dp)) {
+                        Icon(
+                            HugeIcons.Delete01,
+                            contentDescription = stringResource(R.string.translation_delete_result),
+                            modifier = Modifier.size(16.dp),
+                        )
+                    }
+                }
+                IconButton(
+                    onClick = { isCollapsed = !isCollapsed },
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isCollapsed) HugeIcons.ArrowDown01 else HugeIcons.ArrowUp01,
+                        contentDescription = if (isCollapsed) stringResource(R.string.expand_translation) else stringResource(
+                            R.string.collapse_translation
+                        ),
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
 
@@ -273,8 +263,17 @@ fun CollapsibleTranslationText(
                             text = stringResource(R.string.translating),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.graphicsLayer(alpha = alpha)
+                            modifier = Modifier
+                                .graphicsLayer(alpha = alpha)
+                                .weight(1f)
                         )
+                        IconButton(onClick = onCancelTranslation, modifier = Modifier.size(32.dp)) {
+                            Icon(
+                                HugeIcons.Cancel01,
+                                contentDescription = stringResource(R.string.common_cancel),
+                                modifier = Modifier.size(16.dp),
+                            )
+                        }
                     }
                 } else {
                     // Show normal translation content
@@ -287,6 +286,19 @@ fun CollapsibleTranslationText(
                     )
                 }
             }
+        }
+        RikkaConfirmDialog(
+            show = showDeleteConfirm,
+            title = stringResource(R.string.translation_delete_result),
+            confirmText = stringResource(R.string.common_delete),
+            dismissText = stringResource(R.string.common_cancel),
+            onConfirm = {
+                showDeleteConfirm = false
+                onDeleteTranslation()
+            },
+            onDismiss = { showDeleteConfirm = false },
+        ) {
+            Text(stringResource(R.string.translation_delete_result_confirm))
         }
     }
 }

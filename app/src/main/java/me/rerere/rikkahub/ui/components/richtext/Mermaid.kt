@@ -143,7 +143,7 @@ fun Mermaid(
                 ) {
                     Icon(
                         HugeIcons.Download01,
-                        contentDescription = stringResource(R.string.mermaid_export)
+                        contentDescription = stringResource(R.string.common_export)
                     )
                 }
             }

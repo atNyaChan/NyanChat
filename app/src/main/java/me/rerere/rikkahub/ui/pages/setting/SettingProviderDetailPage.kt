@@ -38,8 +38,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearWavyProgressIndicator
@@ -57,7 +57,6 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
-import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -65,7 +64,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
-import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -80,6 +79,12 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastFilter
@@ -99,11 +104,14 @@ import me.rerere.ai.provider.TextGenerationParams
 import me.rerere.ai.registry.ModelRegistry
 import me.rerere.ai.ui.UIMessage
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.Screen
+import me.rerere.rikkahub.data.datastore.findProvider
 import me.rerere.rikkahub.ui.components.ai.ModelAbilityTag
+import me.rerere.rikkahub.ui.components.ai.ModelListSheet
 import me.rerere.rikkahub.ui.components.ai.ModelModalityTag
-import me.rerere.rikkahub.ui.components.ai.ModelSelector
 import me.rerere.rikkahub.ui.components.ai.ModelTypeTag
 import me.rerere.rikkahub.ui.components.ai.ProviderBalanceText
+import me.rerere.rikkahub.ui.components.ai.rememberModelListState
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
 import me.rerere.rikkahub.ui.components.ui.ShareSheet
@@ -244,7 +252,28 @@ fun SettingProviderDetailPage(id: Uuid, vm: SettingVM = koinViewModel()) {
                 1 -> {
                     SettingProviderModelPage(
                         provider = provider,
-                        onEdit = onEdit
+                        onEdit = onEdit,
+                        onMigrateModelId = { sourceModel, targetModel ->
+                            vm.migrateMessageModelId(sourceModel.id, targetModel.id) { result ->
+                                result.onSuccess { count ->
+                                    toaster.show(
+                                        context.getString(
+                                            R.string.setting_provider_page_migrate_id_success,
+                                            count,
+                                        ),
+                                        type = ToastType.Success,
+                                    )
+                                }.onFailure { error ->
+                                    toaster.show(
+                                        context.getString(
+                                            R.string.setting_provider_page_migrate_id_failed,
+                                            error.message.orEmpty(),
+                                        ),
+                                        type = ToastType.Error,
+                                    )
+                                }
+                            }
+                        },
                     )
                 }
             }
@@ -323,7 +352,7 @@ private fun SettingProviderConfigPage(
                     onEdit(internalProvider)
                 }
             ) {
-                Text(stringResource(R.string.setting_provider_page_save))
+                Text(stringResource(R.string.common_save))
             }
         }
 
@@ -349,7 +378,7 @@ private fun SettingProviderConfigPage(
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text(stringResource(R.string.cancel))
+                    Text(stringResource(R.string.common_cancel))
                 }
             },
             confirmButton = {
@@ -359,7 +388,7 @@ private fun SettingProviderConfigPage(
                         onDelete()
                     }
                 ) {
-                    Text(stringResource(R.string.delete))
+                    Text(stringResource(R.string.common_delete))
                 }
             }
         )
@@ -369,18 +398,21 @@ private fun SettingProviderConfigPage(
 @Composable
 private fun SettingProviderModelPage(
     provider: ProviderSetting,
-    onEdit: (ProviderSetting) -> Unit
+    onEdit: (ProviderSetting) -> Unit,
+    onMigrateModelId: (Model, Model) -> Unit,
 ) {
     ModelList(
         providerSetting = provider,
-        onUpdateProvider = onEdit
+        onUpdateProvider = onEdit,
+        onMigrateModelId = onMigrateModelId,
     )
 }
 
 @Composable
 private fun ModelList(
     providerSetting: ProviderSetting,
-    onUpdateProvider: (ProviderSetting) -> Unit
+    onUpdateProvider: (ProviderSetting) -> Unit,
+    onMigrateModelId: (Model, Model) -> Unit,
 ) {
     val providerManager = koinInject<ProviderManager>()
     val modelList by produceState(emptyList(), providerSetting) {
@@ -445,6 +477,7 @@ private fun ModelList(
                                 onUpdateProvider(providerSetting.editModel(editedModel))
                             },
                             parentProvider = providerSetting,
+                            onMigrateModelId = onMigrateModelId,
                             modifier = Modifier
                                 .longPressDraggableHandle()
                                 .graphicsLayer {
@@ -476,9 +509,6 @@ private fun ModelList(
                 onAddModel = {
                     onUpdateProvider(providerSetting.addModel(it))
                 },
-                onRemoveModel = {
-                    onUpdateProvider(providerSetting.delModel(it))
-                },
                 parentProvider = providerSetting,
                 onUpdateProvider = onUpdateProvider
             )
@@ -491,10 +521,46 @@ private fun ModelSettingsForm(
     model: Model,
     onModelChange: (Model) -> Unit,
     isEdit: Boolean,
-    parentProvider: ProviderSetting? = null
+    parentProvider: ProviderSetting? = null,
+    onMigrateModelId: ((Model, Model) -> Unit)? = null,
+    onDeleteModel: (() -> Unit)? = null,
 ) {
-    val pagerState = rememberPagerState { 3 }
+    val usesGeminiApi = (model.providerOverwrite ?: parentProvider) is ProviderSetting.Google
+    val pagerState = rememberPagerState { if (usesGeminiApi) 3 else 2 }
     val scope = rememberCoroutineScope()
+    val settingsStore = koinInject<me.rerere.rikkahub.data.datastore.SettingsStore>()
+    val settings by settingsStore.settingsFlow.collectAsStateWithLifecycle()
+    val conversationRepository = koinInject<me.rerere.rikkahub.data.repository.ConversationRepository>()
+    val navController = LocalNavController.current
+    var migrationTarget by remember { mutableStateOf<Model?>(null) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var referencedMessageCount by remember { mutableStateOf(0) }
+    val migrationModelListState = rememberModelListState(
+        modelId = null,
+        providers = settings.providers,
+        type = model.type,
+    )
+
+    LaunchedEffect(usesGeminiApi) {
+        if (!usesGeminiApi && pagerState.currentPage == 2) {
+            pagerState.scrollToPage(1)
+        }
+    }
+
+    LaunchedEffect(model.id, isEdit) {
+        if (isEdit) {
+            referencedMessageCount = conversationRepository.countMessagesByModel(model.id)
+        }
+    }
+
+    ModelListSheet(
+        state = migrationModelListState,
+        onSelect = { targetModel ->
+            if (targetModel.id != model.id) {
+                migrationTarget = targetModel
+            }
+        },
+    )
 
     fun setModelId(id: String) {
         val inputModality = ModelRegistry.MODEL_INPUT_MODALITIES.getData(id)
@@ -534,15 +600,17 @@ private fun ModelSettingsForm(
                 },
                 text = { Text(stringResource(R.string.setting_provider_page_advanced_settings)) }
             )
-            Tab(
-                selected = pagerState.currentPage == 2,
-                onClick = {
-                    scope.launch {
-                        pagerState.animateScrollToPage(2)
-                    }
-                },
-                text = { Text(stringResource(R.string.setting_page_built_in_tools)) }
-            )
+            if (usesGeminiApi) {
+                Tab(
+                    selected = pagerState.currentPage == 2,
+                    onClick = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(2)
+                        }
+                    },
+                    text = { Text(stringResource(R.string.setting_page_built_in_tools)) }
+                )
+            }
         }
 
         HorizontalPager(
@@ -640,26 +708,60 @@ private fun ModelSettingsForm(
                         }
 
                         model.price?.let { price ->
-                            ModelPriceField(
-                                label = stringResource(R.string.setting_provider_page_input_price),
-                                value = price.input,
-                                onValueChange = { onModelChange(model.copy(price = price.copy(input = it))) },
-                            )
-                            ModelPriceField(
-                                label = stringResource(R.string.setting_provider_page_output_price),
-                                value = price.output,
-                                onValueChange = { onModelChange(model.copy(price = price.copy(output = it))) },
-                            )
-                            ModelPriceField(
-                                label = stringResource(R.string.setting_provider_page_cache_read_price),
-                                value = price.cacheRead,
-                                onValueChange = { onModelChange(model.copy(price = price.copy(cacheRead = it))) },
-                            )
-                            ModelPriceField(
-                                label = stringResource(R.string.setting_provider_page_cache_write_price),
-                                value = price.cacheWrite,
-                                onValueChange = { onModelChange(model.copy(price = price.copy(cacheWrite = it))) },
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                ModelPriceField(
+                                    label = stringResource(R.string.setting_provider_page_input_price),
+                                    value = price.input,
+                                    onValueChange = { onModelChange(model.copy(price = price.copy(input = it))) },
+                                    modifier = Modifier.weight(1f),
+                                )
+                                ModelPriceField(
+                                    label = stringResource(R.string.setting_provider_page_output_price),
+                                    value = price.output,
+                                    onValueChange = { onModelChange(model.copy(price = price.copy(output = it))) },
+                                    modifier = Modifier.weight(1f),
+                                )
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                ModelPriceField(
+                                    label = stringResource(R.string.setting_provider_page_cache_read_price),
+                                    value = price.cacheRead,
+                                    onValueChange = { onModelChange(model.copy(price = price.copy(cacheRead = it))) },
+                                    modifier = Modifier.weight(1f),
+                                )
+                                ModelPriceField(
+                                    label = stringResource(R.string.setting_provider_page_cache_write_price),
+                                    value = price.cacheWrite,
+                                    onValueChange = { onModelChange(model.copy(price = price.copy(cacheWrite = it))) },
+                                    modifier = Modifier.weight(1f),
+                                )
+                            }
+                        }
+
+                        if (isEdit && onDeleteModel != null) {
+                            Button(
+                                onClick = {
+                                    scope.launch {
+                                        referencedMessageCount = conversationRepository.countMessagesByModel(model.id)
+                                        showDeleteDialog = true
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.error,
+                                    contentColor = MaterialTheme.colorScheme.onError,
+                                ),
+                            ) {
+                                Icon(HugeIcons.Delete01, contentDescription = null)
+                                Spacer(Modifier.size(8.dp))
+                                Text(stringResource(R.string.setting_provider_page_delete_model))
+                            }
                         }
                     }
                 }
@@ -694,6 +796,69 @@ private fun ModelSettingsForm(
                                 onModelChange(model.copy(customBodies = bodies))
                             }
                         )
+
+                        if (isEdit && onMigrateModelId != null) {
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text(
+                                    text = stringResource(R.string.setting_provider_page_migrate_id),
+                                    style = MaterialTheme.typography.titleMedium,
+                                )
+                                Text(
+                                    text = stringResource(R.string.setting_provider_page_migrate_id_desc),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                Button(
+                                    onClick = migrationModelListState::open,
+                                    enabled = referencedMessageCount > 0,
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
+                                    Text(stringResource(R.string.model_list_select_model))
+                                }
+                                if (referencedMessageCount > 0) {
+                                    val messageCountText = stringResource(
+                                        R.string.setting_provider_page_delete_model_referenced_messages,
+                                        referencedMessageCount,
+                                    )
+                                    Text(
+                                        buildAnnotatedString {
+                                            append(
+                                                stringResource(
+                                                    R.string.setting_provider_page_migrate_id_current_messages_prefix
+                                                )
+                                            )
+                                            withLink(
+                                                LinkAnnotation.Clickable(
+                                                    tag = "search_model_messages",
+                                                    styles = TextLinkStyles(
+                                                        style = SpanStyle(
+                                                            color = MaterialTheme.colorScheme.primary,
+                                                            textDecoration = TextDecoration.Underline,
+                                                        )
+                                                    ),
+                                                    linkInteractionListener = {
+                                                        navController.navigate(
+                                                            Screen.MessageSearch(model.id.toString())
+                                                        )
+                                                    },
+                                                )
+                                            ) {
+                                                append(messageCountText)
+                                            }
+                                        },
+                                        style = MaterialTheme.typography.bodyMedium,
+                                    )
+                                } else {
+                                    Text(
+                                        text = stringResource(
+                                            R.string.setting_provider_page_migrate_id_no_messages
+                                        ),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -709,6 +874,122 @@ private fun ModelSettingsForm(
             }
         }
     }
+
+    migrationTarget?.let { targetModel ->
+        AlertDialog(
+            onDismissRequest = { migrationTarget = null },
+            title = { Text(stringResource(R.string.setting_provider_page_migrate_id_confirm_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.setting_provider_page_migrate_id_confirm_desc,
+                        model.displayName,
+                        model.findProvider(settings.providers, checkOverwrite = false)?.name
+                            ?: parentProvider?.name.orEmpty(),
+                        targetModel.displayName,
+                        targetModel.findProvider(settings.providers, checkOverwrite = false)?.name.orEmpty(),
+                    )
+                )
+            },
+            dismissButton = {
+                TextButton(onClick = { migrationTarget = null }) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        migrationTarget = null
+                        onMigrateModelId?.invoke(model, targetModel)
+                    }
+                ) {
+                    Text(stringResource(R.string.common_confirm_action))
+                }
+            },
+        )
+    }
+
+    if (showDeleteDialog) {
+        val providerName = (model.providerOverwrite ?: parentProvider)?.name.orEmpty()
+        val referencedMessagesLink = stringResource(
+            R.string.setting_provider_page_delete_model_referenced_messages,
+            referencedMessageCount,
+        )
+        val warningSuffix = stringResource(R.string.setting_provider_page_delete_model_warning_suffix)
+        val migrateLink = stringResource(R.string.setting_provider_page_delete_model_migrate_link)
+        val linkStyle = TextLinkStyles(
+            style = SpanStyle(
+                color = MaterialTheme.colorScheme.primary,
+                textDecoration = TextDecoration.Underline,
+            )
+        )
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = {
+                Text(
+                    stringResource(
+                        R.string.setting_provider_page_delete_model_confirm_named_title,
+                        model.displayName,
+                        providerName,
+                    )
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.setting_provider_page_delete_model_confirm_desc))
+                    if (referencedMessageCount > 0) {
+                        Text(
+                            buildAnnotatedString {
+                                withLink(
+                                    LinkAnnotation.Clickable(
+                                        tag = "search_model_messages",
+                                        styles = linkStyle,
+                                        linkInteractionListener = {
+                                            showDeleteDialog = false
+                                            navController.navigate(Screen.MessageSearch(model.id.toString()))
+                                        },
+                                    )
+                                ) {
+                                    append(referencedMessagesLink)
+                                }
+                                append(warningSuffix)
+                                withLink(
+                                    LinkAnnotation.Clickable(
+                                        tag = "migrate_model_id",
+                                        styles = linkStyle,
+                                        linkInteractionListener = {
+                                            showDeleteDialog = false
+                                            migrationModelListState.open()
+                                        },
+                                    )
+                                ) {
+                                    append(migrateLink)
+                                }
+                            }
+                        )
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        onDeleteModel?.invoke()
+                    }
+                ) {
+                    Text(
+                        text = stringResource(R.string.common_delete),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            },
+        )
+    }
 }
 
 @Composable
@@ -716,6 +997,7 @@ private fun ModelPriceField(
     label: String,
     value: Double,
     onValueChange: (Double) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var text by remember { mutableStateOf(value.toString()) }
     OutlinedTextField(
@@ -731,7 +1013,7 @@ private fun ModelPriceField(
         suffix = { Text("/M") },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         singleLine = true,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
     )
 }
 
@@ -740,7 +1022,6 @@ private fun AddModelButton(
     models: List<Model>,
     selectedModels: List<Model>,
     onAddModel: (Model) -> Unit,
-    onRemoveModel: (Model) -> Unit,
     parentProvider: ProviderSetting,
     onUpdateProvider: (ProviderSetting) -> Unit
 ) {
@@ -766,8 +1047,10 @@ private fun AddModelButton(
         }
 
         ModelPicker(
-            models = models,
-            selectedModels = selectedModels,
+            models = models.filter { available ->
+                selectedModels.none { selected -> selected.modelId == available.modelId }
+            },
+            selectedModels = emptyList(),
             onModelSelected = { model ->
                 onAddModel(
                     model.copy(
@@ -777,7 +1060,7 @@ private fun AddModelButton(
                     )
                 )
             },
-            onModelDeselected = onRemoveModel,
+            onModelDeselected = {},
             onAllModelSelected = {
                 onUpdateProvider(
                     parentProvider.copyProvider(
@@ -793,15 +1076,7 @@ private fun AddModelButton(
                     )
                 )
             },
-            onAllModelDeselected = { filteredModels ->
-                onUpdateProvider(
-                    parentProvider.copyProvider(
-                        models = parentProvider.models.filter { model ->
-                            filteredModels.none { filtered -> filtered.modelId == model.modelId }
-                        }
-                    )
-                )
-            },
+            onAllModelDeselected = {},
         )
     }
 
@@ -862,7 +1137,7 @@ private fun AddModelButton(
                                 dialogState.dismiss()
                             },
                         ) {
-                            Text(stringResource(R.string.cancel))
+                            Text(stringResource(R.string.common_cancel))
                         }
                         TextButton(
                             onClick = {
@@ -871,7 +1146,7 @@ private fun AddModelButton(
                                 }
                             },
                         ) {
-                            Text(stringResource(R.string.setting_provider_page_add))
+                            Text(stringResource(R.string.common_add))
                         }
                     }
                 }
@@ -1201,12 +1476,12 @@ private fun ModelCard(
     modifier: Modifier = Modifier,
     onDelete: () -> Unit,
     onEdit: (Model) -> Unit,
-    parentProvider: ProviderSetting
+    parentProvider: ProviderSetting,
+    onMigrateModelId: (Model, Model) -> Unit,
 ) {
     val dialogState = useEditState<Model> {
         onEdit(it)
     }
-    val swipeToDismissBoxState = rememberSwipeToDismissBoxState()
     val scope = rememberCoroutineScope()
 
 
@@ -1259,7 +1534,12 @@ private fun ModelCard(
                             model = editingModel,
                             onModelChange = { dialogState.currentState = it },
                             isEdit = true,
-                            parentProvider = parentProvider
+                            parentProvider = parentProvider,
+                            onMigrateModelId = onMigrateModelId,
+                            onDeleteModel = {
+                                onDelete()
+                                dialogState.dismiss()
+                            },
                         )
                     }
 
@@ -1272,7 +1552,7 @@ private fun ModelCard(
                                 dialogState.dismiss()
                             },
                         ) {
-                            Text(stringResource(R.string.cancel))
+                            Text(stringResource(R.string.common_cancel))
                         }
                         TextButton(
                             onClick = {
@@ -1281,7 +1561,7 @@ private fun ModelCard(
                                 }
                             },
                         ) {
-                            Text(stringResource(R.string.confirm))
+                            Text(stringResource(R.string.common_confirm_action))
                         }
                     }
                 }
@@ -1289,45 +1569,10 @@ private fun ModelCard(
         }
     }
 
-    SwipeToDismissBox(
-        state = swipeToDismissBoxState,
-        backgroundContent = {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = {
-                        scope.launch {
-                            swipeToDismissBoxState.reset()
-                        }
-                    }
-                ) {
-                    Icon(HugeIcons.Cancel01, null)
-                }
-                FilledIconButton(
-                    onClick = {
-                        scope.launch {
-                            onDelete()
-                            swipeToDismissBoxState.reset()
-                        }
-                    }
-                ) {
-                    Icon(
-                        HugeIcons.Delete01,
-                        contentDescription = stringResource(R.string.chat_page_delete)
-                    )
-                }
-            }
-        },
-        enableDismissFromStartToEnd = false,
-        gesturesEnabled = true,
-        modifier = modifier
+    OutlinedCard(
+        modifier = modifier,
+        onClick = { dialogState.open(model.copy()) },
     ) {
-        OutlinedCard {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1371,17 +1616,7 @@ private fun ModelCard(
                         ModelAbilityTag(model = model)
                     }
                 }
-
-                // Edit button
-                IconButton(
-                    onClick = {
-                        dialogState.open(model.copy())
-                    }
-                ) {
-                    Icon(HugeIcons.Tools, "Edit")
-                }
             }
-        }
     }
 }
 
@@ -1593,7 +1828,7 @@ private fun ProviderOverrideSettings(
                                 editingProvider = null
                             },
                         ) {
-                            Text(stringResource(R.string.cancel))
+                            Text(stringResource(R.string.common_cancel))
                         }
                         TextButton(
                             onClick = {
@@ -1602,7 +1837,7 @@ private fun ProviderOverrideSettings(
                                 editingProvider = null
                             },
                         ) {
-                            Text(stringResource(R.string.setting_provider_page_save))
+                            Text(stringResource(R.string.common_save))
                         }
                     }
                 }

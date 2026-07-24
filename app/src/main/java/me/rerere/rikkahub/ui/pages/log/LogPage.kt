@@ -26,6 +26,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -236,10 +237,10 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
         reasoning = stringResource(R.string.log_page_content_reasoning),
         tool = stringResource(R.string.log_page_content_tool),
     )
-    val responseMessage = remember(log.url, log.method, log.responseBody, labels) {
+    val responseSections = remember(log.url, log.method, log.responseBody, labels) {
         log.responseBody
             ?.takeIf { log.method.equals("POST", ignoreCase = true) && isLlmGenerationUrl(log.url) }
-            ?.let { extractResponseMessage(it, labels) }
+            ?.let { extractResponseSections(it, labels) }
             .orEmpty()
     }
 
@@ -310,13 +311,35 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
                 }
             } }
 
-            if (responseMessage.isNotBlank()) item {
+            if (responseSections.isNotEmpty()) item {
                 CollapsibleLogSection(
                     title = "Content",
                     initiallyExpanded = true,
-                    onCopy = { context.writeClipboardText(responseMessage) },
                 ) {
-                    Text(responseMessage, fontFamily = JetbrainsMono)
+                    responseSections.forEach { section ->
+                        OutlinedTextField(
+                            value = section.content,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text(section.label) },
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = { context.writeClipboardText(section.content) }
+                                ) {
+                                    Icon(
+                                        HugeIcons.Copy01,
+                                        contentDescription = stringResource(R.string.copy),
+                                    )
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            textStyle = MaterialTheme.typography.bodyMedium.copy(
+                                fontFamily = JetbrainsMono,
+                            ),
+                            minLines = 2,
+                            maxLines = 12,
+                        )
+                    }
                 }
             }
         }
@@ -382,7 +405,7 @@ private fun isLlmGenerationUrl(url: String): Boolean {
         path.endsWith("/generate")
 }
 
-private fun extractResponseMessage(body: String, labels: LlmLabels): String? {
+private fun extractResponseSections(body: String, labels: LlmLabels): List<LlmContentSection> {
     val payloads = body.lineSequence()
         .map { it.trim() }
         .filter { it.startsWith("data:") }
@@ -393,13 +416,13 @@ private fun extractResponseMessage(body: String, labels: LlmLabels): String? {
     val elements = payloads.mapNotNull {
         runCatching { JsonInstantPretty.parseToJsonElement(it) }.getOrNull()
     }
-    if (elements.isEmpty()) return null
+    if (elements.isEmpty()) return emptyList()
     val hasLlmEvents = elements.any(::looksLikeLlmEvent)
-    if (!hasLlmEvents) return null
+    if (!hasLlmEvents) return emptyList()
 
     return LlmTextBuilder(labels).also { builder ->
         elements.forEach { appendLlmContent(it, builder, labels = labels) }
-    }.toString().trim().takeIf { it.isNotEmpty() }
+    }.build()
 }
 
 private fun looksLikeLlmEvent(element: JsonElement): Boolean = when (element) {
@@ -487,36 +510,32 @@ private fun JsonElement.withoutNulls(): JsonElement = when (this) {
 
 private data class LlmLabels(val text: String, val reasoning: String, val tool: String)
 
+private data class LlmContentSection(val label: String, val content: String)
+
 private class LlmTextBuilder(private val labels: LlmLabels) {
-    private val output = StringBuilder()
-    private var section: String? = null
+    private val sections = mutableListOf<LlmContentSection>()
 
     fun appendText(value: String) {
-        if (value.isEmpty()) return
-        if (section != null) appendSectionBreak()
-        if (section != null || output.isEmpty()) output.appendLine("[${labels.text}]")
-        section = null
-        output.append(value)
+        append(labels.text, value)
     }
 
     fun appendLabeled(label: String, value: String) {
-        if (value.isBlank()) return
-        if (section != label) {
-            appendSectionBreak()
-            output.append("[").append(label).appendLine("]")
-            section = label
+        append(label, value)
+    }
+
+    private fun append(label: String, value: String) {
+        if (value.isEmpty()) return
+        val last = sections.lastOrNull()
+        if (last?.label == label) {
+            sections[sections.lastIndex] = last.copy(content = last.content + value)
+        } else {
+            sections += LlmContentSection(label = label, content = value)
         }
-        output.append(value)
     }
 
-    private fun appendSectionBreak() {
-        if (output.isEmpty()) return
-        if (output.endsWith("\n\n")) return
-        if (output.last() != '\n') output.appendLine()
-        output.appendLine()
+    fun build(): List<LlmContentSection> = sections.mapNotNull { section ->
+        section.copy(content = section.content.trim()).takeIf { it.content.isNotEmpty() }
     }
-
-    override fun toString(): String = output.toString()
 }
 
 private fun parseResponseJson(body: String): JsonElement? {

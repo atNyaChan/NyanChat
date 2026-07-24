@@ -388,7 +388,7 @@ private fun HighlightCodeActions(
 
             Icon(
                 imageVector = HugeIcons.Download04,
-                contentDescription = stringResource(id = R.string.chat_page_save),
+                contentDescription = stringResource(id = R.string.common_save),
                 tint = iconTint,
                 modifier = Modifier
                     .clip(RoundedCornerShape(4.dp))

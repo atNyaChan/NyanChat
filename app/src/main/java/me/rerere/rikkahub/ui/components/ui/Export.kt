@@ -29,7 +29,7 @@ fun <T> ExportDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(title ?: stringResource(R.string.export_title)) },
+        title = { Text(title ?: stringResource(R.string.common_export)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedCard(
@@ -77,7 +77,7 @@ fun <T> ExportDialog(
                         Icon(HugeIcons.Share01, null)
                         Column {
                             Text(
-                                text = stringResource(R.string.export_share),
+                                text = stringResource(R.string.common_share),
                                 style = MaterialTheme.typography.titleSmall
                             )
                             Text(
@@ -92,7 +92,7 @@ fun <T> ExportDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.export_cancel))
+                Text(stringResource(R.string.common_cancel))
             }
         }
     )

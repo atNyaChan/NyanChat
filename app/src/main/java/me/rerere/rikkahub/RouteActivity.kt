@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -17,12 +16,9 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -63,8 +58,6 @@ import kotlinx.serialization.Serializable
 import me.rerere.highlight.Highlighter
 import me.rerere.highlight.LocalHighlighter
 import me.rerere.rikkahub.data.datastore.SettingsStore
-import me.rerere.rikkahub.data.db.DatabaseMigrationTracker
-import me.rerere.rikkahub.data.db.MigrationState
 import me.rerere.rikkahub.data.event.AppEvent
 import me.rerere.rikkahub.data.event.AppEventBus
 import me.rerere.rikkahub.ui.activity.SafeModeActivity
@@ -83,17 +76,15 @@ import me.rerere.rikkahub.ui.hooks.rememberCustomTtsState
 import me.rerere.rikkahub.ui.pages.assistant.AssistantPage
 import me.rerere.rikkahub.ui.pages.assistant.detail.AssistantBasicPage
 import me.rerere.rikkahub.ui.pages.assistant.detail.AssistantDetailPage
-import me.rerere.rikkahub.ui.pages.assistant.detail.AssistantExtensionsPage
 import me.rerere.rikkahub.ui.pages.assistant.detail.AssistantLocalToolPage
 import me.rerere.rikkahub.ui.pages.assistant.detail.AssistantMcpPage
 import me.rerere.rikkahub.ui.pages.assistant.detail.AssistantMemoryPage
 import me.rerere.rikkahub.ui.pages.assistant.detail.AssistantPromptPage
-import me.rerere.rikkahub.ui.pages.assistant.detail.AssistantRequestPage
 import me.rerere.rikkahub.ui.pages.backup.BackupPage
 import me.rerere.rikkahub.ui.pages.chat.ChatPage
 import me.rerere.rikkahub.ui.pages.debug.DebugPage
-import me.rerere.rikkahub.ui.pages.extensions.ExtensionsPage
-import me.rerere.rikkahub.ui.pages.extensions.PromptPage
+import me.rerere.rikkahub.ui.pages.extensions.LorebookPage
+import me.rerere.rikkahub.ui.pages.extensions.ModeInjectionPage
 import me.rerere.rikkahub.ui.pages.extensions.QuickMessagesPage
 import me.rerere.rikkahub.ui.pages.extensions.skills.SkillDetailPage
 import me.rerere.rikkahub.ui.pages.extensions.skills.SkillsPage
@@ -255,8 +246,6 @@ class RouteActivity : AppCompatActivity() {
                 }
             }
         }
-        val migrationState by DatabaseMigrationTracker.state.collectAsStateWithLifecycle()
-
         val startScreen = Screen.Chat(
             id = if (readBooleanPreference("create_new_conversation_on_start", true)) {
                 Uuid.random().toString()
@@ -353,7 +342,10 @@ class RouteActivity : AppCompatActivity() {
                             }
 
                             entry<Screen.AssistantBasic> { key ->
-                                AssistantBasicPage(key.id)
+                                AssistantBasicPage(
+                                    id = key.id,
+                                    focusContextMessageSize = key.focusContextMessageSize,
+                                )
                             }
 
                             entry<Screen.AssistantPrompt> { key ->
@@ -364,20 +356,12 @@ class RouteActivity : AppCompatActivity() {
                                 AssistantMemoryPage(key.id)
                             }
 
-                            entry<Screen.AssistantRequest> { key ->
-                                AssistantRequestPage(key.id)
-                            }
-
                             entry<Screen.AssistantMcp> { key ->
                                 AssistantMcpPage(key.id)
                             }
 
                             entry<Screen.AssistantLocalTool> { key ->
                                 AssistantLocalToolPage(key.id)
-                            }
-
-                            entry<Screen.AssistantInjections> { key ->
-                                AssistantExtensionsPage(key.id)
                             }
 
                             entry<Screen.Translator> {
@@ -463,16 +447,16 @@ class RouteActivity : AppCompatActivity() {
                                 LogPage()
                             }
 
-                            entry<Screen.Extensions> {
-                                ExtensionsPage()
-                            }
-
                             entry<Screen.QuickMessages> {
                                 QuickMessagesPage()
                             }
 
-                            entry<Screen.Prompts> {
-                                PromptPage()
+                            entry<Screen.ModeInjections> {
+                                ModeInjectionPage()
+                            }
+
+                            entry<Screen.Lorebooks> {
+                                LorebookPage()
                             }
 
                             entry<Screen.Skills> {
@@ -503,8 +487,8 @@ class RouteActivity : AppCompatActivity() {
                                 SkillDetailPage(skillName = key.skillName)
                             }
 
-                            entry<Screen.MessageSearch> {
-                                SearchPage()
+                            entry<Screen.MessageSearch> { key ->
+                                SearchPage(initialModelId = key.modelId)
                             }
 
                             entry<Screen.Stats> {
@@ -521,38 +505,6 @@ class RouteActivity : AppCompatActivity() {
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
                         )
-                    }
-                    AnimatedVisibility(
-                        visible = migrationState is MigrationState.Migrating,
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        val state = migrationState as? MigrationState.Migrating
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-                                CircularProgressIndicator()
-                                Text(
-                                    text = stringResource(R.string.db_migrating),
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
-                                if (state != null) {
-                                    Text(
-                                        text = "v${state.from} → v${state.to}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -582,7 +534,10 @@ sealed interface Screen : NavKey {
     data class AssistantDetail(val id: String) : Screen
 
     @Serializable
-    data class AssistantBasic(val id: String) : Screen
+    data class AssistantBasic(
+        val id: String,
+        val focusContextMessageSize: Boolean = false,
+    ) : Screen
 
     @Serializable
     data class AssistantPrompt(val id: String) : Screen
@@ -591,16 +546,10 @@ sealed interface Screen : NavKey {
     data class AssistantMemory(val id: String) : Screen
 
     @Serializable
-    data class AssistantRequest(val id: String) : Screen
-
-    @Serializable
     data class AssistantMcp(val id: String) : Screen
 
     @Serializable
     data class AssistantLocalTool(val id: String) : Screen
-
-    @Serializable
-    data class AssistantInjections(val id: String) : Screen
 
     @Serializable
     data object Translator : Screen
@@ -663,13 +612,13 @@ sealed interface Screen : NavKey {
     data object Log : Screen
 
     @Serializable
-    data object Extensions : Screen
-
-    @Serializable
     data object QuickMessages : Screen
 
     @Serializable
-    data object Prompts : Screen
+    data object ModeInjections : Screen
+
+    @Serializable
+    data object Lorebooks : Screen
 
     @Serializable
     data object Skills : Screen
@@ -690,7 +639,7 @@ sealed interface Screen : NavKey {
     data class SkillDetail(val skillName: String) : Screen
 
     @Serializable
-    data object MessageSearch : Screen
+    data class MessageSearch(val modelId: String? = null) : Screen
 
     @Serializable
     data object Stats : Screen

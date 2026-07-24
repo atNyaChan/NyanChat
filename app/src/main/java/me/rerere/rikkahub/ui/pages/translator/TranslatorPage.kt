@@ -3,19 +3,16 @@ package me.rerere.rikkahub.ui.pages.translator
 import android.content.ClipData
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Clipboard
-import me.rerere.hugeicons.stroke.LanguageCircle
+import me.rerere.hugeicons.stroke.Cancel01
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
@@ -44,7 +41,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -187,23 +183,23 @@ fun TranslatorPage(vm: TranslatorVM = koinViewModel()) {
                 colors = CustomColors.cardColorsOnSurfaceContainer,
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    SelectionContainer {
-                        Text(
-                            text = translatedText.ifEmpty {
-                                stringResource(R.string.translator_page_result_placeholder)
-                            },
-                            style = MaterialTheme.typography.titleLarge,
-                            modifier = Modifier.fillMaxWidth(),
-                            color = if (translatedText.isBlank()) {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            } else {
-                                MaterialTheme.colorScheme.onSurface
-                            },
-                        )
-                    }
+                    OutlinedTextField(
+                        value = translatedText,
+                        onValueChange = {},
+                        readOnly = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text(stringResource(R.string.translator_page_result_placeholder)) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color.Transparent,
+                            unfocusedBorderColor = Color.Transparent,
+                            disabledBorderColor = Color.Transparent,
+                        ),
+                        maxLines = 10,
+                        textStyle = MaterialTheme.typography.headlineSmall,
+                    )
 
                     AnimatedVisibility(translatedText.isNotBlank()) {
                         FilledTonalButton(
@@ -333,23 +329,12 @@ private fun BottomBar(
                 elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
             ) {
                 if (!translating) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    ) {
-                        Icon(
-                            HugeIcons.LanguageCircle,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(
-                            stringResource(R.string.translator_page_translate),
-                            modifier = Modifier.padding(start = 4.dp)
-                        )
-                    }
+                    Text(
+                        stringResource(R.string.translator_page_translate),
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                    )
                 } else {
-                    Text(stringResource(R.string.translator_page_cancel))
+                    Icon(HugeIcons.Cancel01, contentDescription = stringResource(R.string.common_cancel))
                 }
             }
         }

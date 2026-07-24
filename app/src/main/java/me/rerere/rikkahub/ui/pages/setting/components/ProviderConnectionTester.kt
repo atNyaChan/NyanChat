@@ -113,7 +113,7 @@ fun ProviderConnectionTester(
             },
             dismissButton = {
                 TextButton(onClick = { showTestDialog = false }) {
-                    Text(stringResource(R.string.cancel))
+                    Text(stringResource(R.string.common_cancel))
                 }
             },
             confirmButton = {

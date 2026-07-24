@@ -186,12 +186,12 @@ private fun CancelDialog(
         text = { Text(stringResource(R.string.imggen_page_cancel_generation_message)) },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text(stringResource(R.string.imggen_page_confirm))
+                Text(stringResource(R.string.common_confirm_action))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.imggen_page_cancel))
+                Text(stringResource(R.string.common_cancel))
             }
         }
     )
@@ -675,7 +675,7 @@ private fun ImageGalleryScreen(
                                         ) {
                                             Icon(
                                                 imageVector = HugeIcons.FloppyDisk,
-                                                contentDescription = stringResource(R.string.imggen_page_save),
+                                                contentDescription = stringResource(R.string.common_save),
                                                 modifier = Modifier.size(16.dp)
                                             )
                                         }
@@ -686,7 +686,7 @@ private fun ImageGalleryScreen(
                                         ) {
                                             Icon(
                                                 imageVector = HugeIcons.Delete01,
-                                                contentDescription = stringResource(R.string.imggen_page_delete),
+                                                contentDescription = stringResource(R.string.common_delete),
                                                 modifier = Modifier.size(16.dp),
                                                 tint = MaterialTheme.colorScheme.error
                                             )

@@ -4,19 +4,25 @@ import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Refresh01
 import me.rerere.hugeicons.stroke.Search01
 import me.rerere.hugeicons.stroke.Sorting01
+import me.rerere.hugeicons.stroke.ArrowLeft01
+import me.rerere.hugeicons.stroke.ArrowLeftDouble
+import me.rerere.hugeicons.stroke.ArrowRight01
+import me.rerere.hugeicons.stroke.ArrowRightDouble
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -49,24 +55,34 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.db.fts.MessageSearchResult
 import me.rerere.rikkahub.data.db.fts.MessageSearchMode
 import me.rerere.rikkahub.data.db.fts.MessageSearchSort
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ai.ModelListSheet
+import me.rerere.rikkahub.ui.components.ai.rememberModelListState
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.navigateToChatPage
 import me.rerere.rikkahub.utils.plus
 import me.rerere.rikkahub.utils.toLocalDateTime
 import org.koin.androidx.compose.koinViewModel
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import org.koin.compose.koinInject
 import kotlin.uuid.Uuid
 
 @Composable
-fun SearchPage(vm: SearchVM = koinViewModel()) {
+fun SearchPage(initialModelId: String? = null, vm: SearchVM = koinViewModel()) {
     val navController = LocalNavController.current
+    val settingsStore = koinInject<SettingsStore>()
+    val settings by settingsStore.settingsFlow.collectAsStateWithLifecycle()
+    val modelListState = rememberModelListState(
+        modelId = null,
+        providers = settings.providers,
+        type = null,
+    )
     val focusRequester = remember { FocusRequester() }
     var showRebuildDialog by remember { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -74,6 +90,25 @@ fun SearchPage(vm: SearchVM = koinViewModel()) {
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
     }
+
+    LaunchedEffect(initialModelId, settings.providers) {
+        val id = initialModelId?.let { runCatching { Uuid.parse(it) }.getOrNull() }
+        if (id != null) {
+            val existingModel = settings.providers.asSequence()
+                .flatMap { it.models }
+                .firstOrNull { it.id == id }
+            if (existingModel != null) {
+                vm.onModelSearch(existingModel)
+            } else {
+                vm.onDeletedModelSearch(id)
+            }
+        }
+        vm.loadDeletedModelIds(
+            settings.providers.asSequence().flatMap { it.models }.map { it.id }.toSet()
+        )
+    }
+
+    ModelListSheet(state = modelListState, onSelect = vm::onModelSearch)
 
     if (showRebuildDialog) {
         AlertDialog(
@@ -87,12 +122,12 @@ fun SearchPage(vm: SearchVM = koinViewModel()) {
                         vm.rebuildIndex()
                     }
                 ) {
-                    Text(stringResource(R.string.confirm))
+                    Text(stringResource(R.string.common_confirm_action))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showRebuildDialog = false }) {
-                    Text(stringResource(R.string.cancel))
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -102,14 +137,35 @@ fun SearchPage(vm: SearchVM = koinViewModel()) {
         topBar = {
             LargeFlexibleTopAppBar(
                 navigationIcon = { BackButton() },
-                title = { Text(stringResource(R.string.search_page_title)) },
+                title = {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.Bottom,
+                    ) {
+                        Text(stringResource(R.string.search_page_title))
+                        if (vm.hasSearchCriteria && !vm.isLoading) {
+                            Text(
+                                text = stringResource(R.string.search_page_result_count, vm.resultCount),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(bottom = 3.dp),
+                            )
+                        }
+                    }
+                },
                 actions = {
                     SearchModeMenuButton(
                         current = vm.searchMode,
                         onModeChange = vm::onSearchModeChange,
+                        onModelSearch = modelListState::open,
+                        deletedModelIds = vm.deletedModelIds,
+                        onDeletedModelSearch = vm::onDeletedModelSearch,
+                        onManuallyEditedMessagesSearch = vm::onManuallyEditedMessagesSearch,
                     )
                     SortMenuButton(
                         current = vm.sortOrder,
+                        allowRelevance = vm.searchMode == MessageSearchMode.FUZZY &&
+                            !vm.isModelFilteredSearch,
                         onSortChange = { vm.onSortChange(it) },
                     )
                     IconButton(
@@ -141,7 +197,24 @@ fun SearchPage(vm: SearchVM = koinViewModel()) {
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
                     .focusRequester(focusRequester),
-                placeholder = { Text(stringResource(R.string.search_page_placeholder)) },
+                placeholder = {
+                    Text(
+                        when {
+                            vm.selectedModel != null -> stringResource(
+                                R.string.search_page_model_selected,
+                                vm.selectedModel!!.displayName,
+                            )
+                            vm.selectedDeletedModelId != null -> stringResource(
+                                R.string.search_page_deleted_model_selected,
+                                vm.selectedDeletedModelId.toString(),
+                            )
+                            vm.searchManuallyEditedMessages -> stringResource(
+                                R.string.search_page_manually_edited_selected
+                            )
+                            else -> stringResource(R.string.search_page_placeholder)
+                        }
+                    )
+                },
                 shape = RoundedCornerShape(50),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
@@ -149,6 +222,14 @@ fun SearchPage(vm: SearchVM = koinViewModel()) {
                     onSearch = { vm.search() }
                 ),
             )
+
+            if (vm.resultCount > 20) {
+                SearchPagination(
+                    currentPage = vm.currentPage,
+                    totalPages = vm.totalPages,
+                    onPageChange = vm::goToPage,
+                )
+            }
 
             Box(modifier = Modifier.weight(1f)) {
                 if (vm.isLoading || vm.isRebuilding) {
@@ -173,7 +254,7 @@ fun SearchPage(vm: SearchVM = koinViewModel()) {
                             )
                         }
                     }
-                    vm.searchQuery.isBlank() -> {
+                    !vm.hasSearchCriteria -> {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -209,7 +290,8 @@ fun SearchPage(vm: SearchVM = koinViewModel()) {
                                 SearchResultItem(
                                     result = result,
                                     query = vm.searchQuery,
-                                    highlightTitle = vm.searchMode == MessageSearchMode.TITLE_ONLY,
+                                    highlightTitle = !vm.isModelFilteredSearch &&
+                                        vm.searchMode == MessageSearchMode.TITLE_ONLY,
                                     onClick = {
                                         navigateToChatPage(
                                             navController,
@@ -228,11 +310,64 @@ fun SearchPage(vm: SearchVM = koinViewModel()) {
 }
 
 @Composable
+private fun SearchPagination(
+    currentPage: Int,
+    totalPages: Int,
+    onPageChange: (Int) -> Unit,
+) {
+    var pageInput by remember(currentPage) { mutableStateOf(currentPage.toString()) }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconButton(onClick = { onPageChange(1) }, enabled = currentPage > 1) {
+            Icon(HugeIcons.ArrowLeftDouble, stringResource(R.string.search_page_first_page))
+        }
+        IconButton(onClick = { onPageChange(currentPage - 1) }, enabled = currentPage > 1) {
+            Icon(HugeIcons.ArrowLeft01, stringResource(R.string.search_page_previous_page))
+        }
+        OutlinedTextField(
+            value = pageInput,
+            onValueChange = { value ->
+                if (value.all(Char::isDigit)) pageInput = value
+            },
+            modifier = Modifier
+                .width(72.dp)
+                .height(48.dp),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = androidx.compose.ui.text.input.KeyboardType.Number,
+                imeAction = ImeAction.Go,
+            ),
+            keyboardActions = KeyboardActions(
+                onGo = { pageInput.toIntOrNull()?.let(onPageChange) }
+            ),
+            suffix = { Text("/$totalPages") },
+        )
+        IconButton(onClick = { onPageChange(currentPage + 1) }, enabled = currentPage < totalPages) {
+            Icon(HugeIcons.ArrowRight01, stringResource(R.string.search_page_next_page))
+        }
+        IconButton(onClick = { onPageChange(totalPages) }, enabled = currentPage < totalPages) {
+            Icon(HugeIcons.ArrowRightDouble, stringResource(R.string.search_page_last_page))
+        }
+    }
+}
+
+@Composable
 private fun SearchModeMenuButton(
     current: MessageSearchMode,
     onModeChange: (MessageSearchMode) -> Unit,
+    onModelSearch: () -> Unit,
+    deletedModelIds: List<Uuid>,
+    onDeletedModelSearch: (Uuid) -> Unit,
+    onManuallyEditedMessagesSearch: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var modelOptionsExpanded by remember { mutableStateOf(false) }
+    var deletedModelsExpanded by remember { mutableStateOf(false) }
     Box {
         IconButton(onClick = { expanded = true }) {
             Icon(
@@ -266,6 +401,61 @@ private fun SearchModeMenuButton(
                     },
                 )
             }
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.search_page_mode_model)) },
+                onClick = {
+                    expanded = false
+                    modelOptionsExpanded = true
+                },
+            )
+        }
+        DropdownMenu(
+            expanded = modelOptionsExpanded,
+            onDismissRequest = { modelOptionsExpanded = false },
+        ) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.search_page_model_existing)) },
+                onClick = {
+                    modelOptionsExpanded = false
+                    onModelSearch()
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.search_page_model_deleted)) },
+                onClick = {
+                    modelOptionsExpanded = false
+                    deletedModelsExpanded = true
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.search_page_model_manually_edited)) },
+                onClick = {
+                    modelOptionsExpanded = false
+                    onManuallyEditedMessagesSearch()
+                },
+            )
+        }
+        DropdownMenu(
+            expanded = deletedModelsExpanded,
+            onDismissRequest = { deletedModelsExpanded = false },
+        ) {
+            if (deletedModelIds.isEmpty()) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.search_page_no_deleted_models)) },
+                    enabled = false,
+                    onClick = {},
+                )
+            } else {
+                deletedModelIds.forEach { modelId ->
+                    DropdownMenuItem(
+                        text = { Text(modelId.toString()) },
+                        onClick = {
+                            deletedModelsExpanded = false
+                            onDeletedModelSearch(modelId)
+                        },
+                    )
+                }
+            }
         }
     }
 }
@@ -273,6 +463,7 @@ private fun SearchModeMenuButton(
 @Composable
 private fun SortMenuButton(
     current: MessageSearchSort,
+    allowRelevance: Boolean,
     onSortChange: (MessageSearchSort) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -287,7 +478,9 @@ private fun SortMenuButton(
             expanded = expanded,
             onDismissRequest = { expanded = false },
         ) {
-            MessageSearchSort.entries.forEach { sort ->
+            MessageSearchSort.entries
+                .filter { it != MessageSearchSort.RELEVANCE || allowRelevance }
+                .forEach { sort ->
                 DropdownMenuItem(
                     text = {
                         Text(

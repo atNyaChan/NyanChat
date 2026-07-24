@@ -124,7 +124,7 @@ internal fun PermissionRationaleDialog(
                             onClick = onCancel,
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text(stringResource(R.string.cancel))
+                            Text(stringResource(R.string.common_cancel))
                         }
 
                         Button(
@@ -144,14 +144,14 @@ internal fun PermissionRationaleDialog(
                             onClick = onCancel,
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text(stringResource(R.string.cancel))
+                            Text(stringResource(R.string.common_cancel))
                         }
 
                         Button(
                             onClick = onProceed,
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text(stringResource(R.string.confirm))
+                            Text(stringResource(R.string.common_confirm_action))
                         }
                     }
                 }

@@ -14,7 +14,7 @@ import kotlin.uuid.Uuid
 class PreferenceStoreV3Migration : DataMigration<Preferences> {
     override suspend fun shouldMigrate(currentData: Preferences): Boolean {
         val version = currentData[SettingsStore.VERSION]
-        return version == null || version < 3
+        return version == 2 || currentData.asMap().isEmpty()
     }
 
     override suspend fun migrate(currentData: Preferences): Preferences {
