@@ -46,9 +46,7 @@
   <string name="assistant_page_chat_background">채팅 배경</string>
   <string name="assistant_page_chat_background_desc">어시스턴트 채팅 페이지의 배경 이미지 설정</string>
   <string name="assistant_page_chat_model">채팅 모델</string>
-  <string name="assistant_page_chat_model_desc">기본적으로 전역 기본 채팅 모델 사용</string>
-  <string name="assistant_page_context_message_desc">모델에 전송할 최대 메시지 수를 설정합니다(최신 메시지부터 유지). 비워 두면 무제한이며 변경을 권장하지 않습니다</string>
-  <string name="assistant_page_context_message_size">컨텍스트 메시지 수</string>
+  <string name="assistant_page_chat_model_desc">어시스턴트의 기본 채팅 모델 설정. 미설정 시 전역 기본 채팅 모델 사용</string>
   <string name="assistant_page_custom_bodies">사용자 정의 본문</string>
   <string name="assistant_page_custom_headers">사용자 정의 헤더</string>
   <string name="assistant_page_default_assistant">기본 어시스턴트</string>
@@ -945,6 +943,8 @@
   <string name="text_area_import_success">파일이 성공적으로 가져왔습니다</string>
   <string name="theme_name_autumn">가을 노랑</string>
   <string name="theme_name_black">중립 검정</string>
+  <string name="theme_name_claude">Claude</string>
+  <string name="theme_name_minimal">미니멀 화이트</string>
   <string name="theme_name_ocean">해양 청색</string>
   <string name="theme_name_sakura">벚꽃 핑크</string>
   <string name="theme_name_spring">들판 녹색</string>

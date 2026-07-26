@@ -345,7 +345,6 @@ class RouteActivity : AppCompatActivity() {
                             entry<Screen.AssistantBasic> { key ->
                                 AssistantBasicPage(
                                     id = key.id,
-                                    focusContextMessageSize = key.focusContextMessageSize,
                                 )
                             }
 
@@ -541,7 +540,6 @@ sealed interface Screen : NavKey {
     @Serializable
     data class AssistantBasic(
         val id: String,
-        val focusContextMessageSize: Boolean = false,
     ) : Screen
 
     @Serializable

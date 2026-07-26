@@ -46,9 +46,7 @@
   <string name="assistant_page_chat_background">Фон чата</string>
   <string name="assistant_page_chat_background_desc">Установить фоновое изображение для страницы чата с ассистентом</string>
   <string name="assistant_page_chat_model">Модель чата</string>
-  <string name="assistant_page_chat_model_desc">По умолчанию используется глобальная модель чата</string>
-  <string name="assistant_page_context_message_desc">Задаёт максимальное количество сообщений, отправляемых модели (сохраняются от новых к старым). Оставьте пустым, чтобы не ограничивать. Изменять не рекомендуется</string>
-  <string name="assistant_page_context_message_size">Размер контекстного сообщения</string>
+  <string name="assistant_page_chat_model_desc">Установить модель чата по умолчанию для ассистента. Если не задано, будет использована глобальная модель чата по умолчанию</string>
   <string name="assistant_page_custom_bodies">Пользовательский контекст</string>
   <string name="assistant_page_custom_headers">Пользовательские заголовки</string>
   <string name="assistant_page_default_assistant">Ассистент по умолчанию</string>
@@ -945,6 +943,8 @@
   <string name="text_area_import_success">Файл успешно импортирован</string>
   <string name="theme_name_autumn">Осенний жёлтый</string>
   <string name="theme_name_black">Нейтральный чёрный</string>
+  <string name="theme_name_claude">Claude</string>
+  <string name="theme_name_minimal">Минималистичный белый</string>
   <string name="theme_name_ocean">Океанический синий</string>
   <string name="theme_name_sakura">Сакура Розовый</string>
   <string name="theme_name_spring">Луговой зелёный</string>

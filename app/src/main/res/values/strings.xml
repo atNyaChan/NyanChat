@@ -46,9 +46,7 @@
   <string name="assistant_page_chat_background">Chat Background</string>
   <string name="assistant_page_chat_background_desc">Set background image for assistant chat page</string>
   <string name="assistant_page_chat_model">Chat Model</string>
-  <string name="assistant_page_chat_model_desc">Uses the global default chat model by default</string>
-  <string name="assistant_page_context_message_desc">Set the maximum number of messages sent to the model (retained from newest to oldest). Leave empty for no limit. Changing this is not recommended</string>
-  <string name="assistant_page_context_message_size">Context Message Size</string>
+  <string name="assistant_page_chat_model_desc">Set the default chat model for the assistant. If not set, the global default chat model will be used</string>
   <string name="assistant_page_custom_bodies">Custom Body</string>
   <string name="assistant_page_custom_headers">Custom Headers</string>
   <string name="assistant_page_default_assistant">Default Assistant</string>
@@ -1015,6 +1013,8 @@
   <string name="text_area_import_success">File imported successfully</string>
   <string name="theme_name_autumn">Autumn Yellow</string>
   <string name="theme_name_black">Neutral Black</string>
+  <string name="theme_name_claude">Claude</string>
+  <string name="theme_name_minimal">Minimal White</string>
   <string name="theme_name_ocean">Ocean Blue</string>
   <string name="theme_name_sakura">Sakura Pink</string>
   <string name="theme_name_spring">Meadow Green</string>

@@ -46,11 +46,9 @@
   <string name="assistant_page_chat_background">聊天背景</string>
   <string name="assistant_page_chat_background_desc">设置助手聊天页面的背景图片</string>
   <string name="assistant_page_chat_model">聊天模型</string>
-  <string name="assistant_page_chat_model_desc">默认使用全局默认聊天模型</string>
-  <string name="assistant_page_context_message_desc">设置发送给模型的最大消息数量（从新到旧保留），留空表示无限制，不建议修改</string>
-  <string name="assistant_page_context_message_size">上下文消息数量</string>
-  <string name="assistant_page_custom_bodies">自定义请求 Body</string>
-  <string name="assistant_page_custom_headers">自定义请求 Headers</string>
+  <string name="assistant_page_chat_model_desc">设置助手的默认聊天模型，如果不设置，则使用全局默认聊天模型</string>
+  <string name="assistant_page_custom_bodies">自定义 Body</string>
+  <string name="assistant_page_custom_headers">自定义 Headers</string>
   <string name="assistant_page_default_assistant">默认助手</string>
   <string name="assistant_page_delete_body">删除 Body</string>
   <string name="assistant_page_delete_dialog_text">确定要删除这个助手吗？此操作无法撤销。</string>
@@ -1001,6 +999,8 @@
   <string name="text_area_import_success">文件导入成功</string>
   <string name="theme_name_autumn">秋黄</string>
   <string name="theme_name_black">中性黑</string>
+  <string name="theme_name_claude">Claude</string>
+  <string name="theme_name_minimal">极简白</string>
   <string name="theme_name_ocean">海湾蓝</string>
   <string name="theme_name_sakura">樱花粉</string>
   <string name="theme_name_spring">原野绿</string>
@@ -1132,7 +1132,7 @@
   <string name="tool_ui_file">文件</string>
   <string name="workspace_page_name_duplicate">名称已存在</string>
   <string name="setting_mcp_page_name_invalid">名称只能包含英文字母和数字</string>
-  <string name="error_mcp_invalid_server_name">无效的 MCP 服务器名称（仅允许字母数字字符）：%1$s</string>
+  <string name="error_mcp_invalid_server_name">无效的MCP服务器名称（仅允许字母数字字符）：%1$s</string>
   <string name="chat_message_tool_recent_chats">查看最近的对话</string>
   <string name="chat_message_tool_conversation_search">搜索历史：%1$s</string>
   <string name="assistant_page_local_tools_screen_time_title">屏幕时间</string>

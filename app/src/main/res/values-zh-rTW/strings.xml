@@ -46,9 +46,7 @@
   <string name="assistant_page_chat_background">聊天背景</string>
   <string name="assistant_page_chat_background_desc">設定助手聊天頁面的背景圖片</string>
   <string name="assistant_page_chat_model">聊天模型</string>
-  <string name="assistant_page_chat_model_desc">預設使用全域預設聊天模型</string>
-  <string name="assistant_page_context_message_desc">設定傳送給模型的最大訊息數量（由新到舊保留），留空表示無限制，不建議修改</string>
-  <string name="assistant_page_context_message_size">上下文訊息數量</string>
+  <string name="assistant_page_chat_model_desc">設定助手的預設聊天模型，如果不設定，則使用全域預設聊天模型</string>
   <string name="assistant_page_custom_bodies">自定義 Body</string>
   <string name="assistant_page_custom_headers">自定義 Headers</string>
   <string name="assistant_page_default_assistant">預設助手</string>
@@ -945,6 +943,8 @@
   <string name="text_area_import_success">檔案匯入成功</string>
   <string name="theme_name_autumn">秋葉黃</string>
   <string name="theme_name_black">中性黑</string>
+  <string name="theme_name_claude">Claude</string>
+  <string name="theme_name_minimal">極簡白</string>
   <string name="theme_name_ocean">海灣藍</string>
   <string name="theme_name_sakura">櫻花粉</string>
   <string name="theme_name_spring">原野綠</string>

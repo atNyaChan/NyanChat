@@ -46,9 +46,7 @@
   <string name="assistant_page_chat_background">チャット背景</string>
   <string name="assistant_page_chat_background_desc">アシスタントチャットページの背景画像を設定</string>
   <string name="assistant_page_chat_model">チャットモデル</string>
-  <string name="assistant_page_chat_model_desc">デフォルトではグローバルデフォルトチャットモデルを使用します</string>
-  <string name="assistant_page_context_message_desc">モデルに送信するメッセージの最大数を設定します（新しいものから古いものの順に保持）。空白にすると制限なし。変更は推奨されません</string>
-  <string name="assistant_page_context_message_size">コンテキストメッセージサイズ</string>
+  <string name="assistant_page_chat_model_desc">アシスタントのデフォルトチャットモデルを設定します。設定しない場合は、グローバルデフォルトチャットモデルが使用されます</string>
   <string name="assistant_page_custom_bodies">カスタムボディ</string>
   <string name="assistant_page_custom_headers">カスタムヘッダー</string>
   <string name="assistant_page_default_assistant">デフォルトアシスタント</string>
@@ -945,6 +943,8 @@
   <string name="text_area_import_success">ファイルが正常にインポートされました</string>
   <string name="theme_name_autumn">秋の黄色</string>
   <string name="theme_name_black">ニュートラルブラック</string>
+  <string name="theme_name_claude">Claude</string>
+  <string name="theme_name_minimal">ミニマルホワイト</string>
   <string name="theme_name_ocean">オーシャンブルー</string>
   <string name="theme_name_sakura">サクラピンク</string>
   <string name="theme_name_spring">メドウグリーン</string>

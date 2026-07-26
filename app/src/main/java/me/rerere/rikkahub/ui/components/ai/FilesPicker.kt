@@ -195,24 +195,6 @@ internal fun FilesPicker(
                     contentDescription = stringResource(R.string.chat_page_compress_context),
                 )
             },
-            supportingContent = if (assistant.contextMessageSize > 0) {
-                {
-                    Text(
-                        text = "上下文最多保留${assistant.contextMessageSize}条消息",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.clickable {
-                            onDismiss()
-                            navController.navigate(
-                                Screen.AssistantBasic(
-                                    id = assistant.id.toString(),
-                                    focusContextMessageSize = true,
-                                )
-                            )
-                        },
-                    )
-                }
-            } else null,
             trailingContent = {
                 if (conversation.messageNodes.isNotEmpty()) {
                     Text(

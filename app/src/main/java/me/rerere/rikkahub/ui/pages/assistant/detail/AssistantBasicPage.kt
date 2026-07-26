@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.relocation.BringIntoViewRequester
-import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
@@ -28,12 +26,10 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -74,7 +70,6 @@ import me.rerere.rikkahub.data.model.Tag as DataTag
 @Composable
 fun AssistantBasicPage(
     id: String,
-    focusContextMessageSize: Boolean = false,
 ) {
     val vm: AssistantDetailVM = koinViewModel(
         parameters = {
@@ -113,7 +108,6 @@ fun AssistantBasicPage(
             workspaces = workspaces,
             onUpdate = { vm.update(it) },
             vm = vm,
-            focusContextMessageSize = focusContextMessageSize,
             onDelete = {
                 assistantVm.removeAssistant(assistant)
                 navController.navigate(me.rerere.rikkahub.Screen.Assistant) {
@@ -134,25 +128,14 @@ internal fun AssistantBasicContent(
     workspaces: List<WorkspaceEntity>,
     onUpdate: (Assistant) -> Unit,
     vm: AssistantDetailVM,
-    focusContextMessageSize: Boolean = false,
     onDelete: () -> Unit = {},
 ) {
-    var contextMessageSizeInput by remember(assistant.id, assistant.contextMessageSize) {
-        mutableStateOf(assistant.contextMessageSize.takeIf { it > 0 }?.toString().orEmpty())
-    }
-    val contextMessageSizeRequester = remember { BringIntoViewRequester() }
     val chatModelState = rememberModelListState(
         modelId = assistant.chatModelId,
         providers = providers,
         type = ModelType.CHAT,
     )
     var showDeleteConfirm by remember { mutableStateOf(false) }
-    LaunchedEffect(focusContextMessageSize) {
-        if (focusContextMessageSize) {
-            withFrameNanos { }
-            contextMessageSizeRequester.bringIntoView()
-        }
-    }
 
     Column(
         modifier = Modifier
@@ -349,43 +332,6 @@ internal fun AssistantBasicContent(
                 }
             }
 
-            HorizontalDivider()
-
-            FormItem(
-                modifier = Modifier
-                    .bringIntoViewRequester(contextMessageSizeRequester)
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                label = {
-                    Text(stringResource(R.string.assistant_page_context_message_size))
-                },
-                description = {
-                    Text(stringResource(R.string.assistant_page_context_message_desc))
-                }
-            ) {
-                OutlinedTextField(
-                    value = contextMessageSizeInput,
-                    onValueChange = { value ->
-                        if (value.all(Char::isDigit)) {
-                            contextMessageSizeInput = value
-                            if (value.isBlank()) {
-                                onUpdate(assistant.copy(contextMessageSize = 0))
-                            } else {
-                                value.toIntOrNull()?.takeIf { it > 0 }?.let { count ->
-                                    onUpdate(assistant.copy(contextMessageSize = count))
-                                }
-                            }
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    isError = contextMessageSizeInput.isNotBlank() &&
-                        contextMessageSizeInput.toIntOrNull()?.takeIf { it > 0 } == null,
-                    placeholder = {
-                        Text(stringResource(R.string.assistant_page_max_tokens_no_limit))
-                    },
-                )
-            }
         }
 
         Column {
