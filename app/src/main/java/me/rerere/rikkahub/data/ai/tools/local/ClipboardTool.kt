@@ -13,6 +13,7 @@ import me.rerere.ai.core.Tool
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.rikkahub.utils.readClipboardText
 import me.rerere.rikkahub.utils.writeClipboardText
+import me.rerere.common.android.Logging
 
 internal fun buildClipboardTool(context: Context): Tool = Tool(
     name = "clipboard_tool",
@@ -46,25 +47,26 @@ internal fun buildClipboardTool(context: Context): Tool = Tool(
     execute = {
         val params = it.jsonObject
         val action = params["action"]?.jsonPrimitive?.contentOrNull ?: error("action is required")
-        when (action) {
+        val type = if (action == "read") "读取剪贴板" else "写入剪贴板"
+        val payload = when (action) {
             "read" -> {
-                val payload = buildJsonObject {
+                buildJsonObject {
                     put("text", context.readClipboardText())
                 }
-                listOf(UIMessagePart.Text(payload.toString()))
             }
 
             "write" -> {
                 val text = params["text"]?.jsonPrimitive?.contentOrNull ?: error("text is required")
                 context.writeClipboardText(text)
-                val payload = buildJsonObject {
+                buildJsonObject {
                     put("success", true)
                     put("text", text)
                 }
-                listOf(UIMessagePart.Text(payload.toString()))
             }
 
             else -> error("unknown action: $action, must be one of [read, write]")
         }
+        Logging.logPermission(type = type, rawData = params.toString(), resultData = payload.toString())
+        listOf(UIMessagePart.Text(payload.toString()))
     }
 )

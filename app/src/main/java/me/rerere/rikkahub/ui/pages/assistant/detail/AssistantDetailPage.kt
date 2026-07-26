@@ -106,17 +106,17 @@ fun AssistantDetailPage(id: String) {
                         trailingContent = { Icon(HugeIcons.ArrowRight01, null) },
                     )
                     item(
-                        onClick = { navController.navigate(Screen.AssistantLocalTool(id)) },
-                        leadingContent = { Icon(HugeIcons.BookOpen01, null) },
-                        supportingContent = { Text(stringResource(R.string.assistant_detail_local_tools_desc)) },
-                        headlineContent = { Text(stringResource(R.string.assistant_page_tab_local_tools)) },
-                        trailingContent = { Icon(HugeIcons.ArrowRight01, null) },
-                    )
-                    item(
                         onClick = { navController.navigate(Screen.AssistantMemory(id)) },
                         leadingContent = { Icon(HugeIcons.Brain02, null) },
                         supportingContent = { Text(stringResource(R.string.assistant_detail_memory_desc)) },
                         headlineContent = { Text(stringResource(R.string.assistant_page_tab_memory)) },
+                        trailingContent = { Icon(HugeIcons.ArrowRight01, null) },
+                    )
+                    item(
+                        onClick = { navController.navigate(Screen.AssistantLocalTool(id)) },
+                        leadingContent = { Icon(HugeIcons.BookOpen01, null) },
+                        supportingContent = { Text(stringResource(R.string.assistant_detail_local_tools_desc)) },
+                        headlineContent = { Text(stringResource(R.string.assistant_page_tab_local_tools)) },
                         trailingContent = { Icon(HugeIcons.ArrowRight01, null) },
                     )
                     item(

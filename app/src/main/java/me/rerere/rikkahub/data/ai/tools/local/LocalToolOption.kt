@@ -18,6 +18,10 @@ sealed class LocalToolOption {
     data object Clipboard : LocalToolOption()
 
     @Serializable
+    @SerialName("location")
+    data object Location : LocalToolOption()
+
+    @Serializable
     @SerialName("tts")
     data object Tts : LocalToolOption()
 

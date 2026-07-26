@@ -26,9 +26,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -43,6 +45,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.intOrNull
 import me.rerere.ai.ui.ToolApprovalState
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.hugeicons.HugeIcons
@@ -50,6 +53,7 @@ import me.rerere.hugeicons.stroke.BubbleChatQuestion
 import me.rerere.hugeicons.stroke.Cancel01
 import me.rerere.hugeicons.stroke.Tick01
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.data.repository.MemoryRepository
 import me.rerere.rikkahub.ui.components.message.tools.ToolUIContext
 import me.rerere.rikkahub.ui.components.message.tools.ToolUIRegistry
 import me.rerere.rikkahub.ui.components.richtext.ZoomableAsyncImage
@@ -57,6 +61,7 @@ import me.rerere.rikkahub.ui.components.ui.ChainOfThoughtScope
 import me.rerere.rikkahub.ui.components.ui.DotLoading
 import me.rerere.rikkahub.ui.modifier.shimmer
 import me.rerere.rikkahub.utils.JsonInstant
+import org.koin.compose.koinInject
 
 private const val ASK_USER_TOOL_NAME = "ask_user"
 
@@ -69,7 +74,11 @@ fun ChainOfThoughtScope.ChatMessageToolStep(
 ) {
     // ask_user 是交互式问答流程, 不走注册式渲染框架
     if (tool.toolName == ASK_USER_TOOL_NAME) {
-        AskUserToolStep(tool = tool, loading = loading, onToolAnswer = onToolAnswer)
+        AskUserToolStep(
+            tool = tool,
+            loading = loading,
+            onToolAnswer = onToolAnswer,
+        )
         return
     }
 
@@ -93,10 +102,28 @@ fun ChainOfThoughtScope.ChatMessageToolStep(
 
     var showResult by remember { mutableStateOf(false) }
     var showDenyDialog by remember { mutableStateOf(false) }
+    var showMemoryDeleteConfirm by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(true) }
     val isPending = tool.approvalState is ToolApprovalState.Pending
     val isDenied = tool.approvalState is ToolApprovalState.Denied
     val images = tool.output.filterIsInstance<UIMessagePart.Image>()
+    val arguments = context.arguments.jsonObject
+    val memoryDeleteId = if (tool.toolName == "memory_tool" &&
+        arguments["action"]?.jsonPrimitive?.contentOrNull == "delete"
+    ) {
+        arguments["id"]?.jsonPrimitive?.intOrNull
+    } else {
+        null
+    }
+    val memoryRepository: MemoryRepository = koinInject()
+    val memoryToDelete by produceState<String?>(null, memoryDeleteId) {
+        value = memoryDeleteId?.let { memoryRepository.getMemory(it)?.content }
+    }
+    LaunchedEffect(isPending, memoryDeleteId) {
+        if (isPending && memoryDeleteId != null && onToolApproval != null) {
+            showMemoryDeleteConfirm = true
+        }
+    }
 
     // 摘要由注册的渲染器决定; 图片输出与拒绝原因为所有工具通用
     val hasExtraContent = renderer.hasSummary(context) || isDenied || images.isNotEmpty()
@@ -128,7 +155,7 @@ fun ChainOfThoughtScope.ChatMessageToolStep(
                 overflow = TextOverflow.Ellipsis,
             )
         },
-        extra = if (isPending && onToolApproval != null) {
+        extra = if (isPending && onToolApproval != null && memoryDeleteId == null) {
             {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -206,6 +233,52 @@ fun ChainOfThoughtScope.ChatMessageToolStep(
                 showDenyDialog = false
                 onToolApproval(tool.toolCallId, false, reason)
             }
+        )
+    }
+
+    if (showMemoryDeleteConfirm && memoryDeleteId != null && onToolApproval != null) {
+        AlertDialog(
+            onDismissRequest = {
+                showMemoryDeleteConfirm = false
+                onToolApproval(tool.toolCallId, false, "")
+            },
+            title = { Text(stringResource(R.string.assistant_memory_delete_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        stringResource(
+                            R.string.assistant_memory_delete_confirm,
+                            memoryDeleteId,
+                        )
+                    )
+                    OutlinedTextField(
+                        value = memoryToDelete.orEmpty(),
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text(stringResource(R.string.assistant_memory_content_label)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        maxLines = 8,
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showMemoryDeleteConfirm = false
+                        onToolApproval(tool.toolCallId, true, "")
+                    }
+                ) { Text(stringResource(R.string.common_delete)) }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showMemoryDeleteConfirm = false
+                        onToolApproval(tool.toolCallId, false, "")
+                    }
+                ) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            },
         )
     }
 

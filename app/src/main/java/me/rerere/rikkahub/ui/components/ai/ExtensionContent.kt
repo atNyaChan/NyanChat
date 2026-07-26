@@ -55,7 +55,7 @@ fun ModeInjectionsContent(
         }
         if (onManage != null) {
             item {
-                ManageButton(onClick = onManage)
+                ManageButton(onClick = onManage, modifier = Modifier.padding(top = 4.dp))
             }
         }
     }
@@ -95,7 +95,7 @@ fun LorebooksContent(
         }
         if (onManage != null) {
             item {
-                ManageButton(onClick = onManage)
+                ManageButton(onClick = onManage, modifier = Modifier.padding(top = 4.dp))
             }
         }
     }
@@ -135,7 +135,7 @@ fun SkillsContent(
         }
         if (onManage != null) {
             item {
-                ManageButton(onClick = onManage)
+                ManageButton(onClick = onManage, modifier = Modifier.padding(top = 4.dp))
             }
         }
     }
@@ -175,15 +175,18 @@ fun QuickMessagesContent(
             ) { Text(quickMessage.title.ifBlank { stringResource(R.string.extension_content_unnamed) }) }
         }
         if (onManage != null) {
-            item { ManageButton(onClick = onManage) }
+            item { ManageButton(onClick = onManage, modifier = Modifier.padding(top = 4.dp)) }
         }
     }
 }
 
 @Composable
-private fun ManageButton(onClick: () -> Unit) {
+private fun ManageButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.End,
@@ -220,7 +223,7 @@ fun ExtensionEmptyState(
         if (buttonText != null && onAction != null) {
             TextButton(onClick = onAction) {
                 Icon(Lucide.ExternalLink, contentDescription = null, modifier = Modifier.size(16.dp))
-                Text(buttonText)
+                Text(buttonText, modifier = Modifier.padding(start = 4.dp))
             }
         }
     }

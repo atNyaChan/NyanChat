@@ -35,6 +35,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -43,6 +44,7 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -564,21 +566,21 @@ private fun ColorPickerRow(
     val hsl = remember(color) {
         FloatArray(3).also { ColorUtils.colorToHSL(color.toArgb(), it) }
     }
+    var hue by remember(color) { mutableFloatStateOf(hsl[0]) }
+    var saturation by remember(color) { mutableFloatStateOf(hsl[1]) }
+    var lightness by remember(color) { mutableFloatStateOf(hsl[2]) }
     var hueInput by remember(color) { mutableStateOf(hsl[0].roundToInt().toString()) }
     var saturationInput by remember(color) { mutableStateOf((hsl[1] * 100).roundToInt().toString()) }
     var lightnessInput by remember(color) { mutableStateOf((hsl[2] * 100).roundToInt().toString()) }
 
-    fun updateColorFromInputs() {
-        val hue = hueInput.toIntOrNull()?.takeIf { it in 0..360 } ?: return
-        val saturation = saturationInput.toIntOrNull()?.takeIf { it in 0..100 } ?: return
-        val lightness = lightnessInput.toIntOrNull()?.takeIf { it in 0..100 } ?: return
-        onColorChange(
-            Color(
-                ColorUtils.HSLToColor(
-                    floatArrayOf(hue.toFloat(), saturation / 100f, lightness / 100f)
-                )
-            )
-        )
+    fun updateColor(newHue: Float, newSaturation: Float, newLightness: Float) {
+        hue = newHue
+        saturation = newSaturation
+        lightness = newLightness
+        hueInput = newHue.roundToInt().toString()
+        saturationInput = (newSaturation * 100).roundToInt().toString()
+        lightnessInput = (newLightness * 100).roundToInt().toString()
+        onColorChange(Color(ColorUtils.HSLToColor(floatArrayOf(newHue, newSaturation, newLightness))))
     }
 
     Row(
@@ -592,32 +594,84 @@ private fun ColorPickerRow(
         ) {
             drawCircle(color = color)
         }
-        listOf(
-            Triple("H", hueInput, 360),
-            Triple("S", saturationInput, 100),
-            Triple("L", lightnessInput, 100),
-        ).forEach { (label, value, maxValue) ->
-            OutlinedTextField(
-                value = value,
-                onValueChange = { input ->
-                    if (input.all(Char::isDigit)) {
-                        when (label) {
-                            "H" -> hueInput = input
-                            "S" -> saturationInput = input
-                            "L" -> lightnessInput = input
+        Column(modifier = Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("H", style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(16.dp))
+                Slider(
+                    value = hue,
+                    onValueChange = { updateColor(it, saturation, lightness) },
+                    valueRange = 0f..360f,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("S", style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(16.dp))
+                Slider(
+                    value = saturation,
+                    onValueChange = { updateColor(hue, it, lightness) },
+                    valueRange = 0f..1f,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("L", style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(16.dp))
+                Slider(
+                    value = lightness,
+                    onValueChange = { updateColor(hue, saturation, it) },
+                    valueRange = 0f..1f,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = hueInput,
+                    onValueChange = { value ->
+                        if (value.all(Char::isDigit)) {
+                            hueInput = value
+                            value.toFloatOrNull()?.takeIf { it in 0f..360f }?.let {
+                                updateColor(it, saturation, lightness)
+                            }
                         }
-                        updateColorFromInputs()
-                    }
-                },
-                label = { Text(label) },
-                modifier = Modifier.weight(1f),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-                isError = value.toIntOrNull()?.let { it !in 0..maxValue } ?: true,
-                supportingText = {
-                    Text("0–$maxValue")
-                }
-            )
+                    },
+                    label = { Text("H") },
+                    supportingText = { Text("0–360") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                )
+                OutlinedTextField(
+                    value = saturationInput,
+                    onValueChange = { value ->
+                        if (value.all(Char::isDigit)) {
+                            saturationInput = value
+                            value.toFloatOrNull()?.takeIf { it in 0f..100f }?.let {
+                                updateColor(hue, it / 100f, lightness)
+                            }
+                        }
+                    },
+                    label = { Text("S") },
+                    supportingText = { Text("0–100") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                )
+                OutlinedTextField(
+                    value = lightnessInput,
+                    onValueChange = { value ->
+                        if (value.all(Char::isDigit)) {
+                            lightnessInput = value
+                            value.toFloatOrNull()?.takeIf { it in 0f..100f }?.let {
+                                updateColor(hue, saturation, it / 100f)
+                            }
+                        }
+                    },
+                    label = { Text("L") },
+                    supportingText = { Text("0–100") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                )
+            }
         }
     }
 }

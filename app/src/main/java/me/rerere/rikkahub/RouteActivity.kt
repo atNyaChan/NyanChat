@@ -83,6 +83,7 @@ import me.rerere.rikkahub.ui.pages.assistant.detail.AssistantPromptPage
 import me.rerere.rikkahub.ui.pages.backup.BackupPage
 import me.rerere.rikkahub.ui.pages.chat.ChatPage
 import me.rerere.rikkahub.ui.pages.debug.DebugPage
+import me.rerere.rikkahub.ui.pages.log.PermissionLogPage
 import me.rerere.rikkahub.ui.pages.extensions.LorebookPage
 import me.rerere.rikkahub.ui.pages.extensions.ModeInjectionPage
 import me.rerere.rikkahub.ui.pages.extensions.QuickMessagesPage
@@ -447,6 +448,10 @@ class RouteActivity : AppCompatActivity() {
                                 LogPage()
                             }
 
+                            entry<Screen.PermissionLog> {
+                                PermissionLogPage()
+                            }
+
                             entry<Screen.QuickMessages> {
                                 QuickMessagesPage()
                             }
@@ -610,6 +615,9 @@ sealed interface Screen : NavKey {
 
     @Serializable
     data object Log : Screen
+
+    @Serializable
+    data object PermissionLog : Screen
 
     @Serializable
     data object QuickMessages : Screen

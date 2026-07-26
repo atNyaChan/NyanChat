@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
@@ -25,6 +26,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -45,13 +47,26 @@ import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.plus
 import org.koin.androidx.compose.koinViewModel
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @Composable
 fun WorkspacePage(vm: WorkspaceVM = koinViewModel()) {
     val navController = LocalNavController.current
     val workspaces by vm.workspaces.collectAsStateWithLifecycle()
+    val settings by vm.settings.collectAsStateWithLifecycle()
+    val orderedWorkspaces = remember(workspaces, settings.workspaceOrder) {
+        val order = settings.workspaceOrder.withIndex().associate { it.value to it.index }
+        workspaces.sortedWith(compareBy({ order[it.id] ?: Int.MAX_VALUE }, { it.createdAt }))
+    }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
+    val lazyListState = rememberLazyListState()
+    val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
+        vm.reorderWorkspaces(orderedWorkspaces.toMutableList().apply {
+            add(to.index, removeAt(from.index))
+        })
+    }
 
     Scaffold(
         topBar = {
@@ -72,20 +87,24 @@ fun WorkspacePage(vm: WorkspaceVM = koinViewModel()) {
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
+            state = lazyListState,
             contentPadding = innerPadding + PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            if (workspaces.isEmpty()) {
+            if (orderedWorkspaces.isEmpty()) {
                 item {
                     EmptyWorkspaceState()
                 }
             }
 
-            items(workspaces, key = { it.id }) { workspace ->
-                WorkspaceCard(
-                    workspace = workspace,
-                    onOpen = { navController.navigate(Screen.WorkspaceDetail(workspace.id)) },
-                )
+            items(orderedWorkspaces, key = { it.id }) { workspace ->
+                ReorderableItem(reorderableState, key = workspace.id) {
+                    WorkspaceCard(
+                        workspace = workspace,
+                        onOpen = { navController.navigate(Screen.WorkspaceDetail(workspace.id)) },
+                        modifier = Modifier.longPressDraggableHandle(),
+                    )
+                }
             }
         }
     }
@@ -94,7 +113,7 @@ fun WorkspacePage(vm: WorkspaceVM = koinViewModel()) {
         EditWorkspaceDialog(
             title = stringResource(R.string.workspace_page_create),
             initialName = "",
-            existingNames = workspaces.map { it.name.trim() }.toSet(),
+            existingNames = orderedWorkspaces.map { it.name.trim() }.toSet(),
             onDismiss = { showAddDialog = false },
             onConfirm = { name ->
                 vm.create(name)
@@ -137,9 +156,10 @@ private fun EmptyWorkspaceState() {
 private fun WorkspaceCard(
     workspace: WorkspaceEntity,
     onOpen: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onOpen),
         colors = CustomColors.cardColorsOnSurfaceContainer,

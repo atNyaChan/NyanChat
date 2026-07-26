@@ -34,7 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.AiMagic
 import me.rerere.hugeicons.stroke.Alert01
-import me.rerere.hugeicons.stroke.Book03
+import me.rerere.hugeicons.stroke.Book01
 import me.rerere.hugeicons.stroke.Bookshelf01
 import me.rerere.hugeicons.stroke.Brain02
 import me.rerere.hugeicons.stroke.Clapping01
@@ -45,8 +45,10 @@ import me.rerere.hugeicons.stroke.ImageUpload
 import me.rerere.hugeicons.stroke.LookTop
 import me.rerere.hugeicons.stroke.McpServer
 import me.rerere.hugeicons.stroke.Megaphone01
+import me.rerere.hugeicons.stroke.MagicWand01
 import me.rerere.hugeicons.stroke.Puzzle
 import me.rerere.hugeicons.stroke.ServerStack01
+import me.rerere.hugeicons.stroke.SecurityKeyUsb
 import me.rerere.hugeicons.stroke.Settings03
 import me.rerere.hugeicons.stroke.Zap
 import me.rerere.rikkahub.R
@@ -118,13 +120,13 @@ fun SettingPage(vm: SettingVM = koinViewModel()) {
                         onClick = { navController.navigate(Screen.Assistant) },
                         leadingContent = { Icon(HugeIcons.LookTop, null) },
                         supportingContent = { Text(stringResource(R.string.setting_page_assistant_desc)) },
-                        headlineContent = { Text(stringResource(R.string.setting_page_assistant)) },
+                        headlineContent = { Text(stringResource(R.string.assistant_page_title)) },
                     )
                     item(
                         onClick = { navController.navigate(Screen.SettingModels) },
                         leadingContent = { Icon(HugeIcons.AiMagic, null) },
                         supportingContent = { Text(stringResource(R.string.setting_page_default_model_desc)) },
-                        headlineContent = { Text(stringResource(R.string.setting_page_default_model)) },
+                        headlineContent = { Text(stringResource(R.string.setting_model_page_title)) },
                     )
                     item(
                         onClick = { navController.navigate(Screen.QuickMessages) },
@@ -134,18 +136,20 @@ fun SettingPage(vm: SettingVM = koinViewModel()) {
                     )
                     item(
                         onClick = { navController.navigate(Screen.ModeInjections) },
-                        leadingContent = { Icon(HugeIcons.Book03, null) },
+                        leadingContent = { Icon(HugeIcons.MagicWand01, null) },
                         headlineContent = { Text(stringResource(R.string.prompt_page_mode_injection_tab)) },
+                        supportingContent = { Text(stringResource(R.string.setting_page_mode_injection_desc)) },
                     )
                     item(
                         onClick = { navController.navigate(Screen.Lorebooks) },
-                        leadingContent = { Icon(HugeIcons.Book03, null) },
+                        leadingContent = { Icon(HugeIcons.Book01, null) },
                         headlineContent = { Text(stringResource(R.string.prompt_page_lorebook_tab)) },
+                        supportingContent = { Text(stringResource(R.string.setting_page_lorebook_desc)) },
                     )
                     item(
                         onClick = { navController.navigate(Screen.Skills) },
                         leadingContent = { Icon(HugeIcons.Puzzle, null) },
-                        headlineContent = { Text(stringResource(R.string.extensions_page_agent_skills)) },
+                        headlineContent = { Text(stringResource(R.string.skills_page_title)) },
                         supportingContent = { Text(stringResource(R.string.extensions_page_agent_skills_desc)) },
                     )
                 }
@@ -160,19 +164,19 @@ fun SettingPage(vm: SettingVM = koinViewModel()) {
                         onClick = { navController.navigate(Screen.SettingProvider) },
                         leadingContent = { Icon(HugeIcons.Brain02, null) },
                         supportingContent = { Text(stringResource(R.string.setting_page_providers_desc)) },
-                        headlineContent = { Text(stringResource(R.string.setting_page_providers)) },
+                        headlineContent = { Text(stringResource(R.string.setting_provider_page_title)) },
                     )
                     item(
                         onClick = { navController.navigate(Screen.SettingMcp) },
                         leadingContent = { Icon(HugeIcons.McpServer, null) },
                         supportingContent = { Text(stringResource(R.string.setting_page_mcp_desc)) },
-                        headlineContent = { Text(stringResource(R.string.setting_page_mcp)) },
+                        headlineContent = { Text(stringResource(R.string.setting_mcp_page_title)) },
                     )
                     item(
                         onClick = { navController.navigate(Screen.SettingSearch) },
                         leadingContent = { Icon(HugeIcons.GlobalSearch, null) },
                         supportingContent = { Text(stringResource(R.string.setting_page_search_service_desc)) },
-                        headlineContent = { Text(stringResource(R.string.setting_page_search_service)) },
+                        headlineContent = { Text(stringResource(R.string.setting_page_search_title)) },
                     )
                     item(
                         onClick = { navController.navigate(Screen.SettingSpeech) },
@@ -195,7 +199,7 @@ fun SettingPage(vm: SettingVM = koinViewModel()) {
                         onClick = { navController.navigate(Screen.Backup) },
                         leadingContent = { Icon(HugeIcons.Database02, null) },
                         supportingContent = { Text(stringResource(R.string.setting_page_data_backup_desc)) },
-                        headlineContent = { Text(stringResource(R.string.setting_page_data_backup)) },
+                        headlineContent = { Text(stringResource(R.string.backup_page_title)) },
                     )
                     item(
                         onClick = { navController.navigate(Screen.SettingFiles) },
@@ -224,7 +228,7 @@ fun SettingPage(vm: SettingVM = koinViewModel()) {
                     item(
                         onClick = { navController.navigate(Screen.Workspaces) },
                         leadingContent = { Icon(HugeIcons.Folder01, null) },
-                        headlineContent = { Text(stringResource(R.string.extensions_page_workspace)) },
+                        headlineContent = { Text(stringResource(R.string.workspace_page_title)) },
                         supportingContent = { Text(stringResource(R.string.extensions_page_workspace_desc)) },
                     )
                     item(
@@ -233,19 +237,25 @@ fun SettingPage(vm: SettingVM = koinViewModel()) {
                         supportingContent = { Text(stringResource(R.string.setting_page_request_logs_desc)) },
                         headlineContent = { Text(stringResource(R.string.setting_page_request_logs)) },
                     )
+                    item(
+                        onClick = { navController.navigate(Screen.PermissionLog) },
+                        leadingContent = { Icon(HugeIcons.SecurityKeyUsb, null) },
+                        supportingContent = { Text(stringResource(R.string.setting_page_permission_logs_desc)) },
+                        headlineContent = { Text(stringResource(R.string.permission_log_page_title)) },
+                    )
                 }
             }
 
             item("aboutSettings") {
                 CardGroup(
                     modifier = Modifier.padding(horizontal = 8.dp),
-                    title = { Text(stringResource(R.string.setting_page_about)) },
+                    title = { Text(stringResource(R.string.about_page_title)) },
                 ) {
                     item(
                         onClick = { navController.navigate(Screen.SettingAbout) },
                         leadingContent = { Icon(HugeIcons.Clapping01, null) },
                         supportingContent = { Text(stringResource(R.string.setting_page_about_desc)) },
-                        headlineContent = { Text(stringResource(R.string.setting_page_about)) },
+                        headlineContent = { Text(stringResource(R.string.about_page_title)) },
                     )
                 }
             }

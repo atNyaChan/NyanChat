@@ -18,11 +18,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -52,6 +56,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
@@ -290,6 +295,7 @@ fun SearchPage(initialModelId: String? = null, vm: SearchVM = koinViewModel()) {
                                 SearchResultItem(
                                     result = result,
                                     query = vm.searchQuery,
+                                    limitToFiveSourceLines = vm.isModelFilteredSearch,
                                     highlightTitle = !vm.isModelFilteredSearch &&
                                         vm.searchMode == MessageSearchMode.TITLE_ONLY,
                                     onClick = {
@@ -329,24 +335,43 @@ private fun SearchPagination(
         IconButton(onClick = { onPageChange(currentPage - 1) }, enabled = currentPage > 1) {
             Icon(HugeIcons.ArrowLeft01, stringResource(R.string.search_page_previous_page))
         }
-        OutlinedTextField(
-            value = pageInput,
-            onValueChange = { value ->
-                if (value.all(Char::isDigit)) pageInput = value
-            },
-            modifier = Modifier
-                .width(72.dp)
-                .height(48.dp),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = androidx.compose.ui.text.input.KeyboardType.Number,
-                imeAction = ImeAction.Go,
-            ),
-            keyboardActions = KeyboardActions(
-                onGo = { pageInput.toIntOrNull()?.let(onPageChange) }
-            ),
-            suffix = { Text("/$totalPages") },
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Surface(
+                modifier = Modifier
+                    .width(52.dp)
+                    .height(40.dp),
+                shape = MaterialTheme.shapes.small,
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+            ) {
+                BasicTextField(
+                    value = pageInput,
+                    onValueChange = { value ->
+                        if (value.all(Char::isDigit)) pageInput = value
+                    },
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .wrapContentHeight(Alignment.CenterVertically),
+                    singleLine = true,
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center,
+                    ),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Number,
+                        imeAction = ImeAction.Go,
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onGo = { pageInput.toIntOrNull()?.let(onPageChange) }
+                    ),
+                )
+            }
+            Text(
+                text = "/$totalPages",
+                modifier = Modifier.padding(start = 4.dp),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
         IconButton(onClick = { onPageChange(currentPage + 1) }, enabled = currentPage < totalPages) {
             Icon(HugeIcons.ArrowRight01, stringResource(R.string.search_page_next_page))
         }
@@ -513,13 +538,18 @@ private fun SortMenuButton(
 private fun SearchResultItem(
     result: MessageSearchResult,
     query: String,
+    limitToFiveSourceLines: Boolean,
     highlightTitle: Boolean,
     onClick: () -> Unit,
 ) {
     val highlightColor = MaterialTheme.colorScheme.tertiaryContainer
     val untitled = stringResource(R.string.search_page_untitled)
     val snippetText = buildAnnotatedString {
-        val snippet = result.snippet
+        val snippet = if (limitToFiveSourceLines) {
+            result.snippet.split('\n').take(5).joinToString("\n")
+        } else {
+            result.snippet
+        }
         var index = 0
         while (index < snippet.length) {
             val start = snippet.indexOf('[', index)

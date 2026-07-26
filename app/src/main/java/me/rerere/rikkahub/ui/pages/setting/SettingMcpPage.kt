@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -105,6 +106,8 @@ import me.rerere.rikkahub.ui.theme.extendColors
 import me.rerere.rikkahub.utils.writeClipboardText
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @Composable
 fun SettingMcpPage(vm: SettingVM = koinViewModel()) {
@@ -130,6 +133,14 @@ fun SettingMcpPage(vm: SettingVM = koinViewModel()) {
             ))
     }
     var showImportDialog by remember { mutableStateOf(false) }
+    val lazyListState = rememberLazyListState()
+    val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
+        vm.updateSettings(settings.copy(
+            mcpServers = mcpConfigs.toMutableList().apply {
+                add(to.index, removeAt(from.index))
+            }
+        ))
+    }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
         topBar = {
@@ -182,6 +193,7 @@ fun SettingMcpPage(vm: SettingVM = koinViewModel()) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize(),
+                state = lazyListState,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(
                     start = innerPadding.calculateStartPadding(layoutDirection) + 16.dp,
@@ -191,13 +203,17 @@ fun SettingMcpPage(vm: SettingVM = koinViewModel()) {
                 )
             ) {
                 items(mcpConfigs, key = { it.id }) { mcpConfig ->
-                    McpServerItem(
-                        item = mcpConfig,
-                        onEdit = {
-                            editState.open(mcpConfig)
-                        },
-                        modifier = Modifier.animateItem()
-                    )
+                    ReorderableItem(reorderableState, key = mcpConfig.id) {
+                        McpServerItem(
+                            item = mcpConfig,
+                            onEdit = {
+                                editState.open(mcpConfig)
+                            },
+                            modifier = Modifier
+                                .animateItem()
+                                .longPressDraggableHandle()
+                        )
+                    }
                 }
             }
 

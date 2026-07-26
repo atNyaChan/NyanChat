@@ -85,10 +85,10 @@ fun ColumnScope.ConversationList(
     onDelete: (Conversation) -> Unit = {},
     onEditTitle: (Conversation) -> Unit = {},
     onPin: (Conversation) -> Unit = {},
-    onMove: (List<Conversation>) -> Unit = {},
+    onMove: (List<Conversation>, Boolean) -> Unit = { _, _ -> },
     onDeleteSelected: (List<Conversation>) -> Unit = {},
 ) {
-    var hasScrolledToCurrent by remember(current.id) { mutableStateOf(false) }
+    var hasScrolledToCurrent by remember { mutableStateOf(false) }
     var selectedConversations by remember { mutableStateOf<Map<Uuid, Conversation>>(emptyMap()) }
 
     LaunchedEffect(current.id, conversations.itemCount, hasScrolledToCurrent) {
@@ -119,7 +119,7 @@ fun ColumnScope.ConversationList(
                     Icon(HugeIcons.Cancel01, contentDescription = stringResource(R.string.conversation_cancel_selection))
                 }
                 IconButton(onClick = {
-                    onMove(selectedConversations.values.toList())
+                    onMove(selectedConversations.values.toList(), true)
                     selectedConversations = emptyMap()
                 }) {
                     Icon(HugeIcons.Forward02, contentDescription = stringResource(R.string.conversation_move_to))
@@ -200,7 +200,7 @@ fun ColumnScope.ConversationList(
                         onDelete = onDelete,
                         onEditTitle = onEditTitle,
                         onPin = onPin,
-                        onMove = { onMove(listOf(it)) },
+                        onMove = { onMove(listOf(it), false) },
                         modifier = Modifier.animateItem()
                     )
                 }

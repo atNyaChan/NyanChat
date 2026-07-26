@@ -70,6 +70,15 @@ class ChatVM(
         chatService
             .getProcessingStatusFlow(_conversationId)
 
+    val translatingMessageIds: StateFlow<Set<Uuid>> = chatService.translatingMessages
+        .map { translating ->
+            translating.asSequence()
+                .filter { it.first == _conversationId }
+                .map { it.second }
+                .toSet()
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptySet())
+
     val conversationJobs = chatService
         .getConversationJobs()
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
@@ -249,11 +258,10 @@ class ChatVM(
         }
     }
 
-    fun deleteConversation(conversation: Conversation) {
+    fun deleteConversation(conversation: Conversation): Job =
         viewModelScope.launch {
             conversationRepo.deleteConversation(conversation)
         }
-    }
 
     fun updateConversationTitle(conversation: Conversation, title: String) {
         viewModelScope.launch {

@@ -12,12 +12,14 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+import kotlinx.serialization.json.JsonObject
 import me.rerere.ai.core.InputSchema
 import me.rerere.ai.core.Tool
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.rikkahub.data.event.AppEvent
 import me.rerere.rikkahub.data.event.AppEventBus
 import me.rerere.rikkahub.utils.hasUsageStatsPermission
+import me.rerere.common.android.Logging
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -77,6 +79,15 @@ internal fun buildScreenTimeTool(context: Context, eventBus: AppEventBus): Tool 
         )
     },
     execute = {
+        val rawInput = it.toString()
+        fun respond(payload: JsonObject): List<UIMessagePart> {
+            Logging.logPermission(
+                type = "获取使用时间",
+                rawData = rawInput,
+                resultData = payload.toString(),
+            )
+            return listOf(UIMessagePart.Text(payload.toString()))
+        }
         if (!context.hasUsageStatsPermission()) {
             eventBus.emit(AppEvent.OpenUsageAccessSettings)
             val payload = buildJsonObject {
@@ -87,7 +98,7 @@ internal fun buildScreenTimeTool(context: Context, eventBus: AppEventBus): Tool 
                         "opened; please ask the user to enable 'Usage access' for this app and try again."
                 )
             }
-            return@Tool listOf(UIMessagePart.Text(payload.toString()))
+            return@Tool respond(payload)
         }
 
         val params = it.jsonObject
@@ -114,7 +125,7 @@ internal fun buildScreenTimeTool(context: Context, eventBus: AppEventBus): Tool 
                 put("error", "INVALID_TIME")
                 put("message", e.message ?: "Invalid time format for begin/end.")
             }
-            return@Tool listOf(UIMessagePart.Text(payload.toString()))
+            return@Tool respond(payload)
         }
 
         if (!startTime.isBefore(endTime)) {
@@ -122,7 +133,7 @@ internal fun buildScreenTimeTool(context: Context, eventBus: AppEventBus): Tool 
                 put("error", "INVALID_RANGE")
                 put("message", "begin must be earlier than end.")
             }
-            return@Tool listOf(UIMessagePart.Text(payload.toString()))
+            return@Tool respond(payload)
         }
 
         val isCustom = beginRaw != null || endRaw != null
@@ -162,7 +173,7 @@ internal fun buildScreenTimeTool(context: Context, eventBus: AppEventBus): Tool 
                 }
             })
         }
-        listOf(UIMessagePart.Text(payload.toString()))
+        respond(payload)
     }
 )
 

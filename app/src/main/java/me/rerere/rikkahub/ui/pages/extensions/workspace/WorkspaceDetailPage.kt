@@ -150,12 +150,26 @@ fun WorkspaceDetailPage(id: String) {
                             )
                         }
                     }
-                    IconButton(onClick = { vm.refresh() }) {
-                        Icon(HugeIcons.Refresh01, contentDescription = null)
+                    if (pagerState.currentPage != 0) {
+                        IconButton(onClick = { vm.refresh() }) {
+                            Icon(HugeIcons.Refresh01, contentDescription = null)
+                        }
                     }
                     if (state.workspace?.shellStatus != WorkspaceShellStatus.DISABLED.name) {
                         IconButton(onClick = { navController.navigate(Screen.WorkspaceTerminal(id)) }) {
                             Icon(HugeIcons.ComputerTerminal01, contentDescription = null)
+                        }
+                    }
+                    if (pagerState.currentPage == 0) {
+                        IconButton(onClick = { showRenameDialog = true }) {
+                            Icon(HugeIcons.Edit01, contentDescription = stringResource(R.string.common_rename))
+                        }
+                        IconButton(onClick = { showDeleteWorkspaceConfirm = true }) {
+                            Icon(
+                                HugeIcons.Delete01,
+                                contentDescription = stringResource(R.string.common_delete),
+                                tint = MaterialTheme.colorScheme.error,
+                            )
                         }
                     }
                 },
@@ -192,8 +206,6 @@ fun WorkspaceDetailPage(id: String) {
                     installProgress = installProgress,
                     onInstallRootfs = { showInstallDialog = true },
                     onToolApprovalChange = vm::setToolApproval,
-                    onRename = { showRenameDialog = true },
-                    onDelete = { showDeleteWorkspaceConfirm = true },
                 )
 
                 1 -> WorkspaceFilesPage(
@@ -365,18 +377,15 @@ private fun WorkspaceBasicPage(
     installProgress: RootfsInstallProgress?,
     onInstallRootfs: () -> Unit,
     onToolApprovalChange: (String, Boolean) -> Unit,
-    onRename: () -> Unit,
-    onDelete: () -> Unit,
 ) {
     val shellStatus = workspace?.shellStatus
     val installing = installProgress != null || shellStatus == WorkspaceShellStatus.INSTALLING.name
-    val rootfsReady = shellStatus == WorkspaceShellStatus.READY.name
     val installButtonText = when {
         installing -> stringResource(R.string.workspace_detail_installing)
-        rootfsReady -> stringResource(R.string.workspace_detail_reinstall_rootfs)
+        shellStatus == WorkspaceShellStatus.READY.name ->
+            stringResource(R.string.workspace_detail_reinstall_rootfs)
         else -> stringResource(R.string.workspace_detail_install_rootfs)
     }
-
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
@@ -393,54 +402,10 @@ private fun WorkspaceBasicPage(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = stringResource(R.string.workspace_detail_workspace_info),
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.weight(1f),
-                        )
-                        var menuExpanded by remember { mutableStateOf(false) }
-                        Box {
-                            IconButton(onClick = { menuExpanded = true }) {
-                                Icon(HugeIcons.MoreVertical, contentDescription = null)
-                            }
-                            DropdownMenu(
-                                expanded = menuExpanded,
-                                onDismissRequest = { menuExpanded = false },
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.common_rename)) },
-                                    leadingIcon = { Icon(HugeIcons.Edit01, contentDescription = null) },
-                                    onClick = {
-                                        menuExpanded = false
-                                        onRename()
-                                    },
-                                )
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            stringResource(R.string.common_delete),
-                                            color = MaterialTheme.colorScheme.error,
-                                        )
-                                    },
-                                    leadingIcon = {
-                                        Icon(
-                                            HugeIcons.Delete01,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.error,
-                                        )
-                                    },
-                                    onClick = {
-                                        menuExpanded = false
-                                        onDelete()
-                                    },
-                                )
-                            }
-                        }
-                    }
+                    Text(
+                        text = stringResource(R.string.workspace_detail_workspace_info),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
                     WorkspaceInfoRow(stringResource(R.string.workspace_detail_name), workspace?.name ?: stringResource(R.string.workspace_detail_loading))
                     WorkspaceInfoRow(stringResource(R.string.workspace_detail_shell_status), workspace?.shellStatus?.toShellStatusLabel() ?: "-")
                 }

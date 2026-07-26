@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -61,6 +62,8 @@ import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.plus
 import org.koin.androidx.compose.koinViewModel
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @Composable
 fun SkillsPage() {
@@ -73,6 +76,12 @@ fun SkillsPage() {
     var showImportSheet by rememberSaveable { mutableStateOf(false) }
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
     var showImportDialog by rememberSaveable { mutableStateOf(false) }
+    val lazyListState = rememberLazyListState()
+    val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
+        vm.reorderSkills(skills.toMutableList().apply {
+            add(to.index, removeAt(from.index))
+        })
+    }
     val fileImportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
@@ -105,6 +114,7 @@ fun SkillsPage() {
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
+            state = lazyListState,
             contentPadding = innerPadding + PaddingValues(
                 start = 16.dp,
                 end = 16.dp,
@@ -143,10 +153,13 @@ fun SkillsPage() {
             }
 
             items(skills, key = { it.name }) { skill ->
-                SkillCard(
-                    skill = skill,
-                    onClick = { navController.navigate(Screen.SkillDetail(skill.name)) },
-                )
+                ReorderableItem(reorderableState, key = skill.name) {
+                    SkillCard(
+                        skill = skill,
+                        onClick = { navController.navigate(Screen.SkillDetail(skill.name)) },
+                        modifier = Modifier.longPressDraggableHandle(),
+                    )
+                }
             }
         }
     }
@@ -212,10 +225,11 @@ fun SkillsPage() {
 private fun SkillCard(
     skill: SkillMetadata,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         colors = CustomColors.cardColorsOnSurfaceContainer,
     ) {
         Row(

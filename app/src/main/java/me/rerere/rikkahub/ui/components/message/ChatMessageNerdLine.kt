@@ -81,11 +81,11 @@ fun ChatMessageNerdLine(
     ) {
         if (loading) {
             while (isActive) {
-                value = message.elapsedMillis(loading = true)
+                value = latestMessage.elapsedMillis(loading = true)
                 delay(100)
             }
         } else {
-            value = message.elapsedMillis(loading = false)
+            value = latestMessage.elapsedMillis(loading = false)
         }
     }
 
@@ -108,6 +108,7 @@ fun ChatMessageNerdLine(
                         0f
                     }
                     val cost = if (!loading && usage != null) calculateCost(usage, model) else null
+                    val showGenerationStats = loading || message.modelId != null
 
                     run {
                         FlowRow(
@@ -130,32 +131,34 @@ fun ChatMessageNerdLine(
                                     }
                                 },
                             )
-                            StatsItem(
-                                icon = {
-                                    Icon(
-                                        imageVector = HugeIcons.Clock02,
-                                        contentDescription = "Duration",
-                                        modifier = Modifier.size(12.dp),
-                                    )
-                                },
-                                content = { Text(text = "${seconds.toFixed(1)}s") },
-                            )
-                            if (elapsedMillis >= 150 && wordCount > 0) {
+                            if (showGenerationStats) {
                                 StatsItem(
                                     icon = {
                                         Icon(
-                                            imageVector = HugeIcons.Zap,
-                                            contentDescription = "Word speed",
+                                            imageVector = HugeIcons.Clock02,
+                                            contentDescription = "Duration",
                                             modifier = Modifier.size(12.dp),
                                         )
                                     },
-                                    content = { Text(text = "${wordsPerSecond.toFixed(1)} word/s") },
+                                    content = { Text(text = "${seconds.toFixed(1)}s") },
                                 )
+                                if (elapsedMillis >= 150 && wordCount > 0) {
+                                    StatsItem(
+                                        icon = {
+                                            Icon(
+                                                imageVector = HugeIcons.Zap,
+                                                contentDescription = "Word speed",
+                                                modifier = Modifier.size(12.dp),
+                                            )
+                                        },
+                                        content = { Text(text = "${wordsPerSecond.toFixed(1)} word/s") },
+                                    )
+                                }
                             }
                         }
                     }
 
-                    if (!loading && usage != null) {
+                    if (!loading && message.modelId != null && usage != null) {
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             itemVerticalAlignment = Alignment.CenterVertically,

@@ -106,7 +106,6 @@ fun ColumnScope.ChatMessageActionButtons(
                 )
             }
         }
-
         Icon(
             imageVector = HugeIcons.Copy01,
             contentDescription = stringResource(R.string.copy),

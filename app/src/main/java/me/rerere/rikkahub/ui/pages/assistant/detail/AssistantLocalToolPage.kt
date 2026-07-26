@@ -28,6 +28,7 @@ import me.rerere.rikkahub.data.ai.tools.local.LocalToolOption
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CardGroupScope
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionInfo
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionManager
 import me.rerere.rikkahub.ui.components.ui.permission.rememberPermissionState
@@ -100,6 +101,23 @@ private fun AssistantLocalToolContent(
         )
     )
     PermissionManager(permissionState = calendarPermissionState)
+    val locationPermissionState = rememberPermissionState(
+        permissions = setOf(
+            PermissionInfo(
+                permission = Manifest.permission.ACCESS_COARSE_LOCATION,
+                displayName = { Text(stringResource(R.string.permission_location)) },
+                usage = { Text(stringResource(R.string.permission_location_desc)) },
+                required = true,
+            ),
+            PermissionInfo(
+                permission = Manifest.permission.ACCESS_FINE_LOCATION,
+                displayName = { Text(stringResource(R.string.permission_precise_location)) },
+                usage = { Text(stringResource(R.string.permission_precise_location_desc)) },
+                required = false,
+            ),
+        )
+    )
+    PermissionManager(permissionState = locationPermissionState)
 
     fun toggleLocalTool(option: LocalToolOption, enabled: Boolean) {
         if (enabled && option == LocalToolOption.ScreenTime && !context.hasUsageStatsPermission()) {
@@ -108,6 +126,10 @@ private fun AssistantLocalToolContent(
         }
         if (enabled && option == LocalToolOption.Calendar && !calendarPermissionState.allPermissionsGranted) {
             calendarPermissionState.requestPermissions()
+            return
+        }
+        if (enabled && option == LocalToolOption.Location && !locationPermissionState.allPermissionsGranted) {
+            locationPermissionState.requestPermissions()
             return
         }
         val newLocalTools = if (enabled) {
@@ -127,104 +149,61 @@ private fun AssistantLocalToolContent(
             .imePadding(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        fun CardGroupScope.toolItem(option: LocalToolOption, title: Int, description: Int) {
+            item(
+                headlineContent = { Text(stringResource(title)) },
+                supportingContent = { Text(stringResource(description)) },
+                trailingContent = {
+                    Switch(
+                        checked = assistant.localTools.contains(option),
+                        onCheckedChange = { toggleLocalTool(option, it) },
+                    )
+                },
+            )
+        }
+
         CardGroup {
-            item(
-                headlineContent = {
-                    Text(stringResource(R.string.assistant_page_local_tools_javascript_engine_title))
-                },
-                supportingContent = {
-                    Text(stringResource(R.string.assistant_page_local_tools_javascript_engine_desc))
-                },
-                trailingContent = {
-                    Switch(
-                        checked = assistant.localTools.contains(LocalToolOption.JavascriptEngine),
-                        onCheckedChange = { toggleLocalTool(LocalToolOption.JavascriptEngine, it) }
-                    )
-                }
+            toolItem(
+                LocalToolOption.TimeInfo,
+                R.string.assistant_page_local_tools_time_info_title,
+                R.string.assistant_page_local_tools_time_info_desc,
             )
-            item(
-                headlineContent = {
-                    Text(stringResource(R.string.assistant_page_local_tools_time_info_title))
-                },
-                supportingContent = {
-                    Text(stringResource(R.string.assistant_page_local_tools_time_info_desc))
-                },
-                trailingContent = {
-                    Switch(
-                        checked = assistant.localTools.contains(LocalToolOption.TimeInfo),
-                        onCheckedChange = { toggleLocalTool(LocalToolOption.TimeInfo, it) }
-                    )
-                }
+            toolItem(
+                LocalToolOption.AskUser,
+                R.string.assistant_page_local_tools_ask_user_title,
+                R.string.assistant_page_local_tools_ask_user_desc,
             )
-            item(
-                headlineContent = {
-                    Text(stringResource(R.string.assistant_page_local_tools_clipboard_title))
-                },
-                supportingContent = {
-                    Text(stringResource(R.string.assistant_page_local_tools_clipboard_desc))
-                },
-                trailingContent = {
-                    Switch(
-                        checked = assistant.localTools.contains(LocalToolOption.Clipboard),
-                        onCheckedChange = { toggleLocalTool(LocalToolOption.Clipboard, it) }
-                    )
-                }
+            toolItem(
+                LocalToolOption.Tts,
+                R.string.assistant_page_local_tools_tts_title,
+                R.string.assistant_page_local_tools_tts_desc,
             )
-            item(
-                headlineContent = {
-                    Text(stringResource(R.string.assistant_page_local_tools_tts_title))
-                },
-                supportingContent = {
-                    Text(stringResource(R.string.assistant_page_local_tools_tts_desc))
-                },
-                trailingContent = {
-                    Switch(
-                        checked = assistant.localTools.contains(LocalToolOption.Tts),
-                        onCheckedChange = { toggleLocalTool(LocalToolOption.Tts, it) }
-                    )
-                }
+            toolItem(
+                LocalToolOption.JavascriptEngine,
+                R.string.assistant_page_local_tools_javascript_engine_title,
+                R.string.assistant_page_local_tools_javascript_engine_desc,
             )
-            item(
-                headlineContent = {
-                    Text(stringResource(R.string.assistant_page_local_tools_ask_user_title))
-                },
-                supportingContent = {
-                    Text(stringResource(R.string.assistant_page_local_tools_ask_user_desc))
-                },
-                trailingContent = {
-                    Switch(
-                        checked = assistant.localTools.contains(LocalToolOption.AskUser),
-                        onCheckedChange = { toggleLocalTool(LocalToolOption.AskUser, it) }
-                    )
-                }
+        }
+        CardGroup {
+            toolItem(
+                LocalToolOption.Clipboard,
+                R.string.assistant_page_local_tools_clipboard_title,
+                R.string.assistant_page_local_tools_clipboard_desc,
             )
-            item(
-                headlineContent = {
-                    Text(stringResource(R.string.assistant_page_local_tools_screen_time_title))
-                },
-                supportingContent = {
-                    Text(stringResource(R.string.assistant_page_local_tools_screen_time_desc))
-                },
-                trailingContent = {
-                    Switch(
-                        checked = assistant.localTools.contains(LocalToolOption.ScreenTime),
-                        onCheckedChange = { toggleLocalTool(LocalToolOption.ScreenTime, it) }
-                    )
-                }
+            toolItem(
+                LocalToolOption.Location,
+                R.string.assistant_page_local_tools_location_title,
+                R.string.assistant_page_local_tools_location_desc,
             )
-            item(
-                headlineContent = {
-                    Text(stringResource(R.string.assistant_page_local_tools_calendar_title))
-                },
-                supportingContent = {
-                    Text(stringResource(R.string.assistant_page_local_tools_calendar_desc))
-                },
-                trailingContent = {
-                    Switch(
-                        checked = assistant.localTools.contains(LocalToolOption.Calendar),
-                        onCheckedChange = { toggleLocalTool(LocalToolOption.Calendar, it) }
-                    )
-                }
+            toolItem(
+                LocalToolOption.ScreenTime,
+                R.string.assistant_page_local_tools_screen_time_title,
+                R.string.assistant_page_local_tools_screen_time_desc,
+            )
+            toolItem(
+                LocalToolOption.Calendar,
+                R.string.assistant_page_local_tools_calendar_title,
+                R.string.assistant_page_local_tools_calendar_desc,
             )
         }
     }

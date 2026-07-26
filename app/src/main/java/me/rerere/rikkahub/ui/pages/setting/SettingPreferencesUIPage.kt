@@ -58,14 +58,17 @@ import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.Select
+import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionManager
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionNotification
 import me.rerere.rikkahub.ui.components.ui.permission.rememberPermissionState
 import me.rerere.rikkahub.ui.context.LocalToaster
+import me.rerere.rikkahub.ui.hooks.rememberColorMode
 import me.rerere.rikkahub.ui.hooks.rememberAmoledDarkMode
 import me.rerere.rikkahub.ui.hooks.rememberSharedPreferenceBoolean
 import me.rerere.rikkahub.ui.hooks.rememberSharedPreferenceString
 import me.rerere.rikkahub.ui.theme.CustomColors
+import me.rerere.rikkahub.ui.theme.ColorMode
 import me.rerere.rikkahub.ui.theme.rememberChatFontFamily
 import me.rerere.rikkahub.utils.plus
 import org.koin.androidx.compose.koinViewModel
@@ -84,7 +87,9 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
     )
     var amoledDarkMode by rememberAmoledDarkMode()
     var appLanguage by rememberSharedPreferenceString(APP_LANGUAGE_KEY, "")
+    var showDeleteFontConfirm by remember { mutableStateOf(false) }
     val selectedLanguage = AppLanguage.entries.firstOrNull { it.tag == appLanguage } ?: AppLanguage.SYSTEM
+    var colorMode by rememberColorMode()
     val notificationMode = when {
         !displaySetting.enableNotificationOnMessageGeneration -> NotificationMode.OFF
         displaySetting.enableLiveUpdateNotification -> NotificationMode.REALTIME
@@ -187,6 +192,33 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                                     )
                                 },
                                 optionToString = { stringResource(it.labelRes) },
+                                fitToOptions = true,
+                            )
+                        },
+                    )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_page_color_mode)) },
+                        supportingContent = {
+                            Text(
+                                when (colorMode) {
+                                    ColorMode.SYSTEM -> stringResource(R.string.setting_page_color_mode_system)
+                                    ColorMode.LIGHT -> stringResource(R.string.setting_page_color_mode_light)
+                                    ColorMode.DARK -> stringResource(R.string.setting_page_color_mode_dark)
+                                }
+                            )
+                        },
+                        trailingContent = {
+                            Select(
+                                options = ColorMode.entries,
+                                selectedOption = colorMode,
+                                onOptionSelected = { colorMode = it },
+                                optionToString = {
+                                    when (it) {
+                                        ColorMode.SYSTEM -> stringResource(R.string.setting_page_color_mode_system)
+                                        ColorMode.LIGHT -> stringResource(R.string.setting_page_color_mode_light)
+                                        ColorMode.DARK -> stringResource(R.string.setting_page_color_mode_dark)
+                                    }
+                                },
                                 fitToOptions = true,
                             )
                         },
@@ -496,16 +528,7 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                                 }
                                 if (displaySetting.chatCustomFontPath.isNotBlank()) {
                                     IconButton(
-                                        onClick = {
-                                            deleteCustomChatFontInternal(context, displaySetting.chatCustomFontPath)
-                                            updateDisplaySetting(
-                                                displaySetting.copy(
-                                                    chatFontFamily = ChatFontFamily.DEFAULT,
-                                                    chatCustomFontPath = "",
-                                                    chatCustomFontName = "",
-                                                )
-                                            )
-                                        }
+                                        onClick = { showDeleteFontConfirm = true }
                                     ) {
                                         Icon(
                                             HugeIcons.Delete02,
@@ -660,6 +683,26 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                 }
             }
         }
+    }
+    RikkaConfirmDialog(
+        show = showDeleteFontConfirm,
+        title = stringResource(R.string.setting_display_page_delete_font_title),
+        confirmText = stringResource(R.string.common_delete),
+        dismissText = stringResource(R.string.common_cancel),
+        onConfirm = {
+            deleteCustomChatFontInternal(context, displaySetting.chatCustomFontPath)
+            updateDisplaySetting(
+                displaySetting.copy(
+                    chatFontFamily = ChatFontFamily.DEFAULT,
+                    chatCustomFontPath = "",
+                    chatCustomFontName = "",
+                )
+            )
+            showDeleteFontConfirm = false
+        },
+        onDismiss = { showDeleteFontConfirm = false },
+    ) {
+        Text(stringResource(R.string.setting_display_page_delete_font_confirm))
     }
 }
 

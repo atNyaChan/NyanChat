@@ -34,6 +34,16 @@ sealed class LogEntry {
         val durationMs: Long? = null,
         val error: String? = null
     ) : LogEntry()
+
+    @Serializable
+    data class PermissionLog(
+        override val id: Uuid = Uuid.random(),
+        override val timestamp: Long = System.currentTimeMillis(),
+        override val tag: String = "Permission",
+        val type: String,
+        val rawData: String,
+        val resultData: String? = null,
+    ) : LogEntry()
 }
 
 object Logging {
@@ -44,6 +54,10 @@ object Logging {
 
     fun logRequest(entry: LogEntry.RequestLog) {
         addLog(entry)
+    }
+
+    fun logPermission(type: String, rawData: String, resultData: String? = null) {
+        addLog(LogEntry.PermissionLog(type = type, rawData = rawData, resultData = resultData))
     }
 
     private fun addLog(entry: LogEntry) {
@@ -73,9 +87,23 @@ object Logging {
         }
     }
 
-    fun clear() {
+    fun getPermissionLogs(): List<LogEntry.PermissionLog> {
         synchronized(recentLogs) {
-            recentLogs.clear()
+            return recentLogs.filterIsInstance<LogEntry.PermissionLog>()
         }
     }
+
+    fun clearRequests() {
+        synchronized(recentLogs) {
+            recentLogs.removeAll { it is LogEntry.RequestLog }
+        }
+    }
+
+    fun clearPermissions() {
+        synchronized(recentLogs) {
+            recentLogs.removeAll { it is LogEntry.PermissionLog }
+        }
+    }
+
+    fun clear() = clearRequests()
 }

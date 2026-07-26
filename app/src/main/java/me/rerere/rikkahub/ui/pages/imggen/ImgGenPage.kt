@@ -552,6 +552,7 @@ private fun ImageGalleryScreen(
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
     val pullToRefreshState = rememberPullToRefreshState()
+    var pendingDeleteImage by remember { mutableStateOf<GeneratedImage?>(null) }
 
     PullToRefreshBox(
         isRefreshing = false,
@@ -681,7 +682,7 @@ private fun ImageGalleryScreen(
                                         }
 
                                         IconButton(
-                                            onClick = { vm.deleteImage(it) },
+                                            onClick = { pendingDeleteImage = it },
                                             modifier = Modifier.size(32.dp)
                                         ) {
                                             Icon(
@@ -706,6 +707,26 @@ private fun ImageGalleryScreen(
                 }
             }
         }
+    }
+    pendingDeleteImage?.let { image ->
+        AlertDialog(
+            onDismissRequest = { pendingDeleteImage = null },
+            title = { Text(stringResource(R.string.imggen_page_delete_image_title)) },
+            text = { Text(stringResource(R.string.imggen_page_delete_image_confirm)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        vm.deleteImage(image)
+                        pendingDeleteImage = null
+                    }
+                ) { Text(stringResource(R.string.common_delete)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDeleteImage = null }) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            },
+        )
     }
 }
 

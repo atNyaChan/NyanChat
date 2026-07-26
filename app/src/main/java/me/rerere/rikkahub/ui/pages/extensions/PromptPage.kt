@@ -357,6 +357,7 @@ private fun ModeInjectionEditSheet(
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     val scope = rememberCoroutineScope()
     var showExportDialog by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
     val exporter = rememberExporter(injection, ModeInjectionSerializer)
     val contentState = rememberTextFieldState(injection.content)
     val currentInjection by rememberUpdatedState(injection)
@@ -485,7 +486,7 @@ private fun ModeInjectionEditSheet(
                     Icon(HugeIcons.Share03, stringResource(R.string.common_export))
                 }
                 if (onDelete != null) {
-                    IconButton(onClick = onDelete) {
+                    IconButton(onClick = { showDeleteConfirm = true }) {
                         Icon(HugeIcons.Delete01, stringResource(R.string.common_delete))
                     }
                 }
@@ -501,6 +502,37 @@ private fun ModeInjectionEditSheet(
     }
     if (showExportDialog) {
         ExportDialog(exporter = exporter, onDismiss = { showExportDialog = false })
+    }
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text(stringResource(R.string.prompt_page_delete_mode_injection_title)) },
+            text = {
+                Text(
+                    if (injection.name.isBlank()) {
+                        stringResource(R.string.prompt_page_delete_unnamed_mode_injection_confirm)
+                    } else {
+                        stringResource(
+                            R.string.prompt_page_delete_mode_injection_confirm,
+                            injection.name,
+                        )
+                    }
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirm = false
+                        onDelete?.invoke()
+                    }
+                ) { Text(stringResource(R.string.common_delete)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            },
+        )
     }
 }
 
@@ -769,6 +801,7 @@ private fun LorebookEditSheet(
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     val scope = rememberCoroutineScope()
     var showExportDialog by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
     val exporter = rememberExporter(book, LorebookSerializer)
     val entryEditState = useEditState<PromptInjection.RegexInjection> { edited ->
         val index = book.entries.indexOfFirst { it.id == edited.id }
@@ -874,7 +907,7 @@ private fun LorebookEditSheet(
                     Icon(HugeIcons.Share03, stringResource(R.string.common_export))
                 }
                 if (onDelete != null) {
-                    IconButton(onClick = onDelete) {
+                    IconButton(onClick = { showDeleteConfirm = true }) {
                         Icon(HugeIcons.Delete01, stringResource(R.string.common_delete))
                     }
                 }
@@ -890,6 +923,34 @@ private fun LorebookEditSheet(
     }
     if (showExportDialog) {
         ExportDialog(exporter = exporter, onDismiss = { showExportDialog = false })
+    }
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text(stringResource(R.string.prompt_page_delete_lorebook_title)) },
+            text = {
+                Text(
+                    if (book.name.isBlank()) {
+                        stringResource(R.string.prompt_page_delete_unnamed_lorebook_confirm)
+                    } else {
+                        stringResource(R.string.prompt_page_delete_lorebook_confirm, book.name)
+                    }
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirm = false
+                        onDelete?.invoke()
+                    }
+                ) { Text(stringResource(R.string.common_delete)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            },
+        )
     }
 
     if (entryEditState.isEditing) {

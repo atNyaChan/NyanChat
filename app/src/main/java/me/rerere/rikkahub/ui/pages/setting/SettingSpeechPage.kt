@@ -11,6 +11,7 @@ import me.rerere.hugeicons.stroke.Tools
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.VolumeHigh
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -26,6 +27,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -69,6 +72,7 @@ import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
 import me.rerere.rikkahub.ui.components.ui.Tag
 import me.rerere.rikkahub.ui.components.ui.TagType
+import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalTTSState
 import me.rerere.rikkahub.ui.pages.setting.components.ASRProviderConfigure
 import me.rerere.rikkahub.ui.pages.setting.components.TTSProviderConfigure
@@ -91,7 +95,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
         topBar = {
             LargeFlexibleTopAppBar(
                 title = {
-                    Text(text = stringResource(R.string.speech_page_title))
+                    Text(text = stringResource(R.string.setting_page_tts_service))
                 },
                 navigationIcon = {
                     BackButton()
@@ -162,6 +166,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
     editingTTSProvider?.let { provider ->
         val bottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
         var currentProvider by remember(provider) { mutableStateOf(provider) }
+        var showDeleteConfirm by remember(provider.id) { mutableStateOf(false) }
 
         ModalBottomSheet(
             onDismissRequest = {
@@ -189,18 +194,37 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                     onValueChange = { newState ->
                         currentProvider = newState
                     },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    footer = if (provider.id != DEFAULT_SYSTEM_TTS_ID) {
+                        {
+                            Button(
+                                onClick = { showDeleteConfirm = true },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.error,
+                                    contentColor = MaterialTheme.colorScheme.onError,
+                                ),
+                            ) {
+                                Icon(HugeIcons.Delete01, contentDescription = null)
+                                Text(
+                                    stringResource(R.string.setting_tts_page_delete_provider),
+                                    modifier = Modifier.padding(start = 8.dp),
+                                )
+                            }
+                        }
+                    } else {
+                        null
+                    },
                 )
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                 ) {
                     TextButton(
                         onClick = {
                             editingTTSProvider = null
-                        },
-                        modifier = Modifier.weight(1f)
+                        }
                     ) {
                         Text(stringResource(R.string.common_cancel))
                     }
@@ -212,13 +236,43 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                             }
                             vm.updateSettings(settings.copy(ttsProviders = newProviders))
                             editingTTSProvider = null
-                        },
-                        modifier = Modifier.weight(1f)
+                        }
                     ) {
                         Text(stringResource(R.string.common_save))
                     }
                 }
             }
+        }
+        RikkaConfirmDialog(
+            show = showDeleteConfirm,
+            title = stringResource(R.string.setting_tts_page_delete_provider),
+            confirmText = stringResource(R.string.common_delete),
+            dismissText = stringResource(R.string.common_cancel),
+            onConfirm = {
+                val newProviders = settings.ttsProviders - provider
+                val newSelectedId = if (settings.selectedTTSProviderId == provider.id) {
+                    DEFAULT_SYSTEM_TTS_ID
+                } else {
+                    settings.selectedTTSProviderId
+                }
+                vm.updateSettings(
+                    settings.copy(
+                        ttsProviders = newProviders,
+                        selectedTTSProviderId = newSelectedId,
+                    )
+                )
+                showDeleteConfirm = false
+                editingTTSProvider = null
+            },
+            onDismiss = { showDeleteConfirm = false },
+        ) {
+            Text(
+                if (provider.name.isBlank()) {
+                    stringResource(R.string.setting_tts_page_delete_unnamed_provider_confirm)
+                } else {
+                    stringResource(R.string.setting_tts_page_delete_provider_confirm, provider.name)
+                }
+            )
         }
     }
 
@@ -295,68 +349,33 @@ private fun TTSProviderList(
 ) {
     val lazyListState = rememberLazyListState()
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
-        val newProviders = settings.ttsProviders.toMutableList().apply {
-            add(to.index, removeAt(from.index))
-        }
-        onUpdateSettings(settings.copy(ttsProviders = newProviders))
+        onUpdateSettings(settings.copy(
+            ttsProviders = settings.ttsProviders.toMutableList().apply {
+                add(to.index, removeAt(from.index))
+            }
+        ))
     }
-
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
             .imePadding(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        state = lazyListState
+        state = lazyListState,
     ) {
         items(settings.ttsProviders, key = { it.id }) { provider ->
-            ReorderableItem(
-                state = reorderableState,
-                key = provider.id
-            ) { isDragging ->
+            ReorderableItem(reorderableState, key = provider.id) { isDragging ->
                 TTSProviderItem(
                     modifier = Modifier
                         .scale(if (isDragging) 0.95f else 1f)
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .longPressDraggableHandle(),
                     provider = provider,
-                    dragHandle = {
-                        val haptic = LocalHapticFeedback.current
-                        IconButton(
-                            onClick = {},
-                            modifier = Modifier
-                                .longPressDraggableHandle(
-                                    onDragStarted = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
-                                    },
-                                    onDragStopped = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
-                                    }
-                                )
-                        ) {
-                            Icon(
-                                imageVector = HugeIcons.DragDropHorizontal,
-                                contentDescription = null
-                            )
-                        }
-                    },
                     isSelected = settings.selectedTTSProviderId == provider.id,
                     onSelect = {
                         onUpdateSettings(settings.copy(selectedTTSProviderId = provider.id))
                     },
-                    onEdit = {
-                        onEdit(provider)
-                    },
-                    onDelete = {
-                        val newProviders = settings.ttsProviders - provider
-                        val newSelectedId =
-                            if (settings.selectedTTSProviderId == provider.id) DEFAULT_SYSTEM_TTS_ID else settings.selectedTTSProviderId
-                        onUpdateSettings(
-                            settings.copy(
-                                ttsProviders = newProviders,
-                                selectedTTSProviderId = newSelectedId
-                            )
-                        )
-                    }
+                    onEdit = { onEdit(provider) },
                 )
             }
         }
@@ -640,18 +659,14 @@ private fun TTSProviderItem(
     provider: TTSProviderSetting,
     modifier: Modifier = Modifier,
     isSelected: Boolean = false,
-    dragHandle: @Composable () -> Unit,
     onSelect: () -> Unit,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
 ) {
-    var showDropdownMenu by remember { mutableStateOf(false) }
     val tts = LocalTTSState.current
     val isSpeaking by tts.isSpeaking.collectAsState()
-    val isAvailable by tts.isAvailable.collectAsState()
 
     Card(
-        modifier = modifier,
+        modifier = modifier.clickable(onClick = onEdit),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) {
                 MaterialTheme.colorScheme.primaryContainer
@@ -705,81 +720,36 @@ private fun TTSProviderItem(
                     )
                 }
 
-                RadioButton(
-                    selected = isSelected,
-                    onClick = onSelect
-                )
-
-                dragHandle()
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // 状态标签
-                if (isSelected) {
-                    Tag(type = TagType.SUCCESS) {
-                        Text(stringResource(R.string.setting_tts_page_selected))
-                    }
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                // TTS测试播放按钮
-                if (isSelected && isAvailable) {
-                    val testText = stringResource(R.string.setting_tts_page_test_text)
-                    IconButton(
-                        onClick = {
-                            if (!isSpeaking) {
-                                tts.speak(testText)
-                            } else {
-                                tts.stop()
-                            }
-                        }
-                    ) {
-                        Icon(
-                            imageVector = if (isSpeaking) HugeIcons.StopCircle else HugeIcons.VolumeHigh,
-                            contentDescription = if (isSpeaking) stringResource(R.string.stop) else stringResource(R.string.test_tts),
-                            tint = if (isSpeaking) MaterialTheme.colorScheme.error else LocalContentColor.current
-                        )
-                    }
-                }
-
+                val testText = stringResource(R.string.setting_tts_page_test_text)
                 IconButton(
-                    onClick = { showDropdownMenu = true }
+                    onClick = {
+                        if (!isSelected) onSelect()
+                        if (!isSpeaking) {
+                            tts.speak(testText)
+                        } else {
+                            tts.stop()
+                        }
+                    }
                 ) {
                     Icon(
-                        imageVector = HugeIcons.Tools,
-                        contentDescription = stringResource(R.string.setting_tts_page_more_options_content_description)
+                        imageVector = if (isSelected && isSpeaking) {
+                            HugeIcons.StopCircle
+                        } else {
+                            HugeIcons.VolumeHigh
+                        },
+                        contentDescription = if (isSelected && isSpeaking) {
+                            stringResource(R.string.stop)
+                        } else {
+                            stringResource(R.string.test_tts)
+                        },
+                        tint = if (isSelected && isSpeaking) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            LocalContentColor.current
+                        },
                     )
-                    DropdownMenu(
-                        expanded = showDropdownMenu,
-                        onDismissRequest = { showDropdownMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.edit)) },
-                            onClick = {
-                                showDropdownMenu = false
-                                onEdit()
-                            },
-                            leadingIcon = {
-                                Icon(HugeIcons.PencilEdit01, contentDescription = null)
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.common_delete)) },
-                            onClick = {
-                                showDropdownMenu = false
-                                onDelete()
-                            },
-                            leadingIcon = {
-                                Icon(HugeIcons.Delete01, contentDescription = null)
-                            },
-                            enabled = provider.id != DEFAULT_SYSTEM_TTS_ID
-                        )
-                    }
                 }
+                RadioButton(selected = isSelected, onClick = onSelect)
             }
         }
     }

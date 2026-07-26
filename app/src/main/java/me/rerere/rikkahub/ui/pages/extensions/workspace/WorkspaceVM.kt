@@ -10,10 +10,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
+import me.rerere.rikkahub.data.datastore.SettingsStore
+import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
 import me.rerere.workspace.RootfsInstallProgress
 
 class WorkspaceVM(
     private val repository: WorkspaceRepository,
+    private val settingsStore: SettingsStore,
 ) : ViewModel() {
     val workspaces = repository.listFlow()
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
@@ -23,5 +26,14 @@ class WorkspaceVM(
             runCatching { repository.create(name) }
         }
     }
+
+    fun reorderWorkspaces(workspaces: List<WorkspaceEntity>) {
+        viewModelScope.launch {
+            settingsStore.update { it.copy(workspaceOrder = workspaces.map(WorkspaceEntity::id)) }
+        }
+    }
+
+    val settings = settingsStore.settingsFlow
+        .stateIn(viewModelScope, SharingStarted.Lazily, settingsStore.settingsFlow.value)
 
 }

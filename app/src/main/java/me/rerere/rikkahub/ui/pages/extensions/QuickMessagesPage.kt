@@ -11,10 +11,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -37,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Add01
+import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.Share03
 import me.rerere.hugeicons.stroke.Zap
 import me.rerere.rikkahub.R
@@ -49,6 +52,8 @@ import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.plus
 import org.koin.androidx.compose.koinViewModel
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @Composable
 fun QuickMessagesPage(vm: QuickMessagesVM = koinViewModel()) {
@@ -57,6 +62,12 @@ fun QuickMessagesPage(vm: QuickMessagesVM = koinViewModel()) {
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
     var editTarget by remember { mutableStateOf<QuickMessage?>(null) }
     var deleteTarget by remember { mutableStateOf<QuickMessage?>(null) }
+    val lazyListState = rememberLazyListState()
+    val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
+        vm.reorderQuickMessages(settings.quickMessages.toMutableList().apply {
+            add(to.index, removeAt(from.index))
+        })
+    }
 
     Scaffold(
         topBar = {
@@ -77,6 +88,7 @@ fun QuickMessagesPage(vm: QuickMessagesVM = koinViewModel()) {
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
+            state = lazyListState,
             contentPadding = innerPadding + PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -110,10 +122,13 @@ fun QuickMessagesPage(vm: QuickMessagesVM = koinViewModel()) {
             }
 
             items(settings.quickMessages, key = { it.id }) { quickMessage ->
-                QuickMessageCard(
-                    quickMessage = quickMessage,
-                    onEdit = { editTarget = quickMessage },
-                )
+                ReorderableItem(reorderableState, key = quickMessage.id) {
+                    QuickMessageCard(
+                        quickMessage = quickMessage,
+                        onEdit = { editTarget = quickMessage },
+                        modifier = Modifier.longPressDraggableHandle(),
+                    )
+                }
             }
         }
     }
@@ -162,7 +177,14 @@ fun QuickMessagesPage(vm: QuickMessagesVM = koinViewModel()) {
         },
         onDismiss = { deleteTarget = null },
     ) {
-        Text(stringResource(R.string.quick_messages_page_delete_message, deleteTarget?.title ?: ""))
+        val targetTitle = deleteTarget?.title.orEmpty()
+        Text(
+            if (targetTitle.isBlank()) {
+                stringResource(R.string.quick_messages_page_delete_unnamed_message)
+            } else {
+                stringResource(R.string.quick_messages_page_delete_message, targetTitle)
+            }
+        )
     }
 }
 
@@ -170,9 +192,10 @@ fun QuickMessagesPage(vm: QuickMessagesVM = koinViewModel()) {
 private fun QuickMessageCard(
     quickMessage: QuickMessage,
     onEdit: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onEdit),
         colors = CustomColors.cardColorsOnSurfaceContainer,
@@ -269,10 +292,11 @@ private fun EditQuickMessageDialog(
                             contentDescription = stringResource(R.string.common_export),
                         )
                     }
-                    TextButton(onClick = onDelete) {
-                        Text(
-                            stringResource(R.string.common_delete),
-                            color = MaterialTheme.colorScheme.error,
+                    IconButton(onClick = onDelete) {
+                        Icon(
+                            HugeIcons.Delete01,
+                            contentDescription = stringResource(R.string.common_delete),
+                            tint = MaterialTheme.colorScheme.error,
                         )
                     }
                 }

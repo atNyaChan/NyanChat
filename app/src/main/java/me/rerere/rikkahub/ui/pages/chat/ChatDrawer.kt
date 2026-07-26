@@ -68,6 +68,7 @@ import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.data.model.Folder
 import me.rerere.rikkahub.data.repository.ConversationRepository
+import me.rerere.ai.core.MessageRole
 import me.rerere.rikkahub.ui.components.ai.AssistantPicker
 import me.rerere.rikkahub.ui.components.ui.BackupReminderCard
 import me.rerere.rikkahub.ui.components.ui.Greeting
@@ -150,6 +151,7 @@ fun ChatDrawerContent(
     var conversationToDelete by remember { mutableStateOf<Conversation?>(null) }
     var conversationsToDelete by remember { mutableStateOf<List<Conversation>>(emptyList()) }
     var conversationsToMove by remember { mutableStateOf<List<Conversation>>(emptyList()) }
+    var moveStartedFromMultiSelect by remember { mutableStateOf(false) }
     var moveCreateFolderAssistant by remember { mutableStateOf<Assistant?>(null) }
     var pendingMoveTarget by remember { mutableStateOf<MoveTarget?>(null) }
     var conversationToEditTitle by remember { mutableStateOf<Conversation?>(null) }
@@ -232,7 +234,12 @@ fun ChatDrawerContent(
             FolderBar(
                 folders = folders,
                 selectedFolderId = selectedFolderId,
-                onSelect = { drawerVm.selectFolder(it) },
+                onSelect = { folderId ->
+                    drawerVm.selectFolder(folderId)
+                    if (current.messageNodes.none { it.currentMessage.role == MessageRole.USER }) {
+                        vm.updateConversation(current.copy(folderId = folderId))
+                    }
+                },
                 onCreate = { showCreateFolderDialog = true },
                 onRename = { folderToRename = it },
                 onDelete = { folderToDelete = it },
@@ -259,7 +266,10 @@ fun ChatDrawerContent(
                 onPin = {
                     vm.updatePinnedStatus(it)
                 },
-                onMove = { conversationsToMove = it },
+                onMove = { selected, fromMultiSelect ->
+                    conversationsToMove = selected
+                    moveStartedFromMultiSelect = fromMultiSelect
+                },
                 onDeleteSelected = { conversationsToDelete = it },
             )
 
@@ -270,10 +280,14 @@ fun ChatDrawerContent(
                     text = { Text(stringResource(R.string.chat_page_delete_conversation_confirm, conversation.title)) },
                     confirmButton = {
                         TextButton(onClick = {
-                            vm.deleteConversation(conversation)
                             conversationToDelete = null
-                            conversations.refresh()
-                            if (conversation.id == current.id) navigateToChatPage(navController)
+                            scope.launch {
+                                vm.deleteConversation(conversation).join()
+                                conversations.refresh()
+                                if (conversation.id == current.id) {
+                                    navigateToChatPage(navController)
+                                }
+                            }
                         }) { Text(stringResource(R.string.common_delete)) }
                     },
                     dismissButton = {
@@ -291,9 +305,15 @@ fun ChatDrawerContent(
                     text = { Text(stringResource(R.string.chat_page_delete_selected_confirm, conversationsToDelete.size)) },
                     confirmButton = {
                         TextButton(onClick = {
-                            conversationsToDelete.forEach(vm::deleteConversation)
+                            val targets = conversationsToDelete
                             conversationsToDelete = emptyList()
-                            conversations.refresh()
+                            scope.launch {
+                                targets.map(vm::deleteConversation).forEach { it.join() }
+                                conversations.refresh()
+                                if (targets.any { it.id == current.id }) {
+                                    navigateToChatPage(navController)
+                                }
+                            }
                         }) { Text(stringResource(R.string.common_delete)) }
                     },
                     dismissButton = {
@@ -674,7 +694,17 @@ fun ChatDrawerContent(
             onDismissRequest = { pendingMoveTarget = null },
             title = { Text(stringResource(R.string.chat_page_confirm_move)) },
             text = {
-                Text(stringResource(R.string.chat_page_confirm_move_desc, conversationsToMove.size, target.label))
+                Text(
+                    if (moveStartedFromMultiSelect) {
+                        stringResource(
+                            R.string.chat_page_confirm_move_desc,
+                            conversationsToMove.size,
+                            target.label,
+                        )
+                    } else {
+                        stringResource(R.string.chat_page_confirm_single_move_desc, target.label)
+                    }
+                )
             },
             confirmButton = {
                 TextButton(onClick = { moveTo(target) }) { Text(stringResource(R.string.common_confirm_action)) }

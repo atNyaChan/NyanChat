@@ -12,35 +12,64 @@ import java.util.zip.ZipInputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.rerere.rikkahub.data.files.FileUtils
 import me.rerere.rikkahub.data.files.SkillFrontmatterParser
 import me.rerere.rikkahub.data.files.SkillManager
 import me.rerere.rikkahub.data.files.SkillMetadata
+import me.rerere.rikkahub.data.datastore.SettingsStore
 import org.json.JSONArray
 import kotlin.collections.iterator
 
 class SkillsVM(
     private val skillManager: SkillManager,
+    private val settingsStore: SettingsStore,
 ) : ViewModel() {
     private val _skills = MutableStateFlow<List<SkillMetadata>>(emptyList())
     val skills = _skills.asStateFlow()
 
     init {
         loadSkills()
+        viewModelScope.launch {
+            settingsStore.settingsFlow
+                .map { it.skillOrder }
+                .distinctUntilChanged()
+                .collect { order ->
+                    _skills.value = sortSkills(_skills.value, order)
+                }
+        }
     }
 
     private fun loadSkills() {
         viewModelScope.launch(Dispatchers.IO) {
-            _skills.value = skillManager.listSkills()
+            _skills.value = sortSkills(skillManager.listSkills())
         }
+    }
+
+    fun reorderSkills(skills: List<SkillMetadata>) {
+        _skills.value = skills
+        viewModelScope.launch {
+            settingsStore.update { it.copy(skillOrder = skills.map(SkillMetadata::name)) }
+        }
+    }
+
+    private fun sortSkills(skills: List<SkillMetadata>): List<SkillMetadata> {
+        return sortSkills(skills, settingsStore.settingsFlow.value.skillOrder)
+    }
+
+    private fun sortSkills(skills: List<SkillMetadata>, skillOrder: List<String>): List<SkillMetadata> {
+        val order = skillOrder.withIndex().associate { it.value to it.index }
+        return skills.sortedWith(compareBy({ order[it.name] ?: Int.MAX_VALUE }, { it.name }))
     }
 
     fun saveSkill(name: String, content: String, onResult: (Boolean) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             val result = skillManager.saveSkill(name, content)
-            _skills.value = skillManager.listSkills()
+            _skills.value = sortSkills(skillManager.listSkills())
             withContext(Dispatchers.Main) {
                 onResult(result != null)
             }
@@ -66,7 +95,7 @@ class SkillsVM(
                     importSkillMarkdown(bytes)
                 }
 
-                _skills.value = skillManager.listSkills()
+                _skills.value = sortSkills(skillManager.listSkills())
                 withContext(Dispatchers.Main) {
                     onResult(true, importedNames.joinToString())
                 }
@@ -125,7 +154,7 @@ class SkillsVM(
                     return@launch
                 }
 
-                _skills.value = skillManager.listSkills()
+                _skills.value = sortSkills(skillManager.listSkills())
                 withContext(Dispatchers.Main) { onResult(true, name) }
             } catch (e: Exception) {
                 e.printStackTrace()

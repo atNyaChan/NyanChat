@@ -120,6 +120,7 @@ fun ChatList(
     settings: Settings,
     hazeState: HazeState,
     errors: List<ChatError> = emptyList(),
+    translatingMessageIds: Set<Uuid> = emptySet(),
     onDismissError: (Uuid) -> Unit = {},
     onClearAllErrors: () -> Unit = {},
     onRegenerate: (UIMessage) -> Unit = {},
@@ -163,6 +164,7 @@ fun ChatList(
                 settings = settings,
                 hazeState = hazeState,
                 errors = errors,
+                translatingMessageIds = translatingMessageIds,
                 onDismissError = onDismissError,
                 onClearAllErrors = onClearAllErrors,
                 onRegenerate = onRegenerate,
@@ -194,6 +196,7 @@ private fun ChatListNormal(
     settings: Settings,
     hazeState: HazeState,
     errors: List<ChatError>,
+    translatingMessageIds: Set<Uuid>,
     onDismissError: (Uuid) -> Unit,
     onClearAllErrors: () -> Unit,
     onRegenerate: (UIMessage) -> Unit,
@@ -363,6 +366,7 @@ private fun ChatListNormal(
                                 onToggleFavorite?.invoke(node)
                             },
                             onTranslate = onTranslate,
+                            isTranslating = node.currentMessage.id in translatingMessageIds,
                             onClearTranslation = onClearTranslation,
                             onCancelTranslation = onCancelTranslation,
                             onToolApproval = onToolApproval,
@@ -671,13 +675,11 @@ private fun ChatListPreview(
                 val isUser = message.role == me.rerere.ai.core.MessageRole.USER
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .then(
-                            if (!isUser) Modifier.padding(end = 24.dp) else Modifier
-                        ),
+                        .fillMaxWidth(),
                     horizontalAlignment = if (isUser) Alignment.End else Alignment.Start,
                 ) {
                     Surface(
+                        modifier = Modifier.fillMaxWidth(0.9f),
                         shape = MaterialTheme.shapes.medium,
                         color = if (isUser) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer,
                     ) {

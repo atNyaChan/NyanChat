@@ -28,7 +28,8 @@ import me.rerere.tts.provider.TTSProviderSetting
 fun TTSProviderConfigure(
     setting: TTSProviderSetting,
     modifier: Modifier = Modifier,
-    onValueChange: (TTSProviderSetting) -> Unit
+    onValueChange: (TTSProviderSetting) -> Unit,
+    footer: (@Composable () -> Unit)? = null,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -189,6 +190,7 @@ fun TTSProviderConfigure(
             is TTSProviderSetting.FishAudio -> FishAudioTTSConfiguration(setting, onValueChange)
             is TTSProviderSetting.Step -> StepTTSConfiguration(setting, onValueChange)
         }
+        footer?.invoke()
     }
 }
 

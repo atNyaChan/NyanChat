@@ -142,7 +142,7 @@ fun SettingFilesPage(
     Scaffold(
         topBar = {
             LargeFlexibleTopAppBar(
-                title = { Text(stringResource(R.string.setting_files_page_title)) },
+                title = { Text(stringResource(R.string.setting_page_chat_storage)) },
                 navigationIcon = { BackButton() },
                 actions = {
                     IconButton(

@@ -26,11 +26,10 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -58,11 +57,8 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.model.Assistant
-import me.rerere.rikkahub.data.model.AssistantMemory
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.FormItem
-import me.rerere.rikkahub.ui.components.ui.Tag
-import me.rerere.rikkahub.ui.components.ui.TagType
 import me.rerere.rikkahub.ui.components.ui.UIAvatar
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.hooks.EditState
@@ -192,13 +188,9 @@ fun AssistantPage(vm: AssistantVM = koinViewModel()) {
                         state = reorderableState,
                         key = assistant.id,
                     ) { isDragging ->
-                        val memories by vm.getMemories(assistant).collectAsStateWithLifecycle(
-                            initialValue = emptyList(),
-                        )
                         AssistantItem(
                             assistant = assistant,
                             settings = settings,
-                            memories = memories,
                             onEdit = {
                                 navController.navigate(Screen.AssistantDetail(id = assistant.id.toString()))
                             },
@@ -342,7 +334,7 @@ private fun AssistantCreationSheet(
                         },
                         modifier = Modifier.fillMaxWidth(),
                     )
-                    OutlinedButton(
+                    Button(
                         onClick = { showCopyPicker = true },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
@@ -378,17 +370,17 @@ private fun AssistantCreationSheet(
             onDismissRequest = { showCopyPicker = false },
             title = { Text(stringResource(R.string.assistant_page_copy_existing)) },
             text = {
-                LazyColumn {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     lazyItems(existingAssistants, key = { it.id }) { source ->
-                        ListItem(
-                            headlineContent = {
-                                Text(
-                                    source.name.ifBlank {
-                                        stringResource(R.string.assistant_page_default_assistant)
-                                    }
-                                )
-                            },
-                            modifier = Modifier.onClick {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = MaterialTheme.shapes.large,
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface,
+                            ),
+                            onClick = {
                                 val currentName = state.currentState?.name.orEmpty()
                                 state.currentState = source.copy(
                                     id = Uuid.random(),
@@ -402,7 +394,39 @@ private fun AssistantCreationSheet(
                                 showCopyPicker = false
                                 state.confirm()
                             },
-                        )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                UIAvatar(
+                                    name = source.name.ifBlank {
+                                        stringResource(R.string.assistant_page_default_assistant)
+                                    },
+                                    value = source.avatar,
+                                    invertDefaultAvatarInDarkMode = true,
+                                    modifier = Modifier.size(32.dp),
+                                )
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        source.name.ifBlank {
+                                            stringResource(R.string.assistant_page_default_assistant)
+                                        }
+                                    )
+                                    if (source.tags.isNotEmpty()) {
+                                        Text(
+                                            stringResource(
+                                                R.string.assistant_page_copy_picker_tag_count,
+                                                source.tags.size,
+                                            ),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -421,7 +445,6 @@ private fun AssistantItem(
     assistant: Assistant,
     settings: Settings,
     modifier: Modifier = Modifier,
-    memories: List<AssistantMemory>,
     onEdit: () -> Unit,
 ) {
     Card(
@@ -463,12 +486,6 @@ private fun AssistantItem(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (assistant.enableMemory) {
-                        Tag(type = TagType.SUCCESS) {
-                            Text(stringResource(R.string.assistant_page_memory_count, memories.size))
-                        }
-                    }
-
                     if (assistant.tags.isNotEmpty()) {
                         assistant.tags.take(2).fastForEach { tagId ->
                             val tag = settings.assistantTags.find { it.id == tagId }

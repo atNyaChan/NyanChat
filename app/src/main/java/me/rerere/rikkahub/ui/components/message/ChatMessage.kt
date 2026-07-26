@@ -110,6 +110,7 @@ fun ChatMessage(
     isFavorite: Boolean = false,
     onToggleFavorite: (() -> Unit)? = null,
     onTranslate: ((UIMessage, Locale) -> Unit)? = null,
+    isTranslating: Boolean = false,
     onClearTranslation: (UIMessage) -> Unit = {},
     onCancelTranslation: (UIMessage) -> Unit = {},
     onToolApproval: ((toolCallId: String, approved: Boolean, reason: String) -> Unit)? = null,
@@ -159,7 +160,7 @@ fun ChatMessage(
                 role = message.role,
                 parts = message.parts,
                 annotations = message.annotations,
-                messageEdited = !loading && message.usage == null,
+                messageEdited = !loading && message.modelId == null,
                 loading = loading,
                 model = model,
                 onToolApproval = onToolApproval,
@@ -170,7 +171,7 @@ fun ChatMessage(
             message.translation?.let { translation ->
                 CollapsibleTranslationText(
                     content = translation,
-                    isTranslating = translation == stringResource(R.string.translating),
+                    isTranslating = isTranslating,
                     onCancelTranslation = { onCancelTranslation(message) },
                     onDeleteTranslation = { onClearTranslation(message) },
                     onClickCitation = {}
@@ -179,7 +180,7 @@ fun ChatMessage(
         }
 
         val showActions = if (lastMessage) {
-            !loading
+            message.role == MessageRole.USER || !loading
         } else {
             message.parts.isEmptyUIMessage().not()
         }
@@ -313,7 +314,6 @@ private fun MessagePartsBlock(
                     ChainOfThought(
                         modifier = Modifier.animateContentSize(),
                         steps = block.steps,
-                        collapsedAdaptiveWidth = isReasoningOnlyBlock,
                         cardColors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = settings.displaySetting.bubbleOpacity),
                         ),

@@ -33,6 +33,9 @@ class MemoryRepository(private val memoryDAO: MemoryDAO) {
             .map { AssistantMemory(it.id, it.content) }
     }
 
+    suspend fun getMemory(id: Int): AssistantMemory? =
+        memoryDAO.getMemoryById(id)?.let { AssistantMemory(it.id, it.content) }
+
     suspend fun deleteMemoriesOfAssistant(assistantId: String) {
         memoryDAO.deleteMemoriesOfAssistant(assistantId)
     }

@@ -36,7 +36,6 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
@@ -46,23 +45,17 @@ import me.rerere.hugeicons.stroke.ArrowRight01
 import me.rerere.hugeicons.stroke.ArrowUp01
 import me.rerere.hugeicons.stroke.Search01
 import me.rerere.hugeicons.stroke.Sparkles
-import me.rerere.rikkahub.R
 
 private val LocalCardColor = staticCompositionLocalOf { Color.White }
 
 /**
  * 以时间线/步骤卡片的形式展示一组思考过程。
  *
- * 适用于承载推理步骤、工具调用步骤，或两者混合的链式内容。组件支持：
- * - 在步骤较多时自动折叠，仅展示最后若干步
- * - 点击顶部控制条展开/收起全部步骤
- * - 通过 [collapsedAdaptiveWidth] 控制折叠态是否保持自适应宽度
+ * 适用于承载推理步骤、工具调用步骤，或两者混合的链式内容。
  *
  * @param modifier 外层卡片的修饰符
  * @param cardColors 卡片配色
  * @param steps 需要渲染的步骤数据列表
- * @param collapsedVisibleCount 折叠时保留可见的尾部步骤数
- * @param collapsedAdaptiveWidth 是否在折叠态下使用内容自适应宽度
  * @param content 每个步骤的具体 UI，由 [ChainOfThoughtScope] 提供步骤构建能力
  */
 @Composable
@@ -72,14 +65,8 @@ fun <T> ChainOfThought(
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
     ),
     steps: List<T>,
-    collapsedVisibleCount: Int = 2,
-    collapsedAdaptiveWidth: Boolean = false,
     content: @Composable ChainOfThoughtScope.(T) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    val canCollapse = steps.size > collapsedVisibleCount
-    val shouldFillCollapseControlWidth = expanded || !collapsedAdaptiveWidth
-
     CompositionLocalProvider(
         LocalCardColor provides cardColors.containerColor
     ) {
@@ -95,58 +82,6 @@ fun <T> ChainOfThought(
                         animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec()
                     ),
             ) {
-                val visibleSteps = if (expanded || !canCollapse) {
-                    steps
-                } else {
-                    steps.takeLast(collapsedVisibleCount)
-                }
-
-                // 显示展开/折叠按钮（统一在顶部）
-                if (canCollapse) {
-                    Row(
-                        modifier = Modifier
-                            .then(
-                                if (shouldFillCollapseControlWidth) {
-                                    Modifier.fillMaxWidth()
-                                } else {
-                                    Modifier
-                                }
-                            )
-                            .clip(MaterialTheme.shapes.small)
-                            .clickable { expanded = !expanded }
-                            .padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        // 左侧：图标区域（24.dp，和步骤图标对齐）
-                        Box(
-                            modifier = Modifier.width(24.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Icon(
-                                imageVector = if (expanded) HugeIcons.ArrowUp01 else HugeIcons.ArrowDown01,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                                tint = MaterialTheme.colorScheme.primary,
-                            )
-                        }
-
-                        // 右侧：文字区域（8.dp 间距后开始，和步骤 label 对齐）
-                        Text(
-                            modifier = Modifier.padding(start = 8.dp),
-                            text = if (expanded) {
-                                stringResource(R.string.chain_of_thought_collapse)
-                            } else {
-                                stringResource(
-                                    R.string.chain_of_thought_show_more_steps,
-                                    steps.size - collapsedVisibleCount
-                                )
-                            },
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                    }
-                }
-
                 val lineColor = MaterialTheme.colorScheme.outlineVariant
                 val scope = remember { ChainOfThoughtScopeImpl() }
                 Box(
@@ -162,7 +97,7 @@ fun <T> ChainOfThought(
                     }
                 ) {
                     Column {
-                        visibleSteps.fastForEach { step ->
+                        steps.fastForEach { step ->
                             scope.content(step)
                         }
                     }
@@ -459,7 +394,6 @@ private fun ChainOfThoughtPreview() {
                         StepData("Step without icon", null, null),
                         StepData("Final step", HugeIcons.Sparkles, "Done"),
                     ),
-                    collapsedVisibleCount = 2,
                 ) { step ->
                     val iconComposable: (@Composable () -> Unit)? = step.icon?.let {
                         {

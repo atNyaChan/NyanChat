@@ -18,6 +18,8 @@ class LocalTools(
 
     val clipboardTool by lazy { buildClipboardTool(context) }
 
+    val locationTool by lazy { buildLocationTool(context) }
+
     val ttsTool by lazy { buildTextToSpeechTool(eventBus, ttsManager, settingsStore) }
 
     val askUserTool by lazy { buildAskUserTool() }
@@ -38,6 +40,9 @@ class LocalTools(
         }
         if (options.contains(LocalToolOption.Clipboard)) {
             tools.add(clipboardTool)
+        }
+        if (options.contains(LocalToolOption.Location)) {
+            tools.add(locationTool)
         }
         if (options.contains(LocalToolOption.Tts)) {
             tools.add(ttsTool)

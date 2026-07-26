@@ -69,13 +69,13 @@ import me.rerere.hugeicons.stroke.Menu03
 import me.rerere.hugeicons.stroke.MessageAdd01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
-import me.rerere.rikkahub.data.datastore.findProvider
 import me.rerere.rikkahub.data.datastore.getCurrentAssistant
 import me.rerere.rikkahub.data.datastore.getCurrentChatModel
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
+import me.rerere.rikkahub.data.repository.FolderRepository
 import me.rerere.rikkahub.service.ChatError
 import me.rerere.rikkahub.ui.components.ai.ChatInput
 import me.rerere.rikkahub.ui.components.ai.FilesPicker
@@ -115,6 +115,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
     val conversation by vm.conversation.collectAsStateWithLifecycle()
     val loadingJob by vm.conversationJob.collectAsStateWithLifecycle()
     val processingStatus by vm.processingStatus.collectAsStateWithLifecycle()
+    val translatingMessageIds by vm.translatingMessageIds.collectAsStateWithLifecycle()
     val currentChatModel by vm.currentChatModel.collectAsStateWithLifecycle()
     val enableWebSearch by vm.enableWebSearch.collectAsStateWithLifecycle()
     val errors by vm.errors.collectAsStateWithLifecycle()
@@ -222,6 +223,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
                     currentChatModel = currentChatModel,
                     bigScreen = true,
                     errors = errors,
+                    translatingMessageIds = translatingMessageIds,
                     onDismissError = { vm.dismissError(it) },
                     onClearAllErrors = { vm.clearAllErrors() },
                 )
@@ -254,6 +256,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
                     currentChatModel = currentChatModel,
                     bigScreen = false,
                     errors = errors,
+                    translatingMessageIds = translatingMessageIds,
                     onDismissError = { vm.dismissError(it) },
                     onClearAllErrors = { vm.clearAllErrors() },
                 )
@@ -280,6 +283,7 @@ private fun ChatPageContent(
     enableWebSearch: Boolean,
     currentChatModel: Model?,
     errors: List<ChatError>,
+    translatingMessageIds: Set<Uuid>,
     onDismissError: (Uuid) -> Unit,
     onClearAllErrors: () -> Unit,
 ) {
@@ -287,9 +291,15 @@ private fun ChatPageContent(
     val toaster = LocalToaster.current
     val selectModelFirstMessage = stringResource(R.string.chat_page_select_model_first)
     val workspaceRepository: WorkspaceRepository = koinInject()
+    val folderRepository: FolderRepository = koinInject()
     var previewMode by rememberSaveable { mutableStateOf(false) }
     val hazeState = rememberHazeState()
     val assistant = setting.getCurrentAssistant()
+    val folders by folderRepository.getFoldersOfAssistant(assistant.id)
+        .collectAsStateWithLifecycle(initialValue = emptyList())
+    val folderName = remember(conversation.folderId, folders) {
+        folders.firstOrNull { it.id == conversation.folderId }?.name
+    }
     var showFilesSheet by remember { mutableStateOf(false) }
 
     val completionProviders = remember(assistant.workspaceId, conversation.workspaceCwd, workspaceRepository) {
@@ -316,6 +326,7 @@ private fun ChatPageContent(
                 TopBar(
                     settings = setting,
                     conversation = conversation,
+                    folderName = folderName,
                     bigScreen = bigScreen,
                     drawerState = drawerState,
                     previewMode = previewMode,
@@ -433,6 +444,7 @@ private fun ChatPageContent(
                 settings = setting,
                 hazeState = hazeState,
                 errors = errors,
+                translatingMessageIds = translatingMessageIds,
                 onDismissError = onDismissError,
                 onClearAllErrors = onClearAllErrors,
                 onRegenerate = {
@@ -728,6 +740,7 @@ private fun ChatFilesPickerSheet(
 private fun TopBar(
     settings: Settings,
     conversation: Conversation,
+    folderName: String?,
     drawerState: DrawerState,
     bigScreen: Boolean,
     previewMode: Boolean,
@@ -770,16 +783,19 @@ private fun TopBar(
                 Column {
                     val assistant = settings.getCurrentAssistant()
                     val model = settings.getCurrentChatModel()
-                    val provider = model?.findProvider(providers = settings.providers, checkOverwrite = false)
                     Text(
                         text = conversation.title.ifBlank { stringResource(R.string.chat_page_new_chat) },
                         maxLines = 1,
                         style = MaterialTheme.typography.bodyMedium,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    if (model != null && provider != null) {
+                    if (model != null) {
+                        val assistantName = assistant.name.ifBlank {
+                            stringResource(R.string.assistant_page_default_assistant)
+                        }
                         Text(
-                            text = "${assistant.name.ifBlank { stringResource(R.string.assistant_page_default_assistant) }} / ${model.displayName} (${provider.name})",
+                            text = listOfNotNull(assistantName, folderName, model.displayName)
+                                .joinToString(" / "),
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 1,
                             color = LocalContentColor.current.copy(0.65f),

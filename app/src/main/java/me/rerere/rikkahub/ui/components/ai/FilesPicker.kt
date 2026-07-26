@@ -135,6 +135,21 @@ internal fun FilesPicker(
             )
         }
 
+        ListItem(
+            trailingContent = {
+                ContextCachePicker(
+                    value = assistant.contextCache,
+                    onValueChange = { onUpdateAssistant(assistant.copy(contextCache = it)) },
+                )
+            },
+            colors = ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer
+            ),
+            modifier = Modifier.clip(MaterialTheme.shapes.large),
+        ) {
+            Text("上下文缓存")
+        }
+
         // Extensions (Quick Messages + Prompt Injections + Skills)
         val modeAndLorebookCount =
             if (assistant.allowConversationPromptInjection) {
@@ -171,21 +186,6 @@ internal fun FilesPicker(
                     onShowInjectionSheetChange(true)
                 },
         ) { Text(stringResource(R.string.assistant_page_tab_extensions)) }
-
-        ListItem(
-            trailingContent = {
-                ContextCachePicker(
-                    value = assistant.contextCache,
-                    onValueChange = { onUpdateAssistant(assistant.copy(contextCache = it)) },
-                )
-            },
-            colors = ListItemDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer
-            ),
-            modifier = Modifier.clip(MaterialTheme.shapes.large),
-        ) {
-            Text("上下文缓存")
-        }
 
         // Compress History Button
         ListItem(

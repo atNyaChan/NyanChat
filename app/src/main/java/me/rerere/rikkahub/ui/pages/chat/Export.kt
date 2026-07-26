@@ -558,8 +558,7 @@ private fun ExportedChatMessage(
                     is MessagePartBlock.ThinkingBlock -> {
                         if (block.steps.isNotEmpty()) {
                             ChainOfThought(
-                                steps = block.steps,
-                                collapsedVisibleCount = block.steps.size
+                                steps = block.steps
                             ) { step ->
                                 when (step) {
                                     is ThinkingStep.ReasoningStep -> {

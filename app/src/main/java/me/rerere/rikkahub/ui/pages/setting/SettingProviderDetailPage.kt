@@ -926,17 +926,17 @@ private fun ModelSettingsForm(
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             title = {
-                Text(
-                    stringResource(
-                        R.string.setting_provider_page_delete_model_confirm_named_title,
-                        model.displayName,
-                        providerName,
-                    )
-                )
+                Text(stringResource(R.string.setting_provider_page_delete_model))
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(stringResource(R.string.setting_provider_page_delete_model_confirm_desc))
+                    Text(
+                        stringResource(
+                            R.string.setting_provider_page_delete_model_confirm_named_desc,
+                            model.displayName,
+                            providerName,
+                        )
+                    )
                     if (referencedMessageCount > 0) {
                         Text(
                             buildAnnotatedString {

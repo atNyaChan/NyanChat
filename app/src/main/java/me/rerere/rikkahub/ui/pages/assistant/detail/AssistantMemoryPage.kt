@@ -226,26 +226,6 @@ private fun AssistantMemoryContent(
                     )
                 }
             )
-            item(
-                headlineContent = { Text(stringResource(R.string.assistant_page_time_reminder)) },
-                supportingContent = {
-                    Text(
-                        text = stringResource(R.string.assistant_page_time_reminder_desc),
-                    )
-                },
-                trailingContent = {
-                    Switch(
-                        checked = assistant.enableTimeReminder,
-                        onCheckedChange = {
-                            onUpdateAssistant(
-                                assistant.copy(
-                                    enableTimeReminder = it
-                                )
-                            )
-                        }
-                    )
-                }
-            )
         }
 
         Box(
@@ -291,7 +271,7 @@ private fun AssistantMemoryContent(
 
     RikkaConfirmDialog(
         show = pendingDeleteMemory != null,
-        title = stringResource(R.string.confirm_delete),
+        title = stringResource(R.string.assistant_memory_delete_title),
         confirmText = stringResource(R.string.common_confirm_action),
         dismissText = stringResource(R.string.common_cancel),
         onConfirm = {
@@ -300,11 +280,21 @@ private fun AssistantMemoryContent(
         },
         onDismiss = { pendingDeleteMemory = null },
         text = {
-            Text(
-                text = pendingDeleteMemory?.content.orEmpty(),
-                maxLines = 8,
-                overflow = TextOverflow.Ellipsis
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    stringResource(
+                        R.string.assistant_memory_delete_confirm,
+                        pendingDeleteMemory?.id ?: 0,
+                    )
+                )
+                TextField(
+                    value = pendingDeleteMemory?.content.orEmpty(),
+                    onValueChange = {},
+                    readOnly = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 8,
+                )
+            }
         }
     )
 }

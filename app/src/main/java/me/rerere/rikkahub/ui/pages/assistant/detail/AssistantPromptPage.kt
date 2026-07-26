@@ -209,7 +209,7 @@ private fun AssistantPromptContent(
             colors = CustomColors.cardColorsOnSurfaceContainer
         ) {
             FormItem(
-                modifier = Modifier.padding(8.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {
                     Text(stringResource(R.string.assistant_page_allow_conversation_system_prompt))
                 },
@@ -231,7 +231,7 @@ private fun AssistantPromptContent(
             )
             androidx.compose.material3.HorizontalDivider()
             FormItem(
-                modifier = Modifier.padding(8.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {
                     Text(stringResource(R.string.assistant_page_allow_conversation_prompt_injection))
                 },
@@ -247,6 +247,24 @@ private fun AssistantPromptContent(
                                     allowConversationPromptInjection = it
                                 )
                             )
+                        }
+                    )
+                }
+            )
+            androidx.compose.material3.HorizontalDivider()
+            FormItem(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                label = {
+                    Text(stringResource(R.string.assistant_page_time_reminder))
+                },
+                description = {
+                    Text(stringResource(R.string.assistant_page_time_reminder_desc))
+                },
+                tail = {
+                    Switch(
+                        checked = assistant.enableTimeReminder,
+                        onCheckedChange = {
+                            onUpdate(assistant.copy(enableTimeReminder = it))
                         }
                     )
                 }
@@ -293,7 +311,7 @@ private fun AssistantPromptContent(
                 colors = CustomColors.cardColorsOnSurfaceContainer
             ) {
                 FormItem(
-                modifier = Modifier.padding(8.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -436,7 +454,7 @@ private fun AssistantPromptContent(
             colors = CustomColors.cardColorsOnSurfaceContainer
         ) {
             FormItem(
-                modifier = Modifier.padding(8.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {
                     Text(stringResource(R.string.assistant_page_preset_messages))
                 },
@@ -538,7 +556,7 @@ private fun AssistantPromptContent(
             colors = CustomColors.cardColorsOnSurfaceContainer
         ) {
             FormItem(
-                modifier = Modifier.padding(8.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {
                     Text(stringResource(R.string.assistant_page_regex_title))
                 },

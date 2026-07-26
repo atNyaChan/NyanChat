@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -73,19 +74,17 @@ import java.util.Locale
 @Composable
 fun LogPage() {
     var logs by remember { mutableStateOf(Logging.getRequestLogs()) }
+    var showClearConfirm by remember { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
         topBar = {
             LargeFlexibleTopAppBar(
-                title = { Text("Logs") },
+                title = { Text(stringResource(R.string.setting_page_request_logs)) },
                 navigationIcon = { BackButton() },
                 actions = {
                     IconButton(
-                        onClick = {
-                            Logging.clear()
-                            logs = Logging.getRequestLogs()
-                        }
+                        onClick = { showClearConfirm = true }
                     ) {
                         Icon(HugeIcons.Delete01, null)
                     }
@@ -102,6 +101,26 @@ fun LogPage() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
+        )
+    }
+    if (showClearConfirm) {
+        AlertDialog(
+            onDismissRequest = { showClearConfirm = false },
+            title = { Text(stringResource(R.string.log_page_clear_confirm)) },
+            confirmButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = {
+                        Logging.clear()
+                        logs = Logging.getRequestLogs()
+                        showClearConfirm = false
+                    }
+                ) { Text(stringResource(R.string.common_confirm_action)) }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = { showClearConfirm = false }) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            },
         )
     }
 }
@@ -347,7 +366,7 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
 }
 
 @Composable
-private fun CollapsibleLogSection(
+internal fun CollapsibleLogSection(
     title: String,
     initiallyExpanded: Boolean = false,
     onCopy: (() -> Unit)? = null,

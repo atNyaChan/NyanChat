@@ -135,6 +135,8 @@ class SettingsStore(
         val MODE_INJECTIONS = stringPreferencesKey("mode_injections")
         val LOREBOOKS = stringPreferencesKey("lorebooks")
         val QUICK_MESSAGES = stringPreferencesKey("quick_messages")
+        val SKILL_ORDER = stringPreferencesKey("skill_order")
+        val WORKSPACE_ORDER = stringPreferencesKey("workspace_order")
 
         // 备份提醒
         val BACKUP_REMINDER_CONFIG = stringPreferencesKey("backup_reminder_config")
@@ -182,7 +184,9 @@ class SettingsStore(
                     JsonInstant.decodeFromString(it)
                 } ?: emptyList(),
                 providers = JsonInstant.decodeFromString(preferences[PROVIDERS] ?: "[]"),
-                assistants = JsonInstant.decodeFromString(preferences[ASSISTANTS] ?: "[]"),
+                assistants = preferences[ASSISTANTS]?.let {
+                    JsonInstant.decodeFromString(it)
+                } ?: DEFAULT_ASSISTANTS,
                 dynamicColor = preferences[DYNAMIC_COLOR] == true,
                 themeId = preferences[THEME_ID] ?: PresetThemes[0].id,
                 customThemes = preferences[CUSTOM_THEMES]?.let {
@@ -224,6 +228,12 @@ class SettingsStore(
                 quickMessages = preferences[QUICK_MESSAGES]?.let {
                     JsonInstant.decodeFromString(it)
                 } ?: emptyList(),
+                skillOrder = preferences[SKILL_ORDER]?.let {
+                    JsonInstant.decodeFromString(it)
+                } ?: emptyList(),
+                workspaceOrder = preferences[WORKSPACE_ORDER]?.let {
+                    JsonInstant.decodeFromString(it)
+                } ?: emptyList(),
                 webServerEnabled = preferences[WEB_SERVER_ENABLED] == true,
                 webServerPort = preferences[WEB_SERVER_PORT] ?: 8080,
                 webServerJwtEnabled = preferences[WEB_SERVER_JWT_ENABLED] == true,
@@ -252,12 +262,6 @@ class SettingsStore(
                     )
                 } else provider
             }.toMutableList()
-            val assistants = it.assistants.ifEmpty { DEFAULT_ASSISTANTS }.toMutableList()
-            DEFAULT_ASSISTANTS.forEach { defaultAssistant ->
-                if (assistants.none { it.id == defaultAssistant.id }) {
-                    assistants.add(defaultAssistant.copy())
-                }
-            }
             val ttsProviders = it.ttsProviders.ifEmpty { DEFAULT_TTS_PROVIDERS }.toMutableList()
             DEFAULT_TTS_PROVIDERS.forEach { defaultTTSProvider ->
                 if (ttsProviders.none { provider -> provider.id == defaultTTSProvider.id }) {
@@ -266,7 +270,7 @@ class SettingsStore(
             }
             it.copy(
                 providers = providers,
-                assistants = assistants,
+                assistants = it.assistants,
                 ttsProviders = ttsProviders,
             )
         }
@@ -390,6 +394,8 @@ class SettingsStore(
             preferences[MODE_INJECTIONS] = JsonInstant.encodeToString(settings.modeInjections)
             preferences[LOREBOOKS] = JsonInstant.encodeToString(settings.lorebooks)
             preferences[QUICK_MESSAGES] = JsonInstant.encodeToString(settings.quickMessages)
+            preferences[SKILL_ORDER] = JsonInstant.encodeToString(settings.skillOrder)
+            preferences[WORKSPACE_ORDER] = JsonInstant.encodeToString(settings.workspaceOrder)
             preferences[WEB_SERVER_ENABLED] = settings.webServerEnabled
             preferences[WEB_SERVER_PORT] = settings.webServerPort
             preferences[WEB_SERVER_JWT_ENABLED] = settings.webServerJwtEnabled
@@ -532,6 +538,8 @@ data class Settings(
     val modeInjections: List<PromptInjection.ModeInjection> = DEFAULT_MODE_INJECTIONS,
     val lorebooks: List<Lorebook> = emptyList(),
     val quickMessages: List<QuickMessage> = emptyList(),
+    val skillOrder: List<String> = emptyList(),
+    val workspaceOrder: List<String> = emptyList(),
     val webServerEnabled: Boolean = false,
     val webServerPort: Int = 8080,
     val webServerJwtEnabled: Boolean = false,

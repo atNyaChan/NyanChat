@@ -6,6 +6,7 @@ import androidx.core.net.toUri
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -24,6 +25,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.jsonObject
 import me.rerere.ai.core.MessageRole
 import me.rerere.ai.core.ReasoningLevel
@@ -88,6 +92,7 @@ import java.time.Instant
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.uuid.Uuid
+import kotlin.time.Clock
 
 private const val TAG = "ChatService"
 
@@ -155,6 +160,8 @@ class ChatService(
     // 统一会话管理
     private val sessions = ConcurrentHashMap<Uuid, ConversationSession>()
     private val translationJobs = ConcurrentHashMap<Pair<Uuid, Uuid>, Job>()
+    private val _translatingMessages = MutableStateFlow<Set<Pair<Uuid, Uuid>>>(emptySet())
+    val translatingMessages: StateFlow<Set<Pair<Uuid, Uuid>>> = _translatingMessages.asStateFlow()
     private val _sessionsVersion = MutableStateFlow(0L)
 
     // 错误状态
@@ -520,6 +527,7 @@ class ChatService(
         } else {
             model.displayName
         }
+        val activePendingResponse = pendingResponse ?: UIMessage.assistant("")
 
         return runCatching {
 
@@ -540,9 +548,18 @@ class ChatService(
             // check invalid messages
             checkInvalidMessages(conversationId)
             val conversation = getConversationFlow(conversationId).value
+            if (pendingResponse == null) {
+                updateConversation(
+                    conversationId,
+                    conversation.copy(
+                        messageNodes = conversation.messageNodes + activePendingResponse.toMessageNode(),
+                    )
+                )
+            }
 
             // start generating
             val session = getOrCreateSession(conversationId)
+            var lastStreamSaveAt = 0L
             generationHandler.generateText(
                 settings = settings,
                 model = model,
@@ -617,13 +634,32 @@ class ChatService(
                 },
             ).onCompletion {
                 // 可能被取消了，或者意外结束，兜底更新
-                val updatedConversation = getConversationFlow(conversationId).value.copy(
-                    messageNodes = getConversationFlow(conversationId).value.messageNodes.map { node ->
-                        node.copy(messages = node.messages.map { it.finishReasoning() })
+                val currentConversation = getConversationFlow(conversationId).value
+                val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                val updatedConversation = currentConversation.copy(
+                    messageNodes = currentConversation.messageNodes.map { node ->
+                        node.copy(
+                            messages = node.messages.map { message ->
+                                message.finishReasoning().let { finished ->
+                                    if (
+                                        finished.role == MessageRole.ASSISTANT &&
+                                        finished.modelId != null &&
+                                        finished.finishedAt == null
+                                    ) {
+                                        finished.copy(finishedAt = now)
+                                    } else {
+                                        finished
+                                    }
+                                }
+                            }
+                        )
                     },
                     updateAt = Instant.now()
                 )
                 updateConversation(conversationId, updatedConversation)
+                withContext(NonCancellable + Dispatchers.IO) {
+                    saveConversation(conversationId, updatedConversation)
+                }
 
                 // 生成结束：取消 Live Update 通知，后台时发送完成通知
                 appEventBus.emit(
@@ -638,12 +674,11 @@ class ChatService(
                 when (chunk) {
                     is GenerationChunk.Messages -> {
                         val messages = if (
-                            pendingResponse != null &&
                             chunk.messages.lastOrNull()?.role == MessageRole.ASSISTANT
                         ) {
                             chunk.messages.dropLast(1) + chunk.messages.last().copy(
-                                id = pendingResponse.id,
-                                createdAt = pendingResponse.createdAt,
+                                id = activePendingResponse.id,
+                                createdAt = activePendingResponse.createdAt,
                             )
                         } else {
                             chunk.messages
@@ -651,6 +686,11 @@ class ChatService(
                         val updatedConversation = getConversationFlow(conversationId).value
                             .updateCurrentMessages(messages)
                         updateConversation(conversationId, updatedConversation)
+                        val streamSaveAt = System.currentTimeMillis()
+                        if (streamSaveAt - lastStreamSaveAt >= 1_000L) {
+                            lastStreamSaveAt = streamSaveAt
+                            saveConversation(conversationId, updatedConversation)
+                        }
 
                         // 通知等边缘副作用由 ChatNotificationManager 消费；
                         // tryEmit 不挂起，事件丢失只影响单次通知更新，不能反压生成链
@@ -663,6 +703,19 @@ class ChatService(
                 }
             }
         }.onFailure {
+            if (pendingResponse == null) {
+                val failedConversation = getConversationFlow(conversationId).value
+                val failedNode = failedConversation.getMessageNodeByMessage(activePendingResponse)
+                val pendingMessage = failedNode?.messages?.find { it.id == activePendingResponse.id }
+                if (failedNode != null && pendingMessage?.parts?.isEmptyUIMessage() == true) {
+                    updateConversation(
+                        conversationId,
+                        failedConversation.copy(
+                            messageNodes = failedConversation.messageNodes - failedNode,
+                        )
+                    )
+                }
+            }
             // 兜底取消 Live Update 通知（生成开始前失败时 onCompletion 不会执行）
             appEventBus.tryEmit(AppEvent.ChatGenerationEnded(conversationId, senderName, null))
 
@@ -1054,6 +1107,7 @@ class ChatService(
     ) {
         val key = conversationId to message.id
         translationJobs.remove(key)?.cancel()
+        _translatingMessages.update { it + key }
         val job = appScope.launch(Dispatchers.IO) {
             try {
                 val settings = settingsStore.settingsFlow.first()
@@ -1090,11 +1144,14 @@ class ChatService(
         translationJobs[key] = job
         job.invokeOnCompletion {
             translationJobs.remove(key, job)
+            _translatingMessages.update { it - key }
         }
     }
 
     fun cancelTranslation(conversationId: Uuid, messageId: Uuid) {
-        translationJobs.remove(conversationId to messageId)?.cancel()
+        val key = conversationId to messageId
+        translationJobs.remove(key)?.cancel()
+        _translatingMessages.update { it - key }
         val translation = getConversationFlow(conversationId).value.messageNodes
             .asSequence()
             .flatMap { it.messages }

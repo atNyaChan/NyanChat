@@ -10,6 +10,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
 import androidx.core.content.ContextCompat
+import me.rerere.common.android.Logging
 
 /**
  * 权限状态管理类
@@ -205,6 +206,14 @@ class PermissionState internal constructor(
      */
     private fun launchPermissionRequest(permissionInfos: List<PermissionInfo>) {
         val permissionsToRequest = permissionInfos.map { it.permission }.toTypedArray()
+        Logging.logPermission(
+            type = "请求系统权限",
+            rawData = permissionsToRequest.joinToString(
+                prefix = "[",
+                postfix = "]",
+                separator = ",\n",
+            ),
+        )
         if (permissionsToRequest.size == 1) {
             singlePermissionLauncher?.launch(permissionsToRequest[0])
         } else {

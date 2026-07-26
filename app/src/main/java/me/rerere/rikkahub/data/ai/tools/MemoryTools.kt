@@ -70,6 +70,9 @@ fun buildMemoryTools(
                 required = listOf("action")
             )
         },
+        needsApproval = { arguments ->
+            arguments.jsonObject["action"]?.jsonPrimitive?.contentOrNull == "delete"
+        },
         execute = {
             val params = it.jsonObject
             val action = params["action"]?.jsonPrimitive?.contentOrNull ?: error("action is required")
