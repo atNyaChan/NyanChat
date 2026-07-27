@@ -69,6 +69,7 @@ import me.rerere.rikkahub.data.ai.transformers.WorkspaceReminderTransformer
 import me.rerere.rikkahub.data.event.AppEvent
 import me.rerere.rikkahub.data.event.AppEventBus
 import me.rerere.rikkahub.data.datastore.SettingsStore
+import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.findModelById
 import me.rerere.rikkahub.data.datastore.findProvider
 import me.rerere.rikkahub.data.datastore.getAssistantById
@@ -87,6 +88,7 @@ import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.rikkahub.web.BadRequestException
 import me.rerere.rikkahub.web.NotFoundException
 import me.rerere.rikkahub.utils.applyPlaceholders
+import me.rerere.rikkahub.utils.wordCount
 import me.rerere.workspace.WorkspaceShellStatus
 import java.time.Instant
 import java.util.Locale
@@ -365,6 +367,102 @@ class ChatService(
         }
     }
 
+    suspend fun estimateRequestBaseWordCount(conversationId: Uuid): Int {
+        val conversation = getConversationFlow(conversationId).value
+        val settings = settingsStore.settingsFlow.first()
+        val assistant = settings.getAssistantById(conversation.assistantId)
+            ?: settings.getCurrentAssistant()
+        val model = settings.findModelById(assistant.chatModelId ?: settings.chatModelId) ?: return 0
+        val memories = if (assistant.useGlobalMemory) {
+            memoryRepository.getGlobalMemories()
+        } else {
+            memoryRepository.getMemoriesOfAssistant(assistant.id.toString())
+        }
+        return generationHandler.prepareRequestMessages(
+            settings = settings,
+            model = model,
+            messages = conversation.currentMessages,
+            inputTransformers = buildList {
+                addAll(inputTransformers)
+                add(templateTransformer)
+                add(workspaceReminderTransformer)
+            },
+            assistant = assistant,
+            memories = memories,
+            tools = buildRequestTools(settings, assistant, conversation),
+            conversationSystemPrompt = conversation.customSystemPrompt,
+            conversationModeInjectionIds = conversation.modeInjectionIds,
+            conversationLorebookIds = conversation.lorebookIds,
+            workspaceCwd = conversation.workspaceCwd,
+        ).sumOf { message ->
+            message.parts.sumOf { part ->
+                when (part) {
+                    is UIMessagePart.Text -> part.text.wordCount()
+                    is UIMessagePart.Reasoning -> part.reasoning.wordCount()
+                    else -> 0
+                }
+            }
+        }
+    }
+
+    private suspend fun buildRequestTools(
+        settings: Settings,
+        assistant: Assistant,
+        conversation: Conversation,
+    ): List<Tool> = buildList {
+        if (assistant.enableWebSearch) {
+            addAll(createSearchTools(settings))
+        }
+        addAll(
+            localTools.getTools(
+                options = assistant.localTools,
+                manualAuthorizationTools = assistant.manualAuthorizationTools,
+            )
+        )
+        if (assistant.enableRecentChatsReference) {
+            addAll(createConversationTools(conversationRepo, assistant.id))
+        }
+        addAll(createWorkspaceToolsIfReady(assistant.workspaceId?.toString(), conversation.workspaceCwd))
+        if (assistant.enabledSkills.isNotEmpty()) {
+            addAll(
+                createSkillTools(
+                    enabledSkills = assistant.enabledSkills,
+                    allSkills = skillManager.listSkills(),
+                )
+            )
+        }
+        mcpManager.getAllAvailableTools().also { allTools ->
+            val invalidNames = allTools
+                .map { it.second }
+                .distinct()
+                .filter { name ->
+                    name.isEmpty() || !name.all {
+                        it in 'a'..'z' || it in 'A'..'Z' || it in '0'..'9'
+                    }
+                }
+            if (invalidNames.isNotEmpty()) {
+                error(
+                    context.getString(
+                        R.string.error_mcp_invalid_server_name,
+                        invalidNames.joinToString(", ")
+                    )
+                )
+            }
+        }.forEach { (serverId, serverName, tool) ->
+            add(
+                Tool(
+                    name = "mcp__${serverName}__${tool.name}",
+                    description = tool.description ?: "",
+                    parameters = { tool.inputSchema },
+                    needsApproval = { tool.needsApproval },
+                    execute = {
+                        mcpManager.callTool(serverId, tool.name, it.jsonObject)
+                    },
+                )
+            )
+        }
+    }
+
     // ---- 重新生成消息 ----
 
     fun regenerateAtMessage(
@@ -587,50 +685,7 @@ class ChatService(
                     add(workspaceReminderTransformer)
                 },
                 outputTransformers = outputTransformers,
-                tools = buildList {
-                    if (assistant.enableWebSearch) {
-                        addAll(createSearchTools(settings))
-                    }
-                    addAll(localTools.getTools(assistant.localTools))
-                    if (assistant.enableRecentChatsReference) {
-                        addAll(createConversationTools(conversationRepo, assistant.id))
-                    }
-                    addAll(createWorkspaceToolsIfReady(assistant.workspaceId?.toString(), conversation.workspaceCwd))
-                    if (assistant.enabledSkills.isNotEmpty()) {
-                        addAll(
-                            createSkillTools(
-                                enabledSkills = assistant.enabledSkills,
-                                allSkills = skillManager.listSkills(),
-                            )
-                        )
-                    }
-                    mcpManager.getAllAvailableTools().also { allTools ->
-                        val invalidNames = allTools
-                            .map { it.second }
-                            .distinct()
-                            .filter { name -> name.isEmpty() || !name.all { it in 'a'..'z' || it in 'A'..'Z' || it in '0'..'9' } }
-                        if (invalidNames.isNotEmpty()) {
-                            error(
-                                context.getString(
-                                    R.string.error_mcp_invalid_server_name,
-                                    invalidNames.joinToString(", ")
-                                )
-                            )
-                        }
-                    }.forEach { (serverId, serverName, tool) ->
-                        add(
-                            Tool(
-                                name = "mcp__${serverName}__${tool.name}",
-                                description = tool.description ?: "",
-                                parameters = { tool.inputSchema },
-                                needsApproval = { tool.needsApproval },
-                                execute = {
-                                    mcpManager.callTool(serverId, tool.name, it.jsonObject)
-                                },
-                            )
-                        )
-                    }
-                },
+                tools = buildRequestTools(settings, assistant, conversation),
             ).onCompletion {
                 // 可能被取消了，或者意外结束，兜底更新
                 val currentConversation = getConversationFlow(conversationId).value

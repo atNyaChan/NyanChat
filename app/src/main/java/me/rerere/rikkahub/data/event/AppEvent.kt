@@ -1,11 +1,16 @@
 package me.rerere.rikkahub.data.event
 
+import kotlinx.coroutines.CompletableDeferred
 import me.rerere.ai.ui.UIMessage
 import kotlin.uuid.Uuid
 
 sealed class AppEvent {
     data class Speak(val text: String) : AppEvent()
     data object OpenUsageAccessSettings : AppEvent()
+    data class LocalToolAuthorization(
+        val title: String,
+        val decision: CompletableDeferred<Boolean>,
+    ) : AppEvent()
 
     /** MCP OAuth 授权完成后经 deep link 回传的结果。 */
     data class McpOAuthCallback(

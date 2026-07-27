@@ -8,9 +8,9 @@ import android.location.LocationManager
 import android.os.CancellationSignal
 import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.JsonObject
@@ -76,14 +76,20 @@ internal fun buildLocationTool(context: Context): Tool = Tool(
             val providers = manager.getProviders(true)
                 .filterNot { it == LocationManager.PASSIVE_PROVIDER }
             val location = coroutineScope {
-                providers.map { provider ->
-                    async {
-                        manager.requestCurrentLocation(context, provider)
+                val results = Channel<Location?>(providers.size)
+                val requests = providers.map { provider ->
+                    launch {
+                        results.send(manager.requestCurrentLocation(context, provider))
                     }
                 }
-                    .awaitAll()
-                    .filterNotNull()
-                .maxByOrNull { it.time }
+                repeat(providers.size) {
+                    val result = results.receive()
+                    if (result != null) {
+                        requests.forEach { request -> request.cancel() }
+                        return@coroutineScope result
+                    }
+                }
+                null
             }
             if (location == null) {
                 buildJsonObject {
@@ -111,6 +117,7 @@ internal fun buildLocationTool(context: Context): Tool = Tool(
             type = "获取位置信息",
             rawData = arguments.toString(),
             resultData = result.toString(),
+            granted = true,
         )
         listOf(UIMessagePart.Text(result.toString()))
     },

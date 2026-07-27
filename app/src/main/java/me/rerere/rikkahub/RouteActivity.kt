@@ -20,15 +20,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.semantics.testTagsAsResourceId
@@ -236,16 +241,50 @@ class RouteActivity : AppCompatActivity() {
         val tts = rememberCustomTtsState()
         val asr = rememberCustomAsrState()
         val eventBus = koinInject<AppEventBus>()
+        var authorizationRequest by remember {
+            mutableStateOf<AppEvent.LocalToolAuthorization?>(null)
+        }
         LaunchedEffect(tts) {
             eventBus.events.collect { event ->
                 when (event) {
                     is AppEvent.Speak -> tts.speak(event.text)
                     is AppEvent.OpenUsageAccessSettings -> this@RouteActivity.openUsageAccessSettings()
+                    is AppEvent.LocalToolAuthorization -> {
+                        authorizationRequest = event
+                        event.decision.await()
+                        authorizationRequest = null
+                    }
                     is AppEvent.McpOAuthCallback -> Unit // 由 McpManager 消费
                     is AppEvent.ChatGenerationUpdate -> Unit // 由 ChatNotificationManager 消费
                     is AppEvent.ChatGenerationEnded -> Unit // 由 ChatNotificationManager 消费
                 }
             }
+        }
+        authorizationRequest?.let { request ->
+            AlertDialog(
+                onDismissRequest = {
+                    if (!request.decision.isCompleted) request.decision.complete(false)
+                },
+                title = { Text(request.title) },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            if (!request.decision.isCompleted) request.decision.complete(true)
+                        }
+                    ) {
+                        Text(stringResource(R.string.common_confirm_action))
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            if (!request.decision.isCompleted) request.decision.complete(false)
+                        }
+                    ) {
+                        Text(stringResource(R.string.common_cancel))
+                    }
+                },
+            )
         }
         val startScreen = Screen.Chat(
             id = if (readBooleanPreference("create_new_conversation_on_start", true)) {
@@ -345,6 +384,13 @@ class RouteActivity : AppCompatActivity() {
                             entry<Screen.AssistantBasic> { key ->
                                 AssistantBasicPage(
                                     id = key.id,
+                                )
+                            }
+
+                            entry<Screen.AssistantRequest> { key ->
+                                AssistantBasicPage(
+                                    id = key.id,
+                                    requestSettingsOnly = true,
                                 )
                             }
 
@@ -541,6 +587,9 @@ sealed interface Screen : NavKey {
     data class AssistantBasic(
         val id: String,
     ) : Screen
+
+    @Serializable
+    data class AssistantRequest(val id: String) : Screen
 
     @Serializable
     data class AssistantPrompt(val id: String) : Screen

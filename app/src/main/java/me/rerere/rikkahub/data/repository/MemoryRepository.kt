@@ -69,6 +69,6 @@ class MemoryRepository(private val memoryDAO: MemoryDAO) {
     }
 
     suspend fun deleteMemory(id: Int) {
-        memoryDAO.deleteMemory(id)
+        memoryDAO.deleteMemoryAndResetSequenceIfEmpty(id)
     }
 }

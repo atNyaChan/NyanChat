@@ -68,6 +68,54 @@ class GenerationHandler(
     private val json: Json,
     private val memoryRepo: MemoryRepository,
 ) {
+    suspend fun prepareRequestMessages(
+        settings: Settings,
+        model: Model,
+        messages: List<UIMessage>,
+        inputTransformers: List<MessageTransformer>,
+        assistant: Assistant,
+        memories: List<AssistantMemory>,
+        tools: List<Tool>,
+        conversationSystemPrompt: String?,
+        conversationModeInjectionIds: Set<Uuid>,
+        conversationLorebookIds: Set<Uuid>,
+        workspaceCwd: String?,
+        processingStatus: MutableStateFlow<String?> = MutableStateFlow(null),
+    ): List<UIMessage> = buildList {
+        val system = buildString {
+            val effectiveSystemPrompt =
+                if (assistant.allowConversationSystemPrompt && !conversationSystemPrompt.isNullOrBlank()) {
+                    conversationSystemPrompt
+                } else {
+                    assistant.systemPrompt
+                }
+            if (effectiveSystemPrompt.isNotBlank()) {
+                append(effectiveSystemPrompt)
+            }
+
+            if (assistant.enableMemory) {
+                appendLine()
+                append(buildMemoryPrompt(memories = memories))
+            }
+            tools.forEach { tool ->
+                appendLine()
+                append(tool.systemPrompt(model, messages))
+            }
+        }
+        if (system.isNotBlank()) add(UIMessage.system(prompt = system))
+        addAll(messages)
+    }.transforms(
+        transformers = inputTransformers,
+        context = context,
+        model = model,
+        assistant = assistant,
+        settings = settings,
+        conversationModeInjectionIds = conversationModeInjectionIds,
+        conversationLorebookIds = conversationLorebookIds,
+        processingStatus = processingStatus,
+        workspaceCwd = workspaceCwd,
+    )
+
     fun generateText(
         settings: Settings,
         model: Model,
@@ -361,41 +409,19 @@ class GenerationHandler(
         conversationLorebookIds: Set<Uuid> = emptySet(),
         workspaceCwd: String? = null,
     ) {
-        val internalMessages = buildList {
-            val system = buildString {
-                val effectiveSystemPrompt =
-                    if (assistant.allowConversationSystemPrompt && !conversationSystemPrompt.isNullOrBlank()) {
-                        conversationSystemPrompt
-                    } else {
-                        assistant.systemPrompt
-                    }
-                if (effectiveSystemPrompt.isNotBlank()) {
-                    append(effectiveSystemPrompt)
-                }
-
-                // 记忆
-                if (assistant.enableMemory) {
-                    appendLine()
-                    append(buildMemoryPrompt(memories = memories))
-                }
-                // 工具prompt
-                tools.forEach { tool ->
-                    appendLine()
-                    append(tool.systemPrompt(model, messages))
-                }
-            }
-            if (system.isNotBlank()) add(UIMessage.system(prompt = system))
-            addAll(messages)
-        }.transforms(
-            transformers = transformers,
-            context = context,
-            model = model,
-            assistant = assistant,
+        val internalMessages = prepareRequestMessages(
             settings = settings,
+            model = model,
+            messages = messages,
+            inputTransformers = transformers,
+            assistant = assistant,
+            memories = memories,
+            tools = tools,
+            conversationSystemPrompt = conversationSystemPrompt,
             conversationModeInjectionIds = conversationModeInjectionIds,
             conversationLorebookIds = conversationLorebookIds,
-            processingStatus = processingStatus,
             workspaceCwd = workspaceCwd,
+            processingStatus = processingStatus,
         )
 
         var messages: List<UIMessage> = messages

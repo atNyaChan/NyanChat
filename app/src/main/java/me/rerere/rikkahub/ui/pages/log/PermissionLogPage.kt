@@ -105,7 +105,26 @@ fun PermissionLogPage() {
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text(log.type, style = MaterialTheme.typography.titleSmall)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(log.type, style = MaterialTheme.typography.titleSmall)
+                                log.granted?.let { granted ->
+                                    Text(
+                                        text = stringResource(
+                                            if (granted) {
+                                                R.string.permission_log_page_granted
+                                            } else {
+                                                R.string.permission_log_page_denied
+                                            }
+                                        ),
+                                        style = MaterialTheme.typography.titleSmall,
+                                        color = if (granted) {
+                                            androidx.compose.ui.graphics.Color(0xFF2E7D32)
+                                        } else {
+                                            MaterialTheme.colorScheme.error
+                                        },
+                                    )
+                                }
+                            }
                             Text(
                                 timeFormat.format(Date(log.timestamp)),
                                 style = MaterialTheme.typography.labelSmall,

@@ -22,11 +22,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -119,19 +119,25 @@ private fun AssistantMemoryContent(
                 memoryDialogState.dismiss()
             },
             title = {
-                Text(stringResource(R.string.assistant_page_manage_memory_title))
+                Text(
+                    stringResource(
+                        if (memory.id == 0) {
+                            R.string.assistant_memory_add_title
+                        } else {
+                            R.string.assistant_memory_edit_title
+                        }
+                    )
+                )
             },
             text = {
-                TextField(
+                OutlinedTextField(
                     value = memory.content,
                     onValueChange = {
                         update(memory.copy(content = it))
                     },
-                    label = {
-                        Text(stringResource(R.string.assistant_page_manage_memory_title))
-                    },
-                    minLines = 2,
-                    maxLines = 8
+                    minLines = 1,
+                    maxLines = 8,
+                    modifier = Modifier.fillMaxWidth(),
                 )
             },
             confirmButton = {
@@ -287,10 +293,11 @@ private fun AssistantMemoryContent(
                         pendingDeleteMemory?.id ?: 0,
                     )
                 )
-                TextField(
+                OutlinedTextField(
                     value = pendingDeleteMemory?.content.orEmpty(),
                     onValueChange = {},
                     readOnly = true,
+                    label = { Text(stringResource(R.string.assistant_memory_content_label)) },
                     modifier = Modifier.fillMaxWidth(),
                     maxLines = 8,
                 )

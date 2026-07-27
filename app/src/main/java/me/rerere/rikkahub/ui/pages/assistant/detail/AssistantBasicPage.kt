@@ -12,10 +12,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +41,8 @@ import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.ArrowRight01
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.data.datastore.Settings
+import me.rerere.rikkahub.data.datastore.findModelById
 import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.ui.pages.assistant.AssistantVM
@@ -52,9 +52,10 @@ import me.rerere.rikkahub.ui.components.ai.ModelListSheet
 import me.rerere.rikkahub.ui.components.ai.rememberModelListState
 import me.rerere.rikkahub.ui.components.ai.ContextCachePicker
 import me.rerere.rikkahub.ui.components.ai.ReasoningButton
+import me.rerere.rikkahub.ui.components.ai.SearchPickerIcon
+import me.rerere.rikkahub.ui.components.ai.SearchPickerSheet
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
-import me.rerere.rikkahub.ui.components.ui.FormItem
 import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.components.ui.TagsInput
 import me.rerere.rikkahub.ui.components.ui.UIAvatar
@@ -70,6 +71,7 @@ import me.rerere.rikkahub.data.model.Tag as DataTag
 @Composable
 fun AssistantBasicPage(
     id: String,
+    requestSettingsOnly: Boolean = false,
 ) {
     val vm: AssistantDetailVM = koinViewModel(
         parameters = {
@@ -79,6 +81,7 @@ fun AssistantBasicPage(
     val assistantVm: AssistantVM = koinViewModel()
     val navController = LocalNavController.current
     val assistant by vm.assistant.collectAsStateWithLifecycle()
+    val settings by vm.settings.collectAsStateWithLifecycle()
     val providers by vm.providers.collectAsStateWithLifecycle()
     val tags by vm.tags.collectAsStateWithLifecycle()
     val workspaces by vm.workspaces.collectAsStateWithLifecycle()
@@ -88,7 +91,15 @@ fun AssistantBasicPage(
         topBar = {
             LargeFlexibleTopAppBar(
                 title = {
-                    Text(stringResource(R.string.assistant_page_tab_basic))
+                    Text(
+                        stringResource(
+                            if (requestSettingsOnly) {
+                                R.string.assistant_page_tab_request
+                            } else {
+                                R.string.assistant_page_tab_basic
+                            }
+                        )
+                    )
                 },
                 navigationIcon = {
                     BackButton()
@@ -103,10 +114,12 @@ fun AssistantBasicPage(
         AssistantBasicContent(
             innerPadding = innerPadding,
             assistant = assistant,
+            settings = settings,
             providers = providers,
             tags = tags,
             workspaces = workspaces,
             onUpdate = { vm.update(it) },
+            onUpdateSearchService = { vm.updateSearchService(it) },
             vm = vm,
             onDelete = {
                 assistantVm.removeAssistant(assistant)
@@ -115,6 +128,7 @@ fun AssistantBasicPage(
                     launchSingleTop = true
                 }
             },
+            requestSettingsOnly = requestSettingsOnly,
         )
     }
 }
@@ -123,12 +137,15 @@ fun AssistantBasicPage(
 internal fun AssistantBasicContent(
     innerPadding: PaddingValues,
     assistant: Assistant,
+    settings: Settings,
     providers: List<me.rerere.ai.provider.ProviderSetting>,
     tags: List<DataTag>,
     workspaces: List<WorkspaceEntity>,
     onUpdate: (Assistant) -> Unit,
+    onUpdateSearchService: (Int) -> Unit,
     vm: AssistantDetailVM,
     onDelete: () -> Unit = {},
+    requestSettingsOnly: Boolean = false,
 ) {
     val chatModelState = rememberModelListState(
         modelId = assistant.chatModelId,
@@ -136,6 +153,7 @@ internal fun AssistantBasicContent(
         type = ModelType.CHAT,
     )
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    var showSearchPicker by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -146,6 +164,7 @@ internal fun AssistantBasicContent(
             .imePadding(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        if (!requestSettingsOnly) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -170,8 +189,9 @@ internal fun AssistantBasicContent(
             )
         }
 
-        Card(
-            colors = CustomColors.cardColorsOnSurfaceContainer
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        CardGroup(
+            continueToNext = true,
         ) {
             FormItem(
                 label = {
@@ -193,7 +213,6 @@ internal fun AssistantBasicContent(
                 )
             }
 
-            HorizontalDivider()
 
             FormItem(
                 label = {
@@ -210,36 +229,6 @@ internal fun AssistantBasicContent(
                 )
             }
 
-            HorizontalDivider()
-
-            FormItem(
-                label = {
-                    Text(stringResource(R.string.assistant_page_workspace))
-                },
-                description = {
-                    Text(stringResource(R.string.assistant_page_workspace_desc))
-                },
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            ) {
-                val selectedWorkspace = workspaces.find { it.id == assistant.workspaceId?.toString() }
-                Select(
-                    options = listOf<WorkspaceEntity?>(null) + workspaces,
-                    selectedOption = selectedWorkspace,
-                    onOptionSelected = { workspace ->
-                        onUpdate(
-                            assistant.copy(
-                                workspaceId = workspace?.id?.let { Uuid.parse(it) }
-                            )
-                        )
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    optionToString = { workspace ->
-                        workspace?.name ?: stringResource(R.string.workspace_no_binding)
-                    },
-                )
-            }
-
-            HorizontalDivider()
 
             FormItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -263,7 +252,6 @@ internal fun AssistantBasicContent(
                 }
             )
 
-            HorizontalDivider()
 
             FormItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -282,24 +270,26 @@ internal fun AssistantBasicContent(
                     )
                 }
             )
+        }
 
-            if (!assistant.useGradientBackground) {
-                HorizontalDivider()
-                BackgroundPicker(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    background = assistant.background,
-                    backgroundOpacity = assistant.backgroundOpacity,
-                    onUpdate = { background ->
-                        onUpdate(assistant.copy(background = background))
-                    }
-                )
-            }
-
-            if (!assistant.useGradientBackground && assistant.background != null) {
-                val backgroundOpacity = assistant.backgroundOpacity.coerceIn(0.1f, 1f)
-                HorizontalDivider()
+        if (!assistant.useGradientBackground) {
+            BackgroundPicker(
+                background = assistant.background,
+                backgroundOpacity = assistant.backgroundOpacity,
+                continueFromPrevious = true,
+                continueToNext = true,
+                onUpdate = { background ->
+                    onUpdate(assistant.copy(background = background))
+                }
+            )
+        }
+        if (!assistant.useGradientBackground && assistant.background != null) {
+            val backgroundOpacity = assistant.backgroundOpacity.coerceIn(0.1f, 1f)
+            CardGroup(
+                continueFromPrevious = true,
+                continueToNext = true,
+            ) {
                 FormItem(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     label = {
                         Text(stringResource(R.string.assistant_page_background_opacity))
                     },
@@ -331,15 +321,75 @@ internal fun AssistantBasicContent(
                     )
                 }
             }
-
+        }
+        CardGroup(
+            continueFromPrevious = true,
+        ) {
+            item(
+                onClick = { showSearchPicker = true },
+                headlineContent = {
+                    Text(stringResource(R.string.search_ability_search))
+                },
+                supportingContent = {
+                    Text(stringResource(R.string.assistant_page_web_search_desc))
+                },
+                trailingContent = {
+                    SearchPickerIcon(
+                        enableSearch = assistant.enableWebSearch,
+                        settings = settings,
+                        model = settings.findModelById(assistant.chatModelId ?: settings.chatModelId),
+                    )
+                },
+            )
+            FormItem(
+                label = {
+                    Text(stringResource(R.string.assistant_page_workspace))
+                },
+                description = {
+                    Text(stringResource(R.string.assistant_page_workspace_desc))
+                },
+            ) {
+                val selectedWorkspace = workspaces.find { it.id == assistant.workspaceId?.toString() }
+                Select(
+                    options = listOf<WorkspaceEntity?>(null) + workspaces,
+                    selectedOption = selectedWorkspace,
+                    onOptionSelected = { workspace ->
+                        onUpdate(
+                            assistant.copy(
+                                workspaceId = workspace?.id?.let { Uuid.parse(it) }
+                            )
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    optionToString = { workspace ->
+                        workspace?.name ?: stringResource(R.string.workspace_no_binding)
+                    },
+                )
+            }
+        }
+        SearchPickerSheet(
+            show = showSearchPicker,
+            enableSearch = assistant.enableWebSearch,
+            settings = settings,
+            onToggleSearch = { enabled ->
+                onUpdate(assistant.copy(enableWebSearch = enabled))
+            },
+            onUpdateSearchService = onUpdateSearchService,
+            model = settings.findModelById(assistant.chatModelId ?: settings.chatModelId),
+            onDismiss = { showSearchPicker = false },
+        )
+        }
         }
 
-        Column {
+        if (requestSettingsOnly) {
             CardGroup {
                 item(
                     onClick = { chatModelState.open() },
                     headlineContent = {
                         Text(stringResource(R.string.assistant_page_chat_model))
+                    },
+                    supportingContent = {
+                        Text(stringResource(R.string.assistant_page_chat_model_desc))
                     },
                     trailingContent = {
                         Row(
@@ -361,18 +411,6 @@ internal fun AssistantBasicContent(
                         }
                     },
                 )
-            }
-            Text(
-                text = stringResource(R.string.assistant_page_chat_model_desc),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
-            )
-        }
-
-        Card(
-            colors = CustomColors.cardColorsOnSurfaceContainer
-        ) {
             FormItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {
@@ -425,7 +463,6 @@ internal fun AssistantBasicContent(
                     )
                 }
             }
-            HorizontalDivider()
             FormItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {
@@ -478,7 +515,6 @@ internal fun AssistantBasicContent(
                     )
                 }
             }
-            HorizontalDivider()
             FormItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {
@@ -493,12 +529,11 @@ internal fun AssistantBasicContent(
                     )
                 },
             )
-            HorizontalDivider()
             FormItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                label = { Text("上下文缓存") },
+                label = { Text(stringResource(R.string.assistant_page_context_cache)) },
                 description = {
-                    Text("适配 Claude / GPT-5.6，其它模型也可以看情况开启")
+                    Text(stringResource(R.string.assistant_page_context_cache_desc))
                 },
                 tail = {
                     ContextCachePicker(
@@ -507,7 +542,6 @@ internal fun AssistantBasicContent(
                     )
                 },
             )
-            HorizontalDivider()
             FormItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {
@@ -525,7 +559,6 @@ internal fun AssistantBasicContent(
                     )
                 }
             )
-            HorizontalDivider()
             FormItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {
@@ -557,7 +590,6 @@ internal fun AssistantBasicContent(
                     }
                 )
             }
-            HorizontalDivider()
             FormItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = { Text(stringResource(R.string.assistant_page_custom_headers)) },
@@ -567,7 +599,6 @@ internal fun AssistantBasicContent(
                     onUpdate = { onUpdate(assistant.copy(customHeaders = it)) },
                 )
             }
-            HorizontalDivider()
             FormItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = { Text(stringResource(R.string.assistant_page_custom_bodies)) },
@@ -578,20 +609,23 @@ internal fun AssistantBasicContent(
                 )
             }
         }
+        }
 
-        Button(
-            onClick = { showDeleteConfirm = true },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.error,
-                contentColor = MaterialTheme.colorScheme.onError,
-            ),
-        ) {
-            Icon(HugeIcons.Delete01, contentDescription = null)
-            Text(
-                stringResource(R.string.assistant_page_delete_assistant),
-                modifier = Modifier.padding(start = 8.dp),
-            )
+        if (!requestSettingsOnly) {
+            Button(
+                onClick = { showDeleteConfirm = true },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError,
+                ),
+            ) {
+                Icon(HugeIcons.Delete01, contentDescription = null)
+                Text(
+                    stringResource(R.string.assistant_page_delete_assistant),
+                    modifier = Modifier.padding(start = 8.dp),
+                )
+            }
         }
     }
     ModelListSheet(

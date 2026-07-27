@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -28,7 +27,8 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.files.FilesManager
-import me.rerere.rikkahub.ui.components.ui.FormItem
+import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import org.koin.compose.koinInject
 
 @Composable
@@ -36,11 +36,14 @@ fun BackgroundPicker(
     modifier: Modifier = Modifier,
     background: String?,
     backgroundOpacity: Float = 1.0f,
+    continueFromPrevious: Boolean = false,
+    continueToNext: Boolean = false,
     onUpdate: (String?) -> Unit
 ) {
     val filesManager: FilesManager = koinInject()
     var showPickOption by remember { mutableStateOf(false) }
     var showUrlInput by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
     var urlInput by remember { mutableStateOf("") }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -56,58 +59,63 @@ fun BackgroundPicker(
 
     val previewOpacity = backgroundOpacity.coerceIn(0f, 1f)
 
-    FormItem(
+    CardGroup(
         modifier = modifier,
-        label = {
-            Text(stringResource(R.string.assistant_page_chat_background))
-        },
-        description = {
-            Text(stringResource(R.string.assistant_page_chat_background_desc))
-        }
+        continueFromPrevious = continueFromPrevious,
+        continueToNext = continueToNext,
     ) {
-        Button(
-            onClick = {
-                showPickOption = true
+        FormItem(
+            label = {
+                Text(stringResource(R.string.assistant_page_chat_background))
             },
-            modifier = Modifier.fillMaxWidth()
+            description = {
+                Text(stringResource(R.string.assistant_page_chat_background_desc))
+            }
         ) {
-            Text(
-                text = if (background != null) {
-                    stringResource(R.string.assistant_page_change_background)
-                } else {
-                    stringResource(R.string.assistant_page_select_background)
-                }
-            )
-        }
-
-        if (background != null) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
+            Button(
+                onClick = {
+                    showPickOption = true
+                },
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = stringResource(R.string.assistant_page_background_set),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.weight(1f)
-                )
-                TextButton(
-                    onClick = {
-                        onUpdate(null)
+                    text = if (background != null) {
+                        stringResource(R.string.assistant_page_change_background)
+                    } else {
+                        stringResource(R.string.assistant_page_select_background)
                     }
-                ) {
-                    Text(stringResource(R.string.assistant_page_remove))
-                }
+                )
             }
 
-            AsyncImage(
-                model = background,
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .alpha(previewOpacity)
-            )
+            if (background != null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.assistant_page_background_set),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.weight(1f)
+                    )
+                    TextButton(
+                        onClick = {
+                            showDeleteConfirm = true
+                        }
+                    ) {
+                        Text(stringResource(R.string.assistant_page_remove))
+                    }
+                }
+
+                AsyncImage(
+                    model = background,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .alpha(previewOpacity)
+                )
+            }
         }
     }
 
@@ -146,7 +154,7 @@ fun BackgroundPicker(
                         Button(
                             onClick = {
                                 showPickOption = false
-                                onUpdate(null)
+                                showDeleteConfirm = true
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
@@ -207,5 +215,19 @@ fun BackgroundPicker(
                 }
             }
         )
+    }
+
+    RikkaConfirmDialog(
+        show = showDeleteConfirm,
+        title = stringResource(R.string.assistant_page_delete_background_title),
+        confirmText = stringResource(R.string.common_delete),
+        dismissText = stringResource(R.string.common_cancel),
+        onConfirm = {
+            showDeleteConfirm = false
+            onUpdate(null)
+        },
+        onDismiss = { showDeleteConfirm = false },
+    ) {
+        Text(stringResource(R.string.assistant_page_delete_background_confirm))
     }
 }

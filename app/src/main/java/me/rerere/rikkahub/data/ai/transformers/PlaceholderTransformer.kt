@@ -1,7 +1,5 @@
 package me.rerere.rikkahub.data.ai.transformers
 
-import android.content.Context
-import android.os.BatteryManager
 import android.os.Build
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,17 +13,8 @@ import me.rerere.rikkahub.data.datastore.getCurrentAssistant
 import me.rerere.rikkahub.data.model.Assistant
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
-import java.time.temporal.Temporal
-import java.util.Locale
-import java.util.TimeZone
 
 data class PlaceholderCtx(
-    val context: Context,
     val settingsStore: SettingsStore,
     val model: Model,
     val assistant: Assistant,
@@ -60,16 +49,12 @@ fun buildPlaceholders(block: PlaceholderBuilder.() -> Unit): Map<String, Placeho
 
 object DefaultPlaceholderProvider : PlaceholderProvider {
     override val placeholders: Map<String, PlaceholderInfo> = buildPlaceholders {
-        placeholder("cur_date", { Text(stringResource(R.string.placeholder_current_date)) }) {
-            LocalDate.now().toDateString()
+        placeholder("user", { Text(stringResource(R.string.placeholder_user)) }) {
+            it.settingsStore.settingsFlow.value.displaySetting.userNickname.ifBlank { "user" }
         }
 
-        placeholder("cur_time", { Text(stringResource(R.string.placeholder_current_time)) }) {
-            LocalTime.now().toTimeString()
-        }
-
-        placeholder("cur_datetime", { Text(stringResource(R.string.placeholder_current_datetime)) }) {
-            LocalDateTime.now().toDateTimeString()
+        placeholder("char", { Text(stringResource(R.string.placeholder_char)) }) {
+            it.assistant.name.ifBlank { "assistant" }
         }
 
         placeholder("model_id", { Text(stringResource(R.string.placeholder_model_id)) }) {
@@ -80,58 +65,11 @@ object DefaultPlaceholderProvider : PlaceholderProvider {
             it.model.displayName
         }
 
-        placeholder("locale", { Text(stringResource(R.string.placeholder_locale)) }) {
-            Locale.getDefault().displayName
-        }
-
-        placeholder("timezone", { Text(stringResource(R.string.placeholder_timezone)) }) {
-            TimeZone.getDefault().displayName
-        }
-
-        placeholder("system_version", { Text(stringResource(R.string.placeholder_system_version)) }) {
-            "Android SDK v${Build.VERSION.SDK_INT} (${Build.VERSION.RELEASE})"
-        }
-
         placeholder("device_info", { Text(stringResource(R.string.placeholder_device_info)) }) {
             "${Build.BRAND} ${Build.MODEL}"
         }
-
-        placeholder("battery_level", { Text(stringResource(R.string.placeholder_battery_level)) }) {
-            it.context.batteryLevel().toString()
-        }
-
-        placeholder("nickname", { Text(stringResource(R.string.placeholder_nickname)) }) {
-            it.settingsStore.settingsFlow.value.displaySetting.userNickname.ifBlank { "user" }
-        }
-
-        placeholder("char", { Text(stringResource(R.string.placeholder_char)) }) {
-            it.assistant.name.ifBlank { "assistant" }
-        }
-
-        placeholder("user", { Text(stringResource(R.string.placeholder_user)) }) {
-            it.settingsStore.settingsFlow.value.displaySetting.userNickname.ifBlank { "user" }
-        }
     }
 
-    private fun Temporal.toDateString() = DateTimeFormatter
-        .ofLocalizedDate(FormatStyle.MEDIUM)
-        .withLocale(Locale.getDefault())
-        .format(this)
-
-    private fun Temporal.toTimeString() = DateTimeFormatter
-        .ofLocalizedTime(FormatStyle.MEDIUM)
-        .withLocale(Locale.getDefault())
-        .format(this)
-
-    private fun Temporal.toDateTimeString() = DateTimeFormatter
-        .ofLocalizedDateTime(FormatStyle.MEDIUM)
-        .withLocale(Locale.getDefault())
-        .format(this)
-
-    private fun Context.batteryLevel(): Int {
-        val batteryManager = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
-        return batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
-    }
 }
 
 object PlaceholderTransformer : InputMessageTransformer, KoinComponent {
@@ -165,7 +103,6 @@ object PlaceholderTransformer : InputMessageTransformer, KoinComponent {
         var result = text
 
         val ctx = PlaceholderCtx(
-            context = ctx.context,
             settingsStore = settingsStore,
             model = ctx.model,
             assistant = ctx.assistant

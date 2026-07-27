@@ -3,6 +3,7 @@ package me.rerere.rikkahub.data.db.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import me.rerere.rikkahub.data.db.entity.MemoryEntity
@@ -32,6 +33,20 @@ interface MemoryDAO {
 
     @Query("DELETE FROM memoryentity WHERE id = :id")
     suspend fun deleteMemory(id: Int)
+
+    @Query("SELECT COUNT(*) FROM memoryentity")
+    suspend fun countMemories(): Int
+
+    @Query("DELETE FROM sqlite_sequence WHERE name = 'MemoryEntity'")
+    suspend fun resetMemorySequence()
+
+    @Transaction
+    suspend fun deleteMemoryAndResetSequenceIfEmpty(id: Int) {
+        deleteMemory(id)
+        if (countMemories() == 0) {
+            resetMemorySequence()
+        }
+    }
 
     @Query("DELETE FROM memoryentity WHERE assistant_id = :assistantId")
     suspend fun deleteMemoriesOfAssistant(assistantId: String)

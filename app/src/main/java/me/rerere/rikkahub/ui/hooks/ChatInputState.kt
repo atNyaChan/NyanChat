@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import me.rerere.ai.ui.UIMessagePart
@@ -11,7 +12,15 @@ import kotlin.uuid.Uuid
 
 class ChatInputState {
     val textContent = TextFieldState()
-    var messageContent by mutableStateOf(listOf<UIMessagePart>())
+    private val messageContentState = mutableStateOf<List<UIMessagePart>>(emptyList())
+    var messageContent: List<UIMessagePart>
+        get() = messageContentState.value
+        set(value) {
+            messageContentState.value = value
+            attachmentCount = value.count { it.isAttachment() }
+        }
+    var attachmentCount by mutableIntStateOf(0)
+        private set
     var editingMessage by mutableStateOf<Uuid?>(null)
     private var editingParts: List<UIMessagePart>? = null
     private var editingAttachmentUrls: Set<String> = emptySet()
@@ -153,5 +162,12 @@ class ChatInputState {
             is UIMessagePart.Document -> this.url
             else -> null
         }
+    }
+
+    private fun UIMessagePart.isAttachment(): Boolean {
+        return this is UIMessagePart.Image ||
+            this is UIMessagePart.Video ||
+            this is UIMessagePart.Audio ||
+            this is UIMessagePart.Document
     }
 }

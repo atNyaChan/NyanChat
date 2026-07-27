@@ -13,6 +13,15 @@ import me.rerere.document.PptxParser
 import java.io.File
 
 object DocumentAsPromptTransformer : InputMessageTransformer {
+    suspend fun extractDocumentText(document: UIMessagePart.Document): String? {
+        return withContext(Dispatchers.IO) {
+            val file = runCatching { document.url.toUri().toFile() }.getOrNull()
+                ?: return@withContext null
+            if (!file.exists() || !file.isFile) return@withContext null
+            runCatching { parseDocument(file, document.mime) }.getOrNull()
+        }
+    }
+
     override suspend fun transform(
         ctx: TransformerContext,
         messages: List<UIMessage>,
@@ -74,15 +83,19 @@ object DocumentAsPromptTransformer : InputMessageTransformer {
             return "[ERROR, file not found: ${document.fileName}]"
         }
         return runCatching {
-            when (document.mime) {
-                "application/pdf" -> parsePdfAsText(file)
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document" -> parseDocxAsText(file)
-                "application/vnd.openxmlformats-officedocument.presentationml.presentation" -> parsePptxAsText(file)
-                "application/epub+zip" -> parseEpubAsText(file)
-                else -> file.readText()
-            }
+            parseDocument(file, document.mime)
         }.getOrElse {
             "[ERROR, failed to read file: ${document.fileName}]"
+        }
+    }
+
+    private fun parseDocument(file: File, mime: String): String {
+        return when (mime) {
+            "application/pdf" -> parsePdfAsText(file)
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document" -> parseDocxAsText(file)
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation" -> parsePptxAsText(file)
+            "application/epub+zip" -> parseEpubAsText(file)
+            else -> file.readText()
         }
     }
 }

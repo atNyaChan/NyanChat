@@ -7,6 +7,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -64,6 +65,14 @@ interface CardGroupScope {
         colors: ListItemColors? = null,
         headlineContent: @Composable () -> Unit,
     )
+
+    fun FormItem(
+        modifier: Modifier = Modifier,
+        label: @Composable () -> Unit,
+        description: (@Composable () -> Unit)? = null,
+        tail: (@Composable () -> Unit)? = null,
+        content: (@Composable ColumnScope.() -> Unit)? = null,
+    )
 }
 
 private class CardGroupScopeImpl : CardGroupScope {
@@ -92,6 +101,29 @@ private class CardGroupScopeImpl : CardGroupScope {
             )
         )
     }
+
+    override fun FormItem(
+        modifier: Modifier,
+        label: @Composable () -> Unit,
+        description: (@Composable () -> Unit)?,
+        tail: (@Composable () -> Unit)?,
+        content: (@Composable ColumnScope.() -> Unit)?,
+    ) {
+        item(
+            headlineContent = label,
+            supportingContent = if (description != null || content != null) {
+                {
+                    Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+                        description?.invoke()
+                        content?.invoke(this)
+                    }
+                }
+            } else {
+                null
+            },
+            trailingContent = tail,
+        )
+    }
 }
 
 @Composable
@@ -99,6 +131,8 @@ private fun CardGroupListItem(
     item: CardGroupItem,
     count: Int,
     index: Int,
+    continueFromPrevious: Boolean,
+    continueToNext: Boolean,
 ) {
     val isFirst = index == 0
     val isLast = index == count - 1
@@ -107,11 +141,19 @@ private fun CardGroupListItem(
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val topCorner by animateDpAsState(
-        targetValue = if (isPressed || count == 1 || isFirst) CardGroupCorner else CardGroupInnerCorner,
+        targetValue = if (isPressed || (isFirst && !continueFromPrevious)) {
+            CardGroupCorner
+        } else {
+            CardGroupInnerCorner
+        },
         animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
     )
     val bottomCorner by animateDpAsState(
-        targetValue = if (isPressed || count == 1 || isLast) CardGroupCorner else CardGroupInnerCorner,
+        targetValue = if (isPressed || (isLast && !continueToNext)) {
+            CardGroupCorner
+        } else {
+            CardGroupInnerCorner
+        },
         animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
     )
 
@@ -148,6 +190,8 @@ private fun CardGroupListItem(
 fun CardGroup(
     modifier: Modifier = Modifier,
     title: (@Composable () -> Unit)? = null,
+    continueFromPrevious: Boolean = false,
+    continueToNext: Boolean = false,
     content: CardGroupScope.() -> Unit,
 ) {
     val scope = CardGroupScopeImpl()
@@ -165,7 +209,13 @@ fun CardGroup(
         }
         val count = scope.items.size
         scope.items.fastForEachIndexed { index, item ->
-            CardGroupListItem(item = item, count = count, index = index)
+            CardGroupListItem(
+                item = item,
+                count = count,
+                index = index,
+                continueFromPrevious = continueFromPrevious,
+                continueToNext = continueToNext,
+            )
             if (index != count - 1) {
                 Spacer(modifier = Modifier.height(CardGroupItemSpacing))
             }

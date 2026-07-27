@@ -66,7 +66,12 @@ internal fun buildClipboardTool(context: Context): Tool = Tool(
 
             else -> error("unknown action: $action, must be one of [read, write]")
         }
-        Logging.logPermission(type = type, rawData = params.toString(), resultData = payload.toString())
+        Logging.logPermission(
+            type = type,
+            rawData = params.toString(),
+            resultData = payload.toString(),
+            granted = true,
+        )
         listOf(UIMessagePart.Text(payload.toString()))
     }
 )

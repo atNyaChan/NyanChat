@@ -13,24 +13,30 @@ import me.rerere.rikkahub.R
 import kotlin.system.exitProcess
 
 @Composable
-fun BackupDialog(importing: Boolean = false) {
+fun BackupDialog(
+    importing: Boolean = false,
+    exporting: Boolean = false,
+) {
     AlertDialog(
         onDismissRequest = {},
         title = {
             Text(
-                if (importing) stringResource(R.string.backup_page_importing)
-                else stringResource(R.string.backup_page_restore_success)
+                when {
+                    exporting -> stringResource(R.string.backup_page_exporting)
+                    importing -> stringResource(R.string.backup_page_importing)
+                    else -> stringResource(R.string.backup_page_restore_success)
+                }
             )
         },
         text = {
-            if (importing) {
+            if (importing || exporting) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             } else {
                 Text(stringResource(R.string.backup_page_restart_desc))
             }
         },
         confirmButton = {
-            if (!importing) {
+            if (!importing && !exporting) {
                 Button(
                     onClick = {
                         exitProcess(0)

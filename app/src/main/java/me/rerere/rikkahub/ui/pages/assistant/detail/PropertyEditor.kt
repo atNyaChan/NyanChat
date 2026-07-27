@@ -31,6 +31,7 @@ import me.rerere.ai.provider.CustomHeader
 import me.rerere.highlight.LocalHighlighter
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.components.richtext.HighlightCodeVisualTransformation
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.ui.theme.LocalDarkMode
@@ -43,6 +44,7 @@ private val jsonLenient = Json {
 
 @Composable
 fun CustomHeaders(headers: List<CustomHeader>, onUpdate: (List<CustomHeader>) -> Unit) {
+    var pendingDeleteIndex by remember { mutableStateOf<Int?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         headers.forEachIndexed { index, header ->
             var headerName by remember(header.name) { mutableStateOf(header.name) }
@@ -81,11 +83,7 @@ fun CustomHeaders(headers: List<CustomHeader>, onUpdate: (List<CustomHeader>) ->
                         }
                     },
                     trailingContent = {
-                        IconButton(onClick = {
-                            val updatedHeaders = headers.toMutableList()
-                            updatedHeaders.removeAt(index)
-                            onUpdate(updatedHeaders)
-                        }) {
+                        IconButton(onClick = { pendingDeleteIndex = index }) {
                             Icon(
                                 HugeIcons.Delete01,
                                 contentDescription = stringResource(R.string.assistant_page_delete_header)
@@ -110,11 +108,37 @@ fun CustomHeaders(headers: List<CustomHeader>, onUpdate: (List<CustomHeader>) ->
             Text(stringResource(R.string.assistant_page_add_header))
         }
     }
+    RikkaConfirmDialog(
+        show = pendingDeleteIndex != null,
+        title = stringResource(
+            R.string.assistant_page_delete_custom_title,
+            stringResource(R.string.assistant_page_custom_header_singular),
+        ),
+        confirmText = stringResource(R.string.common_delete),
+        dismissText = stringResource(R.string.common_cancel),
+        onConfirm = {
+            pendingDeleteIndex?.let { index ->
+                if (index in headers.indices) {
+                    onUpdate(headers.filterIndexed { itemIndex, _ -> itemIndex != index })
+                }
+            }
+            pendingDeleteIndex = null
+        },
+        onDismiss = { pendingDeleteIndex = null },
+    ) {
+        Text(
+            stringResource(
+                R.string.assistant_page_delete_custom_confirm,
+                stringResource(R.string.assistant_page_custom_header_singular),
+            )
+        )
+    }
 }
 
 @Composable
 fun CustomBodies(customBodies: List<CustomBody>, onUpdate: (List<CustomBody>) -> Unit) {
     val context = LocalContext.current
+    var pendingDeleteIndex by remember { mutableStateOf<Int?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         customBodies.forEachIndexed { index, body ->
             var bodyKey by remember(body.key) { mutableStateOf(body.key) }
@@ -180,11 +204,7 @@ fun CustomBodies(customBodies: List<CustomBody>, onUpdate: (List<CustomBody>) ->
                         }
                     },
                     trailingContent = {
-                        IconButton(onClick = {
-                            val updatedBodies = customBodies.toMutableList()
-                            updatedBodies.removeAt(index)
-                            onUpdate(updatedBodies)
-                        }) {
+                        IconButton(onClick = { pendingDeleteIndex = index }) {
                             Icon(
                                 HugeIcons.Delete01,
                                 contentDescription = stringResource(R.string.assistant_page_delete_body)
@@ -208,5 +228,30 @@ fun CustomBodies(customBodies: List<CustomBody>, onUpdate: (List<CustomBody>) ->
             Spacer(Modifier.width(4.dp))
             Text(stringResource(R.string.assistant_page_add_body))
         }
+    }
+    RikkaConfirmDialog(
+        show = pendingDeleteIndex != null,
+        title = stringResource(
+            R.string.assistant_page_delete_custom_title,
+            stringResource(R.string.assistant_page_custom_body_singular),
+        ),
+        confirmText = stringResource(R.string.common_delete),
+        dismissText = stringResource(R.string.common_cancel),
+        onConfirm = {
+            pendingDeleteIndex?.let { index ->
+                if (index in customBodies.indices) {
+                    onUpdate(customBodies.filterIndexed { itemIndex, _ -> itemIndex != index })
+                }
+            }
+            pendingDeleteIndex = null
+        },
+        onDismiss = { pendingDeleteIndex = null },
+    ) {
+        Text(
+            stringResource(
+                R.string.assistant_page_delete_custom_confirm,
+                stringResource(R.string.assistant_page_custom_body_singular),
+            )
+        )
     }
 }

@@ -43,6 +43,7 @@ sealed class LogEntry {
         val type: String,
         val rawData: String,
         val resultData: String? = null,
+        val granted: Boolean? = null,
     ) : LogEntry()
 }
 
@@ -56,8 +57,20 @@ object Logging {
         addLog(entry)
     }
 
-    fun logPermission(type: String, rawData: String, resultData: String? = null) {
-        addLog(LogEntry.PermissionLog(type = type, rawData = rawData, resultData = resultData))
+    fun logPermission(
+        type: String,
+        rawData: String,
+        resultData: String? = null,
+        granted: Boolean? = null,
+    ) {
+        addLog(
+            LogEntry.PermissionLog(
+                type = type,
+                rawData = rawData,
+                resultData = resultData,
+                granted = granted,
+            )
+        )
     }
 
     private fun addLog(entry: LogEntry) {

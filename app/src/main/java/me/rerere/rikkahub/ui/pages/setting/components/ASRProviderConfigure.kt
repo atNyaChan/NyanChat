@@ -8,6 +8,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -15,22 +16,26 @@ import me.rerere.asr.ASRProviderSetting
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.ui.FormItem
 import me.rerere.rikkahub.ui.components.ui.OutlinedNumberInput
+import me.rerere.rikkahub.ui.components.ui.SelectTextField
 
 @Composable
 fun ASRProviderConfigure(
     setting: ASRProviderSetting,
     modifier: Modifier = Modifier,
-    onValueChange: (ASRProviderSetting) -> Unit
+    onValueChange: (ASRProviderSetting) -> Unit,
+    footer: (@Composable () -> Unit)? = null,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier.verticalScroll(rememberScrollState())
     ) {
+        val providers = remember { ASRProviderSetting.Types }
+
         FormItem(
             label = { Text(stringResource(R.string.setting_asr_configure_provider_type)) },
             description = { Text(stringResource(R.string.setting_asr_configure_provider_type_desc)) }
         ) {
-            OutlinedTextField(
+            SelectTextField(
                 value = when (setting) {
                     is ASRProviderSetting.OpenAIRealtime -> "OpenAI Realtime"
                     is ASRProviderSetting.DashScope -> "DashScope"
@@ -38,9 +43,40 @@ fun ASRProviderConfigure(
                     is ASRProviderSetting.MiMo -> "MiMo"
                     is ASRProviderSetting.Step -> "Step"
                 },
-                onValueChange = {},
+                options = providers,
                 readOnly = true,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                optionToString = { providerClass ->
+                    when (providerClass) {
+                        ASRProviderSetting.OpenAIRealtime::class -> "OpenAI Realtime"
+                        ASRProviderSetting.DashScope::class -> "DashScope"
+                        ASRProviderSetting.Volcengine::class -> "Volcengine"
+                        ASRProviderSetting.MiMo::class -> "MiMo"
+                        ASRProviderSetting.Step::class -> "Step"
+                        else -> providerClass.simpleName ?: "Unknown"
+                    }
+                },
+                onOptionSelected = { providerClass ->
+                    val newSetting = when (providerClass) {
+                        ASRProviderSetting.OpenAIRealtime::class ->
+                            ASRProviderSetting.OpenAIRealtime(id = setting.id)
+
+                        ASRProviderSetting.DashScope::class ->
+                            ASRProviderSetting.DashScope(id = setting.id)
+
+                        ASRProviderSetting.Volcengine::class ->
+                            ASRProviderSetting.Volcengine(id = setting.id)
+
+                        ASRProviderSetting.MiMo::class ->
+                            ASRProviderSetting.MiMo(id = setting.id)
+
+                        ASRProviderSetting.Step::class ->
+                            ASRProviderSetting.Step(id = setting.id)
+
+                        else -> setting
+                    }
+                    onValueChange(newSetting)
+                },
             )
         }
 
@@ -63,6 +99,7 @@ fun ASRProviderConfigure(
             is ASRProviderSetting.MiMo -> MiMoASRConfiguration(setting, onValueChange)
             is ASRProviderSetting.Step -> StepASRConfiguration(setting, onValueChange)
         }
+        footer?.invoke()
     }
 }
 
@@ -526,7 +563,7 @@ private fun StepASRConfiguration(
                 onValueChange(setting.copy(hotwords = list))
             },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("热词1, 热词2, 热词3") }
+            placeholder = { Text(stringResource(R.string.setting_asr_configure_step_hotwords_placeholder)) }
         )
     }
 }

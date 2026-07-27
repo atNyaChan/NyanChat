@@ -106,11 +106,6 @@ class ChatVM(
     val settings: StateFlow<Settings> =
         settingsStore.settingsFlow.stateIn(viewModelScope, SharingStarted.Eagerly, Settings.dummy())
 
-    // 网络搜索(每个助手独立)
-    val enableWebSearch = settings.map {
-        it.getCurrentAssistant().enableWebSearch
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
-
     // 当前模型
     val currentChatModel = settings.map { settings ->
         settings.getCurrentChatModel()
@@ -176,6 +171,10 @@ class ChatVM(
     fun handleMessageSend(content: List<UIMessagePart>,answer: Boolean = true) {
         if (content.isEmptyInputMessage()) return
         chatService.sendMessage(_conversationId, content, answer)
+    }
+
+    suspend fun estimateRequestBaseWordCount(): Int {
+        return chatService.estimateRequestBaseWordCount(_conversationId)
     }
 
     fun handleMessageEdit(parts: List<UIMessagePart>, messageId: Uuid) {

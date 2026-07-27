@@ -300,9 +300,36 @@ class ConversationRepository(
             conversationDAO.update(
                 conversationToConversationEntity(conversation)
             )
-            // 删除旧的节点，插入新的节点
-            messageNodeDAO.deleteByConversation(conversation.id.toString())
-            saveMessageNodes(conversation.id.toString(), conversation.messageNodes)
+            val conversationId = conversation.id.toString()
+            val existing = messageNodeDAO.getNodeEntities(conversationId).associateBy { it.id }
+            val newIds = conversation.messageNodes.map { it.id.toString() }.toSet()
+
+            // 删除已移除的节点
+            (existing.keys - newIds).forEach { id -> messageNodeDAO.deleteById(id) }
+
+            // 只 upsert 真正有变更的节点，跳过未修改节点以减少数据库写入
+            val changed = mutableListOf<MessageNodeEntity>()
+            conversation.messageNodes.forEachIndexed { index, node ->
+                val entity = MessageNodeEntity(
+                    id = node.id.toString(),
+                    conversationId = conversationId,
+                    nodeIndex = index,
+                    messages = JsonInstant.encodeToString(node.messages),
+                    selectIndex = node.selectIndex,
+                )
+                val previous = existing[entity.id]
+                if (
+                    previous == null ||
+                    previous.messages != entity.messages ||
+                    previous.selectIndex != entity.selectIndex ||
+                    previous.nodeIndex != index
+                ) {
+                    changed.add(entity)
+                }
+            }
+            if (changed.isNotEmpty()) {
+                messageNodeDAO.insertAll(changed)
+            }
         }
         messageFtsManager.indexConversation(conversation)
     }

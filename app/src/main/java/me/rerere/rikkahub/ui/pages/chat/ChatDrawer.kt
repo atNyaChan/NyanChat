@@ -392,15 +392,15 @@ fun ChatDrawerContent(
                     .padding(horizontal = 8.dp)
             ) {
                 DrawerAction(
-                    icon = { Icon(HugeIcons.LanguageCircle, null) },
-                    label = { Text(stringResource(R.string.chat_page_menu_ai_translator)) },
-                    onClick = { navController.navigate(Screen.Translator) },
-                )
-
-                DrawerAction(
-                    icon = { Icon(HugeIcons.Image02, null) },
-                    label = { Text(stringResource(R.string.chat_page_menu_image_generation)) },
-                    onClick = { navController.navigate(Screen.ImageGen) },
+                    icon = {
+                        Icon(HugeIcons.ChartColumn, stringResource(R.string.stats_page_title))
+                    },
+                    label = {
+                        Text(stringResource(R.string.stats_page_title))
+                    },
+                    onClick = {
+                        navController.navigate(Screen.Stats)
+                    },
                 )
 
                 DrawerAction(
@@ -416,15 +416,15 @@ fun ChatDrawerContent(
                 )
 
                 DrawerAction(
-                    icon = {
-                        Icon(HugeIcons.ChartColumn, stringResource(R.string.stats_page_title))
-                    },
-                    label = {
-                        Text(stringResource(R.string.stats_page_title))
-                    },
-                    onClick = {
-                        navController.navigate(Screen.Stats)
-                    },
+                    icon = { Icon(HugeIcons.Image02, null) },
+                    label = { Text(stringResource(R.string.chat_page_menu_image_generation)) },
+                    onClick = { navController.navigate(Screen.ImageGen) },
+                )
+
+                DrawerAction(
+                    icon = { Icon(HugeIcons.LanguageCircle, null) },
+                    label = { Text(stringResource(R.string.chat_page_menu_ai_translator)) },
+                    onClick = { navController.navigate(Screen.Translator) },
                 )
 
                 Spacer(Modifier.weight(1f))

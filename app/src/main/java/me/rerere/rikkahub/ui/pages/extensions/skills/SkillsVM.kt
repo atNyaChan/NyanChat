@@ -33,7 +33,7 @@ class SkillsVM(
     val skills = _skills.asStateFlow()
 
     init {
-        loadSkills()
+        refreshSkills()
         viewModelScope.launch {
             settingsStore.settingsFlow
                 .map { it.skillOrder }
@@ -44,7 +44,7 @@ class SkillsVM(
         }
     }
 
-    private fun loadSkills() {
+    fun refreshSkills() {
         viewModelScope.launch(Dispatchers.IO) {
             _skills.value = sortSkills(skillManager.listSkills())
         }

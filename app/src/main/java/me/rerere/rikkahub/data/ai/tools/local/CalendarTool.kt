@@ -89,6 +89,7 @@ internal fun buildCalendarQueryTool(context: Context): Tool = Tool(
                 type = "读取日历",
                 rawData = args.toString(),
                 resultData = payload.toString(),
+                granted = true,
             )
             return listOf(UIMessagePart.Text(payload.toString()))
         }
@@ -285,6 +286,7 @@ internal fun buildCalendarCreateTool(context: Context): Tool = Tool(
                 type = "写入日历",
                 rawData = args.toString(),
                 resultData = payload.toString(),
+                granted = true,
             )
             return listOf(UIMessagePart.Text(payload.toString()))
         }

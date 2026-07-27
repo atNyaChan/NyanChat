@@ -1,18 +1,13 @@
 package me.rerere.rikkahub.ui.pages.setting
 
 import me.rerere.hugeicons.HugeIcons
-import me.rerere.hugeicons.stroke.Tick01
 import me.rerere.hugeicons.stroke.StopCircle
-import me.rerere.hugeicons.stroke.DragDropHorizontal
-import me.rerere.hugeicons.stroke.PencilEdit01
 import me.rerere.hugeicons.stroke.Add01
 import me.rerere.hugeicons.stroke.Mic01
-import me.rerere.hugeicons.stroke.Tools
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.VolumeHigh
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -31,8 +26,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
@@ -58,9 +51,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -70,8 +61,6 @@ import me.rerere.rikkahub.data.datastore.DEFAULT_SYSTEM_TTS_ID
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
-import me.rerere.rikkahub.ui.components.ui.Tag
-import me.rerere.rikkahub.ui.components.ui.TagType
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalTTSState
 import me.rerere.rikkahub.ui.pages.setting.components.ASRProviderConfigure
@@ -95,7 +84,11 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
         topBar = {
             LargeFlexibleTopAppBar(
                 title = {
-                    Text(text = stringResource(R.string.setting_page_tts_service))
+                    Text(
+                        text = stringResource(
+                            if (selectedPage == 0) R.string.speech_tab_tts else R.string.speech_tab_asr
+                        )
+                    )
                 },
                 navigationIcon = {
                     BackButton()
@@ -279,6 +272,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
     editingASRProvider?.let { provider ->
         val bottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
         var currentProvider by remember(provider) { mutableStateOf(provider) }
+        var showDeleteConfirm by remember(provider.id) { mutableStateOf(false) }
 
         ModalBottomSheet(
             onDismissRequest = {
@@ -306,18 +300,33 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                     onValueChange = { newState ->
                         currentProvider = newState
                     },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    footer = {
+                        Button(
+                            onClick = { showDeleteConfirm = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error,
+                                contentColor = MaterialTheme.colorScheme.onError,
+                            ),
+                        ) {
+                            Icon(HugeIcons.Delete01, contentDescription = null)
+                            Text(
+                                stringResource(R.string.setting_asr_page_delete_provider),
+                                modifier = Modifier.padding(start = 8.dp),
+                            )
+                        }
+                    },
                 )
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                 ) {
                     TextButton(
                         onClick = {
                             editingASRProvider = null
-                        },
-                        modifier = Modifier.weight(1f)
+                        }
                     ) {
                         Text(stringResource(R.string.common_cancel))
                     }
@@ -329,13 +338,43 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                             }
                             vm.updateSettings(settings.copy(asrProviders = newProviders))
                             editingASRProvider = null
-                        },
-                        modifier = Modifier.weight(1f)
+                        }
                     ) {
                         Text(stringResource(R.string.common_save))
                     }
                 }
             }
+        }
+        RikkaConfirmDialog(
+            show = showDeleteConfirm,
+            title = stringResource(R.string.setting_asr_page_delete_provider),
+            confirmText = stringResource(R.string.common_delete),
+            dismissText = stringResource(R.string.common_cancel),
+            onConfirm = {
+                val newProviders = settings.asrProviders - provider
+                val newSelectedId = if (settings.selectedASRProviderId == provider.id) {
+                    newProviders.firstOrNull()?.id
+                } else {
+                    settings.selectedASRProviderId
+                }
+                vm.updateSettings(
+                    settings.copy(
+                        asrProviders = newProviders,
+                        selectedASRProviderId = newSelectedId,
+                    )
+                )
+                showDeleteConfirm = false
+                editingASRProvider = null
+            },
+            onDismiss = { showDeleteConfirm = false },
+        ) {
+            Text(
+                if (provider.name.isBlank()) {
+                    stringResource(R.string.setting_asr_page_delete_unnamed_provider_confirm)
+                } else {
+                    stringResource(R.string.setting_asr_page_delete_provider_confirm, provider.name)
+                }
+            )
         }
     }
 }
@@ -413,49 +452,15 @@ private fun ASRProviderList(
                 ASRProviderItem(
                     modifier = Modifier
                         .scale(if (isDragging) 0.95f else 1f)
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .longPressDraggableHandle(),
                     provider = provider,
-                    dragHandle = {
-                        val haptic = LocalHapticFeedback.current
-                        IconButton(
-                            onClick = {},
-                            modifier = Modifier
-                                .longPressDraggableHandle(
-                                    onDragStarted = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
-                                    },
-                                    onDragStopped = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
-                                    }
-                                )
-                        ) {
-                            Icon(
-                                imageVector = HugeIcons.DragDropHorizontal,
-                                contentDescription = null
-                            )
-                        }
-                    },
                     isSelected = settings.selectedASRProviderId == provider.id,
                     onSelect = {
                         onUpdateSettings(settings.copy(selectedASRProviderId = provider.id))
                     },
                     onEdit = {
                         onEdit(provider)
-                    },
-                    onDelete = {
-                        val newProviders = settings.asrProviders - provider
-                        val newSelectedId =
-                            if (settings.selectedASRProviderId == provider.id) {
-                                newProviders.firstOrNull()?.id
-                            } else {
-                                settings.selectedASRProviderId
-                            }
-                        onUpdateSettings(
-                            settings.copy(
-                                asrProviders = newProviders,
-                                selectedASRProviderId = newSelectedId
-                            )
-                        )
                     }
                 )
             }
@@ -510,13 +515,12 @@ private fun AddTTSProviderButton(onAdd: (TTSProviderSetting) -> Unit) {
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                 ) {
                     TextButton(
                         onClick = {
                             showBottomSheet = false
-                        },
-                        modifier = Modifier.weight(1f)
+                        }
                     ) {
                         Text(stringResource(R.string.common_cancel))
                     }
@@ -525,8 +529,7 @@ private fun AddTTSProviderButton(onAdd: (TTSProviderSetting) -> Unit) {
                         onClick = {
                             onAdd(currentProvider)
                             showBottomSheet = false
-                        },
-                        modifier = Modifier.weight(1f)
+                        }
                     ) {
                         Text(stringResource(R.string.common_add))
                     }
@@ -539,60 +542,15 @@ private fun AddTTSProviderButton(onAdd: (TTSProviderSetting) -> Unit) {
 @Composable
 private fun AddASRProviderButton(onAdd: (ASRProviderSetting) -> Unit) {
     var showBottomSheet by remember { mutableStateOf(false) }
-    var showTypeMenu by remember { mutableStateOf(false) }
     var currentProvider: ASRProviderSetting by remember { mutableStateOf(ASRProviderSetting.OpenAIRealtime()) }
 
-    Box {
-        IconButton(
-            onClick = { showTypeMenu = true }
-        ) {
-            Icon(HugeIcons.Add01, stringResource(R.string.setting_asr_page_add_provider))
+    IconButton(
+        onClick = {
+            currentProvider = ASRProviderSetting.OpenAIRealtime()
+            showBottomSheet = true
         }
-        DropdownMenu(
-            expanded = showTypeMenu,
-            onDismissRequest = { showTypeMenu = false }
-        ) {
-            DropdownMenuItem(
-                text = { Text("OpenAI Realtime") },
-                onClick = {
-                    currentProvider = ASRProviderSetting.OpenAIRealtime()
-                    showTypeMenu = false
-                    showBottomSheet = true
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("DashScope") },
-                onClick = {
-                    currentProvider = ASRProviderSetting.DashScope()
-                    showTypeMenu = false
-                    showBottomSheet = true
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("Volcengine") },
-                onClick = {
-                    currentProvider = ASRProviderSetting.Volcengine()
-                    showTypeMenu = false
-                    showBottomSheet = true
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("MiMo") },
-                onClick = {
-                    currentProvider = ASRProviderSetting.MiMo()
-                    showTypeMenu = false
-                    showBottomSheet = true
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("Step") },
-                onClick = {
-                    currentProvider = ASRProviderSetting.Step()
-                    showTypeMenu = false
-                    showBottomSheet = true
-                }
-            )
-        }
+    ) {
+        Icon(HugeIcons.Add01, stringResource(R.string.setting_asr_page_add_provider))
     }
 
     if (showBottomSheet) {
@@ -628,13 +586,12 @@ private fun AddASRProviderButton(onAdd: (ASRProviderSetting) -> Unit) {
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                 ) {
                     TextButton(
                         onClick = {
                             showBottomSheet = false
-                        },
-                        modifier = Modifier.weight(1f)
+                        }
                     ) {
                         Text(stringResource(R.string.common_cancel))
                     }
@@ -643,8 +600,7 @@ private fun AddASRProviderButton(onAdd: (ASRProviderSetting) -> Unit) {
                         onClick = {
                             onAdd(currentProvider)
                             showBottomSheet = false
-                        },
-                        modifier = Modifier.weight(1f)
+                        }
                     ) {
                         Text(stringResource(R.string.common_add))
                     }
@@ -760,15 +716,11 @@ private fun ASRProviderItem(
     provider: ASRProviderSetting,
     modifier: Modifier = Modifier,
     isSelected: Boolean = false,
-    dragHandle: @Composable () -> Unit,
     onSelect: () -> Unit,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
 ) {
-    var showDropdownMenu by remember { mutableStateOf(false) }
-
     Card(
-        modifier = modifier,
+        modifier = modifier.clickable(onClick = onEdit),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) {
                 MaterialTheme.colorScheme.primaryContainer
@@ -820,55 +772,6 @@ private fun ASRProviderItem(
                     selected = isSelected,
                     onClick = onSelect
                 )
-
-                dragHandle()
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (isSelected) {
-                    Tag(type = TagType.SUCCESS) {
-                        Text(stringResource(R.string.setting_tts_page_selected))
-                    }
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                IconButton(
-                    onClick = { showDropdownMenu = true }
-                ) {
-                    Icon(
-                        imageVector = HugeIcons.Tools,
-                        contentDescription = stringResource(R.string.setting_tts_page_more_options_content_description)
-                    )
-                    DropdownMenu(
-                        expanded = showDropdownMenu,
-                        onDismissRequest = { showDropdownMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.edit)) },
-                            onClick = {
-                                showDropdownMenu = false
-                                onEdit()
-                            },
-                            leadingIcon = {
-                                Icon(HugeIcons.PencilEdit01, contentDescription = null)
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.common_delete)) },
-                            onClick = {
-                                showDropdownMenu = false
-                                onDelete()
-                            },
-                            leadingIcon = {
-                                Icon(HugeIcons.Delete01, contentDescription = null)
-                            }
-                        )
-                    }
-                }
             }
         }
     }

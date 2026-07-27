@@ -29,6 +29,7 @@ import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupScope
+import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionInfo
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionManager
 import me.rerere.rikkahub.ui.components.ui.permission.rememberPermissionState
@@ -38,6 +39,12 @@ import me.rerere.rikkahub.utils.hasUsageStatsPermission
 import me.rerere.rikkahub.utils.openUsageAccessSettings
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
+
+private enum class LocalToolAuthorizationMode {
+    DENIED,
+    MANUAL,
+    ALWAYS,
+}
 
 @Composable
 fun AssistantLocalToolPage(id: String) {
@@ -137,7 +144,47 @@ private fun AssistantLocalToolContent(
         } else {
             assistant.localTools - option
         }
-        onUpdate(assistant.copy(localTools = newLocalTools))
+        onUpdate(
+            assistant.copy(
+                localTools = newLocalTools.distinct(),
+                manualAuthorizationTools = if (enabled) {
+                    assistant.manualAuthorizationTools
+                } else {
+                    assistant.manualAuthorizationTools - option
+                },
+            )
+        )
+    }
+
+    fun setAuthorizationMode(option: LocalToolOption, mode: LocalToolAuthorizationMode) {
+        if (mode == LocalToolAuthorizationMode.DENIED) {
+            toggleLocalTool(option, false)
+            return
+        }
+        if (option !in assistant.localTools) {
+            if (option == LocalToolOption.ScreenTime && !context.hasUsageStatsPermission()) {
+                toaster.show(message = permissionRequiredText, type = ToastType.Warning)
+                context.openUsageAccessSettings()
+            }
+            if (option == LocalToolOption.Calendar && !calendarPermissionState.allPermissionsGranted) {
+                calendarPermissionState.requestPermissions()
+                return
+            }
+            if (option == LocalToolOption.Location && !locationPermissionState.allPermissionsGranted) {
+                locationPermissionState.requestPermissions()
+                return
+            }
+        }
+        onUpdate(
+            assistant.copy(
+                localTools = (assistant.localTools + option).distinct(),
+                manualAuthorizationTools = if (mode == LocalToolAuthorizationMode.MANUAL) {
+                    assistant.manualAuthorizationTools + option
+                } else {
+                    assistant.manualAuthorizationTools - option
+                },
+            )
+        )
     }
 
     Column(
@@ -157,6 +204,38 @@ private fun AssistantLocalToolContent(
                     Switch(
                         checked = assistant.localTools.contains(option),
                         onCheckedChange = { toggleLocalTool(option, it) },
+                    )
+                },
+            )
+        }
+
+        fun CardGroupScope.authorizedToolItem(option: LocalToolOption, title: Int, description: Int) {
+            val mode = when {
+                option !in assistant.localTools -> LocalToolAuthorizationMode.DENIED
+                option in assistant.manualAuthorizationTools -> LocalToolAuthorizationMode.MANUAL
+                else -> LocalToolAuthorizationMode.ALWAYS
+            }
+            item(
+                headlineContent = { Text(stringResource(title)) },
+                supportingContent = { Text(stringResource(description)) },
+                trailingContent = {
+                    Select(
+                        options = LocalToolAuthorizationMode.entries,
+                        selectedOption = mode,
+                        onOptionSelected = { setAuthorizationMode(option, it) },
+                        fitToOptions = true,
+                        optionToString = {
+                            stringResource(
+                                when (it) {
+                                    LocalToolAuthorizationMode.DENIED ->
+                                        R.string.local_tool_authorization_mode_denied
+                                    LocalToolAuthorizationMode.MANUAL ->
+                                        R.string.local_tool_authorization_mode_manual
+                                    LocalToolAuthorizationMode.ALWAYS ->
+                                        R.string.local_tool_authorization_mode_always
+                                }
+                            )
+                        },
                     )
                 },
             )
@@ -185,22 +264,27 @@ private fun AssistantLocalToolContent(
             )
         }
         CardGroup {
-            toolItem(
+            authorizedToolItem(
                 LocalToolOption.Clipboard,
                 R.string.assistant_page_local_tools_clipboard_title,
                 R.string.assistant_page_local_tools_clipboard_desc,
             )
-            toolItem(
+            authorizedToolItem(
+                LocalToolOption.Battery,
+                R.string.assistant_page_local_tools_battery_title,
+                R.string.assistant_page_local_tools_battery_desc,
+            )
+            authorizedToolItem(
                 LocalToolOption.Location,
                 R.string.assistant_page_local_tools_location_title,
                 R.string.assistant_page_local_tools_location_desc,
             )
-            toolItem(
+            authorizedToolItem(
                 LocalToolOption.ScreenTime,
                 R.string.assistant_page_local_tools_screen_time_title,
                 R.string.assistant_page_local_tools_screen_time_desc,
             )
-            toolItem(
+            authorizedToolItem(
                 LocalToolOption.Calendar,
                 R.string.assistant_page_local_tools_calendar_title,
                 R.string.assistant_page_local_tools_calendar_desc,

@@ -108,6 +108,7 @@ fun ChatMessageNerdLine(
                         0f
                     }
                     val cost = if (!loading && usage != null) calculateCost(usage, model) else null
+                    val manuallyEdited = !loading && message.modelId == null
                     val showGenerationStats = loading || message.modelId != null
 
                     run {
@@ -127,7 +128,11 @@ fun ChatMessageNerdLine(
                                     if (loading && wordCount == 0) {
                                         Text("waiting")
                                     } else {
-                                        CountText(wordCount, expanded, suffix = " word")
+                                        CountText(
+                                            value = wordCount,
+                                            expanded = expanded,
+                                            suffix = if (manuallyEdited) " word (edited)" else " word",
+                                        )
                                     }
                                 },
                             )

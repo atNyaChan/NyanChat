@@ -6,6 +6,7 @@ import me.rerere.hugeicons.stroke.Brain02
 import me.rerere.hugeicons.stroke.ArrowRight01
 import me.rerere.hugeicons.stroke.Message02
 import me.rerere.hugeicons.stroke.Settings03
+import me.rerere.hugeicons.stroke.Api
 import me.rerere.hugeicons.stroke.Wrench01
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -96,6 +97,13 @@ fun AssistantDetailPage(id: String) {
                         leadingContent = { Icon(HugeIcons.Settings03, null) },
                         supportingContent = { Text(stringResource(R.string.assistant_detail_basic_desc)) },
                         headlineContent = { Text(stringResource(R.string.assistant_page_tab_basic)) },
+                        trailingContent = { Icon(HugeIcons.ArrowRight01, null) },
+                    )
+                    item(
+                        onClick = { navController.navigate(Screen.AssistantRequest(id)) },
+                        leadingContent = { Icon(HugeIcons.Api, null) },
+                        supportingContent = { Text(stringResource(R.string.assistant_detail_request_desc)) },
+                        headlineContent = { Text(stringResource(R.string.assistant_page_tab_request)) },
                         trailingContent = { Icon(HugeIcons.ArrowRight01, null) },
                     )
                     item(

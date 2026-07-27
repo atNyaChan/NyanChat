@@ -167,16 +167,16 @@ fun SettingPage(vm: SettingVM = koinViewModel()) {
                         headlineContent = { Text(stringResource(R.string.setting_provider_page_title)) },
                     )
                     item(
-                        onClick = { navController.navigate(Screen.SettingMcp) },
-                        leadingContent = { Icon(HugeIcons.McpServer, null) },
-                        supportingContent = { Text(stringResource(R.string.setting_page_mcp_desc)) },
-                        headlineContent = { Text(stringResource(R.string.setting_mcp_page_title)) },
-                    )
-                    item(
                         onClick = { navController.navigate(Screen.SettingSearch) },
                         leadingContent = { Icon(HugeIcons.GlobalSearch, null) },
                         supportingContent = { Text(stringResource(R.string.setting_page_search_service_desc)) },
                         headlineContent = { Text(stringResource(R.string.setting_page_search_title)) },
+                    )
+                    item(
+                        onClick = { navController.navigate(Screen.SettingMcp) },
+                        leadingContent = { Icon(HugeIcons.McpServer, null) },
+                        supportingContent = { Text(stringResource(R.string.setting_page_mcp_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_mcp_page_title)) },
                     )
                     item(
                         onClick = { navController.navigate(Screen.SettingSpeech) },

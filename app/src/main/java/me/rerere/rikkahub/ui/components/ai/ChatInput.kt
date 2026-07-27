@@ -83,12 +83,15 @@ import kotlinx.coroutines.flow.collectLatest
 import me.rerere.ai.provider.Model
 import me.rerere.ai.provider.ModelAbility
 import me.rerere.ai.provider.ModelType
+import me.rerere.ai.ui.UIMessagePart
 import me.rerere.asr.ASRStatus
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Add01
 import me.rerere.hugeicons.stroke.ArrowUp02
 import me.rerere.hugeicons.stroke.Cancel01
+import me.rerere.hugeicons.stroke.File02
 import me.rerere.hugeicons.stroke.FullScreen
+import me.rerere.hugeicons.stroke.Upload02
 import me.rerere.hugeicons.stroke.Zap
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
@@ -111,22 +114,22 @@ import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.hooks.ChatInputState
 import me.rerere.rikkahub.utils.SoundEffectPlayer
+import me.rerere.rikkahub.utils.formatNumber
+import me.rerere.rikkahub.utils.wordCount
 import org.koin.compose.koinInject
-import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun ChatInput(
     state: ChatInputState,
+    requestWordCount: Int?,
+    onRequestWordCountRefresh: () -> Unit,
     loading: Boolean,
     settings: Settings,
     hazeState: HazeState,
-    enableSearch: Boolean,
-    onToggleSearch: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     completionProviders: List<ChatCompletionProvider> = emptyList(),
     onUpdateChatModel: (Model) -> Unit,
     onUpdateAssistant: (Assistant) -> Unit,
-    onUpdateSearchService: (Int) -> Unit,
     onMoreClick: () -> Unit,
     onCancelClick: () -> Unit,
     onSendClick: () -> Unit,
@@ -134,6 +137,14 @@ fun ChatInput(
 ) {
     val toaster = LocalToaster.current
     val assistant = settings.getCurrentAssistant()
+    val inputContents = state.getContents()
+    val inputWordCount = inputContents.sumOf { part ->
+        when (part) {
+            is UIMessagePart.Text -> part.text.wordCount()
+            is UIMessagePart.Reasoning -> part.reasoning.wordCount()
+            else -> 0
+        }
+    }
     val hazeTintColor = MaterialTheme.colorScheme.surfaceContainerLow
     val inputHazeStyle = HazeMaterials.thin(containerColor = hazeTintColor)
 
@@ -235,6 +246,9 @@ fun ChatInput(
                     TextInputRow(
                         state = state,
                         completionProviders = completionProviders,
+                        onFocusChanged = { focused ->
+                            if (focused) onRequestWordCountRefresh()
+                        },
                         onSendMessage = { sendMessage() }
                     )
 
@@ -249,7 +263,7 @@ fun ChatInput(
                             modifier = Modifier
                                 .weight(1f)
                                 .horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                            horizontalArrangement = Arrangement.spacedBy(0.dp)
                         ) {
                             // Model Picker
                             ModelSelector(
@@ -261,29 +275,6 @@ fun ChatInput(
                                 type = ModelType.CHAT,
                                 onlyIcon = true,
                                 modifier = Modifier,
-                            )
-
-                            // Search
-                            val enableSearchMsg = stringResource(R.string.web_search_enabled)
-                            val disableSearchMsg = stringResource(R.string.web_search_disabled)
-                            val chatModel = settings.getCurrentChatModel()
-                            SearchPickerButton(
-                                enableSearch = enableSearch,
-                                settings = settings,
-                                onToggleSearch = { enabled ->
-                                    onToggleSearch(enabled)
-                                    toaster.show(
-                                        message = if (enabled) enableSearchMsg else disableSearchMsg,
-                                        duration = 1.seconds,
-                                        type = if (enabled) {
-                                            ToastType.Success
-                                        } else {
-                                            ToastType.Normal
-                                        }
-                                    )
-                                },
-                                onUpdateSearchService = onUpdateSearchService,
-                                model = chatModel,
                             )
 
                             // Reasoning
@@ -298,6 +289,49 @@ fun ChatInput(
                                 )
                             }
 
+                        }
+
+                        requestWordCount?.takeIf {
+                            imeVisible || inputWordCount > 0 || state.attachmentCount > 0
+                        }?.let { count ->
+                            Column(
+                                horizontalAlignment = Alignment.End,
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(1.dp),
+                                ) {
+                                    Icon(
+                                        imageVector = HugeIcons.Upload02,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(12.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    Text(
+                                        text = "${inputWordCount.formatNumber()} word (${count.formatNumber()} total)",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                if (state.attachmentCount > 0) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(1.dp),
+                                    ) {
+                                        Icon(
+                                            imageVector = HugeIcons.File02,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(12.dp),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                        Text(
+                                            text = "${state.attachmentCount.formatNumber()} file",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                }
+                            }
                         }
 
                         ActionIconButton(
@@ -419,6 +453,7 @@ private fun ActionIconButton(
 private fun TextInputRow(
     state: ChatInputState,
     completionProviders: List<ChatCompletionProvider>,
+    onFocusChanged: (Boolean) -> Unit,
     onSendMessage: () -> Unit,
 ) {
     val settings = LocalSettings.current
@@ -551,6 +586,7 @@ private fun TextInputRow(
                 .contentReceiver(receiveContentListener)
                 .onFocusChanged {
                     isFocused = it.isFocused
+                    onFocusChanged(it.isFocused)
                 },
             shape = MaterialTheme.shapes.largeIncreased,
             placeholder = {

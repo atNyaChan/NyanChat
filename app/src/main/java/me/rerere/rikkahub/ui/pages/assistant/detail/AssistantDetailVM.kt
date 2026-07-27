@@ -178,6 +178,14 @@ class AssistantDetailVM(
         }
     }
 
+    fun updateSearchService(index: Int) {
+        viewModelScope.launch {
+            settingsStore.update { settings ->
+                settings.copy(searchServiceSelected = index)
+            }
+        }
+    }
+
     fun addMemory(memory: AssistantMemory) {
         viewModelScope.launch {
             val memoryAssistantId = if (assistant.value.useGlobalMemory) {

@@ -37,6 +37,9 @@ interface MessageNodeDAO {
     @Query("DELETE FROM message_node WHERE conversation_id = :conversationId")
     suspend fun deleteByConversation(conversationId: String)
 
+    @Query("SELECT * FROM message_node WHERE conversation_id = :conversationId")
+    suspend fun getNodeEntities(conversationId: String): List<MessageNodeEntity>
+
     @Query("DELETE FROM message_node WHERE id = :nodeId")
     suspend fun deleteById(nodeId: String)
 

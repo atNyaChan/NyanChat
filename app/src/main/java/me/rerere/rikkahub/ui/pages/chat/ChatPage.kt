@@ -56,6 +56,7 @@ import androidx.core.net.toUri
 import com.dokar.sonner.ToastType
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import me.rerere.ai.core.MessageRole
@@ -94,6 +95,7 @@ import me.rerere.rikkahub.utils.ImageUtils
 import me.rerere.rikkahub.utils.base64Decode
 import me.rerere.rikkahub.utils.isAllowedFileType
 import me.rerere.rikkahub.utils.navigateToChatPage
+import me.rerere.rikkahub.utils.wordCount
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
@@ -117,7 +119,6 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
     val processingStatus by vm.processingStatus.collectAsStateWithLifecycle()
     val translatingMessageIds by vm.translatingMessageIds.collectAsStateWithLifecycle()
     val currentChatModel by vm.currentChatModel.collectAsStateWithLifecycle()
-    val enableWebSearch by vm.enableWebSearch.collectAsStateWithLifecycle()
     val errors by vm.errors.collectAsStateWithLifecycle()
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -153,6 +154,42 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
     }
 
     val inputState = vm.inputState
+    var cachedRequestBaseWordCount by remember { mutableStateOf<Int?>(null) }
+    var requestWordCountJob by remember { mutableStateOf<Job?>(null) }
+    val currentInputWordCount = inputState.getContents().sumOf { part ->
+        when (part) {
+            is UIMessagePart.Text -> part.text.wordCount()
+            is UIMessagePart.Reasoning -> part.reasoning.wordCount()
+            else -> 0
+        }
+    }
+    val requestWordCount = cachedRequestBaseWordCount?.let { cachedBase ->
+        cachedBase + currentInputWordCount
+    }
+    LaunchedEffect(setting.displaySetting.showTokenUsage) {
+        if (!setting.displaySetting.showTokenUsage) {
+            requestWordCountJob?.cancel()
+            cachedRequestBaseWordCount = null
+        }
+    }
+    val refreshRequestWordCount = {
+        if (
+            setting.displaySetting.showTokenUsage &&
+            !inputState.isEditing() &&
+            currentChatModel != null
+        ) {
+            requestWordCountJob?.cancel()
+            requestWordCountJob = scope.launch {
+                cachedRequestBaseWordCount = try {
+                    vm.estimateRequestBaseWordCount()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Exception) {
+                    null
+                }
+            }
+        }
+    }
 
     // 初始化输入状态（处理传入的 files 和 text 参数）
     LaunchedEffect(files, text) {
@@ -211,6 +248,8 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
             ) {
                 ChatPageContent(
                     inputState = inputState,
+                    requestWordCount = requestWordCount,
+                    onRequestWordCountRefresh = refreshRequestWordCount,
                     loadingJob = loadingJob,
                     processingStatus = processingStatus,
                     setting = setting,
@@ -219,7 +258,6 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
                     navController = navController,
                     vm = vm,
                     chatListState = chatListState,
-                    enableWebSearch = enableWebSearch,
                     currentChatModel = currentChatModel,
                     bigScreen = true,
                     errors = errors,
@@ -244,6 +282,8 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
             ) {
                 ChatPageContent(
                     inputState = inputState,
+                    requestWordCount = requestWordCount,
+                    onRequestWordCountRefresh = refreshRequestWordCount,
                     loadingJob = loadingJob,
                     processingStatus = processingStatus,
                     setting = setting,
@@ -252,7 +292,6 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
                     navController = navController,
                     vm = vm,
                     chatListState = chatListState,
-                    enableWebSearch = enableWebSearch,
                     currentChatModel = currentChatModel,
                     bigScreen = false,
                     errors = errors,
@@ -271,6 +310,8 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
 @Composable
 private fun ChatPageContent(
     inputState: ChatInputState,
+    requestWordCount: Int?,
+    onRequestWordCountRefresh: () -> Unit,
     loadingJob: Job?,
     processingStatus: String? = null,
     setting: Settings,
@@ -280,7 +321,6 @@ private fun ChatPageContent(
     navController: Navigator,
     vm: ChatVM,
     chatListState: LazyListState,
-    enableWebSearch: Boolean,
     currentChatModel: Model?,
     errors: List<ChatError>,
     translatingMessageIds: Set<Uuid>,
@@ -347,27 +387,14 @@ private fun ChatPageContent(
             bottomBar = {
                 ChatInput(
                     state = inputState,
+                    requestWordCount = requestWordCount,
+                    onRequestWordCountRefresh = onRequestWordCountRefresh,
                     loading = loadingJob != null,
                     settings = setting,
                     hazeState = hazeState,
                     completionProviders = completionProviders,
                     onCancelClick = {
                         vm.stopGeneration()
-                    },
-                    enableSearch = enableWebSearch,
-                    onToggleSearch = {
-                        val current = setting.getCurrentAssistant()
-                        vm.updateSettings(
-                            setting.copy(
-                                assistants = setting.assistants.map { assistant ->
-                                    if (assistant.id == current.id) {
-                                        assistant.copy(enableWebSearch = !enableWebSearch)
-                                    } else {
-                                        assistant
-                                    }
-                                }
-                            )
-                        )
                     },
                     onSendClick = {
                         if (currentChatModel == null) {
@@ -417,13 +444,6 @@ private fun ChatPageContent(
                                         assistant
                                     }
                                 }
-                            )
-                        )
-                    },
-                    onUpdateSearchService = { index ->
-                        vm.updateSettings(
-                            setting.copy(
-                                searchServiceSelected = index
                             )
                         )
                     },
@@ -717,6 +737,9 @@ private fun ChatFilesPickerSheet(
                         }
                     )
                 )
+            },
+            onUpdateSearchService = { index ->
+                vm.updateSettings(setting.copy(searchServiceSelected = index))
             },
             onUpdateConversation = {
                 vm.updateConversation(it)

@@ -81,6 +81,7 @@ internal fun FilesPicker(
     mcpManager: McpManager,
     onCompressContext: (additionalPrompt: String, targetTokens: Int, keepRecentMessages: Int) -> Job,
     onUpdateAssistant: (Assistant) -> Unit,
+    onUpdateSearchService: (Int) -> Unit,
     onUpdateConversation: (Conversation) -> Unit,
     showInjectionSheet: Boolean,
     onShowInjectionSheetChange: (Boolean) -> Unit,
@@ -98,6 +99,7 @@ internal fun FilesPicker(
     val navController = LocalNavController.current
     val workspaceRepository: WorkspaceRepository = koinInject()
     val workspaces by workspaceRepository.listFlow().collectAsState(initial = emptyList())
+    var showSearchPicker by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -147,7 +149,25 @@ internal fun FilesPicker(
             ),
             modifier = Modifier.clip(MaterialTheme.shapes.large),
         ) {
-            Text("上下文缓存")
+            Text(stringResource(R.string.assistant_page_context_cache))
+        }
+
+        ListItem(
+            trailingContent = {
+                SearchPickerIcon(
+                    enableSearch = assistant.enableWebSearch,
+                    settings = settings,
+                    model = settings.getCurrentChatModel(),
+                )
+            },
+            colors = ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer
+            ),
+            modifier = Modifier
+                .clip(MaterialTheme.shapes.large)
+                .clickable { showSearchPicker = true },
+        ) {
+            Text(stringResource(R.string.search_ability_search))
         }
 
         // Extensions (Quick Messages + Prompt Injections + Skills)
@@ -249,6 +269,18 @@ internal fun FilesPicker(
             }
         }
     }
+
+    SearchPickerSheet(
+        show = showSearchPicker,
+        enableSearch = assistant.enableWebSearch,
+        settings = settings,
+        onToggleSearch = { enabled ->
+            onUpdateAssistant(assistant.copy(enableWebSearch = enabled))
+        },
+        onUpdateSearchService = onUpdateSearchService,
+        model = settings.getCurrentChatModel(),
+        onDismiss = { showSearchPicker = false },
+    )
 
     // Injection Bottom Sheet
     if (showInjectionSheet) {

@@ -18,6 +18,10 @@ sealed class LocalToolOption {
     data object Clipboard : LocalToolOption()
 
     @Serializable
+    @SerialName("battery")
+    data object Battery : LocalToolOption()
+
+    @Serializable
     @SerialName("location")
     data object Location : LocalToolOption()
 

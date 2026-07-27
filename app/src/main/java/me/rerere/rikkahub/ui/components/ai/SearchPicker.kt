@@ -26,10 +26,7 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,7 +47,6 @@ import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
-import me.rerere.rikkahub.ui.components.ui.ToggleSurface
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.Navigator
 import me.rerere.rikkahub.ui.pages.setting.SearchAbilityTagLine
@@ -58,58 +54,53 @@ import me.rerere.search.SearchServiceOptions
 import org.koin.compose.koinInject
 
 @Composable
-fun SearchPickerButton(
+fun SearchPickerIcon(
     enableSearch: Boolean,
     settings: Settings,
     modifier: Modifier = Modifier,
+    model: Model?,
+) {
+    val currentService = settings.searchServices.getOrNull(settings.searchServiceSelected)
+    Box(
+        modifier = modifier.size(24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        if (model?.tools?.contains(BuiltInTools.Search) == true) {
+            Icon(
+                imageVector = HugeIcons.AiSearch02,
+                contentDescription = stringResource(R.string.use_web_search),
+            )
+        } else if (enableSearch && currentService != null) {
+            AutoAIIcon(
+                name = currentService.displayName,
+                color = Color.Transparent
+            )
+        } else {
+            Icon(
+                imageVector = HugeIcons.Search01,
+                contentDescription = stringResource(R.string.use_web_search),
+            )
+        }
+    }
+}
+
+@Composable
+fun SearchPickerSheet(
+    show: Boolean,
+    enableSearch: Boolean,
+    settings: Settings,
     onToggleSearch: (Boolean) -> Unit,
     onUpdateSearchService: (Int) -> Unit,
     model: Model?,
+    onDismiss: () -> Unit,
 ) {
-    var showSearchPicker by remember { mutableStateOf(false) }
-    val currentService = settings.searchServices.getOrNull(settings.searchServiceSelected)
-
-    ToggleSurface(
-        modifier = modifier,
-        checked = enableSearch || model?.tools?.contains(BuiltInTools.Search) == true,
-        onClick = {
-            showSearchPicker = true
-        }
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(vertical = 8.dp, horizontal = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Box(
-                modifier = Modifier.size(24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                if (model?.tools?.contains(BuiltInTools.Search) == true) {
-                    Icon(
-                        imageVector = HugeIcons.AiSearch02,
-                        contentDescription = stringResource(R.string.use_web_search),
-                    )
-                } else if (enableSearch && currentService != null) {
-                    AutoAIIcon(
-                        name = currentService.displayName,
-                        color = Color.Transparent
-                    )
-                } else {
-                    Icon(
-                        imageVector = HugeIcons.Search01,
-                        contentDescription = stringResource(R.string.use_web_search),
-                    )
-                }
-            }
-        }
-    }
-
-    if (showSearchPicker) {
+    if (show) {
         ModalBottomSheet(
-            onDismissRequest = { showSearchPicker = false },
-            sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
+            onDismissRequest = onDismiss,
+            sheetState = rememberBottomSheetState(
+                initialValue = SheetValue.Hidden,
+                enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
+            )
         ) {
             Column(
                 modifier = Modifier
@@ -130,16 +121,12 @@ fun SearchPickerButton(
                     enableSearch = enableSearch,
                     settings = settings,
                     onToggleSearch = onToggleSearch,
-                    onUpdateSearchService = { index ->
-                        onUpdateSearchService(index)
-                    },
+                    onUpdateSearchService = onUpdateSearchService,
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
                     model = model,
-                    onDismiss = {
-                        showSearchPicker = false
-                    }
+                    onDismiss = onDismiss,
                 )
             }
         }

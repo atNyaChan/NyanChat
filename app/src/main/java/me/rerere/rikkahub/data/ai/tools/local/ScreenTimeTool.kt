@@ -85,6 +85,7 @@ internal fun buildScreenTimeTool(context: Context, eventBus: AppEventBus): Tool 
                 type = "获取使用时间",
                 rawData = rawInput,
                 resultData = payload.toString(),
+                granted = true,
             )
             return listOf(UIMessagePart.Text(payload.toString()))
         }
