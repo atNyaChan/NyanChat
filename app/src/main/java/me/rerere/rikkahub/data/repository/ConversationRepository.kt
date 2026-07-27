@@ -298,9 +298,24 @@ class ConversationRepository(
             conversationDAO.update(
                 conversationToConversationEntity(conversation)
             )
-            // 删除旧的节点，插入新的节点
-            messageNodeDAO.deleteByConversation(conversation.id.toString())
-            saveMessageNodes(conversation.id.toString(), conversation.messageNodes)
+            val conversationId = conversation.id.toString()
+            val existingNodes = messageNodeDAO.getNodesOfConversation(conversationId).associateBy { it.id }
+            val updatedNodes = conversation.messageNodes.mapIndexed { index, node ->
+                MessageNodeEntity(
+                    id = node.id.toString(),
+                    conversationId = conversationId,
+                    nodeIndex = index,
+                    messages = JsonInstant.encodeToString(node.messages),
+                    selectIndex = node.selectIndex
+                )
+            }
+            val updatedNodeIds = updatedNodes.mapTo(mutableSetOf()) { it.id }
+
+            (existingNodes.keys - updatedNodeIds).forEach { messageNodeDAO.deleteById(it) }
+            updatedNodes
+                .filter { it != existingNodes[it.id] }
+                .takeIf { it.isNotEmpty() }
+                ?.let { messageNodeDAO.insertAll(it) }
         }
         messageFtsManager.indexConversation(conversation)
     }
