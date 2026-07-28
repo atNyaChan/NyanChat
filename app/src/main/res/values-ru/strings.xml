@@ -1263,4 +1263,8 @@
   <string name="setting_page_search_delete_confirm">Удалить поисковый сервис «%1$s»?</string>
   <string name="translation_delete_result">Удалить результат перевода</string>
   <string name="translation_delete_result_confirm">Удалить результат перевода этого сообщения?</string>
+  <string name="assistant_page_context_message_limit">Лимит контекстных сообщений</string>
+  <string name="assistant_page_context_message_limit_desc">Ограничивает количество последних сообщений, отправляемых модели. Когда лимит превышен, контекст сокращается примерно вдвое за один шаг, вместо удаления одного сообщения за каждый оборот, благодаря чему префикс запроса остаётся стабильным, и кэширование промптов продолжает работать на протяжении многих оборотов. Минимальное значение — 20. Оставьте поле пустым, чтобы снять ограничение.</string>
+  <string name="assistant_page_context_message_limit_placeholder">Без ограничений</string>
+  <string name="assistant_page_context_message_limit_warning">Кеш промпта аннулируется при каждом сокращении контекста. Чем больше лимит, тем реже сокращается контекст.</string>
 </resources>

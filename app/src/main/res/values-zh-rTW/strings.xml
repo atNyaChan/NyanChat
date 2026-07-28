@@ -1263,4 +1263,8 @@
   <string name="setting_page_search_delete_confirm">確定刪除搜尋服務「%1$s」嗎？</string>
   <string name="translation_delete_result">刪除翻譯結果</string>
   <string name="translation_delete_result_confirm">確定刪除這則訊息的翻譯結果嗎？</string>
+  <string name="assistant_page_context_message_limit">上下文訊息限制</string>
+  <string name="assistant_page_context_message_limit_desc">限制發送給模型的最近訊息數量。當超出限制時，上下文會一次性修剪到大約一半，而不是每次輪次刪除一條訊息，這樣請求前綴保持穩定，提示詞緩存可以在多次輪次中繼續運作，最小為20。留空表示無限制。</string>
+  <string name="assistant_page_context_message_limit_placeholder">無限制</string>
+  <string name="assistant_page_context_message_limit_warning">每次截斷上下文時都會使提示詞快取失效，上限越大，截斷越少。</string>
 </resources>

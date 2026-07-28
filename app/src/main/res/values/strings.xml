@@ -1263,4 +1263,8 @@
   <string name="assistant_page_delete_assistant">Delete assistant</string>
   <string name="setting_page_search_delete_confirm">Delete search service “%1$s”?</string>
   <string name="setting_mcp_page_delete_confirm">Delete MCP server “%1$s”?</string>
+  <string name="assistant_page_context_message_limit">Context Message Limit</string>
+  <string name="assistant_page_context_message_limit_desc">Caps how many recent messages are sent to the model. When the limit is exceeded, the context is trimmed down to about half in one step instead of dropping one message per turn, so the request prefix stays stable and prompt caching keeps working for many turns. The minimum is 20. Leave blank for unlimited.</string>
+  <string name="assistant_page_context_message_limit_placeholder">Unlimited</string>
+  <string name="assistant_page_context_message_limit_warning">The prompt cache is invalidated each time the context is trimmed. A larger limit means less frequent trimming.</string>
 </resources>

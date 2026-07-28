@@ -1263,4 +1263,8 @@
   <string name="setting_page_search_delete_confirm">検索サービス「%1$s」を削除しますか？</string>
   <string name="translation_delete_result">翻訳結果を削除</string>
   <string name="translation_delete_result_confirm">このメッセージの翻訳結果を削除しますか？</string>
+  <string name="assistant_page_context_message_limit">コンテキストメッセージ上限</string>
+  <string name="assistant_page_context_message_limit_desc">モデルに送信する直近のメッセージ数の上限を設定します。上限を超えた場合、ターンごとに1件ずつ削除するのではなく、一度にコンテキストを約半分まで切り詰めます。これによりリクエストのプレフィックスが安定し、プロンプトキャッシュが多くのターンにわたって有効に働きます。最小値は20です。空欄の場合は無制限です。</string>
+  <string name="assistant_page_context_message_limit_placeholder">無制限</string>
+  <string name="assistant_page_context_message_limit_warning">コンテキストが切り詰められるたびにプロンプトキャッシュが無効になります。上限が大きいほど切り詰めの頻度は下がります。</string>
 </resources>

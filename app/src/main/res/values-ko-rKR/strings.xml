@@ -1263,4 +1263,8 @@
   <string name="setting_page_search_delete_confirm">검색 서비스 “%1$s”을(를) 삭제할까요?</string>
   <string name="translation_delete_result">번역 결과 삭제</string>
   <string name="translation_delete_result_confirm">이 메시지의 번역 결과를 삭제할까요?</string>
+  <string name="assistant_page_context_message_limit">컨텍스트 메시지 제한</string>
+  <string name="assistant_page_context_message_limit_desc">모델로 전송되는 최근 메시지 수를 제한합니다. 제한을 초과하면 한 번에 하나씩 메시지를 삭제하는 대신 컨텍스트가 한 번에 약 절반으로 줄어들어 요청 접두사가 안정적으로 유지되고 프롬프트 캐싱이 여러 턴 동안 계속 작동합니다. 최솟값은 20입니다. 비워 두면 제한이 없습니다.</string>
+  <string name="assistant_page_context_message_limit_placeholder">제한 없음</string>
+  <string name="assistant_page_context_message_limit_warning">컨텍스트가 정리될 때마다 프롬프트 캐시가 무효화됩니다. 제한 값이 클수록 정리 빈도가 줄어듭니다.</string>
 </resources>

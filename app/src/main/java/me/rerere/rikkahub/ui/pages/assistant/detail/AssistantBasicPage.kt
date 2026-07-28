@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
@@ -252,6 +253,64 @@ internal fun AssistantBasicContent(
                 }
             )
 
+            FormItem(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                label = {
+                    Text(stringResource(R.string.assistant_page_context_message_limit))
+                },
+                description = {
+                    Text(stringResource(R.string.assistant_page_context_message_limit_desc))
+                },
+            ) {
+                var contextMessageLimitInput by remember(assistant.id) {
+                    mutableStateOf(
+                        assistant.contextMessageLimit.takeIf { it > 0 }?.toString().orEmpty()
+                    )
+                }
+                OutlinedTextField(
+                    value = contextMessageLimitInput,
+                    onValueChange = { value ->
+                        if (value.isEmpty()) {
+                            contextMessageLimitInput = ""
+                            onUpdate(assistant.copy(contextMessageLimit = 0))
+                        } else if (value.all(Char::isDigit)) {
+                            value.toIntOrNull()?.let { limit ->
+                                if (limit > 0) {
+                                    contextMessageLimitInput = value
+                                    onUpdate(assistant.copy(contextMessageLimit = limit))
+                                }
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusChanged { focusState ->
+                            if (!focusState.isFocused) {
+                                val normalizedLimit = contextMessageLimitInput
+                                    .toIntOrNull()
+                                    ?.coerceAtLeast(MIN_CONTEXT_MESSAGE_LIMIT)
+                                    ?: 0
+                                contextMessageLimitInput = normalizedLimit
+                                    .takeIf { it > 0 }
+                                    ?.toString()
+                                    .orEmpty()
+                                onUpdate(assistant.copy(contextMessageLimit = normalizedLimit))
+                            }
+                        },
+                    placeholder = {
+                        Text(stringResource(R.string.assistant_page_context_message_limit_placeholder))
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                )
+                if (assistant.contextMessageLimit > 0) {
+                    Text(
+                        text = stringResource(R.string.assistant_page_context_message_limit_warning),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
 
             FormItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -646,3 +705,11 @@ internal fun AssistantBasicContent(
         Text(stringResource(R.string.assistant_page_delete_dialog_text))
     }
 }
+
+/**
+ * 上下文限制的最小有效值
+ *
+ * 低于此值时截断点几乎每轮都在移动, 提示词缓存命中率跌破 90%,
+ * 且保留的上下文通常达不到可缓存的最小长度, 限制本身失去意义
+ */
+private const val MIN_CONTEXT_MESSAGE_LIMIT = 20
