@@ -130,7 +130,6 @@
   <string name="assistant_page_regex_visual_only">시각적 표시만 (실제 메시지에는 영향을 주지 않고 표시만 변경)</string>
   <string name="assistant_page_remove">제거</string>
   <string name="assistant_page_remove_background">배경 제거</string>
-  <string name="assistant_page_search_placeholder">어시스턴트 검색</string>
   <string name="assistant_page_select_background">배경 이미지 선택</string>
   <string name="assistant_page_select_from_gallery">갤러리에서 선택</string>
   <string name="assistant_page_stream_output">스트리밍 출력</string>
@@ -287,7 +286,6 @@
   <string name="chat_page_nickname_placeholder">이름을 입력하세요</string>
   <string name="chat_page_no_conversations">대화 없음</string>
   <string name="chat_page_scroll_to_bottom">맨 아래로 스크롤</string>
-  <string name="chat_page_search_chats">채팅 검색</string>
   <string name="chat_page_today">오늘</string>
   <string name="chat_page_yesterday">어제</string>
   <string name="chat_size_dialog_content">현재 메시지 수: %1$d. 이로 인해 앱이 강제 종료되거나 느려질 수 있으며, 대화 데이터가 손실될 수도 있습니다. 계속 대화하려면 새 대화를 만들어 주세요.</string>
@@ -520,7 +518,12 @@
   <string name="search_page_sort_oldest">오래된순</string>
   <string name="search_page_sort_relevance">관련성</string>
   <string name="search_page_title">메시지 검색</string>
-  <string name="search_page_mode_model">모델 검색…</string>
+  <string name="search_page_mode_model">모델별…</string>
+  <string name="search_page_mode_attachment">첨부 파일로 검색…</string>
+  <string name="search_page_attachment_existing">첨부 파일이 존재하는 메시지</string>
+  <string name="search_page_attachment_missing">첨부 파일이 삭제된 메시지</string>
+  <string name="search_page_attachment_existing_selected">첨부 파일이 존재하는 메시지 필터링 중</string>
+  <string name="search_page_attachment_missing_selected">첨부 파일이 삭제된 메시지 필터링 중</string>
   <string name="search_page_model_selected">모델: %1$s</string>
   <string name="search_page_result_count">결과 %1$d개</string>
   <string name="search_page_model_existing">기존 모델</string>
@@ -633,9 +636,15 @@
   <string name="setting_files_page_clean_title">파일을 정리할까요?</string>
   <string name="setting_files_page_cleaned_toast">파일을 정리했습니다</string>
   <string name="setting_files_page_delete_failed_toast">삭제 실패</string>
-  <string name="setting_files_page_delete_file_title">파일 삭제</string>
+  <string name="setting_files_page_attachment_image">이미지</string>
+  <string name="setting_files_page_attachment_file">파일</string>
+  <string name="setting_files_page_delete_attachment_title">채팅 %1$s 삭제</string>
+  <string name="setting_files_page_delete_attachment_confirmation">이 %1$s을(를) 삭제할까요? 채팅에서 다시 볼 수 없으며 복구할 수 없습니다.</string>
   <string name="setting_files_page_deleted_toast">삭제됨</string>
   <string name="setting_files_page_folder_upload">업로드</string>
+  <string name="setting_files_page_folder_unused">사용하지 않는 첨부 파일</string>
+  <string name="setting_files_page_rebuild_index">채팅 첨부 파일 색인 재구축</string>
+  <string name="setting_files_page_open_reference">참조 메시지로 이동</string>
   <string name="setting_files_page_no_files">파일 없음</string>
   <string name="setting_mcp_page_add_header">헤더 추가</string>
   <string name="setting_mcp_page_add_one_to_get_started">시작하려면 하나를 추가하세요</string>
@@ -706,7 +715,8 @@
   <string name="setting_page_built_in_tools_search_desc">Google 검색 통합 활성화</string>
   <string name="setting_page_built_in_tools_url_context">URL 컨텍스트</string>
   <string name="setting_page_built_in_tools_url_context_desc">URL 콘텐츠 처리 활성화</string>
-  <string name="setting_page_chat_storage">채팅 저장 공간</string>
+  <string name="setting_page_chat_storage">채팅 파일</string>
+  <string name="chat_message_attachment_deleted">첨부 파일이 삭제되었습니다</string>
   <string name="setting_page_chat_storage_desc">%1$d개 파일, %2$.2f MB</string>
   <string name="setting_page_color_mode">색상 모드</string>
   <string name="setting_page_color_mode_dark">어두움</string>
@@ -726,7 +736,7 @@
   <string name="setting_page_mcp_desc">MCP 서버 구성</string>
   <string name="setting_page_message_display_settings">글꼴, 수식 및 코드</string>
   <string name="setting_page_model_and_services">모델 서비스</string>
-  <string name="setting_page_providers_desc">AI 제공업체 구성</string>
+  <string name="setting_page_providers_desc">LLM 서비스 제공업체 구성</string>
   <string name="setting_page_request_logs">네트워크 요청 로그</string>
   <string name="log_page_clear_confirm">요청 로그를 지울까요?</string>
   <string name="setting_page_request_logs_desc">이번 앱 실행 중의 네트워크 요청 로그 보기</string>
@@ -858,7 +868,6 @@
   <string name="setting_provider_page_save_success">저장 성공</string>
   <string name="setting_provider_page_scan_error">오류: %s</string>
   <string name="setting_provider_page_scan_qr_code">QR 코드 스캔</string>
-  <string name="setting_provider_page_search_providers">공급자 검색</string>
   <string name="setting_provider_page_select_all">전체 선택 (%1$d)</string>
   <string name="setting_provider_page_select_from_gallery">갤러리에서 선택</string>
   <string name="setting_provider_page_service_account_email">서비스 계정 이메일</string>
@@ -949,8 +958,8 @@
   <string name="skills_page_import_confirm">가져오기</string>
   <string name="skills_page_import_description">GitHub 저장소 URL을 입력하면 루트 디렉터리의 SKILL.md 파일이 자동으로 다운로드됩니다.</string>
   <string name="skills_page_import_failed">가져오기 실패: %s</string>
-  <string name="skills_page_import_from_github">GitHub에서 가져오기</string>
   <string name="skills_page_import_success">스킬 가져오기 완료: %s</string>
+  <string name="skills_page_import_from_github">GitHub에서 가져오기</string>
   <string name="skills_page_more_actions">더 많은 작업</string>
   <string name="skills_page_name_error">이름 필드를 찾을 수 없습니다. 프론트매터 형식을 확인하세요.</string>
   <string name="skills_page_paste_hint">전체 SKILL.md 파일 내용을 붙여넣으세요</string>

@@ -6,8 +6,6 @@ import me.rerere.hugeicons.stroke.Camera01
 import me.rerere.hugeicons.stroke.Image02
 import me.rerere.hugeicons.stroke.FileImport
 import me.rerere.hugeicons.stroke.Add01
-import me.rerere.hugeicons.stroke.Search01
-import me.rerere.hugeicons.stroke.Cancel01
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -26,12 +24,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LocalContentColor
@@ -88,16 +85,7 @@ fun SettingProviderPage(vm: SettingVM = koinViewModel()) {
     val settings by vm.settings.collectAsStateWithLifecycle()
     val navController = LocalNavController.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    var searchQuery by remember { mutableStateOf("") }
-    val filteredProviders = remember(settings.providers, searchQuery) {
-        if (searchQuery.isBlank()) {
-            settings.providers
-        } else {
-            settings.providers.filter { provider ->
-                provider.name.contains(searchQuery, ignoreCase = true)
-            }
-        }
-    }
+    val filteredProviders = settings.providers
     val lazyListState = rememberLazyListState()
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
         val fromProvider = filteredProviders.getOrNull(from.index)
@@ -150,35 +138,12 @@ fun SettingProviderPage(vm: SettingVM = koinViewModel()) {
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding())
         ) {
-            // Search bar
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                placeholder = { Text(stringResource(R.string.setting_provider_page_search_providers)) },
-                leadingIcon = {
-                    Icon(HugeIcons.Search01, contentDescription = null)
-                },
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { searchQuery = "" }) {
-                            Icon(HugeIcons.Cancel01, contentDescription = "Clear")
-                        }
-                    }
-                },
-                singleLine = true,
-                shape = CircleShape,
-            )
-
-
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
                     .imePadding(),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp) +
+                contentPadding = PaddingValues(8.dp) +
                     PaddingValues(bottom = innerPadding.calculateBottomPadding()),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 state = lazyListState,
@@ -347,7 +312,7 @@ private fun ImportProviderButton(
 private fun handleQRResult(
     result: QRResult,
     onAdd: (ProviderSetting) -> Unit,
-    toaster: com.dokar.sonner.ToasterState,
+    toaster: me.rerere.rikkahub.ui.context.SystemToaster,
     context: android.content.Context
 ) {
     runCatching {
@@ -390,7 +355,7 @@ private fun handleQRResult(
 private fun handleImageQRCode(
     uri: Uri,
     onAdd: (ProviderSetting) -> Unit,
-    toaster: com.dokar.sonner.ToasterState,
+    toaster: me.rerere.rikkahub.ui.context.SystemToaster,
     context: android.content.Context
 ) {
     runCatching {
@@ -477,11 +442,11 @@ private fun ProviderItem(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    Card(
+    OutlinedCard(
         modifier = modifier,
         colors = CardDefaults.cardColors(
             containerColor = if (provider.enabled) {
-                CustomColors.listItemColors.containerColor
+                MaterialTheme.colorScheme.surface
             } else MaterialTheme.colorScheme.errorContainer,
         ),
         onClick = {
@@ -489,7 +454,7 @@ private fun ProviderItem(
         }
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {

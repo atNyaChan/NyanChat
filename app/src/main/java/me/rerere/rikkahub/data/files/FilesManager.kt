@@ -13,13 +13,21 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import me.rerere.ai.ui.UIMessage
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.common.android.Logging
 import me.rerere.rikkahub.AppScope
 import me.rerere.rikkahub.data.db.entity.ManagedFileEntity
+import me.rerere.rikkahub.data.db.dao.ManagedFileWithReference
 import me.rerere.rikkahub.data.repository.FilesRepository
+import me.rerere.rikkahub.data.model.Conversation
+import me.rerere.rikkahub.utils.JsonInstant
 import me.rerere.rikkahub.utils.exportImage
 import me.rerere.rikkahub.utils.exportImageFile
 import me.rerere.rikkahub.utils.getActivity
@@ -33,7 +41,11 @@ class FilesManager(
 ) {
     companion object {
         private const val TAG = "FilesManager"
+        private const val ATTACHMENT_INDEX_FILE = "chat_attachment_index.json"
     }
+
+    private val attachmentIndexMutex = Mutex()
+    private val attachmentIndexFile get() = File(context.cacheDir, ATTACHMENT_INDEX_FILE)
 
     suspend fun saveManagedFromUri(
         folder: String,
@@ -98,6 +110,95 @@ class FilesManager(
     suspend fun get(id: Long): ManagedFileEntity? = repository.getById(id)
 
     suspend fun getByRelativePath(relativePath: String): ManagedFileEntity? = repository.getByPath(relativePath)
+
+    suspend fun listWithReferences(
+        folder: String = FileFolders.UPLOAD,
+        forceRebuild: Boolean = false,
+    ): List<ManagedFileWithReference> = withContext(Dispatchers.IO) {
+        attachmentIndexMutex.withLock {
+            val files = repository.listByFolder(folder).first()
+            val cached = if (!forceRebuild) readAttachmentIndex() else null
+            val entries = cached ?: rebuildAttachmentIndex(folder)
+            val references = entries.associateBy { it.relativePath }
+            files.map { file ->
+                val reference = references[file.relativePath]
+                ManagedFileWithReference(
+                    file = file,
+                    conversationId = reference?.conversationId,
+                    nodeId = reference?.nodeId,
+                )
+            }
+        }
+    }
+
+    suspend fun updateAttachmentIndex(conversation: Conversation) = withContext(Dispatchers.IO) {
+        attachmentIndexMutex.withLock {
+            val existing = readAttachmentIndex() ?: return@withLock
+            val referencedNodes = buildMap {
+                conversation.messageNodes.forEach { node ->
+                    node.messages.forEach { message ->
+                        message.parts.collectAttachmentFileNames().forEach { fileName ->
+                            put(fileName, node.id.toString())
+                        }
+                    }
+                }
+            }
+            val existingForConversation = existing.filter { it.conversationId == conversation.id.toString() }
+            if (existingForConversation.any { it.relativePath.substringAfterLast('/') !in referencedNodes }) {
+                attachmentIndexFile.delete()
+                return@withLock
+            }
+            val updated = existing.associateByTo(linkedMapOf()) { it.relativePath }
+            referencedNodes.forEach { (fileName, nodeId) ->
+                val relativePath = "${FileFolders.UPLOAD}/$fileName"
+                updated[relativePath] = AttachmentIndexEntry(
+                    relativePath = relativePath,
+                    conversationId = conversation.id.toString(),
+                    nodeId = nodeId,
+                )
+            }
+            val newEntries = updated.values.toList()
+            if (newEntries != existing) {
+                writeAttachmentIndex(newEntries)
+            }
+        }
+    }
+
+    suspend fun invalidateAttachmentIndex() = withContext(Dispatchers.IO) {
+        attachmentIndexMutex.withLock {
+            attachmentIndexFile.delete()
+        }
+    }
+
+    private suspend fun rebuildAttachmentIndex(folder: String): List<AttachmentIndexEntry> {
+        val entries = repository.listWithReferencesByFolder(folder).mapNotNull {
+            val conversationId = it.conversationId ?: return@mapNotNull null
+            val nodeId = it.nodeId ?: return@mapNotNull null
+            AttachmentIndexEntry(
+                relativePath = it.file.relativePath,
+                conversationId = conversationId,
+                nodeId = nodeId,
+            )
+        }
+        writeAttachmentIndex(entries)
+        return entries
+    }
+
+    private fun readAttachmentIndex(): List<AttachmentIndexEntry>? = runCatching {
+        if (!attachmentIndexFile.isFile) return null
+        JsonInstant.decodeFromString<AttachmentIndexCache>(attachmentIndexFile.readText())
+            .takeIf { it.version == 1 }
+            ?.entries
+    }.getOrNull()
+
+    private fun writeAttachmentIndex(entries: List<AttachmentIndexEntry>) {
+        val temporary = File(attachmentIndexFile.parentFile, "${attachmentIndexFile.name}.tmp")
+        temporary.writeText(JsonInstant.encodeToString(AttachmentIndexCache(entries = entries)))
+        if (!temporary.renameTo(attachmentIndexFile)) {
+            attachmentIndexFile.writeText(temporary.readText())
+            temporary.delete()
+        }
+    }
 
     fun getFile(entity: ManagedFileEntity): File =
         File(context.filesDir, entity.relativePath)
@@ -479,6 +580,38 @@ class FilesManager(
 
     private fun guessMimeType(file: File, fileName: String): String =
         FileUtils.guessMimeType(file, fileName)
+}
+
+@Serializable
+private data class AttachmentIndexCache(
+    val version: Int = 1,
+    val entries: List<AttachmentIndexEntry>,
+)
+
+@Serializable
+private data class AttachmentIndexEntry(
+    val relativePath: String,
+    val conversationId: String,
+    val nodeId: String,
+)
+
+private fun List<UIMessagePart>.collectAttachmentFileNames(): Set<String> = buildSet {
+    this@collectAttachmentFileNames.forEach { part ->
+        val url = when (part) {
+            is UIMessagePart.Image -> part.url
+            is UIMessagePart.Document -> part.url
+            is UIMessagePart.Video -> part.url
+            is UIMessagePart.Audio -> part.url
+            is UIMessagePart.Tool -> {
+                addAll(part.output.collectAttachmentFileNames())
+                null
+            }
+            else -> null
+        }
+        if (url?.startsWith("file:") == true) {
+            url.toUri().lastPathSegment?.let(::add)
+        }
+    }
 }
 
 data class SyncResult(

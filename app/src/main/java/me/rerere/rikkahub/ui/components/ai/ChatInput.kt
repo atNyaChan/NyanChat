@@ -62,6 +62,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -91,6 +92,7 @@ import me.rerere.hugeicons.stroke.ArrowUp02
 import me.rerere.hugeicons.stroke.Cancel01
 import me.rerere.hugeicons.stroke.File02
 import me.rerere.hugeicons.stroke.FullScreen
+import me.rerere.hugeicons.stroke.Tools
 import me.rerere.hugeicons.stroke.Upload02
 import me.rerere.hugeicons.stroke.Zap
 import me.rerere.rikkahub.R
@@ -122,6 +124,7 @@ import org.koin.compose.koinInject
 fun ChatInput(
     state: ChatInputState,
     requestWordCount: Int?,
+    requestToolCount: Int,
     onRequestWordCountRefresh: () -> Unit,
     loading: Boolean,
     settings: Settings,
@@ -141,7 +144,6 @@ fun ChatInput(
     val inputWordCount = inputContents.sumOf { part ->
         when (part) {
             is UIMessagePart.Text -> part.text.wordCount()
-            is UIMessagePart.Reasoning -> part.reasoning.wordCount()
             else -> 0
         }
     }
@@ -313,22 +315,25 @@ fun ChatInput(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                 }
-                                if (state.attachmentCount > 0) {
+                                if (state.attachmentCount > 0 || requestToolCount > 0) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(1.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
                                     ) {
-                                        Icon(
-                                            imageVector = HugeIcons.File02,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(12.dp),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        )
-                                        Text(
-                                            text = "${state.attachmentCount.formatNumber()} file",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        )
+                                        if (state.attachmentCount > 0) {
+                                            StatCount(
+                                                icon = HugeIcons.File02,
+                                                count = state.attachmentCount,
+                                                label = "file",
+                                            )
+                                        }
+                                        if (requestToolCount > 0) {
+                                            StatCount(
+                                                icon = HugeIcons.Tools,
+                                                count = requestToolCount,
+                                                label = "tool",
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -426,6 +431,30 @@ fun ChatInput(
             }
 
         }
+    }
+}
+
+@Composable
+private fun StatCount(
+    icon: ImageVector,
+    count: Int,
+    label: String,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(1.dp),
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(12.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = "${count.formatNumber()} $label",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

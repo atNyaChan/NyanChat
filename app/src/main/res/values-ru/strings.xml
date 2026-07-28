@@ -130,7 +130,6 @@
   <string name="assistant_page_regex_visual_only">Только визуально (влияет только на отображение, не на само сообщение)</string>
   <string name="assistant_page_remove">Удалить</string>
   <string name="assistant_page_remove_background">Убрать фон</string>
-  <string name="assistant_page_search_placeholder">Поиск ассистентов</string>
   <string name="assistant_page_select_background">Выбрать фоновое изображение</string>
   <string name="assistant_page_select_from_gallery">Выбрать из галереи</string>
   <string name="assistant_page_stream_output">Потоковый вывод</string>
@@ -287,7 +286,6 @@
   <string name="chat_page_nickname_placeholder">Введите никнейм</string>
   <string name="chat_page_no_conversations">Нет бесед</string>
   <string name="chat_page_scroll_to_bottom">Прокрутить вниз</string>
-  <string name="chat_page_search_chats">Поиск чатов</string>
   <string name="chat_page_today">Сегодня</string>
   <string name="chat_page_yesterday">Вчера</string>
   <string name="chat_size_dialog_content">Текущее количество сообщений: %1$d. Это может привести к вылету или зависанию приложения, а также к потере данных этой беседы. Пожалуйста, создайте новый чат как можно скорее, чтобы продолжить общение.</string>
@@ -520,7 +518,12 @@
   <string name="search_page_sort_oldest">Сначала старые</string>
   <string name="search_page_sort_relevance">По релевантности</string>
   <string name="search_page_title">Поиск сообщений</string>
-  <string name="search_page_mode_model">Поиск модели…</string>
+  <string name="search_page_mode_model">По модели…</string>
+  <string name="search_page_mode_attachment">По вложению…</string>
+  <string name="search_page_attachment_existing">Сообщения с доступными вложениями</string>
+  <string name="search_page_attachment_missing">Сообщения с удалёнными вложениями</string>
+  <string name="search_page_attachment_existing_selected">Фильтр сообщений с доступными вложениями</string>
+  <string name="search_page_attachment_missing_selected">Фильтр сообщений с удалёнными вложениями</string>
   <string name="search_page_model_selected">Модель: %1$s</string>
   <string name="search_page_result_count">Результатов: %1$d</string>
   <string name="search_page_model_existing">Существующие модели</string>
@@ -633,9 +636,15 @@
   <string name="setting_files_page_clean_title">Очистить файлы?</string>
   <string name="setting_files_page_cleaned_toast">Файлы удалены</string>
   <string name="setting_files_page_delete_failed_toast">Не удалось удалить</string>
-  <string name="setting_files_page_delete_file_title">Удалить файл</string>
+  <string name="setting_files_page_attachment_image">изображение</string>
+  <string name="setting_files_page_attachment_file">файл</string>
+  <string name="setting_files_page_delete_attachment_title">Удалить %1$s из чата</string>
+  <string name="setting_files_page_delete_attachment_confirmation">Удалить этот объект (%1$s)? Он больше не будет доступен в чатах, и восстановить его будет невозможно.</string>
   <string name="setting_files_page_deleted_toast">Удалено</string>
   <string name="setting_files_page_folder_upload">Загрузить</string>
+  <string name="setting_files_page_folder_unused">Неиспользуемые вложения</string>
+  <string name="setting_files_page_rebuild_index">Пересоздать индекс вложений чата</string>
+  <string name="setting_files_page_open_reference">Перейти к сообщению со вложением</string>
   <string name="setting_files_page_no_files">Нет файлов</string>
   <string name="setting_mcp_page_add_header">Добавить заголовок</string>
   <string name="setting_mcp_page_add_one_to_get_started">Добавьте один, чтобы начать</string>
@@ -706,7 +715,8 @@
   <string name="setting_page_built_in_tools_search_desc">Включить интеграцию с Google Поиском</string>
   <string name="setting_page_built_in_tools_url_context">Контекст URL</string>
   <string name="setting_page_built_in_tools_url_context_desc">Включить обработку содержимого по URL</string>
-  <string name="setting_page_chat_storage">Хранилище чатов</string>
+  <string name="setting_page_chat_storage">Файлы чатов</string>
+  <string name="chat_message_attachment_deleted">Вложение удалено</string>
   <string name="setting_page_chat_storage_desc">%1$d файлов, %2$.2f МБ</string>
   <string name="setting_page_color_mode">Цветовая схема</string>
   <string name="setting_page_color_mode_dark">Тёмная</string>
@@ -726,7 +736,7 @@
   <string name="setting_page_mcp_desc">Настроить серверы MCP</string>
   <string name="setting_page_message_display_settings">Шрифты, формулы и код</string>
   <string name="setting_page_model_and_services">Службы моделей</string>
-  <string name="setting_page_providers_desc">Настроить поставщиков ИИ</string>
+  <string name="setting_page_providers_desc">Настроить поставщиков LLM-сервисов</string>
   <string name="setting_page_request_logs">Журналы сетевых запросов</string>
   <string name="log_page_clear_confirm">Очистить журналы запросов?</string>
   <string name="setting_page_request_logs_desc">Просмотр журнала сетевых запросов за текущий запуск приложения</string>
@@ -858,7 +868,6 @@
   <string name="setting_provider_page_save_success">Сохранено успешно</string>
   <string name="setting_provider_page_scan_error">Ошибка: %s</string>
   <string name="setting_provider_page_scan_qr_code">Сканировать QR-код</string>
-  <string name="setting_provider_page_search_providers">Поиск поставщиков</string>
   <string name="setting_provider_page_select_all">Выбрать все (%1$d)</string>
   <string name="setting_provider_page_select_from_gallery">Выбрать из галереи</string>
   <string name="setting_provider_page_service_account_email">Электронная почта служебной учётной записи</string>
@@ -949,8 +958,8 @@
   <string name="skills_page_import_confirm">Импорт</string>
   <string name="skills_page_import_description">Введите URL репозитория GitHub, и файл SKILL.md в корневом каталоге будет загружен автоматически.</string>
   <string name="skills_page_import_failed">Не удалось импортировать: %s</string>
-  <string name="skills_page_import_from_github">Импорт из GitHub</string>
   <string name="skills_page_import_success">Навык импортирован: %s</string>
+  <string name="skills_page_import_from_github">Импорт из GitHub</string>
   <string name="skills_page_more_actions">Дополнительные действия</string>
   <string name="skills_page_name_error">Не удаётся найти поле name, проверьте формат frontmatter</string>
   <string name="skills_page_paste_hint">Вставьте полное содержимое файла SKILL.md</string>

@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import me.rerere.asr.ASRProviderSetting
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.ui.FormItem
+import me.rerere.rikkahub.ui.components.ui.FormItemGroup
 import me.rerere.rikkahub.ui.components.ui.OutlinedNumberInput
 import me.rerere.rikkahub.ui.components.ui.SelectTextField
 
@@ -31,11 +32,12 @@ fun ASRProviderConfigure(
     ) {
         val providers = remember { ASRProviderSetting.Types }
 
-        FormItem(
-            label = { Text(stringResource(R.string.setting_asr_configure_provider_type)) },
-            description = { Text(stringResource(R.string.setting_asr_configure_provider_type_desc)) }
-        ) {
-            SelectTextField(
+        FormItemGroup {
+            FormItem(
+                label = { Text(stringResource(R.string.setting_asr_configure_provider_type)) },
+                description = { Text(stringResource(R.string.setting_asr_configure_provider_type_desc)) }
+            ) {
+                SelectTextField(
                 value = when (setting) {
                     is ASRProviderSetting.OpenAIRealtime -> "OpenAI Realtime"
                     is ASRProviderSetting.DashScope -> "DashScope"
@@ -77,27 +79,27 @@ fun ASRProviderConfigure(
                     }
                     onValueChange(newSetting)
                 },
-            )
-        }
+                )
+            }
 
-        FormItem(
-            label = { Text(stringResource(R.string.setting_asr_configure_name)) },
-            description = { Text(stringResource(R.string.setting_asr_configure_name_desc)) }
-        ) {
-            OutlinedTextField(
-                value = setting.name,
-                onValueChange = { onValueChange(setting.copyProvider(name = it)) },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("OpenAI Realtime") }
-            )
-        }
-
-        when (setting) {
-            is ASRProviderSetting.OpenAIRealtime -> OpenAIRealtimeASRConfiguration(setting, onValueChange)
-            is ASRProviderSetting.DashScope -> DashScopeASRConfiguration(setting, onValueChange)
-            is ASRProviderSetting.Volcengine -> VolcengineASRConfiguration(setting, onValueChange)
-            is ASRProviderSetting.MiMo -> MiMoASRConfiguration(setting, onValueChange)
-            is ASRProviderSetting.Step -> StepASRConfiguration(setting, onValueChange)
+            FormItem(
+                label = { Text(stringResource(R.string.setting_asr_configure_name)) },
+                description = { Text(stringResource(R.string.setting_asr_configure_name_desc)) }
+            ) {
+                OutlinedTextField(
+                    value = setting.name,
+                    onValueChange = { onValueChange(setting.copyProvider(name = it)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("OpenAI Realtime") }
+                )
+            }
+            when (setting) {
+                is ASRProviderSetting.OpenAIRealtime -> OpenAIRealtimeASRConfiguration(setting, onValueChange)
+                is ASRProviderSetting.DashScope -> DashScopeASRConfiguration(setting, onValueChange)
+                is ASRProviderSetting.Volcengine -> VolcengineASRConfiguration(setting, onValueChange)
+                is ASRProviderSetting.MiMo -> MiMoASRConfiguration(setting, onValueChange)
+                is ASRProviderSetting.Step -> StepASRConfiguration(setting, onValueChange)
+            }
         }
         footer?.invoke()
     }

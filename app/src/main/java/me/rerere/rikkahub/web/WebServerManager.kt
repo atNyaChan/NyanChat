@@ -135,14 +135,14 @@ class WebServerManager(
         appScope.launch {
             try {
                 Log.i(TAG, "Stopping web server")
-                server?.stop(1000, 2000)
+                server?.stop(0, 0)
                 server = null
+                _state.value = _state.value.copy(isLoading = false)
                 runCatching {
                     nsdRegistrar.unregister()
                 }.onFailure {
                     Log.w(TAG, "NSD unregister failed", it)
                 }
-                _state.value = _state.value.copy(isLoading = false)
                 Log.i(TAG, "Web server stopped")
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to stop web server", e)

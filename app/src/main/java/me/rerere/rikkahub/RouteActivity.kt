@@ -57,8 +57,6 @@ import coil3.network.cachecontrol.CacheControlCacheStrategy
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.crossfade
 import coil3.svg.SvgDecoder
-import com.dokar.sonner.Toaster
-import com.dokar.sonner.rememberToasterState
 import kotlinx.serialization.Serializable
 import me.rerere.highlight.Highlighter
 import me.rerere.highlight.LocalHighlighter
@@ -74,6 +72,7 @@ import me.rerere.rikkahub.ui.context.LocalSharedTransitionScope
 import me.rerere.rikkahub.ui.context.LocalTTSState
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.context.Navigator
+import me.rerere.rikkahub.ui.context.rememberSystemToaster
 import me.rerere.rikkahub.ui.hooks.readBooleanPreference
 import me.rerere.rikkahub.ui.hooks.readStringPreference
 import me.rerere.rikkahub.ui.hooks.rememberCustomAsrState
@@ -121,7 +120,6 @@ import me.rerere.rikkahub.ui.pages.share.handler.ShareHandlerPage
 import me.rerere.rikkahub.ui.pages.stats.StatsPage
 import me.rerere.rikkahub.ui.pages.translator.TranslatorPage
 import me.rerere.rikkahub.ui.pages.webview.WebViewPage
-import me.rerere.rikkahub.ui.theme.LocalDarkMode
 import me.rerere.rikkahub.ui.theme.RikkahubTheme
 import me.rerere.rikkahub.utils.CrashHandler
 import me.rerere.rikkahub.utils.openUsageAccessSettings
@@ -236,7 +234,7 @@ class RouteActivity : AppCompatActivity() {
     @OptIn(ExperimentalComposeUiApi::class)
     @Composable
     fun AppRoutes() {
-        val toastState = rememberToasterState()
+        val toastState = rememberSystemToaster()
         val settings by settingsStore.settingsFlow.collectAsStateWithLifecycle()
         val tts = rememberCustomTtsState()
         val asr = rememberCustomAsrState()
@@ -312,13 +310,6 @@ class RouteActivity : AppCompatActivity() {
                 LocalTTSState provides tts,
                 LocalASRState provides asr,
             ) {
-                Toaster(
-                    state = toastState,
-                    darkTheme = LocalDarkMode.current,
-                    richColors = true,
-                    alignment = Alignment.TopCenter,
-                    showCloseButton = true,
-                )
                 TTSController()
                 Box(
                     modifier = Modifier
@@ -448,7 +439,10 @@ class RouteActivity : AppCompatActivity() {
 
                             entry<Screen.SettingProviderDetail> { key ->
                                 val id = Uuid.parse(key.providerId)
-                                SettingProviderDetailPage(id = id)
+                                SettingProviderDetailPage(
+                                    id = id,
+                                    initialModelId = key.modelId?.let { Uuid.parse(it) },
+                                )
                             }
 
                             entry<Screen.SettingModels> {
@@ -631,7 +625,10 @@ sealed interface Screen : NavKey {
     data object SettingProvider : Screen
 
     @Serializable
-    data class SettingProviderDetail(val providerId: String) : Screen
+    data class SettingProviderDetail(
+        val providerId: String,
+        val modelId: String? = null,
+    ) : Screen
 
     @Serializable
     data object SettingModels : Screen

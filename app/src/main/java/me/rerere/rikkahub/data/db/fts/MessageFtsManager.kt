@@ -1,6 +1,8 @@
 package me.rerere.rikkahub.data.db.fts
 
 import android.util.Log
+import androidx.core.net.toFile
+import androidx.core.net.toUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.rerere.ai.ui.UIMessage
@@ -30,6 +32,11 @@ enum class MessageSearchMode {
     TITLE_ONLY,
     EXACT,
     FUZZY,
+}
+
+enum class MessageAttachmentState {
+    EXISTS,
+    MISSING,
 }
 
 private const val TAG = "MessageFtsManager"
@@ -235,6 +242,19 @@ class MessageFtsManager(private val database: AppDatabase) {
         cursor.use { if (it.moveToFirst()) it.getInt(0) else 0 }
     }
 
+    suspend fun searchByAttachmentState(
+        state: MessageAttachmentState,
+        sort: MessageSearchSort = MessageSearchSort.NEWEST_FIRST,
+        limit: Int = 50,
+        offset: Int = 0,
+    ): List<MessageSearchResult> = withContext(Dispatchers.IO) {
+        loadAttachmentMessages(state, sort).drop(offset).take(limit)
+    }
+
+    suspend fun countByAttachmentState(state: MessageAttachmentState): Int = withContext(Dispatchers.IO) {
+        loadAttachmentMessages(state, MessageSearchSort.NEWEST_FIRST).size
+    }
+
     suspend fun countSearch(keyword: String, mode: MessageSearchMode): Int = withContext(Dispatchers.IO) {
         val cursor = if (mode == MessageSearchMode.FUZZY) {
             db.query(
@@ -293,6 +313,70 @@ class MessageFtsManager(private val database: AppDatabase) {
                             snippet = if (titleOnly) "" else it.getString(5).exactSnippet(keyword),
                         )
                     )
+                }
+            }
+        }
+    }
+
+    private fun loadAttachmentMessages(
+        state: MessageAttachmentState,
+        sort: MessageSearchSort,
+    ): List<MessageSearchResult> {
+        val orderBy = when (sort) {
+            MessageSearchSort.RELEVANCE, MessageSearchSort.NEWEST_FIRST -> "c.update_at DESC"
+            MessageSearchSort.OLDEST_FIRST -> "c.update_at ASC"
+        }
+        val cursor = db.query(
+            """
+            SELECT DISTINCT mn.id, message.value, mn.conversation_id, c.title, c.update_at
+            FROM message_node mn
+            JOIN conversationentity c ON c.id = mn.conversation_id,
+                 json_each(mn.messages) message,
+                 json_each(json_extract(message.value, '$.parts')) part
+            WHERE json_extract(part.value, '$.url') IS NOT NULL
+            ORDER BY $orderBy
+            """.trimIndent()
+        )
+        return buildList {
+            cursor.use {
+                while (it.moveToNext()) {
+                    val message = JsonInstant.decodeFromString<UIMessage>(it.getString(1))
+                    val attachments = message.parts.filter {
+                        it is UIMessagePart.Image ||
+                            it is UIMessagePart.Video ||
+                            it is UIMessagePart.Audio ||
+                            it is UIMessagePart.Document
+                    }
+                    val hasMissingLocalAttachment = attachments.any { part ->
+                        val url = when (part) {
+                            is UIMessagePart.Image -> part.url
+                            is UIMessagePart.Video -> part.url
+                            is UIMessagePart.Audio -> part.url
+                            is UIMessagePart.Document -> part.url
+                            else -> return@any false
+                        }
+                        url.startsWith("file:") &&
+                            runCatching { !url.toUri().toFile().isFile }.getOrDefault(true)
+                    }
+                    val matches = when (state) {
+                        MessageAttachmentState.EXISTS -> !hasMissingLocalAttachment
+                        MessageAttachmentState.MISSING -> hasMissingLocalAttachment
+                    }
+                    if (matches) {
+                        add(
+                            MessageSearchResult(
+                                nodeId = it.getString(0),
+                                messageId = message.id.toString(),
+                                conversationId = it.getString(2),
+                                title = it.getString(3),
+                                updateAt = Instant.ofEpochMilli(it.getLong(4)),
+                                snippet = message.extractFtsText().ifBlank {
+                                    attachments.filterIsInstance<UIMessagePart.Document>()
+                                        .joinToString("\n") { document -> document.fileName }
+                                },
+                            )
+                        )
+                    }
                 }
             }
         }

@@ -776,7 +776,7 @@ private fun DrawerActions(navController: Navigator) {
                     tint = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    text = stringResource(R.string.chat_page_search_chats),
+                    text = stringResource(R.string.search_page_title),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )

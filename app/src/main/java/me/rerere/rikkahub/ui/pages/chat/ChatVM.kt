@@ -37,6 +37,7 @@ import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.rikkahub.data.repository.FavoriteRepository
 import me.rerere.rikkahub.service.ChatError
 import me.rerere.rikkahub.service.ChatService
+import me.rerere.rikkahub.service.RequestContextStats
 import me.rerere.rikkahub.ui.hooks.writeStringPreference
 import me.rerere.rikkahub.ui.hooks.ChatInputState
 import java.util.Locale
@@ -173,8 +174,8 @@ class ChatVM(
         chatService.sendMessage(_conversationId, content, answer)
     }
 
-    suspend fun estimateRequestBaseWordCount(): Int {
-        return chatService.estimateRequestBaseWordCount(_conversationId)
+    suspend fun estimateRequestContextStats(): RequestContextStats {
+        return chatService.estimateRequestContextStats(_conversationId)
     }
 
     fun handleMessageEdit(parts: List<UIMessagePart>, messageId: Uuid) {
@@ -241,12 +242,6 @@ class ChatVM(
     fun stopGeneration() {
         viewModelScope.launch {
             chatService.stopGeneration(_conversationId)
-        }
-    }
-
-    fun saveConversationAsync() {
-        viewModelScope.launch {
-            chatService.saveConversation(_conversationId, conversation.value)
         }
     }
 

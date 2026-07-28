@@ -16,6 +16,7 @@ import me.rerere.rikkahub.data.db.AppDatabase
 import me.rerere.rikkahub.data.db.fts.MessageFtsManager
 import me.rerere.rikkahub.data.db.fts.MessageSearchSort
 import me.rerere.rikkahub.data.db.fts.MessageSearchMode
+import me.rerere.rikkahub.data.db.fts.MessageAttachmentState
 import me.rerere.rikkahub.data.db.dao.ConversationDAO
 import me.rerere.rikkahub.data.db.dao.FavoriteDAO
 import me.rerere.rikkahub.data.db.dao.MessageNodeDAO
@@ -293,6 +294,7 @@ class ConversationRepository(
             saveMessageNodes(conversation.id.toString(), conversation.messageNodes)
         }
         messageFtsManager.indexConversation(conversation)
+        runCatching { filesManager.updateAttachmentIndex(conversation) }
     }
 
     suspend fun updateConversation(conversation: Conversation) {
@@ -332,6 +334,7 @@ class ConversationRepository(
             }
         }
         messageFtsManager.indexConversation(conversation)
+        runCatching { filesManager.updateAttachmentIndex(conversation) }
     }
 
     suspend fun deleteConversation(conversation: Conversation) {
@@ -348,6 +351,7 @@ class ConversationRepository(
                 conversationToConversationEntity(conversation)
             )
         }
+        runCatching { filesManager.invalidateAttachmentIndex() }
         filesManager.deleteChatFiles(fullConversation.files)
     }
 
@@ -370,6 +374,16 @@ class ConversationRepository(
         messageFtsManager.searchManuallyEdited(sort, limit, offset)
 
     suspend fun countManuallyEditedMessages(): Int = messageFtsManager.countManuallyEdited()
+
+    suspend fun searchMessagesByAttachmentState(
+        state: MessageAttachmentState,
+        sort: MessageSearchSort,
+        limit: Int = 50,
+        offset: Int = 0,
+    ) = messageFtsManager.searchByAttachmentState(state, sort, limit, offset)
+
+    suspend fun countMessagesByAttachmentState(state: MessageAttachmentState): Int =
+        messageFtsManager.countByAttachmentState(state)
 
     suspend fun countSearchMessages(keyword: String, mode: MessageSearchMode): Int =
         messageFtsManager.countSearch(keyword, mode)

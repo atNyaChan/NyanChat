@@ -14,6 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.ui.FormItem
+import me.rerere.rikkahub.ui.components.ui.FormItemGroup
 import me.rerere.rikkahub.ui.components.ui.OutlinedNumberInput
 import me.rerere.rikkahub.ui.components.ui.SelectTextField
 import me.rerere.tts.provider.TTSProviderSetting
@@ -32,11 +33,12 @@ fun TTSProviderConfigure(
         // Provider type selector
         val providers = remember { TTSProviderSetting.Types }
 
-        FormItem(
-            label = { Text(stringResource(R.string.setting_tts_page_provider_type)) },
-            description = { Text(stringResource(R.string.setting_tts_page_provider_type_description)) },
-        ) {
-            SelectTextField(
+        FormItemGroup {
+            FormItem(
+                label = { Text(stringResource(R.string.setting_tts_page_provider_type)) },
+                description = { Text(stringResource(R.string.setting_tts_page_provider_type_description)) },
+            ) {
+                SelectTextField(
                 value = when (setting) {
                     is TTSProviderSetting.OpenAI -> "OpenAI"
                     is TTSProviderSetting.Gemini -> "Gemini"
@@ -130,37 +132,37 @@ fun TTSProviderConfigure(
                     }
                     onValueChange(newSetting)
                 }
-            )
-        }
+                )
+            }
 
-        // Name
-        FormItem(
-            label = { Text(stringResource(R.string.setting_tts_page_name)) },
-            description = { Text(stringResource(R.string.setting_tts_page_name_description)) }
-        ) {
-            OutlinedTextField(
-                value = setting.name,
-                onValueChange = { newName ->
-                    onValueChange(setting.copyProvider(name = newName))
-                },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text(stringResource(R.string.setting_tts_page_name_placeholder)) }
-            )
-        }
-
-        // Provider-specific fields
-        when (setting) {
-            is TTSProviderSetting.OpenAI -> OpenAITTSConfiguration(setting, onValueChange)
-            is TTSProviderSetting.Gemini -> GeminiTTSConfiguration(setting, onValueChange)
-            is TTSProviderSetting.MiniMax -> MiniMaxTTSConfiguration(setting, onValueChange)
-            is TTSProviderSetting.SystemTTS -> SystemTTSConfiguration(setting, onValueChange)
-            is TTSProviderSetting.Qwen -> QwenTTSConfiguration(setting, onValueChange)
-            is TTSProviderSetting.Groq -> GroqTTSConfiguration(setting, onValueChange)
-            is TTSProviderSetting.XAI -> XAITTSConfiguration(setting, onValueChange)
-            is TTSProviderSetting.MiMo -> MiMoTTSConfiguration(setting, onValueChange)
-            is TTSProviderSetting.ElevenLabs -> ElevenLabsTTSConfiguration(setting, onValueChange)
-            is TTSProviderSetting.FishAudio -> FishAudioTTSConfiguration(setting, onValueChange)
-            is TTSProviderSetting.Step -> StepTTSConfiguration(setting, onValueChange)
+            // Name
+            FormItem(
+                label = { Text(stringResource(R.string.setting_tts_page_name)) },
+                description = { Text(stringResource(R.string.setting_tts_page_name_description)) }
+            ) {
+                OutlinedTextField(
+                    value = setting.name,
+                    onValueChange = { newName ->
+                        onValueChange(setting.copyProvider(name = newName))
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text(stringResource(R.string.setting_tts_page_name_placeholder)) }
+                )
+            }
+            // Provider-specific fields
+            when (setting) {
+                is TTSProviderSetting.OpenAI -> OpenAITTSConfiguration(setting, onValueChange)
+                is TTSProviderSetting.Gemini -> GeminiTTSConfiguration(setting, onValueChange)
+                is TTSProviderSetting.MiniMax -> MiniMaxTTSConfiguration(setting, onValueChange)
+                is TTSProviderSetting.SystemTTS -> SystemTTSConfiguration(setting, onValueChange)
+                is TTSProviderSetting.Qwen -> QwenTTSConfiguration(setting, onValueChange)
+                is TTSProviderSetting.Groq -> GroqTTSConfiguration(setting, onValueChange)
+                is TTSProviderSetting.XAI -> XAITTSConfiguration(setting, onValueChange)
+                is TTSProviderSetting.MiMo -> MiMoTTSConfiguration(setting, onValueChange)
+                is TTSProviderSetting.ElevenLabs -> ElevenLabsTTSConfiguration(setting, onValueChange)
+                is TTSProviderSetting.FishAudio -> FishAudioTTSConfiguration(setting, onValueChange)
+                is TTSProviderSetting.Step -> StepTTSConfiguration(setting, onValueChange)
+            }
         }
         footer?.invoke()
     }

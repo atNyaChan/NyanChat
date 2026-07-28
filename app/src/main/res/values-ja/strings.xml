@@ -130,7 +130,6 @@
   <string name="assistant_page_regex_visual_only">表示のみ（実際のメッセージには影響しません）</string>
   <string name="assistant_page_remove">削除</string>
   <string name="assistant_page_remove_background">背景を削除</string>
-  <string name="assistant_page_search_placeholder">アシスタントを検索</string>
   <string name="assistant_page_select_background">背景画像を選択</string>
   <string name="assistant_page_select_from_gallery">ギャラリーから選択</string>
   <string name="assistant_page_stream_output">ストリーミング出力</string>
@@ -287,7 +286,6 @@
   <string name="chat_page_nickname_placeholder">ニックネームを入力してください</string>
   <string name="chat_page_no_conversations">会話がありません</string>
   <string name="chat_page_scroll_to_bottom">一番下へスクロール</string>
-  <string name="chat_page_search_chats">チャットを検索</string>
   <string name="chat_page_today">今日</string>
   <string name="chat_page_yesterday">昨日</string>
   <string name="chat_size_dialog_content">現在のメッセージ数: %1$d。これによりアプリがクラッシュしたり動作が遅くなったり、この会話データが失われる可能性があります。チャットを続けるには、できるだけ早く新しい会話を作成してください。</string>
@@ -520,7 +518,12 @@
   <string name="search_page_sort_oldest">古い順</string>
   <string name="search_page_sort_relevance">関連度</string>
   <string name="search_page_title">メッセージを検索</string>
-  <string name="search_page_mode_model">モデルを検索…</string>
+  <string name="search_page_mode_model">モデル別…</string>
+  <string name="search_page_mode_attachment">添付ファイルで検索…</string>
+  <string name="search_page_attachment_existing">添付ファイルが存在するメッセージ</string>
+  <string name="search_page_attachment_missing">添付ファイルが削除されたメッセージ</string>
+  <string name="search_page_attachment_existing_selected">添付ファイルが存在するメッセージを絞り込み中</string>
+  <string name="search_page_attachment_missing_selected">添付ファイルが削除されたメッセージを絞り込み中</string>
   <string name="search_page_model_selected">モデル：%1$s</string>
   <string name="search_page_result_count">%1$d件の結果</string>
   <string name="search_page_model_existing">既存のモデル</string>
@@ -633,9 +636,15 @@
   <string name="setting_files_page_clean_title">ファイルをクリーンアップしますか？</string>
   <string name="setting_files_page_cleaned_toast">ファイルをクリーンアップしました</string>
   <string name="setting_files_page_delete_failed_toast">削除に失敗しました</string>
-  <string name="setting_files_page_delete_file_title">ファイルを削除</string>
+  <string name="setting_files_page_attachment_image">画像</string>
+  <string name="setting_files_page_attachment_file">ファイル</string>
+  <string name="setting_files_page_delete_attachment_title">チャット%1$sを削除</string>
+  <string name="setting_files_page_delete_attachment_confirmation">この%1$sを削除しますか？チャットでは再度表示できなくなり、復元もできません。</string>
   <string name="setting_files_page_deleted_toast">削除しました</string>
   <string name="setting_files_page_folder_upload">アップロード</string>
+  <string name="setting_files_page_folder_unused">未使用の添付ファイル</string>
+  <string name="setting_files_page_rebuild_index">チャット添付ファイルインデックスを再構築</string>
+  <string name="setting_files_page_open_reference">参照元のメッセージへ移動</string>
   <string name="setting_files_page_no_files">ファイルがありません</string>
   <string name="setting_mcp_page_add_header">ヘッダーを追加</string>
   <string name="setting_mcp_page_add_one_to_get_started">1つ追加して始める</string>
@@ -706,7 +715,8 @@
   <string name="setting_page_built_in_tools_search_desc">Google検索連携を有効化</string>
   <string name="setting_page_built_in_tools_url_context">URLコンテキスト</string>
   <string name="setting_page_built_in_tools_url_context_desc">URLコンテンツ処理を有効化</string>
-  <string name="setting_page_chat_storage">チャット保存</string>
+  <string name="setting_page_chat_storage">チャットファイル</string>
+  <string name="chat_message_attachment_deleted">添付ファイルは削除されました</string>
   <string name="setting_page_chat_storage_desc">%1$d ファイル、%2$.2f MB</string>
   <string name="setting_page_color_mode">カラーモード</string>
   <string name="setting_page_color_mode_dark">ダーク</string>
@@ -726,7 +736,7 @@
   <string name="setting_page_mcp_desc">MCPサーバーを設定</string>
   <string name="setting_page_message_display_settings">フォント、数式、コード</string>
   <string name="setting_page_model_and_services">モデルサービス</string>
-  <string name="setting_page_providers_desc">AIプロバイダーを設定</string>
+  <string name="setting_page_providers_desc">LLM サービスプロバイダーを設定</string>
   <string name="setting_page_request_logs">ネットワークリクエストログ</string>
   <string name="log_page_clear_confirm">リクエストログを消去しますか？</string>
   <string name="setting_page_request_logs_desc">今回のアプリ起動中のネットワークリクエストログを表示</string>
@@ -858,7 +868,6 @@
   <string name="setting_provider_page_save_success">保存に成功しました</string>
   <string name="setting_provider_page_scan_error">エラー: %s</string>
   <string name="setting_provider_page_scan_qr_code">QRコードをスキャン</string>
-  <string name="setting_provider_page_search_providers">プロバイダーを検索</string>
   <string name="setting_provider_page_select_all">すべて選択 (%1$d)</string>
   <string name="setting_provider_page_select_from_gallery">ギャラリーから選択</string>
   <string name="setting_provider_page_service_account_email">サービスアカウントメール</string>
@@ -949,8 +958,8 @@
   <string name="skills_page_import_confirm">インポート</string>
   <string name="skills_page_import_description">GitHubリポジトリのURLを入力すると、ルートディレクトリのSKILL.mdファイルが自動的にダウンロードされます。</string>
   <string name="skills_page_import_failed">インポートに失敗しました: %s</string>
-  <string name="skills_page_import_from_github">GitHubからインポート</string>
   <string name="skills_page_import_success">スキルをインポートしました: %s</string>
+  <string name="skills_page_import_from_github">GitHubからインポート</string>
   <string name="skills_page_more_actions">その他のアクション</string>
   <string name="skills_page_name_error">名前フィールドが見つかりません。フロントマター形式を確認してください</string>
   <string name="skills_page_paste_hint">SKILL.mdファイルの内容全体を貼り付けてください</string>

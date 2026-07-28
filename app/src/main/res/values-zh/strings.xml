@@ -130,7 +130,6 @@
   <string name="assistant_page_regex_visual_only">仅视觉（仅影响显示，不影响实际消息）</string>
   <string name="assistant_page_remove">移除</string>
   <string name="assistant_page_remove_background">移除背景</string>
-  <string name="assistant_page_search_placeholder">搜索助手</string>
   <string name="assistant_page_select_background">选择背景图片</string>
   <string name="assistant_page_select_from_gallery">从相册选择</string>
   <string name="assistant_page_stream_output">流式输出</string>
@@ -292,7 +291,6 @@
   <string name="chat_page_nickname_placeholder">请输入昵称</string>
   <string name="chat_page_no_conversations">没有对话记录</string>
   <string name="chat_page_scroll_to_bottom">滚动到底部</string>
-  <string name="chat_page_search_chats">搜索聊天</string>
   <string name="chat_page_today">今天</string>
   <string name="chat_page_yesterday">昨天</string>
   <string name="chat_size_dialog_content">当前消息数：%1$d 。这可能导致应用崩溃或卡顿，甚至丢失本次对话数据。请尽快新建对话以继续聊天。</string>
@@ -533,7 +531,12 @@
   <string name="search_page_mode_exact">精准匹配</string>
   <string name="search_page_mode_fuzzy">模糊搜索</string>
   <string name="search_page_title">搜索消息</string>
-  <string name="search_page_mode_model">搜索模型…</string>
+  <string name="search_page_mode_model">按照模型…</string>
+  <string name="search_page_mode_attachment">按照附件…</string>
+  <string name="search_page_attachment_existing">附件仍存在的消息</string>
+  <string name="search_page_attachment_missing">附件被删除的消息</string>
+  <string name="search_page_attachment_existing_selected">正在筛选附件仍存在的消息</string>
+  <string name="search_page_attachment_missing_selected">正在筛选附件被删除的消息</string>
   <string name="search_page_model_selected">模型：%1$s</string>
   <string name="search_page_result_count">%1$d 个结果</string>
   <string name="search_page_model_existing">现有的模型</string>
@@ -681,9 +684,15 @@
   <string name="setting_files_page_clean_title">清理文件？</string>
   <string name="setting_files_page_cleaned_toast">文件已清理</string>
   <string name="setting_files_page_delete_failed_toast">删除失败</string>
-  <string name="setting_files_page_delete_file_title">删除文件</string>
+  <string name="setting_files_page_attachment_image">图片</string>
+  <string name="setting_files_page_attachment_file">文件</string>
+  <string name="setting_files_page_delete_attachment_title">删除聊天%1$s</string>
+  <string name="setting_files_page_delete_attachment_confirmation">确认删除该%1$s吗？在聊天里将不可再次查看且无法恢复。</string>
   <string name="setting_files_page_deleted_toast">已删除</string>
   <string name="setting_files_page_folder_upload">上传</string>
+  <string name="setting_files_page_folder_unused">未使用的附件</string>
+  <string name="setting_files_page_rebuild_index">重建聊天附件索引</string>
+  <string name="setting_files_page_open_reference">跳转到引用消息</string>
   <string name="setting_files_page_no_files">无文件</string>
   <string name="setting_mcp_page_add_header">添加请求头</string>
   <string name="setting_mcp_page_add_one_to_get_started">添加一个即可开始使用</string>
@@ -754,7 +763,8 @@
   <string name="setting_page_built_in_tools_search_desc">启用 Google 搜索集成</string>
   <string name="setting_page_built_in_tools_url_context">URL 上下文</string>
   <string name="setting_page_built_in_tools_url_context_desc">启用 URL 内容处理</string>
-  <string name="setting_page_chat_storage">聊天文件存储</string>
+  <string name="setting_page_chat_storage">聊天文件</string>
+  <string name="chat_message_attachment_deleted">附件已被删除</string>
   <string name="setting_page_chat_storage_desc">%1$d 个文件，%2$.2f MB</string>
   <string name="setting_page_color_mode">颜色模式</string>
   <string name="setting_page_color_mode_dark">深色</string>
@@ -774,7 +784,7 @@
   <string name="setting_page_mcp_desc">配置 MCP 服务器</string>
   <string name="setting_page_message_display_settings">字体，公式和代码</string>
   <string name="setting_page_model_and_services">模型服务</string>
-  <string name="setting_page_providers_desc">配置 AI 提供商</string>
+  <string name="setting_page_providers_desc">配置 LLM 服务提供商</string>
   <string name="setting_page_request_logs">网络请求日志</string>
   <string name="log_page_clear_confirm">是否清空请求日志</string>
   <string name="setting_page_request_logs_desc">查看本次应用启动期间的网络请求日志</string>
@@ -912,7 +922,6 @@
   <string name="setting_provider_page_save_success">保存成功</string>
   <string name="setting_provider_page_scan_error">错误: %s</string>
   <string name="setting_provider_page_scan_qr_code">扫描二维码</string>
-  <string name="setting_provider_page_search_providers">搜索提供商</string>
   <string name="setting_provider_page_select_all">全选（%1$d）</string>
   <string name="setting_provider_page_select_from_gallery">从相册选择</string>
   <string name="setting_provider_page_service_account_email">服务账户邮箱</string>
@@ -1005,8 +1014,8 @@
   <string name="skills_page_import_confirm">导入</string>
   <string name="skills_page_import_description">输入 GitHub 仓库 URL，将自动下载根目录中的 SKILL.md 文件。</string>
   <string name="skills_page_import_failed">导入失败：%s</string>
-  <string name="skills_page_import_from_github">从 GitHub 导入</string>
   <string name="skills_page_import_success">技能已导入：%s</string>
+  <string name="skills_page_import_from_github">从 GitHub 导入</string>
   <string name="skills_page_more_actions">更多操作</string>
   <string name="skills_page_name_error">找不到名称字段，请检查 frontmatter 格式</string>
   <string name="skills_page_paste_hint">粘贴完整的 SKILL.md 文件内容</string>

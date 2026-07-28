@@ -64,6 +64,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.db.fts.MessageSearchResult
+import me.rerere.rikkahub.data.db.fts.MessageAttachmentState
 import me.rerere.rikkahub.data.db.fts.MessageSearchMode
 import me.rerere.rikkahub.data.db.fts.MessageSearchSort
 import me.rerere.rikkahub.ui.components.nav.BackButton
@@ -166,6 +167,7 @@ fun SearchPage(initialModelId: String? = null, vm: SearchVM = koinViewModel()) {
                         deletedModelIds = vm.deletedModelIds,
                         onDeletedModelSearch = vm::onDeletedModelSearch,
                         onManuallyEditedMessagesSearch = vm::onManuallyEditedMessagesSearch,
+                        onAttachmentSearch = vm::onAttachmentSearch,
                     )
                     SortMenuButton(
                         current = vm.sortOrder,
@@ -215,6 +217,12 @@ fun SearchPage(initialModelId: String? = null, vm: SearchVM = koinViewModel()) {
                             )
                             vm.searchManuallyEditedMessages -> stringResource(
                                 R.string.search_page_manually_edited_selected
+                            )
+                            vm.attachmentState == MessageAttachmentState.EXISTS -> stringResource(
+                                R.string.search_page_attachment_existing_selected
+                            )
+                            vm.attachmentState == MessageAttachmentState.MISSING -> stringResource(
+                                R.string.search_page_attachment_missing_selected
                             )
                             else -> stringResource(R.string.search_page_placeholder)
                         }
@@ -389,10 +397,12 @@ private fun SearchModeMenuButton(
     deletedModelIds: List<Uuid>,
     onDeletedModelSearch: (Uuid) -> Unit,
     onManuallyEditedMessagesSearch: () -> Unit,
+    onAttachmentSearch: (MessageAttachmentState) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     var modelOptionsExpanded by remember { mutableStateOf(false) }
     var deletedModelsExpanded by remember { mutableStateOf(false) }
+    var attachmentOptionsExpanded by remember { mutableStateOf(false) }
     Box {
         IconButton(onClick = { expanded = true }) {
             Icon(
@@ -433,6 +443,13 @@ private fun SearchModeMenuButton(
                     modelOptionsExpanded = true
                 },
             )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.search_page_mode_attachment)) },
+                onClick = {
+                    expanded = false
+                    attachmentOptionsExpanded = true
+                },
+            )
         }
         DropdownMenu(
             expanded = modelOptionsExpanded,
@@ -457,6 +474,25 @@ private fun SearchModeMenuButton(
                 onClick = {
                     modelOptionsExpanded = false
                     onManuallyEditedMessagesSearch()
+                },
+            )
+        }
+        DropdownMenu(
+            expanded = attachmentOptionsExpanded,
+            onDismissRequest = { attachmentOptionsExpanded = false },
+        ) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.search_page_attachment_existing)) },
+                onClick = {
+                    attachmentOptionsExpanded = false
+                    onAttachmentSearch(MessageAttachmentState.EXISTS)
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.search_page_attachment_missing)) },
+                onClick = {
+                    attachmentOptionsExpanded = false
+                    onAttachmentSearch(MessageAttachmentState.MISSING)
                 },
             )
         }

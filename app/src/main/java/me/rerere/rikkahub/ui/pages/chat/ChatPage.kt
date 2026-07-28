@@ -155,11 +155,11 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
 
     val inputState = vm.inputState
     var cachedRequestBaseWordCount by remember { mutableStateOf<Int?>(null) }
+    var cachedRequestToolCount by remember { mutableStateOf(0) }
     var requestWordCountJob by remember { mutableStateOf<Job?>(null) }
     val currentInputWordCount = inputState.getContents().sumOf { part ->
         when (part) {
             is UIMessagePart.Text -> part.text.wordCount()
-            is UIMessagePart.Reasoning -> part.reasoning.wordCount()
             else -> 0
         }
     }
@@ -170,6 +170,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
         if (!setting.displaySetting.showTokenUsage) {
             requestWordCountJob?.cancel()
             cachedRequestBaseWordCount = null
+            cachedRequestToolCount = 0
         }
     }
     val refreshRequestWordCount = {
@@ -181,7 +182,9 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
             requestWordCountJob?.cancel()
             requestWordCountJob = scope.launch {
                 cachedRequestBaseWordCount = try {
-                    vm.estimateRequestBaseWordCount()
+                    vm.estimateRequestContextStats().also {
+                        cachedRequestToolCount = it.toolCount
+                    }.wordCount
                 } catch (e: CancellationException) {
                     throw e
                 } catch (_: Exception) {
@@ -249,6 +252,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
                 ChatPageContent(
                     inputState = inputState,
                     requestWordCount = requestWordCount,
+                    requestToolCount = cachedRequestToolCount,
                     onRequestWordCountRefresh = refreshRequestWordCount,
                     loadingJob = loadingJob,
                     processingStatus = processingStatus,
@@ -283,6 +287,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
                 ChatPageContent(
                     inputState = inputState,
                     requestWordCount = requestWordCount,
+                    requestToolCount = cachedRequestToolCount,
                     onRequestWordCountRefresh = refreshRequestWordCount,
                     loadingJob = loadingJob,
                     processingStatus = processingStatus,
@@ -311,6 +316,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
 private fun ChatPageContent(
     inputState: ChatInputState,
     requestWordCount: Int?,
+    requestToolCount: Int,
     onRequestWordCountRefresh: () -> Unit,
     loadingJob: Job?,
     processingStatus: String? = null,
@@ -388,6 +394,7 @@ private fun ChatPageContent(
                 ChatInput(
                     state = inputState,
                     requestWordCount = requestWordCount,
+                    requestToolCount = requestToolCount,
                     onRequestWordCountRefresh = onRequestWordCountRefresh,
                     loading = loadingJob != null,
                     settings = setting,
@@ -501,7 +508,6 @@ private fun ChatPageContent(
                                 }
                             }
                         ))
-                    vm.saveConversationAsync()
                 },
                 onClickSuggestion = { suggestion ->
                     inputState.editingMessage = null
@@ -533,7 +539,6 @@ private fun ChatPageContent(
                 },
                 onConversationSystemPromptChange = { newPrompt ->
                     vm.updateConversation(conversation.copy(customSystemPrompt = newPrompt))
-                    vm.saveConversationAsync()
                 },
             )
         }
@@ -743,7 +748,6 @@ private fun ChatFilesPickerSheet(
             },
             onUpdateConversation = {
                 vm.updateConversation(it)
-                vm.saveConversationAsync()
             },
             showInjectionSheet = showInjectionSheet,
             onShowInjectionSheetChange = { showInjectionSheet = it },

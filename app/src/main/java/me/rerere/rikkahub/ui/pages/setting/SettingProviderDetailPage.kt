@@ -140,11 +140,18 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 import kotlin.uuid.Uuid
 
 @Composable
-fun SettingProviderDetailPage(id: Uuid, vm: SettingVM = koinViewModel()) {
+fun SettingProviderDetailPage(
+    id: Uuid,
+    initialModelId: Uuid? = null,
+    vm: SettingVM = koinViewModel(),
+) {
     val settings by vm.settings.collectAsStateWithLifecycle()
     val navController = LocalNavController.current
     val provider = settings.providers.find { it.id == id } ?: return
-    val pager = rememberPagerState { 2 }
+    val pager = rememberPagerState(
+        initialPage = if (initialModelId != null) 1 else 0,
+        pageCount = { 2 },
+    )
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
     val context = LocalContext.current
@@ -252,6 +259,7 @@ fun SettingProviderDetailPage(id: Uuid, vm: SettingVM = koinViewModel()) {
                 1 -> {
                     SettingProviderModelPage(
                         provider = provider,
+                        initialModelId = initialModelId,
                         onEdit = onEdit,
                         onMigrateModelId = { sourceModel, targetModel ->
                             vm.migrateMessageModelId(sourceModel.id, targetModel.id) { result ->
@@ -398,11 +406,13 @@ private fun SettingProviderConfigPage(
 @Composable
 private fun SettingProviderModelPage(
     provider: ProviderSetting,
+    initialModelId: Uuid?,
     onEdit: (ProviderSetting) -> Unit,
     onMigrateModelId: (Model, Model) -> Unit,
 ) {
     ModelList(
         providerSetting = provider,
+        initialModelId = initialModelId,
         onUpdateProvider = onEdit,
         onMigrateModelId = onMigrateModelId,
     )
@@ -411,6 +421,7 @@ private fun SettingProviderModelPage(
 @Composable
 private fun ModelList(
     providerSetting: ProviderSetting,
+    initialModelId: Uuid?,
     onUpdateProvider: (ProviderSetting) -> Unit,
     onMigrateModelId: (Model, Model) -> Unit,
 ) {
@@ -430,12 +441,18 @@ private fun ModelList(
     val reorderableLazyListState = rememberReorderableLazyListState(lazyListState) { from, to ->
         onUpdateProvider(providerSetting.moveMove(from.index, to.index))
     }
+    LaunchedEffect(initialModelId, providerSetting.models) {
+        val initialIndex = providerSetting.models.indexOfFirst { it.id == initialModelId }
+        if (initialIndex >= 0) {
+            lazyListState.scrollToItem(initialIndex)
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize(),
-            contentPadding = PaddingValues(16.dp) + PaddingValues(bottom = 128.dp),
+            contentPadding = PaddingValues(8.dp) + PaddingValues(bottom = 128.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp),
             state = lazyListState
@@ -470,6 +487,7 @@ private fun ModelList(
                     ) { isDragging ->
                         ModelCard(
                             model = item,
+                            openInitially = item.id == initialModelId,
                             onDelete = {
                                 onUpdateProvider(providerSetting.delModel(item))
                             },
@@ -1473,6 +1491,7 @@ fun ModalAbilitySelector(
 @Composable
 private fun ModelCard(
     model: Model,
+    openInitially: Boolean,
     modifier: Modifier = Modifier,
     onDelete: () -> Unit,
     onEdit: (Model) -> Unit,
@@ -1484,6 +1503,11 @@ private fun ModelCard(
     }
     val scope = rememberCoroutineScope()
 
+    LaunchedEffect(openInitially) {
+        if (openInitially && !dialogState.isEditing) {
+            dialogState.open(model.copy())
+        }
+    }
 
     if (dialogState.isEditing) {
         dialogState.currentState?.let { editingModel ->

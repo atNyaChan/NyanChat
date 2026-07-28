@@ -27,6 +27,7 @@ fun ZoomableAsyncImage(
     model: String?,
     contentDescription: String?,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     alignment: Alignment = Alignment.Center,
     contentScale: ContentScale = ContentScale.Fit,
     alpha: Float = DefaultAlpha,
@@ -47,7 +48,7 @@ fun ZoomableAsyncImage(
         contentDescription = contentDescription,
         modifier = modifier
             .shimmer(isLoading = loading)
-            .clickable {
+            .clickable(enabled = enabled) {
                 showImageViewer = true
             },
         contentScale = contentScale,

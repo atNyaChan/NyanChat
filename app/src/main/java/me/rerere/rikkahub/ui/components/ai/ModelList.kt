@@ -22,13 +22,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -676,8 +676,22 @@ private fun ModelItem(
 ) {
     val navController = LocalNavController.current
     val interactionSource = remember { MutableInteractionSource() }
-    Card(
-        modifier = modifier,
+    OutlinedCard(
+        modifier = modifier.combinedClickable(
+            enabled = true,
+            onLongClick = {
+                onDismiss()
+                navController.navigate(
+                    Screen.SettingProviderDetail(
+                        providerId = providerSetting.id.toString(),
+                        modelId = model.id.toString(),
+                    )
+                )
+            },
+            onClick = { onSelect(model) },
+            interactionSource = interactionSource,
+            indication = LocalIndication.current
+        ),
         colors = CardDefaults.cardColors(
             containerColor = if (select) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
             contentColor = if (select) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
@@ -688,25 +702,10 @@ private fun ModelItem(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = 16.dp)
+                .padding(vertical = 8.dp, horizontal = 12.dp)
         ) {
             Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .combinedClickable(
-                        enabled = true,
-                        onLongClick = {
-                            onDismiss()
-                            navController.navigate(
-                                Screen.SettingProviderDetail(
-                                    providerSetting.id.toString()
-                                )
-                            )
-                        },
-                        onClick = { onSelect(model) },
-                        interactionSource = interactionSource,
-                        indication = LocalIndication.current
-                    ),
+                modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
@@ -718,7 +717,7 @@ private fun ModelItem(
                         name = model.modelId,
                         modifier = Modifier
                             .padding(4.dp)
-                            .size(32.dp)
+                            .size(28.dp)
                     )
                 }
                 Column(

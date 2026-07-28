@@ -3,8 +3,6 @@ package me.rerere.rikkahub.ui.pages.assistant
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Copy01
 import me.rerere.hugeicons.stroke.Add01
-import me.rerere.hugeicons.stroke.Search01
-import me.rerere.hugeicons.stroke.Cancel01
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -24,6 +22,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
@@ -83,19 +82,15 @@ fun AssistantPage(vm: AssistantVM = koinViewModel()) {
     val navController = LocalNavController.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
-    // 搜索关键词状态
-    var searchQuery by remember { mutableStateOf("") }
     // 标签过滤状态
     var selectedTagIds by remember { mutableStateOf(emptySet<Uuid>()) }
 
-    // 根据搜索关键词和选中的标签过滤助手
-    val filteredAssistants = remember(settings.assistants, selectedTagIds, searchQuery) {
+    // 根据选中的标签过滤助手
+    val filteredAssistants = remember(settings.assistants, selectedTagIds) {
         settings.assistants.filter { assistant ->
-            val matchesSearch = searchQuery.isBlank() ||
-                assistant.name.contains(searchQuery, ignoreCase = true)
             val matchesTags = selectedTagIds.isEmpty() ||
                 assistant.tags.any { tagId -> tagId in selectedTagIds }
-            matchesSearch && matchesTags
+            matchesTags
         }
     }
 
@@ -132,7 +127,7 @@ fun AssistantPage(vm: AssistantVM = koinViewModel()) {
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             val lazyListState = rememberLazyListState()
-            val isFiltering = selectedTagIds.isNotEmpty() || searchQuery.isNotBlank()
+            val isFiltering = selectedTagIds.isNotEmpty()
             val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
                 if (!isFiltering) {
                     val newAssistants = settings.assistants.toMutableList().apply {
@@ -142,28 +137,6 @@ fun AssistantPage(vm: AssistantVM = koinViewModel()) {
                 }
             }
             val haptic = LocalHapticFeedback.current
-
-            // 搜索框
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                placeholder = { Text(stringResource(R.string.assistant_page_search_placeholder)) },
-                leadingIcon = {
-                    Icon(HugeIcons.Search01, contentDescription = null)
-                },
-                trailingIcon = {
-                    if (searchQuery.isNotBlank()) {
-                        IconButton(onClick = { searchQuery = "" }) {
-                            Icon(HugeIcons.Cancel01, contentDescription = null)
-                        }
-                    }
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp)
-            )
 
             // 标签过滤器
             AssistantTagsFilterRow(
@@ -179,7 +152,7 @@ fun AssistantPage(vm: AssistantVM = koinViewModel()) {
                 modifier = Modifier
                     .fillMaxSize()
                     .imePadding(),
-                contentPadding = PaddingValues(horizontal = 16.dp),
+                contentPadding = PaddingValues(horizontal = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 state = lazyListState,
             ) {
@@ -241,7 +214,7 @@ private fun AssistantTagsFilterRow(
 
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(horizontal = 16.dp),
+            modifier = Modifier.padding(horizontal = 8.dp),
             state = tagsListState
         ) {
             lazyItems(items = settings.assistantTags, key = { tag -> tag.id }) { tag ->
@@ -447,17 +420,14 @@ private fun AssistantItem(
     modifier: Modifier = Modifier,
     onEdit: () -> Unit,
 ) {
-    Card(
+    OutlinedCard(
         modifier = modifier.fillMaxWidth(),
         onClick = onEdit,
-        colors = CardDefaults.cardColors(
-            containerColor = CustomColors.listItemColors.containerColor
-        )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -466,7 +436,7 @@ private fun AssistantItem(
                 value = assistant.avatar,
                 invertDefaultAvatarInDarkMode = true,
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(40.dp)
                     .heroAnimation("assistant_${assistant.id}")
             )
 

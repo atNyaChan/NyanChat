@@ -1,5 +1,6 @@
 package me.rerere.rikkahub.ui.components.message
 
+import android.content.Context
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -425,57 +426,61 @@ private fun MessagePartsBlock(
                     }
 
                     is UIMessagePart.Video -> {
-                        Surface(
-                            tonalElevation = 2.dp,
-                            onClick = {
-                                val intent = Intent(Intent.ACTION_VIEW)
-                                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                intent.data = FileProvider.getUriForFile(
-                                    context,
-                                    "${context.packageName}.fileprovider",
-                                    part.url.toUri().toFile()
-                                )
-                                val chooserIndent = Intent.createChooser(intent, null)
-                                context.startActivity(chooserIndent)
-                            },
-                            modifier = Modifier,
-                            shape = RoundedCornerShape(8.dp),
+                        val attachmentMissing = remember(part.url) {
+                            isLocalAttachmentMissing(part.url)
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
-                            Box(modifier = Modifier.size(72.dp), contentAlignment = Alignment.Center) {
-                                Icon(HugeIcons.Video01, null)
+                            MissingAttachmentLabel(visible = attachmentMissing)
+                            Surface(
+                                tonalElevation = 2.dp,
+                                enabled = !attachmentMissing,
+                                onClick = {
+                                    openLocalAttachment(context, part.url)
+                                },
+                                modifier = Modifier,
+                                shape = RoundedCornerShape(8.dp),
+                            ) {
+                                Box(modifier = Modifier.size(72.dp), contentAlignment = Alignment.Center) {
+                                    Icon(HugeIcons.Video01, null)
+                                }
                             }
                         }
                     }
 
                     is UIMessagePart.Audio -> {
-                        Surface(
-                            tonalElevation = 2.dp,
-                            onClick = {
-                                val intent = Intent(Intent.ACTION_VIEW)
-                                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                intent.data = FileProvider.getUriForFile(
-                                    context,
-                                    "${context.packageName}.fileprovider",
-                                    part.url.toUri().toFile()
-                                )
-                                val chooserIndent = Intent.createChooser(intent, null)
-                                context.startActivity(chooserIndent)
-                            },
-                            modifier = Modifier,
-                            shape = RoundedCornerShape(50),
-                            color = MaterialTheme.colorScheme.secondaryContainer
+                        val attachmentMissing = remember(part.url) {
+                            isLocalAttachmentMissing(part.url)
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
-                            ProvideTextStyle(MaterialTheme.typography.labelSmall) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = HugeIcons.MusicNote03,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp)
-                                    )
+                            MissingAttachmentLabel(visible = attachmentMissing)
+                            Surface(
+                                tonalElevation = 2.dp,
+                                enabled = !attachmentMissing,
+                                onClick = {
+                                    openLocalAttachment(context, part.url)
+                                },
+                                modifier = Modifier,
+                                shape = RoundedCornerShape(50),
+                                color = MaterialTheme.colorScheme.secondaryContainer
+                            ) {
+                                ProvideTextStyle(MaterialTheme.typography.labelSmall) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = HugeIcons.MusicNote03,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -484,6 +489,9 @@ private fun MessagePartsBlock(
                     is UIMessagePart.Image -> {
                         val isImageLoading =
                             part.url.isBlank() || part.url.matches(Regex("^data:image/[^;]*;base64,\\s*$"))
+                        val attachmentMissing = remember(part.url) {
+                            isLocalAttachmentMissing(part.url)
+                        }
                         if (isImageLoading) {
                             Box(
                                 modifier = Modifier
@@ -493,24 +501,39 @@ private fun MessagePartsBlock(
                                     .shimmer(isLoading = true)
                             )
                         } else {
-                            ZoomableAsyncImage(
-                                model = part.url,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .clip(MaterialTheme.shapes.medium)
-                                    .height(72.dp)
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                MissingAttachmentLabel(visible = attachmentMissing)
+                                ZoomableAsyncImage(
+                                    model = part.url,
+                                    contentDescription = null,
+                                    enabled = !attachmentMissing,
+                                    modifier = Modifier
+                                        .clip(MaterialTheme.shapes.medium)
+                                        .height(72.dp)
+                                )
+                            }
                         }
                     }
 
                     is UIMessagePart.Document -> {
+                        val attachmentMissing = remember(part.url) {
+                            isLocalAttachmentMissing(part.url)
+                        }
                         val fileWordCount by produceState<Int?>(
                             null,
                             part.url,
                             part.mime,
+                            attachmentMissing,
                             settings.displaySetting.showTokenUsage,
                         ) {
-                            value = if (role == MessageRole.USER && settings.displaySetting.showTokenUsage) {
+                            value = if (
+                                !attachmentMissing &&
+                                role == MessageRole.USER &&
+                                settings.displaySetting.showTokenUsage
+                            ) {
                                 DocumentAsPromptTransformer.extractDocumentText(part)?.wordCount()
                             } else {
                                 null
@@ -520,6 +543,7 @@ private fun MessagePartsBlock(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
+                            MissingAttachmentLabel(visible = attachmentMissing)
                             if (role == MessageRole.USER && settings.displaySetting.showTokenUsage) {
                                 fileWordCount?.let { count ->
                                     Text(
@@ -531,16 +555,9 @@ private fun MessagePartsBlock(
                             }
                             Surface(
                                 tonalElevation = 2.dp,
+                                enabled = !attachmentMissing,
                                 onClick = {
-                                    val intent = Intent(Intent.ACTION_VIEW)
-                                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                    intent.data = FileProvider.getUriForFile(
-                                        context,
-                                        "${context.packageName}.fileprovider",
-                                        part.url.toUri().toFile()
-                                    )
-                                    val chooserIndent = Intent.createChooser(intent, null)
-                                    context.startActivity(chooserIndent)
+                                    openLocalAttachment(context, part.url)
                                 },
                                 modifier = Modifier,
                                 shape = RoundedCornerShape(50),
@@ -653,5 +670,38 @@ private fun MessagePartsBlock(
                 Text(stringResource(R.string.citations_count, annotations.size))
             }
         }
+    }
+}
+
+@Composable
+private fun MissingAttachmentLabel(visible: Boolean) {
+    if (visible) {
+        Text(
+            text = stringResource(R.string.chat_message_attachment_deleted),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.error,
+        )
+    }
+}
+
+private fun isLocalAttachmentMissing(url: String): Boolean {
+    if (!url.startsWith("file:")) return false
+    return runCatching { !url.toUri().toFile().isFile }.getOrDefault(true)
+}
+
+private fun openLocalAttachment(context: Context, url: String) {
+    runCatching {
+        val file = url.toUri().toFile()
+        if (!file.isFile) return
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file,
+        )
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            data = uri
+        }
+        context.startActivity(Intent.createChooser(intent, null))
     }
 }

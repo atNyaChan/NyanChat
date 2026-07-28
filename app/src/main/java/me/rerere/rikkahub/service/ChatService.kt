@@ -3,6 +3,9 @@ package me.rerere.rikkahub.service
 import android.app.Application
 import android.util.Log
 import androidx.core.net.toUri
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.ProcessLifecycleOwner
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -25,6 +28,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -117,6 +122,11 @@ data class ChatError(
     val solution: ChatErrorSolution? = null,
 )
 
+data class RequestContextStats(
+    val wordCount: Int,
+    val toolCount: Int,
+)
+
 enum class ChatErrorSolution {
     CheckTitleModelSettings,
 }
@@ -161,6 +171,7 @@ class ChatService(
 
     // 统一会话管理
     private val sessions = ConcurrentHashMap<Uuid, ConversationSession>()
+    private val persistenceMutexes = ConcurrentHashMap<Uuid, Mutex>()
     private val translationJobs = ConcurrentHashMap<Pair<Uuid, Uuid>, Job>()
     private val _translatingMessages = MutableStateFlow<Set<Pair<Uuid, Uuid>>>(emptySet())
     val translatingMessages: StateFlow<Set<Pair<Uuid, Uuid>>> = _translatingMessages.asStateFlow()
@@ -169,6 +180,18 @@ class ChatService(
     // 错误状态
     private val _errors = MutableStateFlow<List<ChatError>>(emptyList())
     val errors: StateFlow<List<ChatError>> = _errors.asStateFlow()
+
+    init {
+        appScope.launch {
+            ProcessLifecycleOwner.get().lifecycle.addObserver(
+                LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_STOP) {
+                        persistIdleConversations()
+                    }
+                }
+            )
+        }
+    }
 
     fun addError(
         error: Throwable,
@@ -367,18 +390,20 @@ class ChatService(
         }
     }
 
-    suspend fun estimateRequestBaseWordCount(conversationId: Uuid): Int {
+    suspend fun estimateRequestContextStats(conversationId: Uuid): RequestContextStats {
         val conversation = getConversationFlow(conversationId).value
         val settings = settingsStore.settingsFlow.first()
         val assistant = settings.getAssistantById(conversation.assistantId)
             ?: settings.getCurrentAssistant()
-        val model = settings.findModelById(assistant.chatModelId ?: settings.chatModelId) ?: return 0
+        val model = settings.findModelById(assistant.chatModelId ?: settings.chatModelId)
+            ?: return RequestContextStats(wordCount = 0, toolCount = 0)
         val memories = if (assistant.useGlobalMemory) {
             memoryRepository.getGlobalMemories()
         } else {
             memoryRepository.getMemoriesOfAssistant(assistant.id.toString())
         }
-        return generationHandler.prepareRequestMessages(
+        val tools = buildRequestTools(settings, assistant, conversation)
+        val wordCount = generationHandler.prepareRequestMessages(
             settings = settings,
             model = model,
             messages = conversation.currentMessages,
@@ -389,7 +414,7 @@ class ChatService(
             },
             assistant = assistant,
             memories = memories,
-            tools = buildRequestTools(settings, assistant, conversation),
+            tools = tools,
             conversationSystemPrompt = conversation.customSystemPrompt,
             conversationModeInjectionIds = conversation.modeInjectionIds,
             conversationLorebookIds = conversation.lorebookIds,
@@ -398,11 +423,14 @@ class ChatService(
             message.parts.sumOf { part ->
                 when (part) {
                     is UIMessagePart.Text -> part.text.wordCount()
-                    is UIMessagePart.Reasoning -> part.reasoning.wordCount()
                     else -> 0
                 }
             }
         }
+        return RequestContextStats(
+            wordCount = wordCount,
+            toolCount = tools.size + if (assistant.enableMemory) 1 else 0,
+        )
     }
 
     private suspend fun buildRequestTools(
@@ -504,32 +532,11 @@ class ChatService(
                                 }
                             )
                         )
-                        val succeeded = handleMessageComplete(
+                        handleMessageComplete(
                             conversationId,
                             messageRange = 0..<nodeIndex,
                             pendingResponse = pendingResponse,
                         )
-                        if (!succeeded) {
-                            val failedConversation = getConversationFlow(conversationId).value
-                            val failedNode = failedConversation.messageNodes.getOrNull(nodeIndex)
-                            val pendingMessage = failedNode?.messages?.find { it.id == pendingResponse.id }
-                            if (failedNode != null && pendingMessage?.parts?.isEmptyUIMessage() == true) {
-                                val restoredMessages = failedNode.messages.filterNot { it.id == pendingResponse.id }
-                                val restoredIndex = restoredMessages.indexOfFirst { it.id == message.id }
-                                    .coerceAtLeast(0)
-                                updateConversation(
-                                    conversationId,
-                                    failedConversation.copy(
-                                        messageNodes = failedConversation.messageNodes.toMutableList().also {
-                                            it[nodeIndex] = failedNode.copy(
-                                                messages = restoredMessages,
-                                                selectIndex = restoredIndex,
-                                            )
-                                        }
-                                    )
-                                )
-                            }
-                        }
                     } else {
                         saveConversation(conversationId, conversation)
                     }
@@ -626,6 +633,7 @@ class ChatService(
             model.displayName
         }
         val activePendingResponse = pendingResponse ?: UIMessage.assistant("")
+        var terminalStatePersisted = false
 
         return runCatching {
 
@@ -686,9 +694,16 @@ class ChatService(
                 },
                 outputTransformers = outputTransformers,
                 tools = buildRequestTools(settings, assistant, conversation),
-            ).onCompletion {
-                // 可能被取消了，或者意外结束，兜底更新
-                val currentConversation = getConversationFlow(conversationId).value
+            ).onCompletion { cause ->
+                // 生成的所有结束路径都在这里整理并保存最终状态。取消状态下普通挂起保存会被跳过，
+                // 因此清理临时空回复和数据库提交必须一并放进 NonCancellable。
+                val currentConversation = getConversationFlow(conversationId).value.let { current ->
+                    if (cause != null) {
+                        current.removeEmptyMessage(activePendingResponse.id)
+                    } else {
+                        current
+                    }
+                }
                 val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                 val updatedConversation = currentConversation.copy(
                     messageNodes = currentConversation.messageNodes.map { node ->
@@ -710,10 +725,10 @@ class ChatService(
                     },
                     updateAt = Instant.now()
                 )
-                updateConversation(conversationId, updatedConversation)
                 withContext(NonCancellable + Dispatchers.IO) {
                     saveConversation(conversationId, updatedConversation)
                 }
+                terminalStatePersisted = true
 
                 // 生成结束：取消 Live Update 通知，后台时发送完成通知
                 appEventBus.emit(
@@ -757,17 +772,12 @@ class ChatService(
                 }
             }
         }.onFailure {
-            if (pendingResponse == null) {
-                val failedConversation = getConversationFlow(conversationId).value
-                val failedNode = failedConversation.getMessageNodeByMessage(activePendingResponse)
-                val pendingMessage = failedNode?.messages?.find { it.id == activePendingResponse.id }
-                if (failedNode != null && pendingMessage?.parts?.isEmptyUIMessage() == true) {
-                    updateConversation(
-                        conversationId,
-                        failedConversation.copy(
-                            messageNodes = failedConversation.messageNodes - failedNode,
-                        )
-                    )
+            // 请求参数或工具构建若在 Flow 建立前失败，不会进入 onCompletion，仍需清理占位消息。
+            if (!terminalStatePersisted) {
+                withContext(NonCancellable + Dispatchers.IO) {
+                    val cleanedConversation = getConversationFlow(conversationId).value
+                        .removeEmptyMessage(activePendingResponse.id)
+                    saveConversation(conversationId, cleanedConversation)
                 }
             }
             // 兜底取消 Live Update 通知（生成开始前失败时 onCompletion 不会执行）
@@ -779,8 +789,6 @@ class ChatService(
             Logging.log(TAG, it.stackTraceToString())
         }.onSuccess {
             val finalConversation = getConversationFlow(conversationId).value
-            saveConversation(conversationId, finalConversation)
-
             launchWithConversationReference(conversationId) {
                 generateTitle(conversationId, finalConversation)
             }
@@ -788,6 +796,32 @@ class ChatService(
                 generateSuggestion(conversationId, finalConversation)
             }
         }.isSuccess
+    }
+
+    private fun Conversation.removeEmptyMessage(messageId: Uuid): Conversation {
+        val updatedNodes = messageNodes.mapNotNull { node ->
+            val messageIndex = node.messages.indexOfFirst { it.id == messageId }
+            val message = node.messages.getOrNull(messageIndex)
+            if (message == null || !message.parts.isEmptyUIMessage()) {
+                return@mapNotNull node
+            }
+
+            val remainingMessages = node.messages.filterNot { it.id == messageId }
+            if (remainingMessages.isEmpty()) {
+                return@mapNotNull null
+            }
+
+            val restoredSelectIndex = when {
+                node.selectIndex > messageIndex -> node.selectIndex - 1
+                node.selectIndex == messageIndex -> (messageIndex - 1).coerceAtLeast(0)
+                else -> node.selectIndex
+            }.coerceIn(remainingMessages.indices)
+            node.copy(
+                messages = remainingMessages,
+                selectIndex = restoredSelectIndex,
+            )
+        }
+        return copy(messageNodes = updatedNodes)
     }
 
     private suspend fun createWorkspaceToolsIfReady(workspaceId: String?, cwd: String? = null): List<Tool> {
@@ -899,9 +933,8 @@ class ChatService(
 
         runCatching {
             val title = generateTitleCandidate(conversation) ?: return
-            conversationRepo.getConversationById(conversation.id)?.let {
-                saveConversation(conversationId, it.copy(title = title))
-            }
+            val latestConversation = getConversationFlow(conversationId).value
+            saveConversation(conversationId, latestConversation.copy(title = title))
         }.onFailure {
             it.printStackTrace()
             addError(
@@ -971,9 +1004,7 @@ class ChatService(
                 result.choices[0].message?.toText()?.split("\n")?.map { it.trim() }
                     ?.filter { it.isNotBlank() } ?: emptyList()
 
-            val latestConversation = conversationRepo.getConversationById(conversationId)
-                ?: sessions[conversationId]?.state?.value
-                ?: conversation
+            val latestConversation = sessions[conversationId]?.state?.value ?: conversation
             saveConversation(
                 conversationId,
                 latestConversation.copy(
@@ -1075,11 +1106,18 @@ class ChatService(
 
     // ---- 对话状态更新 ----
 
-    private fun updateConversation(conversationId: Uuid, conversation: Conversation) {
+    private fun updateConversation(
+        conversationId: Uuid,
+        conversation: Conversation,
+        persistWhenIdle: Boolean = true,
+    ) {
         if (conversation.id != conversationId) return
         val session = getOrCreateSession(conversationId)
         checkFilesDelete(conversation, session.state.value)
         session.state.value = conversation
+        if (persistWhenIdle && !session.isGenerating) {
+            persistConversationAsync(conversationId)
+        }
     }
 
     fun updateConversationState(conversationId: Uuid, update: (Conversation) -> Conversation) {
@@ -1137,18 +1175,35 @@ class ChatService(
     }
 
     suspend fun saveConversation(conversationId: Uuid, conversation: Conversation) {
-        val exists = conversationRepo.existsConversationById(conversation.id)
-        if (!exists && conversation.title.isBlank() && conversation.messageNodes.isEmpty()) {
-            return // 新会话且为空时不保存
+        updateConversation(conversationId, conversation.copy(), persistWhenIdle = false)
+        persistCurrentConversation(conversationId)
+    }
+
+    private fun persistConversationAsync(conversationId: Uuid) {
+        appScope.launch(Dispatchers.IO) {
+            persistCurrentConversation(conversationId)
         }
+    }
 
-        val updatedConversation = conversation.copy()
-        updateConversation(conversationId, updatedConversation)
+    private fun persistIdleConversations() {
+        sessions.values
+            .filterNot { it.isGenerating }
+            .forEach { persistConversationAsync(it.id) }
+    }
 
-        if (!exists) {
-            conversationRepo.insertConversation(updatedConversation)
-        } else {
-            conversationRepo.updateConversation(updatedConversation)
+    private suspend fun persistCurrentConversation(conversationId: Uuid) {
+        val mutex = persistenceMutexes.computeIfAbsent(conversationId) { Mutex() }
+        mutex.withLock {
+            val conversation = sessions[conversationId]?.state?.value ?: return@withLock
+            val exists = conversationRepo.existsConversationById(conversation.id)
+            if (!exists && conversation.title.isBlank() && conversation.messageNodes.isEmpty()) {
+                return@withLock
+            }
+            if (!exists) {
+                conversationRepo.insertConversation(conversation)
+            } else {
+                conversationRepo.updateConversation(conversation)
+            }
         }
     }
 

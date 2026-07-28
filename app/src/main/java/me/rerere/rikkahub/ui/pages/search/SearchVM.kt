@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import me.rerere.ai.provider.Model
 import me.rerere.rikkahub.data.db.fts.MessageSearchResult
+import me.rerere.rikkahub.data.db.fts.MessageAttachmentState
 import me.rerere.rikkahub.data.db.fts.MessageSearchMode
 import me.rerere.rikkahub.data.db.fts.MessageSearchSort
 import me.rerere.rikkahub.data.repository.ConversationRepository
@@ -61,6 +62,8 @@ class SearchVM(
         private set
     var searchManuallyEditedMessages by mutableStateOf(false)
         private set
+    var attachmentState by mutableStateOf<MessageAttachmentState?>(null)
+        private set
     var deletedModelIds by mutableStateOf<List<Uuid>>(emptyList())
         private set
     var isLoading by mutableStateOf(false)
@@ -87,6 +90,7 @@ class SearchVM(
         selectedModel = null
         selectedDeletedModelId = null
         searchManuallyEditedMessages = false
+        attachmentState = null
         searchQuery = query
         _searchQuery.value = query
     }
@@ -113,6 +117,7 @@ class SearchVM(
         selectedModel = null
         selectedDeletedModelId = null
         searchManuallyEditedMessages = false
+        attachmentState = null
         context.writeStringPreference(SEARCH_MODE_PREF_KEY, mode.name)
         ensureValidSortOrder(mode == MessageSearchMode.FUZZY)
         viewModelScope.launch {
@@ -126,6 +131,7 @@ class SearchVM(
         selectedModel = model
         selectedDeletedModelId = null
         searchManuallyEditedMessages = false
+        attachmentState = null
         searchQuery = ""
         _searchQuery.value = ""
         viewModelScope.launch { performSearch("") }
@@ -137,6 +143,7 @@ class SearchVM(
         selectedModel = null
         selectedDeletedModelId = modelId
         searchManuallyEditedMessages = false
+        attachmentState = null
         searchQuery = ""
         _searchQuery.value = ""
         viewModelScope.launch { performSearch("") }
@@ -148,6 +155,19 @@ class SearchVM(
         selectedModel = null
         selectedDeletedModelId = null
         searchManuallyEditedMessages = true
+        attachmentState = null
+        searchQuery = ""
+        _searchQuery.value = ""
+        viewModelScope.launch { performSearch("") }
+    }
+
+    fun onAttachmentSearch(state: MessageAttachmentState) {
+        currentPage = 1
+        ensureValidSortOrder(false)
+        selectedModel = null
+        selectedDeletedModelId = null
+        searchManuallyEditedMessages = false
+        attachmentState = state
         searchQuery = ""
         _searchQuery.value = ""
         viewModelScope.launch { performSearch("") }
@@ -165,10 +185,14 @@ class SearchVM(
         get() = selectedModel != null ||
             selectedDeletedModelId != null ||
             searchManuallyEditedMessages ||
+            attachmentState != null ||
             searchQuery.isNotBlank()
 
     val isModelFilteredSearch: Boolean
-        get() = selectedModel != null || selectedDeletedModelId != null || searchManuallyEditedMessages
+        get() = selectedModel != null ||
+            selectedDeletedModelId != null ||
+            searchManuallyEditedMessages ||
+            attachmentState != null
 
     fun search() {
         viewModelScope.launch {
@@ -208,7 +232,14 @@ class SearchVM(
         val model = selectedModel
         val deletedModelId = selectedDeletedModelId
         val manuallyEdited = searchManuallyEditedMessages
-        if (model == null && deletedModelId == null && !manuallyEdited && query.isBlank()) {
+        val selectedAttachmentState = attachmentState
+        if (
+            model == null &&
+            deletedModelId == null &&
+            !manuallyEdited &&
+            selectedAttachmentState == null &&
+            query.isBlank()
+        ) {
             results = emptyList()
             resultCount = 0
             return
@@ -219,6 +250,8 @@ class SearchVM(
                 model != null -> conversationRepo.countMessagesByModel(model.id)
                 deletedModelId != null -> conversationRepo.countMessagesByModel(deletedModelId)
                 manuallyEdited -> conversationRepo.countManuallyEditedMessages()
+                selectedAttachmentState != null ->
+                    conversationRepo.countMessagesByAttachmentState(selectedAttachmentState)
                 else -> conversationRepo.countSearchMessages(query, searchMode)
             }
             currentPage = currentPage.coerceIn(1, totalPages)
@@ -228,6 +261,13 @@ class SearchVM(
                 deletedModelId != null ->
                     conversationRepo.searchMessagesByModel(deletedModelId, sortOrder, PAGE_SIZE, offset)
                 manuallyEdited -> conversationRepo.searchManuallyEditedMessages(sortOrder, PAGE_SIZE, offset)
+                selectedAttachmentState != null ->
+                    conversationRepo.searchMessagesByAttachmentState(
+                        selectedAttachmentState,
+                        sortOrder,
+                        PAGE_SIZE,
+                        offset,
+                    )
                 else -> conversationRepo.searchMessages(query, sortOrder, searchMode, PAGE_SIZE, offset)
             }
         } finally {

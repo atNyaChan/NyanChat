@@ -24,9 +24,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LocalContentColor
@@ -398,7 +398,7 @@ private fun TTSProviderList(
         modifier = modifier
             .fillMaxSize()
             .imePadding(),
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         state = lazyListState,
     ) {
@@ -440,7 +440,7 @@ private fun ASRProviderList(
         modifier = modifier
             .fillMaxSize()
             .imePadding(),
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         state = lazyListState
     ) {
@@ -621,18 +621,18 @@ private fun TTSProviderItem(
     val tts = LocalTTSState.current
     val isSpeaking by tts.isSpeaking.collectAsState()
 
-    Card(
+    OutlinedCard(
         modifier = modifier.clickable(onClick = onEdit),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) {
                 MaterialTheme.colorScheme.primaryContainer
             } else {
-                CustomColors.listItemColors.containerColor
+                MaterialTheme.colorScheme.surface
             }
         )
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(
@@ -719,18 +719,18 @@ private fun ASRProviderItem(
     onSelect: () -> Unit,
     onEdit: () -> Unit,
 ) {
-    Card(
+    OutlinedCard(
         modifier = modifier.clickable(onClick = onEdit),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) {
                 MaterialTheme.colorScheme.primaryContainer
             } else {
-                CustomColors.listItemColors.containerColor
+                MaterialTheme.colorScheme.surface
             }
         )
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(

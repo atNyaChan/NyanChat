@@ -130,7 +130,6 @@
   <string name="assistant_page_regex_visual_only">僅視覺效果（僅影響顯示，不影響實際訊息）</string>
   <string name="assistant_page_remove">移除</string>
   <string name="assistant_page_remove_background">移除背景</string>
-  <string name="assistant_page_search_placeholder">搜尋助理</string>
   <string name="assistant_page_select_background">選擇背景圖片</string>
   <string name="assistant_page_select_from_gallery">從相簿選擇</string>
   <string name="assistant_page_stream_output">串流輸出</string>
@@ -287,7 +286,6 @@
   <string name="chat_page_nickname_placeholder">請輸入暱稱</string>
   <string name="chat_page_no_conversations">沒有對話記錄</string>
   <string name="chat_page_scroll_to_bottom">滾動到底部</string>
-  <string name="chat_page_search_chats">搜尋聊天</string>
   <string name="chat_page_today">今天</string>
   <string name="chat_page_yesterday">昨天</string>
   <string name="chat_size_dialog_content">目前訊息數：%1$d 。這可能導致應用程式崩潰或延遲，甚至遺失此對話資料。請盡快建立新對話以繼續聊天。</string>
@@ -520,7 +518,12 @@
   <string name="search_page_sort_oldest">最舊優先</string>
   <string name="search_page_sort_relevance">相關性</string>
   <string name="search_page_title">搜尋訊息</string>
-  <string name="search_page_mode_model">搜尋模型…</string>
+  <string name="search_page_mode_model">按照模型…</string>
+  <string name="search_page_mode_attachment">按照附件…</string>
+  <string name="search_page_attachment_existing">附件仍存在的訊息</string>
+  <string name="search_page_attachment_missing">附件已被刪除的訊息</string>
+  <string name="search_page_attachment_existing_selected">正在篩選附件仍存在的訊息</string>
+  <string name="search_page_attachment_missing_selected">正在篩選附件已被刪除的訊息</string>
   <string name="search_page_model_selected">模型：%1$s</string>
   <string name="search_page_result_count">%1$d 個結果</string>
   <string name="search_page_model_existing">現有模型</string>
@@ -633,9 +636,15 @@
   <string name="setting_files_page_clean_title">清理檔案？</string>
   <string name="setting_files_page_cleaned_toast">檔案已清理</string>
   <string name="setting_files_page_delete_failed_toast">刪除失敗</string>
-  <string name="setting_files_page_delete_file_title">刪除檔案</string>
+  <string name="setting_files_page_attachment_image">圖片</string>
+  <string name="setting_files_page_attachment_file">檔案</string>
+  <string name="setting_files_page_delete_attachment_title">刪除聊天%1$s</string>
+  <string name="setting_files_page_delete_attachment_confirmation">確定刪除該%1$s嗎？在聊天中將無法再次查看且無法復原。</string>
   <string name="setting_files_page_deleted_toast">已刪除</string>
   <string name="setting_files_page_folder_upload">上傳</string>
+  <string name="setting_files_page_folder_unused">未使用的附件</string>
+  <string name="setting_files_page_rebuild_index">重建聊天附件索引</string>
+  <string name="setting_files_page_open_reference">跳至引用訊息</string>
   <string name="setting_files_page_no_files">無檔案</string>
   <string name="setting_mcp_page_add_header">添加請求頭</string>
   <string name="setting_mcp_page_add_one_to_get_started">新增一個即可開始使用</string>
@@ -706,7 +715,8 @@
   <string name="setting_page_built_in_tools_search_desc">啟用 Google 搜尋整合</string>
   <string name="setting_page_built_in_tools_url_context">URL 上下文</string>
   <string name="setting_page_built_in_tools_url_context_desc">啟用 URL 內容處理</string>
-  <string name="setting_page_chat_storage">聊天記錄儲存</string>
+  <string name="setting_page_chat_storage">聊天檔案</string>
+  <string name="chat_message_attachment_deleted">附件已被刪除</string>
   <string name="setting_page_chat_storage_desc">%1$d 個檔案，%2$.2f MB</string>
   <string name="setting_page_color_mode">顏色模式</string>
   <string name="setting_page_color_mode_dark">深色</string>
@@ -726,7 +736,7 @@
   <string name="setting_page_mcp_desc">配置 MCP 伺服器</string>
   <string name="setting_page_message_display_settings">字型、公式與程式碼</string>
   <string name="setting_page_model_and_services">模型服務</string>
-  <string name="setting_page_providers_desc">配置 AI 提供商</string>
+  <string name="setting_page_providers_desc">設定 LLM 服務提供者</string>
   <string name="setting_page_request_logs">網路請求記錄</string>
   <string name="log_page_clear_confirm">是否清空請求記錄</string>
   <string name="setting_page_request_logs_desc">檢視本次應用程式啟動期間的網路請求記錄</string>
@@ -858,7 +868,6 @@
   <string name="setting_provider_page_save_success">保存成功</string>
   <string name="setting_provider_page_scan_error">錯誤: %s</string>
   <string name="setting_provider_page_scan_qr_code">掃描二維碼</string>
-  <string name="setting_provider_page_search_providers">搜尋提供者</string>
   <string name="setting_provider_page_select_all">全選 (%1$d)</string>
   <string name="setting_provider_page_select_from_gallery">從相簿選擇</string>
   <string name="setting_provider_page_service_account_email">服務帳戶郵箱</string>
@@ -949,8 +958,8 @@
   <string name="skills_page_import_confirm">匯入</string>
   <string name="skills_page_import_description">輸入 GitHub 儲存庫網址，系統將自動下載根目錄中的 SKILL.md 檔案。</string>
   <string name="skills_page_import_failed">匯入失敗：%s</string>
-  <string name="skills_page_import_from_github">從 GitHub 匯入</string>
   <string name="skills_page_import_success">已匯入技能：%s</string>
+  <string name="skills_page_import_from_github">從 GitHub 匯入</string>
   <string name="skills_page_more_actions">更多操作</string>
   <string name="skills_page_name_error">找不到名稱欄位，請檢查 frontmatter 格式</string>
   <string name="skills_page_paste_hint">貼上完整的 SKILL.md 檔案內容</string>

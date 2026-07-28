@@ -108,14 +108,6 @@ fun SettingPage(vm: SettingVM = koinViewModel()) {
                         supportingContent = { Text(stringResource(R.string.setting_page_preferences_desc)) },
                         headlineContent = { Text(stringResource(R.string.setting_page_preferences)) },
                     )
-                }
-            }
-
-            item("chatAndPrompts") {
-                CardGroup(
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                    title = { Text(stringResource(R.string.setting_page_chat_and_prompts)) },
-                ) {
                     item(
                         onClick = { navController.navigate(Screen.Assistant) },
                         leadingContent = { Icon(HugeIcons.LookTop, null) },
@@ -128,6 +120,20 @@ fun SettingPage(vm: SettingVM = koinViewModel()) {
                         supportingContent = { Text(stringResource(R.string.setting_page_default_model_desc)) },
                         headlineContent = { Text(stringResource(R.string.setting_model_page_title)) },
                     )
+                    item(
+                        onClick = { navController.navigate(Screen.SettingWeb) },
+                        leadingContent = { Icon(HugeIcons.ServerStack01, null) },
+                        supportingContent = { Text(stringResource(R.string.setting_page_web_server_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_page_web_server)) },
+                    )
+                }
+            }
+
+            item("chatAndPrompts") {
+                CardGroup(
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    title = { Text(stringResource(R.string.setting_page_chat_and_prompts)) },
+                ) {
                     item(
                         onClick = { navController.navigate(Screen.QuickMessages) },
                         leadingContent = { Icon(HugeIcons.Zap, null) },
@@ -151,6 +157,12 @@ fun SettingPage(vm: SettingVM = koinViewModel()) {
                         leadingContent = { Icon(HugeIcons.Puzzle, null) },
                         headlineContent = { Text(stringResource(R.string.skills_page_title)) },
                         supportingContent = { Text(stringResource(R.string.extensions_page_agent_skills_desc)) },
+                    )
+                    item(
+                        onClick = { navController.navigate(Screen.Workspaces) },
+                        leadingContent = { Icon(HugeIcons.Folder01, null) },
+                        headlineContent = { Text(stringResource(R.string.workspace_page_title)) },
+                        supportingContent = { Text(stringResource(R.string.extensions_page_workspace_desc)) },
                     )
                 }
             }
@@ -218,18 +230,6 @@ fun SettingPage(vm: SettingVM = koinViewModel()) {
                             }
                         },
                         headlineContent = { Text(stringResource(R.string.setting_page_chat_storage)) },
-                    )
-                    item(
-                        onClick = { navController.navigate(Screen.SettingWeb) },
-                        leadingContent = { Icon(HugeIcons.ServerStack01, null) },
-                        supportingContent = { Text(stringResource(R.string.setting_page_web_server_desc)) },
-                        headlineContent = { Text(stringResource(R.string.setting_page_web_server)) },
-                    )
-                    item(
-                        onClick = { navController.navigate(Screen.Workspaces) },
-                        leadingContent = { Icon(HugeIcons.Folder01, null) },
-                        headlineContent = { Text(stringResource(R.string.workspace_page_title)) },
-                        supportingContent = { Text(stringResource(R.string.extensions_page_workspace_desc)) },
                     )
                     item(
                         onClick = { navController.navigate(Screen.Log) },

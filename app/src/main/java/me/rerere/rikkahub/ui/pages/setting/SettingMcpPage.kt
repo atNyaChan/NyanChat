@@ -29,17 +29,18 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.SegmentedButton
@@ -92,7 +93,7 @@ import me.rerere.rikkahub.data.ai.mcp.McpServerConfig
 import me.rerere.rikkahub.data.ai.mcp.McpStatus
 import me.rerere.rikkahub.data.ai.mcp.McpTool
 import me.rerere.rikkahub.ui.components.nav.BackButton
-import me.rerere.rikkahub.ui.components.ui.FormItem
+import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.components.ui.Switch
 import me.rerere.rikkahub.ui.components.ui.SwitchSize
@@ -196,10 +197,10 @@ fun SettingMcpPage(vm: SettingVM = koinViewModel()) {
                 state = lazyListState,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(
-                    start = innerPadding.calculateStartPadding(layoutDirection) + 16.dp,
-                    top = innerPadding.calculateTopPadding() + 16.dp,
-                    end = innerPadding.calculateEndPadding(layoutDirection) + 16.dp,
-                    bottom = innerPadding.calculateBottomPadding() + 16.dp,
+                    start = innerPadding.calculateStartPadding(layoutDirection) + 8.dp,
+                    top = innerPadding.calculateTopPadding() + 8.dp,
+                    end = innerPadding.calculateEndPadding(layoutDirection) + 8.dp,
+                    bottom = innerPadding.calculateBottomPadding() + 8.dp,
                 )
             ) {
                 items(mcpConfigs, key = { it.id }) { mcpConfig ->
@@ -299,16 +300,13 @@ private fun McpServerItem(
             },
         )
     }
-    Card(
+    OutlinedCard(
         modifier = modifier.clickable { onEdit(item) },
-        colors = CardDefaults.cardColors(
-            containerColor = CustomColors.listItemColors.containerColor
-        )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -427,7 +425,7 @@ private fun McpServerConfigModal(
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(0.9f)
-                    .padding(16.dp),
+                    .padding(horizontal = 8.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 SecondaryTabRow(
@@ -467,7 +465,10 @@ private fun McpServerConfigModal(
                         0 -> {
                             McpCommonOptionsConfigure(
                                 config = config,
-                                update = updateValue
+                                update = updateValue,
+                                onDelete = onDelete?.let {
+                                    { showDeleteConfirm = true }
+                                },
                             )
                         }
 
@@ -483,11 +484,8 @@ private fun McpServerConfigModal(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                 ) {
-                    if (onDelete != null) {
-                        IconButton(onClick = { showDeleteConfirm = true }) {
-                            Icon(HugeIcons.Delete01, stringResource(R.string.common_delete))
-                        }
-                        Spacer(modifier = Modifier.weight(1f))
+                    TextButton(onClick = state::dismiss) {
+                        Text(stringResource(R.string.common_cancel))
                     }
                     TextButton(
                         onClick = {
@@ -525,32 +523,26 @@ private fun McpServerConfigModal(
 @Composable
 private fun McpCommonOptionsConfigure(
     config: McpServerConfig,
-    update: (McpServerConfig) -> Unit
+    update: (McpServerConfig) -> Unit,
+    onDelete: (() -> Unit)?,
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(horizontal = 8.dp, vertical = 16.dp)
             .verticalScroll(rememberScrollState())
             .imePadding(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // 启用/禁用开关
+        CardGroup {
         FormItem(
             label = {
                 Text(stringResource(R.string.setting_mcp_page_enable))
             },
             description = {
                 Text(stringResource(R.string.setting_mcp_page_enable_desc))
-            }
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(stringResource(R.string.setting_mcp_page_enable))
-                Spacer(Modifier.weight(1f))
+            },
+            tail = {
                 Switch(
                     checked = config.commonOptions.enable,
                     onCheckedChange = { enabled ->
@@ -567,12 +559,9 @@ private fun McpCommonOptionsConfigure(
                         )
                     }
                 )
-            }
-        }
+            },
+        )
 
-        HorizontalDivider()
-
-        // 名称输入框
         FormItem(
             label = {
                 Text(stringResource(R.string.setting_mcp_page_name))
@@ -607,9 +596,6 @@ private fun McpCommonOptionsConfigure(
             )
         }
 
-        HorizontalDivider()
-
-        // 传输类型选择
         FormItem(
             label = {
                 Text(stringResource(R.string.setting_mcp_page_transport_type))
@@ -667,9 +653,6 @@ private fun McpCommonOptionsConfigure(
             }
         }
 
-        HorizontalDivider()
-
-        // 服务器地址配置
         FormItem(
             label = {
                 Text(stringResource(R.string.setting_mcp_page_server_url))
@@ -709,9 +692,6 @@ private fun McpCommonOptionsConfigure(
             )
         }
 
-        HorizontalDivider()
-
-        // 请求头配置
         FormItem(
             label = {
                 Text(stringResource(R.string.setting_mcp_page_custom_headers))
@@ -829,6 +809,24 @@ private fun McpCommonOptionsConfigure(
                     Spacer(Modifier.width(4.dp))
                     Text(stringResource(R.string.setting_mcp_page_add_header))
                 }
+            }
+        }
+        }
+        if (onDelete != null) {
+            Button(
+                onClick = onDelete,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError,
+                ),
+            ) {
+                Icon(
+                    HugeIcons.Delete01,
+                    contentDescription = null,
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.common_delete))
             }
         }
     }

@@ -130,7 +130,6 @@
   <string name="assistant_page_regex_visual_only">Visual Only (affects display only, not actual message)</string>
   <string name="assistant_page_remove">Remove</string>
   <string name="assistant_page_remove_background">Remove Background</string>
-  <string name="assistant_page_search_placeholder">Search assistants</string>
   <string name="assistant_page_select_background">Select Background Image</string>
   <string name="assistant_page_select_from_gallery">Select from Gallery</string>
   <string name="assistant_page_stream_output">Stream Output</string>
@@ -292,7 +291,6 @@
   <string name="chat_page_nickname_placeholder">Please enter nickname</string>
   <string name="chat_page_no_conversations">No conversations</string>
   <string name="chat_page_scroll_to_bottom">Scroll to bottom</string>
-  <string name="chat_page_search_chats">Search Chats</string>
   <string name="chat_page_today">Today</string>
   <string name="chat_page_yesterday">Yesterday</string>
   <string name="chat_size_dialog_content">Current message count: %1$d. This may cause the application to crash or lag, or even lose this conversation data. Please create a new conversation as soon as possible to continue chatting.</string>
@@ -539,7 +537,12 @@
   <string name="search_page_mode_exact">Exact match</string>
   <string name="search_page_mode_fuzzy">Fuzzy search</string>
   <string name="search_page_title">Search Messages</string>
-  <string name="search_page_mode_model">Search model…</string>
+  <string name="search_page_mode_model">By model…</string>
+  <string name="search_page_mode_attachment">By attachment…</string>
+  <string name="search_page_attachment_existing">Messages with available attachments</string>
+  <string name="search_page_attachment_missing">Messages with deleted attachments</string>
+  <string name="search_page_attachment_existing_selected">Filtering messages with available attachments</string>
+  <string name="search_page_attachment_missing_selected">Filtering messages with deleted attachments</string>
   <string name="search_page_model_selected">Model: %1$s</string>
   <string name="search_page_result_count">%1$d results</string>
   <string name="search_page_model_existing">Existing models</string>
@@ -687,9 +690,15 @@
   <string name="setting_files_page_clean_title">Clean files?</string>
   <string name="setting_files_page_cleaned_toast">Files cleaned</string>
   <string name="setting_files_page_delete_failed_toast">Delete Failed</string>
-  <string name="setting_files_page_delete_file_title">Delete File</string>
+  <string name="setting_files_page_attachment_image">image</string>
+  <string name="setting_files_page_attachment_file">file</string>
+  <string name="setting_files_page_delete_attachment_title">Delete chat %1$s</string>
+  <string name="setting_files_page_delete_attachment_confirmation">Delete this %1$s? It will no longer be viewable in chats and cannot be recovered.</string>
   <string name="setting_files_page_deleted_toast">Deleted</string>
   <string name="setting_files_page_folder_upload">Upload</string>
+  <string name="setting_files_page_folder_unused">Unused Attachments</string>
+  <string name="setting_files_page_rebuild_index">Rebuild Chat Attachment Index</string>
+  <string name="setting_files_page_open_reference">Go to referenced message</string>
   <string name="setting_files_page_no_files">No Files</string>
   <string name="setting_mcp_page_add_header">Add Header</string>
   <string name="setting_mcp_page_add_one_to_get_started">Add one to get started</string>
@@ -763,7 +772,8 @@
   <string name="setting_page_built_in_tools_search_desc">Enable Google Search integration</string>
   <string name="setting_page_built_in_tools_url_context">URL Context</string>
   <string name="setting_page_built_in_tools_url_context_desc">Enable URL content processing</string>
-  <string name="setting_page_chat_storage">Chat File Storage</string>
+  <string name="setting_page_chat_storage">Chat Files</string>
+  <string name="chat_message_attachment_deleted">Attachment deleted</string>
   <string name="setting_page_chat_storage_desc">%1$d files, %2$.2f MB</string>
   <string name="setting_page_color_mode">Color Mode</string>
   <string name="setting_page_color_mode_dark">Dark</string>
@@ -785,7 +795,7 @@
   <string name="setting_page_mcp_desc">Configure MCP Servers</string>
   <string name="setting_page_message_display_settings">Fonts, Formulas and Code</string>
   <string name="setting_page_model_and_services">Model Services</string>
-  <string name="setting_page_providers_desc">Configure AI providers</string>
+  <string name="setting_page_providers_desc">Configure LLM service providers</string>
   <string name="setting_page_request_logs">Network Request Logs</string>
   <string name="log_page_clear_confirm">Clear request logs?</string>
   <string name="setting_page_request_logs_desc">View network request logs from the current app session</string>
@@ -926,7 +936,6 @@
   <string name="setting_provider_page_save_success">Save successful</string>
   <string name="setting_provider_page_scan_error">Error: %s</string>
   <string name="setting_provider_page_scan_qr_code">Scan QR Code</string>
-  <string name="setting_provider_page_search_providers">Search providers</string>
   <string name="setting_provider_page_select_all">Select All (%1$d)</string>
   <string name="setting_provider_page_select_from_gallery">Select from Gallery</string>
   <string name="setting_provider_page_service_account_email">Service Account Email</string>
@@ -1019,8 +1028,8 @@
   <string name="skills_page_import_confirm">Import</string>
   <string name="skills_page_import_description">Enter a GitHub repository URL, and the SKILL.md file in the root directory will be downloaded automatically.</string>
   <string name="skills_page_import_failed">Import failed: %s</string>
-  <string name="skills_page_import_from_github">Import from GitHub</string>
   <string name="skills_page_import_success">Skill imported: %s</string>
+  <string name="skills_page_import_from_github">Import from GitHub</string>
   <string name="skills_page_more_actions">More actions</string>
   <string name="skills_page_name_error">Cannot find the name field, please check the frontmatter format</string>
   <string name="skills_page_paste_hint">Paste the full SKILL.md file content</string>

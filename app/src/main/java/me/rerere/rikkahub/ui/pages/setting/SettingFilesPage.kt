@@ -1,9 +1,14 @@
 package me.rerere.rikkahub.ui.pages.setting
 
+import android.content.Context
+import android.content.Intent
+import androidx.compose.foundation.clickable
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Image02
 import me.rerere.hugeicons.stroke.Clean
 import me.rerere.hugeicons.stroke.Delete01
+import me.rerere.hugeicons.stroke.Refresh01
+import me.rerere.hugeicons.stroke.Share04
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +19,9 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -24,17 +31,20 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,22 +54,32 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import kotlinx.coroutines.launch
+import me.rerere.rikkahub.data.db.dao.ManagedFileWithReference
 import me.rerere.rikkahub.data.db.entity.ManagedFileEntity
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ui.ImagePreviewDialog
+import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.fileSizeToString
+import me.rerere.rikkahub.utils.navigateToChatPage
 import org.koin.compose.koinInject
 import java.io.File
+import kotlin.uuid.Uuid
+
+private const val UNUSED_ATTACHMENTS = "unused_attachments"
 
 @Composable
 fun SettingFilesPage(
@@ -69,7 +89,8 @@ fun SettingFilesPage(
     val gridState = rememberLazyStaggeredGridState()
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
-    val folders = remember { listOf(FileFolders.UPLOAD) }
+    val navController = LocalNavController.current
+    val folders = remember { listOf(FileFolders.UPLOAD, UNUSED_ATTACHMENTS) }
 
     // 预先获取字符串资源
     val deletedToast = stringResource(R.string.setting_files_page_deleted_toast)
@@ -80,14 +101,78 @@ fun SettingFilesPage(
     var selectedFolder by remember { mutableStateOf(FileFolders.UPLOAD) }
     var pendingDelete by remember { mutableStateOf<ManagedFileEntity?>(null) }
     var showCleanDialog by remember { mutableStateOf(false) }
-    val files by filesManager.observe(selectedFolder).collectAsState(initial = emptyList())
+    var showRebuildDialog by remember { mutableStateOf(false) }
+    var loadedFiles by remember { mutableStateOf<List<ManagedFileWithReference>?>(null) }
+    LaunchedEffect(filesManager) {
+        loadedFiles = filesManager.listWithReferences(FileFolders.UPLOAD)
+    }
+    val files = loadedFiles.orEmpty().filter {
+        val hasReference = it.conversationId != null && it.nodeId != null
+        if (selectedFolder == UNUSED_ATTACHMENTS) !hasReference else hasReference
+    }
+    val loading = loadedFiles == null
+
+    if (showRebuildDialog) {
+        AlertDialog(
+            onDismissRequest = { showRebuildDialog = false },
+            title = { Text(stringResource(R.string.setting_files_page_rebuild_index)) },
+            text = { Text(stringResource(R.string.search_page_rebuild_index_desc)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showRebuildDialog = false
+                        loadedFiles = null
+                        scope.launch {
+                            loadedFiles = filesManager.listWithReferences(
+                                folder = FileFolders.UPLOAD,
+                                forceRebuild = true,
+                            )
+                        }
+                    }
+                ) {
+                    Text(stringResource(R.string.common_confirm_action))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRebuildDialog = false }) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            },
+        )
+    }
 
     if (pendingDelete != null) {
         val target = pendingDelete!!
         AlertDialog(
             onDismissRequest = { pendingDelete = null },
-            title = { Text(stringResource(R.string.setting_files_page_delete_file_title)) },
-            text = { Text(target.displayName) },
+            title = {
+                Text(
+                    stringResource(
+                        R.string.setting_files_page_delete_attachment_title,
+                        stringResource(
+                            if (target.mimeType.startsWith("image/")) {
+                                R.string.setting_files_page_attachment_image
+                            } else {
+                                R.string.setting_files_page_attachment_file
+                            }
+                        )
+                    )
+                )
+            },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.setting_files_page_delete_attachment_confirmation,
+                        stringResource(
+                            if (target.mimeType.startsWith("image/")) {
+                                R.string.setting_files_page_attachment_image
+                            } else {
+                                R.string.setting_files_page_attachment_file
+                            }
+                        )
+                    )
+                )
+            },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -95,6 +180,7 @@ fun SettingFilesPage(
                             val ok = filesManager.delete(target.id, deleteFromDisk = true)
                             if (ok) {
                                 toaster.show(deletedToast)
+                                loadedFiles = loadedFiles?.filterNot { it.file.id == target.id }
                             } else {
                                 toaster.show(deleteFailedToast)
                             }
@@ -123,7 +209,12 @@ fun SettingFilesPage(
                     onClick = {
                         showCleanDialog = false
                         scope.launch {
-                            val ok = filesManager.deleteAll(selectedFolder)
+                            val deletionResults = files.associate {
+                                it.file.id to filesManager.delete(it.file.id, deleteFromDisk = true)
+                            }
+                            val deletedIds = deletionResults.filterValues { it }.keys
+                            val ok = deletionResults.values.all { it }
+                            loadedFiles = loadedFiles?.filterNot { it.file.id in deletedIds }
                             toaster.show(if (ok) cleanedToast else cleanFailedToast)
                         }
                     }
@@ -145,6 +236,15 @@ fun SettingFilesPage(
                 title = { Text(stringResource(R.string.setting_page_chat_storage)) },
                 navigationIcon = { BackButton() },
                 actions = {
+                    IconButton(
+                        onClick = { showRebuildDialog = true },
+                        enabled = !loading,
+                    ) {
+                        Icon(
+                            imageVector = HugeIcons.Refresh01,
+                            contentDescription = stringResource(R.string.search_page_rebuild_button),
+                        )
+                    }
                     IconButton(
                         onClick = { showCleanDialog = true },
                         enabled = files.isNotEmpty(),
@@ -178,7 +278,14 @@ fun SettingFilesPage(
                 onFolderSelected = { selectedFolder = it }
             )
 
-            if (files.isEmpty()) {
+            if (loading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else if (files.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize(),
@@ -200,11 +307,20 @@ fun SettingFilesPage(
                     state = gridState,
                     columns = StaggeredGridCells.Fixed(2)
                 ) {
-                    items(files, key = { it.id }) { file ->
+                    items(files, key = { it.file.id }) { item ->
                         FileItem(
-                            file = file,
-                            fileOnDisk = filesManager.getFile(file),
-                            onDelete = { pendingDelete = file }
+                            file = item.file,
+                            fileOnDisk = filesManager.getFile(item.file),
+                            showReference = selectedFolder != UNUSED_ATTACHMENTS,
+                            reference = item,
+                            onReference = { conversationId, nodeId ->
+                                navigateToChatPage(
+                                    navigator = navController,
+                                    chatId = Uuid.parse(conversationId),
+                                    nodeId = Uuid.parse(nodeId),
+                                )
+                            },
+                            onDelete = { pendingDelete = item.file },
                         )
                     }
                 }
@@ -239,6 +355,7 @@ private fun FolderRow(
 @Composable
 private fun folderDisplayName(folder: String): String = when (folder) {
     FileFolders.UPLOAD -> stringResource(R.string.setting_files_page_folder_upload)
+    UNUSED_ATTACHMENTS -> stringResource(R.string.setting_files_page_folder_unused)
     else -> folder
 }
 
@@ -246,11 +363,28 @@ private fun folderDisplayName(folder: String): String = when (folder) {
 private fun FileItem(
     file: ManagedFileEntity,
     fileOnDisk: File,
+    showReference: Boolean,
+    reference: ManagedFileWithReference,
+    onReference: (conversationId: String, nodeId: String) -> Unit,
     onDelete: () -> Unit,
 ) {
+    val context = LocalContext.current
+    var showImagePreview by remember { mutableStateOf(false) }
+    if (showImagePreview) {
+        ImagePreviewDialog(images = listOf(fileOnDisk.toUri().toString())) {
+            showImagePreview = false
+        }
+    }
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = CustomColors.listItemColors.containerColor)
+        colors = CardDefaults.cardColors(containerColor = CustomColors.listItemColors.containerColor),
+        onClick = {
+            if (file.mimeType.startsWith("image/")) {
+                if (fileOnDisk.isFile) showImagePreview = true
+            } else {
+                openManagedFile(context, fileOnDisk, file.mimeType)
+            }
+        },
     ) {
         Column {
             Box(
@@ -280,15 +414,6 @@ private fun FileItem(
                     }
                 }
 
-                IconButton(
-                    onClick = onDelete,
-                    modifier = Modifier.align(Alignment.TopEnd)
-                ) {
-                    Icon(
-                        HugeIcons.Delete01,
-                        contentDescription = stringResource(R.string.common_delete)
-                    )
-                }
             }
 
             Column(
@@ -303,16 +428,79 @@ private fun FileItem(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = file.mimeType,
+                    text = "${file.mimeType}  ${file.sizeBytes.fileSizeToString()}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Text(
-                    text = file.sizeBytes.fileSizeToString(),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    shape = MaterialTheme.shapes.large,
+                    color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(38.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        if (showReference && reference.conversationId != null && reference.nodeId != null) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxSize()
+                                    .clickable {
+                                        onReference(reference.conversationId, reference.nodeId)
+                                    },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    HugeIcons.Share04,
+                                    contentDescription = stringResource(
+                                        R.string.setting_files_page_open_reference
+                                    ),
+                                    modifier = Modifier.size(20.dp),
+                                )
+                            }
+                            VerticalDivider(
+                                modifier = Modifier.height(22.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant,
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxSize()
+                                .clickable(onClick = onDelete),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                HugeIcons.Delete01,
+                                contentDescription = stringResource(R.string.common_delete),
+                                modifier = Modifier.size(20.dp),
+                                tint = MaterialTheme.colorScheme.error,
+                            )
+                        }
+                    }
+                }
             }
         }
+    }
+}
+
+private fun openManagedFile(context: Context, file: File, mimeType: String) {
+    runCatching {
+        if (!file.isFile) return
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file,
+        )
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, mimeType)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(Intent.createChooser(intent, null))
     }
 }

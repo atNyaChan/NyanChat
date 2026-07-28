@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.datastore.WebDavConfig
+import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.rikkahub.data.sync.importer.ChatboxImporter
 import me.rerere.rikkahub.data.sync.importer.CherryStudioProviderImporter
@@ -29,6 +30,7 @@ class BackupVM(
     private val webDavSync: WebDavSync,
     private val s3Sync: S3Sync,
     private val conversationRepository: ConversationRepository,
+    private val filesManager: FilesManager,
 ) : ViewModel() {
     val settings = settingsStore.settingsFlow.stateIn(
         scope = viewModelScope,
@@ -86,6 +88,7 @@ class BackupVM(
     suspend fun restore(item: WebDavBackupItem) {
         trackBackupOrRestore {
             webDavSync.restore(config = settings.value.webDavConfig, item = item)
+            filesManager.invalidateAttachmentIndex()
         }
     }
 
@@ -110,6 +113,7 @@ class BackupVM(
             file = file,
             config = settings.value.webDavConfig.copy(items = WebDavConfig.BackupItem.entries),
         )
+        filesManager.invalidateAttachmentIndex()
     }
 
     suspend fun restoreFromChatBox(file: File): ChatboxRestoreResult {
@@ -149,6 +153,7 @@ class BackupVM(
                 "$importedConversations conversations, skip $skippedExistingConversations existing, " +
                 "drop ${result.skippedImageParts} images"
         )
+        filesManager.invalidateAttachmentIndex()
         return ChatboxRestoreResult(
             importedProviders = result.providers.size,
             importedConversations = importedConversations,
@@ -207,6 +212,7 @@ class BackupVM(
     suspend fun restoreFromS3(item: S3BackupItem) {
         trackBackupOrRestore {
             s3Sync.restoreFromS3(config = settings.value.s3Config, item = item)
+            filesManager.invalidateAttachmentIndex()
         }
     }
 
