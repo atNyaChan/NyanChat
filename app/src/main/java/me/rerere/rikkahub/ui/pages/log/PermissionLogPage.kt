@@ -1,7 +1,6 @@
 package me.rerere.rikkahub.ui.pages.log
 
 import android.content.ClipData
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,12 +12,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -92,16 +91,18 @@ fun PermissionLogPage() {
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(contentPadding),
-                contentPadding = PaddingValues(16.dp),
+                contentPadding = PaddingValues(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items(logs, key = { it.id }) { log ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth().clickable { selectedLog = log },
-                        colors = CustomColors.cardColorsOnSurfaceContainer,
+                    OutlinedCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { selectedLog = log },
                     ) {
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {

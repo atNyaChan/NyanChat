@@ -162,6 +162,7 @@ internal fun AssistantBasicContent(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp)
             .padding(innerPadding)
+            .padding(bottom = 16.dp)
             .imePadding(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -400,14 +401,14 @@ internal fun AssistantBasicContent(
                     )
                 },
             )
-            FormItem(
-                label = {
+            item(
+                headlineContent = {
                     Text(stringResource(R.string.assistant_page_workspace))
                 },
-                description = {
+                supportingContent = {
                     Text(stringResource(R.string.assistant_page_workspace_desc))
                 },
-            ) {
+                trailingContent = {
                 val selectedWorkspace = workspaces.find { it.id == assistant.workspaceId?.toString() }
                 Select(
                     options = listOf<WorkspaceEntity?>(null) + workspaces,
@@ -419,12 +420,13 @@ internal fun AssistantBasicContent(
                             )
                         )
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    fitToOptions = true,
                     optionToString = { workspace ->
                         workspace?.name ?: stringResource(R.string.workspace_no_binding)
                     },
                 )
-            }
+                },
+            )
         }
         SearchPickerSheet(
             show = showSearchPicker,
@@ -478,49 +480,37 @@ internal fun AssistantBasicContent(
                 description = {
                     Text(
                         text = buildAnnotatedString {
-                            append(stringResource(R.string.assistant_page_temperature_warning))
+                            append(stringResource(R.string.assistant_page_temperature_warning).trimEnd('。', '.'))
+                            append("。范围是 0 - 2，留空表示使用默认值。")
                         }
                     )
                 },
-                tail = {
-                    Switch(
-                        checked = assistant.temperature != null,
-                        onCheckedChange = { enabled ->
-                            onUpdate(
-                                assistant.copy(
-                                    temperature = if (enabled) 1.0f else null
-                                )
-                            )
-                        }
-                    )
-                }
             ) {
-                if (assistant.temperature != null) {
-                    var temperatureInput by remember(assistant.id) {
-                        mutableStateOf(assistant.temperature.toString())
-                    }
-                    val temperatureValue = temperatureInput.toFloatOrNull()
-                    OutlinedTextField(
-                        value = temperatureInput,
-                        onValueChange = { value ->
-                            temperatureInput = value
-                            value.toFloatOrNull()?.takeIf { it in 0f..2f }?.let { temperature ->
-                                onUpdate(
-                                    assistant.copy(
-                                        temperature = temperature
-                                    )
-                                )
+                var temperatureInput by remember(assistant.id) {
+                    mutableStateOf(assistant.temperature?.toString().orEmpty())
+                }
+                OutlinedTextField(
+                    value = temperatureInput,
+                    onValueChange = { value ->
+                        temperatureInput = value
+                        if (value.isEmpty()) {
+                            onUpdate(assistant.copy(temperature = null))
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusChanged { focusState ->
+                            if (!focusState.isFocused) {
+                                val value = temperatureInput.toFloatOrNull()
+                                    ?.takeIf { it in 0f..2f }
+                                temperatureInput = value?.toString().orEmpty()
+                                onUpdate(assistant.copy(temperature = value))
                             }
                         },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        singleLine = true,
-                        isError = temperatureValue == null || temperatureValue !in 0f..2f,
-                        supportingText = {
-                            Text("0 - 2")
-                        }
-                    )
-                }
+                    placeholder = { Text("使用默认值") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    singleLine = true,
+                )
             }
             FormItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -530,49 +520,37 @@ internal fun AssistantBasicContent(
                 description = {
                     Text(
                         text = buildAnnotatedString {
-                            append(stringResource(R.string.assistant_page_top_p_warning))
+                            append(stringResource(R.string.assistant_page_top_p_warning).trimEnd('。', '.'))
+                            append("。范围是 0 - 1，留空表示使用默认值。")
                         }
                     )
                 },
-                tail = {
-                    Switch(
-                        checked = assistant.topP != null,
-                        onCheckedChange = { enabled ->
-                            onUpdate(
-                                assistant.copy(
-                                    topP = if (enabled) 1.0f else null
-                                )
-                            )
-                        }
-                    )
-                }
             ) {
-                assistant.topP?.let { topP ->
-                    var topPInput by remember(assistant.id) {
-                        mutableStateOf(topP.toString())
-                    }
-                    val topPValue = topPInput.toFloatOrNull()
-                    OutlinedTextField(
-                        value = topPInput,
-                        onValueChange = { value ->
-                            topPInput = value
-                            value.toFloatOrNull()?.takeIf { it in 0f..1f }?.let { nextTopP ->
-                                onUpdate(
-                                    assistant.copy(
-                                        topP = nextTopP
-                                    )
-                                )
+                var topPInput by remember(assistant.id) {
+                    mutableStateOf(assistant.topP?.toString().orEmpty())
+                }
+                OutlinedTextField(
+                    value = topPInput,
+                    onValueChange = { value ->
+                        topPInput = value
+                        if (value.isEmpty()) {
+                            onUpdate(assistant.copy(topP = null))
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusChanged { focusState ->
+                            if (!focusState.isFocused) {
+                                val value = topPInput.toFloatOrNull()
+                                    ?.takeIf { it in 0f..1f }
+                                topPInput = value?.toString().orEmpty()
+                                onUpdate(assistant.copy(topP = value))
                             }
                         },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        singleLine = true,
-                        isError = topPValue == null || topPValue !in 0f..1f,
-                        supportingText = {
-                            Text("0 - 1")
-                        }
-                    )
-                }
+                    placeholder = { Text("使用默认值") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    singleLine = true,
+                )
             }
             FormItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),

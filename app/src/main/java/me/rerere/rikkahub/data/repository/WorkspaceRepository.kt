@@ -10,6 +10,7 @@ import kotlinx.coroutines.withContext
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.db.dao.WorkspaceDAO
 import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
+import me.rerere.rikkahub.data.sync.WorkspaceRootfsArchive
 import me.rerere.rikkahub.utils.JsonInstant
 import me.rerere.workspace.RootfsInstallProgress
 import me.rerere.workspace.RootfsInstaller
@@ -140,6 +141,41 @@ class WorkspaceRepository(
         }
     }
 
+    suspend fun installRootfs(
+        id: String,
+        input: InputStream,
+        fileName: String,
+        onProgress: (RootfsInstallProgress) -> Unit = {},
+    ): Boolean {
+        val workspace = dao.getById(id) ?: return false
+        updateShellState(workspace, WorkspaceShellStatus.INSTALLING.name)
+        try {
+            runInterruptible(Dispatchers.IO) {
+                rootfsInstaller.install(workspace.root, input, fileName, onProgress)
+            }
+            updateShellState(workspace, WorkspaceShellStatus.READY.name)
+            return true
+        } catch (e: CancellationException) {
+            withContext(NonCancellable) {
+                restoreShellState(workspace)
+            }
+            throw e
+        } catch (e: InterruptedException) {
+            withContext(NonCancellable) {
+                restoreShellState(workspace)
+            }
+            throw CancellationException("Rootfs install cancelled").also { it.initCause(e) }
+        } catch (e: Throwable) {
+            Log.e(
+                TAG,
+                "installRootfs failed: workspace=${workspace.id}, root=${workspace.root}, file=$fileName",
+                e,
+            )
+            updateShellState(workspace, WorkspaceShellStatus.BROKEN.name)
+            throw e
+        }
+    }
+
     suspend fun listFiles(
         id: String,
         area: WorkspaceStorageArea,
@@ -226,6 +262,20 @@ class WorkspaceRepository(
     ) = withContext(Dispatchers.IO) {
         val workspace = dao.getById(id) ?: error("Workspace not found: $id")
         manager.exportFile(workspace.root, path, area, outputStream)
+    }
+
+    suspend fun exportRootfsArchive(
+        id: String,
+        outputStream: OutputStream,
+    ) = withContext(Dispatchers.IO) {
+        val workspace = dao.getById(id) ?: error("Workspace not found: $id")
+        manager.ensureWorkspace(workspace.root)
+        WorkspaceRootfsArchive.create(
+            rootfsDir = manager.linuxDir(workspace.root),
+            workspaceDir = manager.filesDir(workspace.root),
+            excludedRootfsPaths = manager.externalRootfsMountTargets(),
+            outputStream = outputStream,
+        )
     }
 
     /** 按 Rootfs 内绝对路径读取文件大小, 支持 /workspace、bind mount 与 Rootfs 内部路径 */

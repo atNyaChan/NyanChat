@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -28,6 +27,7 @@ import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -146,7 +146,7 @@ private fun UnifiedLogList(
         LazyColumn(
             modifier = modifier,
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(16.dp)
+            contentPadding = PaddingValues(8.dp)
         ) {
             items(sortedLogs, key = { it.id }, contentType = { it.javaClass.simpleName }) { log ->
                 RequestLogCard(
@@ -174,14 +174,12 @@ private fun UnifiedLogList(
 private fun RequestLogCard(log: LogEntry.RequestLog, onClick: () -> Unit) {
     val dateFormat = remember { SimpleDateFormat("HH:mm:ss", Locale.getDefault()) }
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        colors = CustomColors.cardColorsOnSurfaceContainer,
+    OutlinedCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
     ) {
         Column(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Row(
@@ -262,6 +260,9 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
             ?.let { extractResponseSections(it, labels) }
             .orEmpty()
     }
+    val requestModel = remember(log.requestBody) {
+        log.requestBody?.let(::extractRequestModel)
+    }
 
     SelectionContainer {
         LazyColumn(
@@ -296,6 +297,7 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
             log.requestBody?.let { body -> item {
                 CollapsibleLogSection(
                     title = "Request Body",
+                    initiallyExpanded = true,
                     onCopy = { context.writeClipboardText(body) },
                 ) {
                     val jsonElement = remember(body) { parseResponseJson(body) }
@@ -319,6 +321,7 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
             log.responseBody?.let { body -> item {
                 CollapsibleLogSection(
                     title = "Response Body",
+                    initiallyExpanded = true,
                     onCopy = { context.writeClipboardText(body) },
                 ) {
                     val jsonElement = remember(body) { parseResponseJson(body) }
@@ -335,29 +338,53 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
                     title = "Content",
                     initiallyExpanded = true,
                 ) {
+                    requestModel?.let { model ->
+                        Text("模型：$model")
+                    }
                     responseSections.forEach { section ->
-                        OutlinedTextField(
-                            value = section.content,
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text(section.label) },
-                            trailingIcon = {
-                                IconButton(
-                                    onClick = { context.writeClipboardText(section.content) }
-                                ) {
-                                    Icon(
-                                        HugeIcons.Copy01,
-                                        contentDescription = stringResource(R.string.copy),
+                        if (section.kind == LlmContentKind.TOOL) {
+                            LogSection(
+                                title = section.label,
+                                showDivider = false,
+                                onCopy = { context.writeClipboardText(section.content) },
+                            ) {
+                                val jsonElement = remember(section.content) {
+                                    parseToolJson(section.content)
+                                }
+                                if (jsonElement != null) {
+                                    JsonTree(jsonElement, initialExpandLevel = 0)
+                                } else {
+                                    Text(
+                                        text = section.content,
+                                        fontFamily = JetbrainsMono,
+                                        style = MaterialTheme.typography.bodyMedium,
                                     )
                                 }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            textStyle = MaterialTheme.typography.bodyMedium.copy(
-                                fontFamily = JetbrainsMono,
-                            ),
-                            minLines = 2,
-                            maxLines = 12,
-                        )
+                            }
+                        } else {
+                            OutlinedTextField(
+                                value = section.content,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text(section.label) },
+                                trailingIcon = {
+                                    IconButton(
+                                        onClick = { context.writeClipboardText(section.content) }
+                                    ) {
+                                        Icon(
+                                            HugeIcons.Copy01,
+                                            contentDescription = stringResource(R.string.copy),
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                                    fontFamily = JetbrainsMono,
+                                ),
+                                minLines = 2,
+                                maxLines = 12,
+                            )
+                        }
                     }
                 }
             }
@@ -369,15 +396,21 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
 internal fun CollapsibleLogSection(
     title: String,
     initiallyExpanded: Boolean = false,
+    showDivider: Boolean = true,
     onCopy: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(initiallyExpanded) }
     Column {
-        HorizontalDivider()
+        if (showDivider) {
+            HorizontalDivider()
+        }
         Row(
-        modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(top = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = !expanded }
+                .padding(top = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
                 if (expanded) HugeIcons.ArrowDown01 else HugeIcons.ArrowRight01,
@@ -403,6 +436,50 @@ internal fun CollapsibleLogSection(
                     content()
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun LogSection(
+    title: String,
+    showDivider: Boolean = true,
+    onCopy: (() -> Unit)? = null,
+    content: @Composable () -> Unit,
+) {
+    Column {
+        if (showDivider) {
+            HorizontalDivider()
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f),
+            )
+            onCopy?.let { copy ->
+                IconButton(onClick = copy, modifier = Modifier.size(32.dp)) {
+                    Icon(HugeIcons.Copy01, contentDescription = "Copy", modifier = Modifier.size(16.dp))
+                }
+            }
+        }
+        ProvideTextStyle(
+            MaterialTheme.typography.bodySmall.copy(
+                fontSize = 12.sp,
+                lineHeight = 16.sp,
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(top = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                content = { content() },
+            )
         }
     }
 }
@@ -440,8 +517,25 @@ private fun extractResponseSections(body: String, labels: LlmLabels): List<LlmCo
     if (!hasLlmEvents) return emptyList()
 
     return LlmTextBuilder(labels).also { builder ->
-        elements.forEach { appendLlmContent(it, builder, labels = labels) }
+        elements
+            .filterNot(::isCompletedResponseSnapshot)
+            .forEach { element ->
+                collectToolCalls(element, builder)
+                appendLlmContent(element, builder, labels = labels)
+            }
     }.build()
+}
+
+private fun isCompletedResponseSnapshot(element: JsonElement): Boolean {
+    val type = (element as? JsonObject)
+        ?.get("type")
+        ?.let { it as? JsonPrimitive }
+        ?.contentOrNull
+        ?.lowercase()
+    return type == "response.completed" ||
+        type == "response.incomplete" ||
+        type == "response.failed" ||
+        type?.endsWith(".done") == true
 }
 
 private fun looksLikeLlmEvent(element: JsonElement): Boolean = when (element) {
@@ -458,7 +552,7 @@ private fun looksLikeLlmEvent(element: JsonElement): Boolean = when (element) {
     else -> false
 }
 
-private enum class LlmContentKind { TEXT, REASONING }
+private enum class LlmContentKind { TEXT, REASONING, TOOL }
 
 private fun appendLlmContent(
     element: JsonElement,
@@ -477,7 +571,6 @@ private fun appendLlmContent(
                 element.containsKey("function_call") || element.containsKey("functionCall") ||
                 element.containsKey("functionResponse")
             if (isTool) {
-                output.appendLabeled(labels.tool, element.withoutNulls().toString() + "\n")
                 return
             }
             val kind = when {
@@ -496,7 +589,7 @@ private fun appendLlmContent(
                             else output.appendText(it)
                         }
                     key == "arguments" || key == "input_json_delta" ->
-                        jsonText(value)?.let { output.appendLabeled(labels.tool, it) }
+                        Unit
                     key == "delta" && value is JsonPrimitive -> value.contentOrNull?.let {
                         if (kind == LlmContentKind.REASONING) output.appendLabeled(labels.reasoning, it)
                         else if (kind == LlmContentKind.TEXT) output.appendText(it)
@@ -529,31 +622,199 @@ private fun JsonElement.withoutNulls(): JsonElement = when (this) {
 
 private data class LlmLabels(val text: String, val reasoning: String, val tool: String)
 
-private data class LlmContentSection(val label: String, val content: String)
+private data class LlmContentSection(
+    val label: String,
+    val content: String,
+    val kind: LlmContentKind,
+)
 
 private class LlmTextBuilder(private val labels: LlmLabels) {
     private val sections = mutableListOf<LlmContentSection>()
+    private val toolCalls = linkedMapOf<String, ToolCallState>()
 
     fun appendText(value: String) {
-        append(labels.text, value)
+        append(labels.text, value, LlmContentKind.TEXT)
     }
 
     fun appendLabeled(label: String, value: String) {
-        append(label, value)
+        append(label, value, LlmContentKind.REASONING)
     }
 
-    private fun append(label: String, value: String) {
+    fun updateToolCall(
+        key: String,
+        id: String? = null,
+        name: String? = null,
+        argumentsDelta: String? = null,
+        arguments: JsonElement? = null,
+    ) {
+        val state = toolCalls.getOrPut(key) { ToolCallState() }
+        if (!id.isNullOrBlank()) state.id = id
+        if (!name.isNullOrBlank()) state.name = name
+        if (arguments != null) state.arguments = arguments
+        if (!argumentsDelta.isNullOrEmpty()) state.argumentsText.append(argumentsDelta)
+    }
+
+    private fun append(label: String, value: String, kind: LlmContentKind) {
         if (value.isEmpty()) return
         val last = sections.lastOrNull()
-        if (last?.label == label) {
+        if (last?.kind == kind) {
             sections[sections.lastIndex] = last.copy(content = last.content + value)
         } else {
-            sections += LlmContentSection(label = label, content = value)
+            sections += LlmContentSection(label = label, content = value, kind = kind)
         }
     }
 
-    fun build(): List<LlmContentSection> = sections.mapNotNull { section ->
-        section.copy(content = section.content.trim()).takeIf { it.content.isNotEmpty() }
+    fun build(): List<LlmContentSection> {
+        val contentSections = sections.mapNotNull { section ->
+            section.copy(content = section.content.trim()).takeIf { it.content.isNotEmpty() }
+        }.toMutableList()
+        if (toolCalls.isNotEmpty()) {
+            val calls = toolCalls.values.map(ToolCallState::toJson)
+            val json = if (calls.size == 1) calls.single() else JsonArray(calls)
+            contentSections += LlmContentSection(
+                label = labels.tool,
+                content = json.toString(),
+                kind = LlmContentKind.TOOL,
+            )
+        }
+        return contentSections
+    }
+}
+
+private class ToolCallState {
+    var id: String? = null
+    var name: String? = null
+    var arguments: JsonElement? = null
+    val argumentsText = StringBuilder()
+
+    fun toJson(): JsonObject {
+        val fields = linkedMapOf<String, JsonElement>()
+        id?.let { fields["id"] = JsonPrimitive(it) }
+        name?.let { fields["name"] = JsonPrimitive(it) }
+        val streamedArguments = argumentsText.toString()
+        val resolvedArguments = streamedArguments
+            .takeIf { it.isNotEmpty() }
+            ?.let { raw ->
+                runCatching { JsonInstantPretty.parseToJsonElement(raw) }
+                    .getOrElse { JsonPrimitive(raw) }
+            }
+            ?: arguments
+        resolvedArguments?.let { fields["arguments"] = it }
+        return JsonObject(fields)
+    }
+}
+
+private fun collectToolCalls(
+    element: JsonElement,
+    output: LlmTextBuilder,
+    inheritedKey: String? = null,
+) {
+    when (element) {
+        is JsonArray -> element.forEachIndexed { index, child ->
+            collectToolCalls(child, output, inheritedKey ?: index.toString())
+        }
+        is JsonObject -> {
+            val type = element.stringValue("type").orEmpty().lowercase()
+            val eventKey = element.primitiveValue("output_index")
+                ?: element.primitiveValue("index")
+                ?: inheritedKey
+                ?: element.stringValue("call_id")
+                ?: element.stringValue("item_id")
+                ?: element.stringValue("id")
+
+            (element["tool_calls"] as? JsonArray)?.forEachIndexed { index, call ->
+                val callObject = call as? JsonObject ?: return@forEachIndexed
+                val function = callObject["function"] as? JsonObject
+                val key = callObject.primitiveValue("index")
+                    ?: callObject.stringValue("id")
+                    ?: eventKey?.let { "$it:$index" }
+                    ?: "tool:$index"
+                output.updateToolCall(
+                    key = key,
+                    id = callObject.stringValue("id"),
+                    name = function?.stringValue("name"),
+                    argumentsDelta = function?.stringValue("arguments"),
+                )
+            }
+
+            when {
+                type.contains("function_call_arguments") -> {
+                    output.updateToolCall(
+                        key = eventKey ?: "function_call",
+                        id = element.stringValue("call_id"),
+                        argumentsDelta = element.stringValue("delta"),
+                    )
+                    return
+                }
+                type.contains("input_json_delta") -> {
+                    output.updateToolCall(
+                        key = eventKey ?: "tool_use",
+                        argumentsDelta = element.stringValue("partial_json")
+                            ?: element.stringValue("delta"),
+                    )
+                    return
+                }
+                type == "tool_use" || type == "function_call" -> {
+                    output.updateToolCall(
+                        key = eventKey ?: type,
+                        id = element.stringValue("call_id") ?: element.stringValue("id"),
+                        name = element.stringValue("name"),
+                        argumentsDelta = element.stringValue("arguments"),
+                        arguments = element["input"],
+                    )
+                    return
+                }
+            }
+
+            (element["functionCall"] as? JsonObject)?.let { function ->
+                output.updateToolCall(
+                    key = eventKey ?: function.stringValue("name") ?: "functionCall",
+                    name = function.stringValue("name"),
+                    arguments = function["args"],
+                )
+            }
+            (element["function_call"] as? JsonObject)?.let { function ->
+                output.updateToolCall(
+                    key = eventKey ?: function.stringValue("name") ?: "function_call",
+                    name = function.stringValue("name"),
+                    argumentsDelta = function.stringValue("arguments"),
+                )
+            }
+
+            element.forEach { (key, value) ->
+                if (key !in setOf("tool_calls", "functionCall", "function_call", "functionResponse")) {
+                    collectToolCalls(value, output, eventKey)
+                }
+            }
+        }
+        else -> Unit
+    }
+}
+
+private fun JsonObject.stringValue(key: String): String? =
+    (this[key] as? JsonPrimitive)?.contentOrNull
+
+private fun JsonObject.primitiveValue(key: String): String? =
+    (this[key] as? JsonPrimitive)?.contentOrNull
+
+private fun extractRequestModel(body: String): String? =
+    runCatching { JsonInstantPretty.parseToJsonElement(body) }
+        .getOrNull()
+        ?.let { it as? JsonObject }
+        ?.get("model")
+        ?.let { it as? JsonPrimitive }
+        ?.contentOrNull
+        ?.takeIf { it.isNotBlank() }
+
+private fun parseToolJson(content: String): JsonElement? {
+    runCatching { JsonInstantPretty.parseToJsonElement(content) }.getOrNull()?.let { return it }
+    val elements = content.lineSequence()
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+        .mapNotNull { runCatching { JsonInstantPretty.parseToJsonElement(it) }.getOrNull() }
+        .toList()
+    return elements.takeIf { it.isNotEmpty() }?.let { values ->
+        if (values.size == 1) values.single() else JsonArray(values)
     }
 }
 
@@ -588,12 +849,19 @@ private fun DetailSection(label: String, value: String) {
 
 @Composable
 private fun HighlightedHeaders(headers: Map<String, String>) {
+    HighlightedKeyValues(headers)
+}
+
+@Composable
+private fun HighlightedKeyValues(
+    values: Map<String, String>,
+) {
     val keyColor = MaterialTheme.colorScheme.primary
     val colonColor = MaterialTheme.colorScheme.tertiary
     val valueColor = MaterialTheme.colorScheme.onSurfaceVariant
     Text(
         text = buildAnnotatedString {
-            headers.entries.forEachIndexed { index, (key, value) ->
+            values.entries.forEachIndexed { index, (key, value) ->
                 if (index > 0) appendLine()
                 withStyle(SpanStyle(color = keyColor, fontWeight = FontWeight.SemiBold)) { append(key) }
                 withStyle(SpanStyle(color = colonColor)) { append(":") }

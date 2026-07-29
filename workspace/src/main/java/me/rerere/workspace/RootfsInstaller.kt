@@ -1,5 +1,6 @@
 package me.rerere.workspace
 
+import com.github.luben.zstd.ZstdInputStream
 import java.io.BufferedInputStream
 import java.io.EOFException
 import java.io.File
@@ -8,6 +9,7 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.file.Files
+import java.nio.file.LinkOption
 import java.util.Locale
 import java.util.zip.GZIPInputStream
 import org.tukaani.xz.XZInputStream
@@ -33,17 +35,62 @@ class RootfsInstaller(
             stagingDir.deleteRecursively()
             stagingDir.mkdirs()
             download(url, archive, onProgress)
-            extractTar(archive, stagingDir, format, onProgress)
-            linuxDir.deleteRecursively()
-            require(stagingDir.renameTo(linuxDir)) {
-                "Failed to move rootfs into workspace"
-            }
-            patcher.patch(linuxDir)
-            onProgress(RootfsInstallProgress(stage = RootfsInstallStage.INSTALLED))
+            installArchive(archive, stagingDir, linuxDir, format, onProgress)
         } finally {
             archive.delete()
             stagingDir.deleteRecursively()
         }
+    }
+
+    fun install(
+        root: String,
+        input: InputStream,
+        fileName: String,
+        onProgress: (RootfsInstallProgress) -> Unit = {},
+    ) {
+        val format = ArchiveFormat.fromLocalFileName(fileName)
+            ?: error("Unsupported Rootfs archive: $fileName")
+        manager.ensureWorkspace(root)
+        val tempDir = manager.tempDir(root)
+        val archive = File(tempDir, "rootfs.${format.extension}")
+        val stagingDir = File(tempDir, "rootfs-staging")
+        val linuxDir = manager.linuxDir(root)
+
+        try {
+            stagingDir.deleteRecursively()
+            stagingDir.mkdirs()
+            archive.outputStream().buffered(BUFFER_SIZE).use { output ->
+                input.buffered(BUFFER_SIZE).use { source ->
+                    val buffer = ByteArray(BUFFER_SIZE)
+                    while (true) {
+                        checkInterrupted()
+                        val read = source.read(buffer)
+                        if (read < 0) break
+                        output.write(buffer, 0, read)
+                    }
+                }
+            }
+            installArchive(archive, stagingDir, linuxDir, format, onProgress)
+        } finally {
+            archive.delete()
+            stagingDir.deleteRecursively()
+        }
+    }
+
+    private fun installArchive(
+        archive: File,
+        stagingDir: File,
+        linuxDir: File,
+        format: ArchiveFormat,
+        onProgress: (RootfsInstallProgress) -> Unit,
+    ) {
+        extractTar(archive, stagingDir, format, onProgress)
+        linuxDir.deleteRecursively()
+        require(stagingDir.renameTo(linuxDir)) {
+            "Failed to move rootfs into workspace"
+        }
+        patcher.patch(linuxDir)
+        onProgress(RootfsInstallProgress(stage = RootfsInstallStage.INSTALLED))
     }
 
     private fun download(
@@ -104,10 +151,11 @@ class RootfsInstaller(
         format: ArchiveFormat = ArchiveFormat.fromFile(archive),
         onProgress: (RootfsInstallProgress) -> Unit,
     ) {
-        format.wrapStream(BufferedInputStream(archive.inputStream())).use { input ->
+        format.wrapStream(BufferedInputStream(archive.inputStream(), BUFFER_SIZE)).use { input ->
             var entries = 0
             var pendingName: String? = null
             var pendingLinkName: String? = null
+            val pendingHardLinks = mutableListOf<PendingHardLink>()
             while (true) {
                 checkInterrupted()
                 val rawHeader = input.readTarHeader() ?: break
@@ -143,7 +191,11 @@ class RootfsInstaller(
                 when (header.type) {
                     TarEntryType.DIRECTORY -> target.mkdirs()
                     TarEntryType.SYMLINK -> createSymlink(targetDir, target, header.linkName)
-                    TarEntryType.HARDLINK -> createHardLink(targetDir, target, header.linkName)
+                    TarEntryType.HARDLINK -> {
+                        if (!createHardLink(targetDir, target, header.linkName)) {
+                            pendingHardLinks += PendingHardLink(target, header.linkName)
+                        }
+                    }
                     TarEntryType.FILE -> {
                         target.outputStream().use { output ->
                             input.copyExactly(output, header.size)
@@ -174,6 +226,7 @@ class RootfsInstaller(
                     )
                 )
             }
+            createPendingHardLinks(targetDir, pendingHardLinks)
         }
     }
 
@@ -193,25 +246,43 @@ class RootfsInstaller(
         Files.createSymbolicLink(target.toPath(), linkTarget.toPath())
     }
 
-    private fun createHardLink(root: File, target: File, linkName: String) {
-        if (linkName.isBlank()) return
+    private fun createHardLink(root: File, target: File, linkName: String): Boolean {
+        if (linkName.isBlank()) return true
         val source = root.safeResolve(linkName)
-        if (!source.exists()) return
+        if (!Files.exists(source.toPath(), LinkOption.NOFOLLOW_LINKS)) return false
         target.delete()
         runCatching {
             Files.createLink(target.toPath(), source.toPath())
-        }.recoverCatching { error ->
+        }.onSuccess {
+            return true
+        }.onFailure { error ->
             if (error !is IOException &&
                 error !is UnsupportedOperationException &&
                 error !is SecurityException
             ) {
                 throw error
             }
-            source.copyTo(target, overwrite = true)
-            target.setReadable(source.canRead(), false)
-            target.setWritable(source.canWrite(), true)
-            target.setExecutable(source.canExecute(), false)
-        }.getOrThrow()
+        }
+
+        // Android 文件系统不一定允许创建硬链接；BusyBox Rootfs 通常有大量 applet
+        // 指向同一二进制。回退为相对软链接可保持共享，绝不能 copyTo 展开为数百份文件。
+        val parent = target.parentFile ?: root
+        val relativeSource = parent.toPath().relativize(source.toPath())
+        Files.createSymbolicLink(target.toPath(), relativeSource)
+        return true
+    }
+
+    private fun createPendingHardLinks(root: File, links: List<PendingHardLink>) {
+        var remaining = links
+        while (remaining.isNotEmpty()) {
+            val unresolved = remaining.filterNot { link ->
+                createHardLink(root, link.target, link.linkName)
+            }
+            require(unresolved.size < remaining.size) {
+                "Hard link target not found: ${unresolved.first().linkName}"
+            }
+            remaining = unresolved
+        }
     }
 
     private fun InputStream.readTarHeader(): TarHeader? {
@@ -374,6 +445,11 @@ class RootfsInstaller(
         val linkName: String,
     )
 
+    private data class PendingHardLink(
+        val target: File,
+        val linkName: String,
+    )
+
     private enum class TarEntryType {
         FILE,
         DIRECTORY,
@@ -391,6 +467,9 @@ class RootfsInstaller(
         },
         TAR_XZ("tar.xz") {
             override fun wrapStream(input: InputStream): InputStream = XZInputStream(input)
+        },
+        TAR_ZST("tar.zst") {
+            override fun wrapStream(input: InputStream): InputStream = ZstdInputStream(input)
         };
 
         abstract fun wrapStream(input: InputStream): InputStream
@@ -399,12 +478,23 @@ class RootfsInstaller(
             fun fromUrl(url: String): ArchiveFormat {
                 val path = url.substringBefore('?').substringBefore('#')
                 return when {
+                    path.endsWith(".tar.zst") || path.endsWith(".tzst") -> TAR_ZST
                     path.endsWith(".tar.xz") || path.endsWith(".txz") -> TAR_XZ
                     else -> TAR_GZ
                 }
             }
 
             fun fromFile(file: File): ArchiveFormat = fromUrl(file.name)
+
+            fun fromLocalFileName(fileName: String): ArchiveFormat? {
+                val normalized = fileName.lowercase(Locale.ROOT)
+                return when {
+                    normalized.endsWith(".tar.zst") || normalized.endsWith(".tzst") -> TAR_ZST
+                    normalized.endsWith(".tar.gz") || normalized.endsWith(".tgz") -> TAR_GZ
+                    normalized.endsWith(".tar.xz") || normalized.endsWith(".txz") -> TAR_XZ
+                    else -> null
+                }
+            }
         }
     }
 

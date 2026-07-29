@@ -3,7 +3,6 @@ package me.rerere.rikkahub.ui.pages.chat
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
-import android.widget.Toast
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Book02
 import me.rerere.hugeicons.stroke.Book04
@@ -97,6 +96,7 @@ import me.rerere.rikkahub.ui.components.ui.ChainOfThoughtScope
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
+import me.rerere.rikkahub.ui.context.SystemToaster
 import me.rerere.rikkahub.ui.context.rememberSystemToaster
 import me.rerere.rikkahub.ui.theme.RikkahubTheme
 import me.rerere.rikkahub.utils.exportImage
@@ -393,7 +393,7 @@ private suspend fun exportToImage(
     val activity = context.getActivity()
     if (activity == null) {
         withContext(Dispatchers.Main) {
-            Toast.makeText(context, "Failed to get activity", Toast.LENGTH_SHORT).show()
+            SystemToaster.showError("Failed to get activity")
         }
         return
     }
@@ -440,7 +440,7 @@ private suspend fun exportToImage(
     } catch (e: Exception) {
         e.printStackTrace()
         withContext(Dispatchers.Main) {
-            Toast.makeText(context, "Failed to export image: ${e.message}", Toast.LENGTH_SHORT).show()
+            SystemToaster.showError("Failed to export image: ${e.message}")
         }
     } finally {
         bitmap.recycle()

@@ -84,7 +84,10 @@ private fun SillyTavernImporter(
                         )
                     }.onFailure { exception ->
                         exception.printStackTrace()
-                        toaster.show(exception.message ?: context.getString(R.string.assistant_importer_import_failed))
+                        toaster.show(
+                            exception.message ?: context.getString(R.string.assistant_importer_import_failed),
+                            type = ToastType.Error,
+                        )
                     }
                 } finally {
                     isLoading = false
@@ -110,7 +113,10 @@ private fun SillyTavernImporter(
                         )
                     }.onFailure { exception ->
                         exception.printStackTrace()
-                        toaster.show(exception.message ?: context.getString(R.string.assistant_importer_import_failed))
+                        toaster.show(
+                            exception.message ?: context.getString(R.string.assistant_importer_import_failed),
+                            type = ToastType.Error,
+                        )
                     }
                 } finally {
                     isLoading = false

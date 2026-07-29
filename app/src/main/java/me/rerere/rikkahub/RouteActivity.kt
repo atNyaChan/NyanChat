@@ -72,6 +72,7 @@ import me.rerere.rikkahub.ui.context.LocalSharedTransitionScope
 import me.rerere.rikkahub.ui.context.LocalTTSState
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.context.Navigator
+import me.rerere.rikkahub.ui.context.SystemErrorDialog
 import me.rerere.rikkahub.ui.context.rememberSystemToaster
 import me.rerere.rikkahub.ui.hooks.readBooleanPreference
 import me.rerere.rikkahub.ui.hooks.readStringPreference
@@ -311,6 +312,7 @@ class RouteActivity : AppCompatActivity() {
                 LocalASRState provides asr,
             ) {
                 TTSController()
+                SystemErrorDialog(toastState)
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -516,7 +518,7 @@ class RouteActivity : AppCompatActivity() {
                             }
 
                             entry<Screen.WorkspaceTerminal> { key ->
-                                WorkspaceTerminalPage(key.id)
+                                WorkspaceTerminalPage(key.id, key.cwd)
                             }
 
                             entry<Screen.WorkspaceFileEditor> { key ->
@@ -682,7 +684,7 @@ sealed interface Screen : NavKey {
     data class WorkspaceDetail(val id: String) : Screen
 
     @Serializable
-    data class WorkspaceTerminal(val id: String) : Screen
+    data class WorkspaceTerminal(val id: String, val cwd: String = "/workspace") : Screen
 
     @Serializable
     data class WorkspaceFileEditor(val id: String, val area: String, val path: String) : Screen

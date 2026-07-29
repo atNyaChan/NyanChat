@@ -158,6 +158,20 @@ class WorkspaceDetailVM(
         }
     }
 
+    fun exportRootfsArchive(
+        outputStream: OutputStream,
+        onComplete: (Throwable?) -> Unit,
+    ) {
+        viewModelScope.launch {
+            runCatching {
+                repository.exportRootfsArchive(id, outputStream)
+            }.fold(
+                onSuccess = { onComplete(null) },
+                onFailure = onComplete,
+            )
+        }
+    }
+
     /**
      * 把当前区域下的文件导出到 cacheDir 的临时文件, 完成后回调 [onReady].
      * 供分享 / 图片预览 / 交给系统应用打开等复用 (它们都需要一个 FileProvider 可访问的真实 File).
@@ -197,6 +211,27 @@ class WorkspaceDetailVM(
             _installProgress.value = RootfsInstallProgress(stage = RootfsInstallStage.DOWNLOADING)
             try {
                 repository.installRootfs(workspace.id, url) { progress ->
+                    _installProgress.value = progress
+                }
+                loadWorkspace()
+                refresh()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (error: Throwable) {
+                _installError.value = error.message ?: "Rootfs 安装失败"
+            } finally {
+                _installProgress.value = null
+            }
+        }
+    }
+
+    fun installRootfs(input: InputStream, fileName: String) {
+        viewModelScope.launch {
+            _installError.value = null
+            val workspace = state.value.workspace ?: return@launch
+            _installProgress.value = RootfsInstallProgress(stage = RootfsInstallStage.EXTRACTING)
+            try {
+                repository.installRootfs(workspace.id, input, fileName) { progress ->
                     _installProgress.value = progress
                 }
                 loadWorkspace()

@@ -14,16 +14,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
@@ -35,7 +33,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -183,9 +180,11 @@ private fun AssistantPickerSheet(
             ) {
                 items(filteredAssistants, key = { it.id }) { assistant ->
                     val checked = assistant.id == currentAssistant.id
-                    Card(
+                    OutlinedCard(
                         onClick = { onAssistantSelected(assistant) },
-                        modifier = Modifier.animateItem(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .animateItem(),
                         shape = MaterialTheme.shapes.large,
                         colors = CardDefaults.cardColors(
                             containerColor = if (checked) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
@@ -216,20 +215,12 @@ private fun AssistantItem(
     defaultAssistantName: String,
     onEdit: () -> Unit
 ) {
-    ListItem(
-        leadingContent = {
-            UIAvatar(
-                name = assistant.name.ifEmpty { defaultAssistantName },
-                value = assistant.avatar,
-                invertDefaultAvatarInDarkMode = true,
-                modifier = Modifier.size(32.dp)
-            )
-        },
+    AssistantListItemContent(
+        assistant = assistant,
+        displayName = assistant.name.ifEmpty { defaultAssistantName },
         trailingContent = {
             IconButton(
-                onClick = {
-                    onEdit()
-                }
+                onClick = onEdit,
             ) {
                 Icon(
                     imageVector = HugeIcons.Edit03,
@@ -237,12 +228,5 @@ private fun AssistantItem(
                 )
             }
         },
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-    ) {
-        Text(
-            text = assistant.name.ifEmpty { defaultAssistantName },
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
+    )
 }

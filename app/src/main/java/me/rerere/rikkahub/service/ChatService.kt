@@ -633,6 +633,7 @@ class ChatService(
             model.displayName
         }
         val activePendingResponse = pendingResponse ?: UIMessage.assistant("")
+        val generatedMessageIds = mutableSetOf(activePendingResponse.id)
         var terminalStatePersisted = false
 
         return runCatching {
@@ -654,7 +655,10 @@ class ChatService(
             // check invalid messages
             checkInvalidMessages(conversationId)
             val conversation = getConversationFlow(conversationId).value
-            if (pendingResponse == null) {
+            val isToolContinuation = conversation.currentMessages.lastOrNull()
+                ?.getTools()
+                ?.any { it.canResumeExecution } == true
+            if (pendingResponse == null && !isToolContinuation) {
                 updateConversation(
                     conversationId,
                     conversation.copy(
@@ -666,17 +670,19 @@ class ChatService(
             // start generating
             val session = getOrCreateSession(conversationId)
             var lastStreamSaveAt = 0L
+            val requestMessages = conversation.currentMessages.let {
+                if (messageRange != null) {
+                    it.subList(messageRange.start, messageRange.endInclusive + 1)
+                } else {
+                    it
+                }
+            }
+            val responseMessageIndex = requestMessages.size
             generationHandler.generateText(
                 settings = settings,
                 model = model,
                 processingStatus = session.processingStatus,
-                messages = conversation.currentMessages.let {
-                    if (messageRange != null) {
-                        it.subList(messageRange.start, messageRange.endInclusive + 1)
-                    } else {
-                        it
-                    }
-                },
+                messages = requestMessages,
                 assistant = assistant,
                 conversationSystemPrompt = conversation.customSystemPrompt,
                 conversationModeInjectionIds = conversation.modeInjectionIds,
@@ -694,16 +700,11 @@ class ChatService(
                 },
                 outputTransformers = outputTransformers,
                 tools = buildRequestTools(settings, assistant, conversation),
-            ).onCompletion { cause ->
+            ).onCompletion {
                 // 生成的所有结束路径都在这里整理并保存最终状态。取消状态下普通挂起保存会被跳过，
                 // 因此清理临时空回复和数据库提交必须一并放进 NonCancellable。
-                val currentConversation = getConversationFlow(conversationId).value.let { current ->
-                    if (cause != null) {
-                        current.removeEmptyMessage(activePendingResponse.id)
-                    } else {
-                        current
-                    }
-                }
+                val currentConversation = getConversationFlow(conversationId).value
+                    .removeEmptyMessages(generatedMessageIds)
                 val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                 val updatedConversation = currentConversation.copy(
                     messageNodes = currentConversation.messageNodes.map { node ->
@@ -742,16 +743,14 @@ class ChatService(
             }.collect { chunk ->
                 when (chunk) {
                     is GenerationChunk.Messages -> {
-                        val messages = if (
-                            chunk.messages.lastOrNull()?.role == MessageRole.ASSISTANT
-                        ) {
-                            chunk.messages.dropLast(1) + chunk.messages.last().copy(
-                                id = activePendingResponse.id,
-                                createdAt = activePendingResponse.createdAt,
+                        val messages = chunk.messages
+                            .prepareGeneratedMessages(
+                                responseMessageIndex = responseMessageIndex,
+                                pendingResponse = activePendingResponse,
                             )
-                        } else {
-                            chunk.messages
-                        }
+                        generatedMessageIds += messages
+                            .drop(responseMessageIndex)
+                            .map(UIMessage::id)
                         val updatedConversation = getConversationFlow(conversationId).value
                             .updateCurrentMessages(messages)
                         updateConversation(conversationId, updatedConversation)
@@ -776,7 +775,7 @@ class ChatService(
             if (!terminalStatePersisted) {
                 withContext(NonCancellable + Dispatchers.IO) {
                     val cleanedConversation = getConversationFlow(conversationId).value
-                        .removeEmptyMessage(activePendingResponse.id)
+                        .removeEmptyMessages(generatedMessageIds)
                     saveConversation(conversationId, cleanedConversation)
                 }
             }
@@ -798,23 +797,32 @@ class ChatService(
         }.isSuccess
     }
 
-    private fun Conversation.removeEmptyMessage(messageId: Uuid): Conversation {
+    private fun Conversation.removeEmptyMessages(messageIds: Set<Uuid>): Conversation {
         val updatedNodes = messageNodes.mapNotNull { node ->
-            val messageIndex = node.messages.indexOfFirst { it.id == messageId }
-            val message = node.messages.getOrNull(messageIndex)
-            if (message == null || !message.parts.isEmptyUIMessage()) {
+            val emptyMessageIndices = node.messages.mapIndexedNotNull { index, message ->
+                index.takeIf {
+                    message.id in messageIds &&
+                        message.parts.isEmptyUIMessage() &&
+                        message.getTools().isEmpty()
+                }
+            }
+            if (emptyMessageIndices.isEmpty()) {
                 return@mapNotNull node
             }
 
-            val remainingMessages = node.messages.filterNot { it.id == messageId }
+            val remainingMessages = node.messages.filterIndexed { index, _ ->
+                index !in emptyMessageIndices
+            }
             if (remainingMessages.isEmpty()) {
                 return@mapNotNull null
             }
 
-            val restoredSelectIndex = when {
-                node.selectIndex > messageIndex -> node.selectIndex - 1
-                node.selectIndex == messageIndex -> (messageIndex - 1).coerceAtLeast(0)
-                else -> node.selectIndex
+            val removedBeforeSelection = emptyMessageIndices.count { it < node.selectIndex }
+            val selectionWasRemoved = node.selectIndex in emptyMessageIndices
+            val restoredSelectIndex = if (selectionWasRemoved) {
+                (node.selectIndex - removedBeforeSelection - 1).coerceAtLeast(0)
+            } else {
+                node.selectIndex - removedBeforeSelection
             }.coerceIn(remainingMessages.indices)
             node.copy(
                 messages = remainingMessages,
@@ -1463,7 +1471,7 @@ class ChatService(
 
     private fun UIMessagePart.copyWithForkedFileUrl(): UIMessagePart {
         fun copyLocalFileIfNeeded(url: String): String {
-            if (!url.startsWith("file:")) return url
+            if (!url.startsWith("file://")) return url
             val copied = filesManager.createChatFilesByContents(listOf(url.toUri())).firstOrNull()
             return copied?.toString() ?: url
         }
@@ -1506,5 +1514,36 @@ class ChatService(
         job.cancel()
         runCatching { job.join() }
         finishInterruptedPendingTools(conversationId)
+    }
+}
+
+/**
+ * Prepares streamed messages for the conversation UI.
+ *
+ * The first assistant response receives the placeholder identity. Later tool continuations keep
+ * their own IDs, and empty continuation messages stay out of the UI until they contain content.
+ */
+internal fun List<UIMessage>.prepareGeneratedMessages(
+    responseMessageIndex: Int,
+    pendingResponse: UIMessage,
+): List<UIMessage> {
+    val firstAssistantIndex = indices.firstOrNull { index ->
+        index >= responseMessageIndex && this[index].role == MessageRole.ASSISTANT
+    } ?: return this
+
+    return mapIndexedNotNull { index, message ->
+        when {
+            index == firstAssistantIndex -> message.copy(
+                id = pendingResponse.id,
+                createdAt = pendingResponse.createdAt,
+            )
+
+            index > firstAssistantIndex &&
+                message.role == MessageRole.ASSISTANT &&
+                message.parts.isEmptyUIMessage() &&
+                message.getTools().isEmpty() -> null
+
+            else -> message
+        }
     }
 }

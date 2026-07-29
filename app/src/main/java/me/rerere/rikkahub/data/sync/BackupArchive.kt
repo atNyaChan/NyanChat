@@ -34,8 +34,13 @@ internal object BackupArchive {
                     checkpoint(database)
                     val compressed = File(context.cacheDir, "rikka_hub.db.zst")
                     try {
-                        ZstdOutputStream(FileOutputStream(compressed), 9).use { outputStream ->
-                            database.inputStream().use { it.copyTo(outputStream) }
+                        ZstdOutputStream(
+                            FileOutputStream(compressed).buffered(IO_BUFFER_SIZE),
+                            DATABASE_COMPRESSION_LEVEL,
+                        ).setWorkers(ZSTD_WORKERS).use { outputStream ->
+                            database.inputStream().buffered(IO_BUFFER_SIZE).use {
+                                it.copyTo(outputStream, IO_BUFFER_SIZE)
+                            }
                         }
                         addFile(tar, compressed, "rikka_hub.db.zst")
                     } finally {
@@ -66,8 +71,14 @@ internal object BackupArchive {
                         if (entry.name == "rikka_hub.db.zst") {
                             val compressed = File.createTempFile("restore_db_", ".zst", archive.parentFile)
                             try {
-                                compressed.outputStream().use { tar.copyTo(it) }
-                                ZstdInputStream(compressed.inputStream()).use { it.copyTo(zip) }
+                                compressed.outputStream().buffered(IO_BUFFER_SIZE).use {
+                                    tar.copyTo(it, IO_BUFFER_SIZE)
+                                }
+                                ZstdInputStream(
+                                    compressed.inputStream().buffered(IO_BUFFER_SIZE)
+                                ).use {
+                                    it.copyTo(zip, IO_BUFFER_SIZE)
+                                }
                             } finally {
                                 compressed.delete()
                             }
@@ -110,4 +121,8 @@ internal object BackupArchive {
         tar.write(bytes)
         tar.closeArchiveEntry()
     }
+
+    private val ZSTD_WORKERS = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
+    private const val DATABASE_COMPRESSION_LEVEL = 9
+    private const val IO_BUFFER_SIZE = 128 * 1024
 }

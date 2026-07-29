@@ -4,7 +4,6 @@ import android.net.Uri
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import me.rerere.ai.ui.UIMessagePart
@@ -17,10 +16,7 @@ class ChatInputState {
         get() = messageContentState.value
         set(value) {
             messageContentState.value = value
-            attachmentCount = value.count { it.isAttachment() }
         }
-    var attachmentCount by mutableIntStateOf(0)
-        private set
     var editingMessage by mutableStateOf<Uuid?>(null)
     private var editingParts: List<UIMessagePart>? = null
     private var editingAttachmentUrls: Set<String> = emptySet()
@@ -150,7 +146,7 @@ class ChatInputState {
      */
     fun shouldDeleteFileOnRemove(part: UIMessagePart): Boolean {
         val url = part.attachmentUrlOrNull() ?: return false
-        if (!url.startsWith("file:")) return false
+        if (!url.startsWith("file://")) return false
         return !isEditing() || url !in editingAttachmentUrls
     }
 
@@ -164,10 +160,4 @@ class ChatInputState {
         }
     }
 
-    private fun UIMessagePart.isAttachment(): Boolean {
-        return this is UIMessagePart.Image ||
-            this is UIMessagePart.Video ||
-            this is UIMessagePart.Audio ||
-            this is UIMessagePart.Document
-    }
 }

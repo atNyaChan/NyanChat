@@ -346,6 +346,13 @@ class S3Sync(
             }
         }
 
+        if (config.items.contains(S3Config.BackupItem.DATABASE) &&
+            config.items.contains(S3Config.BackupItem.FILES)
+        ) {
+            runCatching { RestoredAttachmentUrlRewriter.rewrite(context, json) }
+                .onFailure { Log.w(TAG, "Failed to rewrite restored attachment URLs", it) }
+        }
+
         Log.i(TAG, "restoreFromBackupFile: Restore completed successfully")
     }
 

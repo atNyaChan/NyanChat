@@ -54,6 +54,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -96,6 +97,7 @@ import me.rerere.hugeicons.stroke.Tools
 import me.rerere.hugeicons.stroke.Upload02
 import me.rerere.hugeicons.stroke.Zap
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.data.ai.transformers.DocumentAsPromptTransformer
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.getCurrentAssistant
 import me.rerere.rikkahub.data.datastore.getCurrentChatModel
@@ -140,12 +142,27 @@ fun ChatInput(
 ) {
     val toaster = LocalToaster.current
     val assistant = settings.getCurrentAssistant()
-    val inputContents = state.getContents()
-    val inputWordCount = inputContents.sumOf { part ->
-        when (part) {
-            is UIMessagePart.Text -> part.text.wordCount()
-            else -> 0
+    val inputWordCount = state.getContents().sumOf { part ->
+        (part as? UIMessagePart.Text)?.text?.wordCount() ?: 0
+    }
+    val documents = state.messageContent.filterIsInstance<UIMessagePart.Document>()
+    val documentWordCounts by produceState<Map<String, Int?>>(
+        initialValue = emptyMap(),
+        documents,
+        settings.displaySetting.showTokenUsage,
+    ) {
+        if (!settings.displaySetting.showTokenUsage) return@produceState
+        val counts = mutableMapOf<String, Int?>()
+        documents.forEach { document ->
+            counts[document.url] = DocumentAsPromptTransformer
+                .extractDocumentText(document)
+                ?.wordCount()
+            value = counts.toMap()
         }
+    }
+    val displayedAttachmentCount = state.messageContent.count { part ->
+        part !is UIMessagePart.Document ||
+            (part.url in documentWordCounts && documentWordCounts[part.url] == null)
     }
     val hazeTintColor = MaterialTheme.colorScheme.surfaceContainerLow
     val inputHazeStyle = HazeMaterials.thin(containerColor = hazeTintColor)
@@ -242,7 +259,10 @@ fun ChatInput(
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     if (state.messageContent.isNotEmpty()) {
-                        MediaFileInputRow(state = state)
+                        MediaFileInputRow(
+                            state = state,
+                            documentWordCounts = documentWordCounts,
+                        )
                     }
 
                     TextInputRow(
@@ -294,7 +314,7 @@ fun ChatInput(
                         }
 
                         requestWordCount?.takeIf {
-                            imeVisible || inputWordCount > 0 || state.attachmentCount > 0
+                            imeVisible || inputWordCount > 0 || displayedAttachmentCount > 0
                         }?.let { count ->
                             Column(
                                 horizontalAlignment = Alignment.End,
@@ -315,15 +335,15 @@ fun ChatInput(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                 }
-                                if (state.attachmentCount > 0 || requestToolCount > 0) {
+                                if (displayedAttachmentCount > 0 || requestToolCount > 0) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                                     ) {
-                                        if (state.attachmentCount > 0) {
+                                        if (displayedAttachmentCount > 0) {
                                             StatCount(
                                                 icon = HugeIcons.File02,
-                                                count = state.attachmentCount,
+                                                count = displayedAttachmentCount,
                                                 label = "file",
                                             )
                                         }

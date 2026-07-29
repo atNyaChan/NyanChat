@@ -12,14 +12,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedCard
@@ -48,7 +45,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -57,8 +53,8 @@ import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ai.AssistantListItemContent
 import me.rerere.rikkahub.ui.components.ui.FormItem
-import me.rerere.rikkahub.ui.components.ui.UIAvatar
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.hooks.EditState
 import me.rerere.rikkahub.ui.hooks.EditStateContent
@@ -347,12 +343,10 @@ private fun AssistantCreationSheet(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     lazyItems(existingAssistants, key = { it.id }) { source ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
+                        OutlinedCard(
+                            modifier = Modifier
+                                .fillMaxWidth(),
                             shape = MaterialTheme.shapes.large,
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                            ),
                             onClick = {
                                 val currentName = state.currentState?.name.orEmpty()
                                 state.currentState = source.copy(
@@ -368,28 +362,15 @@ private fun AssistantCreationSheet(
                                 state.confirm()
                             },
                         ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            ) {
-                                UIAvatar(
-                                    name = source.name.ifBlank {
-                                        stringResource(R.string.assistant_page_default_assistant)
-                                    },
-                                    value = source.avatar,
-                                    invertDefaultAvatarInDarkMode = true,
-                                    modifier = Modifier.size(32.dp),
-                                )
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        source.name.ifBlank {
-                                            stringResource(R.string.assistant_page_default_assistant)
-                                        }
-                                    )
-                                    if (source.tags.isNotEmpty()) {
+                            AssistantListItemContent(
+                                assistant = source,
+                                displayName = source.name.ifBlank {
+                                    stringResource(R.string.assistant_page_default_assistant)
+                                },
+                                supportingContent = if (source.tags.isNotEmpty()) {
+                                    {
                                         Text(
-                                            stringResource(
+                                            text = stringResource(
                                                 R.string.assistant_page_copy_picker_tag_count,
                                                 source.tags.size,
                                             ),
@@ -397,8 +378,10 @@ private fun AssistantCreationSheet(
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                     }
+                                } else {
+                                    null
                                 }
-                            }
+                            )
                         }
                     }
                 }
@@ -424,34 +407,13 @@ private fun AssistantItem(
         modifier = modifier.fillMaxWidth(),
         onClick = onEdit,
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            UIAvatar(
-                name = assistant.name.ifBlank { stringResource(R.string.assistant_page_default_assistant) },
-                value = assistant.avatar,
-                invertDefaultAvatarInDarkMode = true,
-                modifier = Modifier
-                    .size(40.dp)
-                    .heroAnimation("assistant_${assistant.id}")
-            )
-
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-
-                Text(
-                    text = assistant.name.ifBlank { stringResource(R.string.assistant_page_default_assistant) },
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-
+        AssistantListItemContent(
+            assistant = assistant,
+            displayName = assistant.name.ifBlank {
+                stringResource(R.string.assistant_page_default_assistant)
+            },
+            avatarModifier = Modifier.heroAnimation("assistant_${assistant.id}"),
+            supportingContent = {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -480,7 +442,7 @@ private fun AssistantItem(
                         }
                     }
                 }
-            }
-        }
+            },
+        )
     }
 }

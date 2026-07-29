@@ -73,6 +73,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dokar.sonner.ToastType
 import kotlinx.coroutines.launch
 import me.rerere.ai.core.MessageRole
 import me.rerere.rikkahub.R
@@ -188,7 +189,7 @@ private fun ModeInjectionTab(
             onUpdate(currentModeInjections + imported)
             toaster.show(importSuccessMsg)
         }.onFailure { error ->
-            toaster.show(importFailedMsg.format(error.message))
+            toaster.show(importFailedMsg.format(error.message), type = ToastType.Error)
         }
     }
 
@@ -618,7 +619,7 @@ private fun LorebookTab(
             onUpdate(currentLorebooks + imported)
             toaster.show(importSuccessMsg)
         }.onFailure { error ->
-            toaster.show(importFailedMsg.format(error.message))
+            toaster.show(importFailedMsg.format(error.message), type = ToastType.Error)
         }
     }
 

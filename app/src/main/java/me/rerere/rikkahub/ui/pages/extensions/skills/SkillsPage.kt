@@ -51,6 +51,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.dokar.sonner.ToastType
 import me.rerere.rikkahub.R
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Add01
@@ -104,7 +105,10 @@ fun SkillsPage() {
             if (success) {
                 toaster.show(context.getString(R.string.skills_page_import_success, message))
             } else {
-                toaster.show(context.getString(R.string.skills_page_import_failed, message))
+                toaster.show(
+                    context.getString(R.string.skills_page_import_failed, message),
+                    type = ToastType.Error,
+                )
             }
         }
     }
@@ -210,7 +214,10 @@ fun SkillsPage() {
                 vm.saveSkill(name, content) { success ->
                     showAddDialog = false
                     if (!success) {
-                        toaster.show(context.getString(R.string.skills_page_save_failed))
+                        toaster.show(
+                            context.getString(R.string.skills_page_save_failed),
+                            type = ToastType.Error,
+                        )
                     }
                 }
             },
@@ -226,7 +233,10 @@ fun SkillsPage() {
                     if (success) {
                         toaster.show(context.getString(R.string.skills_page_import_success, message))
                     } else {
-                        toaster.show(context.getString(R.string.skills_page_import_failed, message))
+                        toaster.show(
+                            context.getString(R.string.skills_page_import_failed, message),
+                            type = ToastType.Error,
+                        )
                     }
                 }
             },

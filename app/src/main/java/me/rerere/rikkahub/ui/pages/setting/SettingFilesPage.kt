@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
+import com.dokar.sonner.ToastType
 import kotlinx.coroutines.launch
 import me.rerere.rikkahub.data.db.dao.ManagedFileWithReference
 import me.rerere.rikkahub.data.db.entity.ManagedFileEntity
@@ -90,7 +91,6 @@ fun SettingFilesPage(
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
     val navController = LocalNavController.current
-    val folders = remember { listOf(FileFolders.UPLOAD, UNUSED_ATTACHMENTS) }
 
     // 预先获取字符串资源
     val deletedToast = stringResource(R.string.setting_files_page_deleted_toast)
@@ -105,6 +105,21 @@ fun SettingFilesPage(
     var loadedFiles by remember { mutableStateOf<List<ManagedFileWithReference>?>(null) }
     LaunchedEffect(filesManager) {
         loadedFiles = filesManager.listWithReferences(FileFolders.UPLOAD)
+    }
+    val hasUnusedAttachments = loadedFiles?.any {
+        it.conversationId == null || it.nodeId == null
+    } == true
+    val folders = remember(hasUnusedAttachments) {
+        if (hasUnusedAttachments) {
+            listOf(FileFolders.UPLOAD, UNUSED_ATTACHMENTS)
+        } else {
+            listOf(FileFolders.UPLOAD)
+        }
+    }
+    LaunchedEffect(hasUnusedAttachments) {
+        if (!hasUnusedAttachments && selectedFolder == UNUSED_ATTACHMENTS) {
+            selectedFolder = FileFolders.UPLOAD
+        }
     }
     val files = loadedFiles.orEmpty().filter {
         val hasReference = it.conversationId != null && it.nodeId != null
@@ -182,7 +197,7 @@ fun SettingFilesPage(
                                 toaster.show(deletedToast)
                                 loadedFiles = loadedFiles?.filterNot { it.file.id == target.id }
                             } else {
-                                toaster.show(deleteFailedToast)
+                                toaster.show(deleteFailedToast, type = ToastType.Error)
                             }
                             pendingDelete = null
                         }
@@ -215,7 +230,10 @@ fun SettingFilesPage(
                             val deletedIds = deletionResults.filterValues { it }.keys
                             val ok = deletionResults.values.all { it }
                             loadedFiles = loadedFiles?.filterNot { it.file.id in deletedIds }
-                            toaster.show(if (ok) cleanedToast else cleanFailedToast)
+                            toaster.show(
+                                if (ok) cleanedToast else cleanFailedToast,
+                                type = if (ok) ToastType.Success else ToastType.Error,
+                            )
                         }
                     }
                 ) {

@@ -15,6 +15,7 @@ import java.io.File
 object DocumentAsPromptTransformer : InputMessageTransformer {
     suspend fun extractDocumentText(document: UIMessagePart.Document): String? {
         return withContext(Dispatchers.IO) {
+            if (!document.url.startsWith("file://")) return@withContext null
             val file = runCatching { document.url.toUri().toFile() }.getOrNull()
                 ?: return@withContext null
             if (!file.exists() || !file.isFile) return@withContext null
@@ -71,12 +72,16 @@ object DocumentAsPromptTransformer : InputMessageTransformer {
     // 上传文件保存在 filesDir/upload 下, 该目录通过 proot 挂载到 workspace 的 /upload
     // 返回文件在 workspace 内的绝对路径, 便于 AI 用 workspace 工具直接读取原始文件
     private fun resolveWorkspacePath(document: UIMessagePart.Document): String? {
+        if (!document.url.startsWith("file://")) return null
         val file = runCatching { document.url.toUri().toFile() }.getOrNull() ?: return null
         if (file.parentFile?.name != "upload") return null
         return "/upload/${file.name}"
     }
 
     private fun readDocumentContent(document: UIMessagePart.Document): String {
+        if (!document.url.startsWith("file://")) {
+            return "[ERROR, invalid file uri: ${document.fileName}]"
+        }
         val file = runCatching { document.url.toUri().toFile() }.getOrNull()
             ?: return "[ERROR, invalid file uri: ${document.fileName}]"
         if (!file.exists() || !file.isFile) {

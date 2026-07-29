@@ -304,7 +304,7 @@ class FilesManager(
 
     fun deleteChatFiles(uris: List<Uri>) {
         val relativePaths = mutableSetOf<String>()
-        uris.filter { it.toString().startsWith("file:") }.forEach { uri ->
+        uris.filter { it.toString().startsWith("file://") }.forEach { uri ->
             val file = uri.toFile()
             getRelativePathInFilesDir(file)?.let { relativePaths.add(it) }
             if (file.exists()) {
@@ -393,7 +393,7 @@ class FilesManager(
                 activityContext.exportImage(activity, bitmap)
             }
 
-            image.startsWith("file:") -> {
+            image.startsWith("file://") -> {
                 val file = image.toUri().toFile()
                 activityContext.exportImageFile(activity, file)
             }
@@ -608,7 +608,7 @@ private fun List<UIMessagePart>.collectAttachmentFileNames(): Set<String> = buil
             }
             else -> null
         }
-        if (url?.startsWith("file:") == true) {
+        if (url?.startsWith("file://") == true) {
             url.toUri().lastPathSegment?.let(::add)
         }
     }

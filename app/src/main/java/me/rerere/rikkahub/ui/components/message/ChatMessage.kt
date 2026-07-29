@@ -685,11 +685,12 @@ private fun MissingAttachmentLabel(visible: Boolean) {
 }
 
 private fun isLocalAttachmentMissing(url: String): Boolean {
-    if (!url.startsWith("file:")) return false
+    if (!url.startsWith("file://")) return false
     return runCatching { !url.toUri().toFile().isFile }.getOrDefault(true)
 }
 
 private fun openLocalAttachment(context: Context, url: String) {
+    if (!url.startsWith("file://")) return
     runCatching {
         val file = url.toUri().toFile()
         if (!file.isFile) return

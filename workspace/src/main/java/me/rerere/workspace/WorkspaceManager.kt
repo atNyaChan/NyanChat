@@ -42,6 +42,13 @@ class WorkspaceManager(
 
     fun hasRootfs(root: String): Boolean = File(linuxDir(root), "bin/sh").isFile
 
+    /** Rootfs 内由宿主机或内核提供内容的挂载点，不属于 Rootfs 归档内容。 */
+    fun externalRootfsMountTargets(): Set<String> = buildSet {
+        add(ROOTFS_WORKSPACE_DIR)
+        addAll(bindMounts.map { it.target })
+        addAll(KERNEL_FS_MOUNTS)
+    }
+
     fun deleteWorkspace(root: String): Boolean = workspaceDir(root).deleteRecursively()
 
     fun listFiles(

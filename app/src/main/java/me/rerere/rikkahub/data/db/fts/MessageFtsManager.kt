@@ -355,7 +355,7 @@ class MessageFtsManager(private val database: AppDatabase) {
                             is UIMessagePart.Document -> part.url
                             else -> return@any false
                         }
-                        url.startsWith("file:") &&
+                        url.startsWith("file://") &&
                             runCatching { !url.toUri().toFile().isFile }.getOrDefault(true)
                     }
                     val matches = when (state) {

@@ -74,6 +74,16 @@ class RootfsPathResolutionTest {
     }
 
     @Test
+    fun archiveExclusionsContainEveryExternalRootfsMount() {
+        manager = createManager()
+
+        assertEquals(
+            setOf("/workspace", "/skills", "/upload", "/dev", "/proc", "/sys"),
+            manager.externalRootfsMountTargets(),
+        )
+    }
+
+    @Test
     fun unknownAbsolutePathFallsBackToRootfsInterior() {
         manager = createManager()
         File(manager.linuxDir(root), "etc").mkdirs()

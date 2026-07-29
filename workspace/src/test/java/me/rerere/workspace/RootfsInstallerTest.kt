@@ -7,6 +7,7 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
 import java.io.OutputStream
+import java.nio.file.Files
 import java.util.zip.GZIPOutputStream
 
 class RootfsInstallerTest {
@@ -49,14 +50,55 @@ class RootfsInstallerTest {
         assertEquals("content", File(target, "dir/file.txt").readText())
     }
 
+    @Test
+    fun `hardlink before its target is deferred and preserved as a hardlink`() {
+        val archive = tmp.newFile("rootfs.tar.gz")
+        GZIPOutputStream(archive.outputStream()).use { out ->
+            out.writeTarEntry("bin/applet", '1', ByteArray(0), linkName = "bin/busybox")
+            out.writeTarEntry("bin/busybox", '0', "busybox".toByteArray())
+            out.write(ByteArray(TAR_BLOCK * 2))
+        }
+
+        val target = tmp.newFolder("out")
+        createInstaller().extractTar(archive, target) {}
+
+        val applet = File(target, "bin/applet")
+        assertFalse(Files.isSymbolicLink(applet.toPath()))
+        assertEquals(true, Files.isSameFile(applet.toPath(), File(target, "bin/busybox").toPath()))
+        assertEquals("busybox", applet.readText())
+    }
+
+    @Test
+    fun `symbolic link remains a symbolic link`() {
+        val archive = tmp.newFile("rootfs.tar.gz")
+        GZIPOutputStream(archive.outputStream()).use { out ->
+            out.writeTarEntry("bin/busybox", '0', "busybox".toByteArray())
+            out.writeTarEntry("bin/applet", '2', ByteArray(0), linkName = "busybox")
+            out.write(ByteArray(TAR_BLOCK * 2))
+        }
+
+        val target = tmp.newFolder("out")
+        createInstaller().extractTar(archive, target) {}
+
+        val applet = File(target, "bin/applet")
+        assertEquals(true, Files.isSymbolicLink(applet.toPath()))
+        assertEquals("busybox", applet.readText())
+    }
+
     private fun createInstaller() = RootfsInstaller(WorkspaceManager(tmp.newFolder()))
 
-    private fun OutputStream.writeTarEntry(name: String, type: Char, data: ByteArray) {
+    private fun OutputStream.writeTarEntry(
+        name: String,
+        type: Char,
+        data: ByteArray,
+        linkName: String = "",
+    ) {
         val header = ByteArray(TAR_BLOCK)
         name.toByteArray(Charsets.UTF_8).copyInto(header, 0)
         "0000755".toByteArray().copyInto(header, 100)
         data.size.toLong().toOctalField().copyInto(header, 124)
         header[156] = type.code.toByte()
+        linkName.toByteArray(Charsets.UTF_8).copyInto(header, 157)
         write(header)
         write(data)
         val padding = (TAR_BLOCK - data.size % TAR_BLOCK) % TAR_BLOCK

@@ -36,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -73,6 +74,7 @@ import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.getCurrentAssistant
 import me.rerere.rikkahub.data.datastore.getCurrentChatModel
 import me.rerere.rikkahub.data.files.FilesManager
+import me.rerere.rikkahub.data.ai.transformers.DocumentAsPromptTransformer
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
@@ -157,14 +159,27 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
     var cachedRequestBaseWordCount by remember { mutableStateOf<Int?>(null) }
     var cachedRequestToolCount by remember { mutableStateOf(0) }
     var requestWordCountJob by remember { mutableStateOf<Job?>(null) }
-    val currentInputWordCount = inputState.getContents().sumOf { part ->
-        when (part) {
-            is UIMessagePart.Text -> part.text.wordCount()
-            else -> 0
+    val inputContents = inputState.getContents()
+    val currentInputWordCount = inputContents.sumOf { part ->
+        (part as? UIMessagePart.Text)?.text?.wordCount() ?: 0
+    }
+    val inputDocumentWordCount by produceState(
+        initialValue = 0,
+        inputContents,
+        setting.displaySetting.showTokenUsage,
+    ) {
+        value = if (setting.displaySetting.showTokenUsage) {
+            inputContents.sumOf { part ->
+                (part as? UIMessagePart.Document)
+                    ?.let { DocumentAsPromptTransformer.extractDocumentText(it)?.wordCount() }
+                    ?: 0
+            }
+        } else {
+            0
         }
     }
     val requestWordCount = cachedRequestBaseWordCount?.let { cachedBase ->
-        cachedBase + currentInputWordCount
+        cachedBase + currentInputWordCount + inputDocumentWordCount
     }
     LaunchedEffect(setting.displaySetting.showTokenUsage) {
         if (!setting.displaySetting.showTokenUsage) {

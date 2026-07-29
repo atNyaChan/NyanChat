@@ -53,7 +53,7 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 @Composable
-fun WorkspaceTerminalPage(id: String) {
+fun WorkspaceTerminalPage(id: String, initialCwd: String) {
     val vm: WorkspaceDetailVM = koinViewModel(parameters = { parametersOf(id) })
     val state by vm.state.collectAsStateWithLifecycle()
 
@@ -74,6 +74,7 @@ fun WorkspaceTerminalPage(id: String) {
         ) { innerPadding ->
             WorkspaceTerminalContent(
                 root = state.workspace?.root,
+                initialCwd = initialCwd,
                 contentPadding = innerPadding,
             )
         }
@@ -83,6 +84,7 @@ fun WorkspaceTerminalPage(id: String) {
 @Composable
 private fun WorkspaceTerminalContent(
     root: String?,
+    initialCwd: String,
     contentPadding: PaddingValues,
 ) {
     val context = LocalContext.current
@@ -90,15 +92,15 @@ private fun WorkspaceTerminalContent(
     val terminalTypeface = remember(context) {
         ResourcesCompat.getFont(context, R.font.jetbrains_mono) ?: Typeface.MONOSPACE
     }
-    var finished by remember(root) { mutableStateOf(false) }
-    var controlDown by remember(root) { mutableStateOf(false) }
-    var altDown by remember(root) { mutableStateOf(false) }
-    val sessionClient = remember(root) {
+    var finished by remember(root, initialCwd) { mutableStateOf(false) }
+    var controlDown by remember(root, initialCwd) { mutableStateOf(false) }
+    var altDown by remember(root, initialCwd) { mutableStateOf(false) }
+    val sessionClient = remember(root, initialCwd) {
         WorkspaceTerminalSessionClient(context.applicationContext) {
             finished = true
         }
     }
-    val viewClient = remember(root) {
+    val viewClient = remember(root, initialCwd) {
         WorkspaceTerminalViewClient(context)
     }
     viewClient.controlDown = controlDown
@@ -107,6 +109,7 @@ private fun WorkspaceTerminalContent(
     val sessionState by produceState<TerminalSessionUiState>(
         initialValue = TerminalSessionUiState.Loading,
         root,
+        initialCwd,
         sessionClient,
     ) {
         val current = root
@@ -127,7 +130,12 @@ private fun WorkspaceTerminalContent(
                 TerminalSessionUiState.NotInstalled
             } else {
                 if (!isActive) return@produceState
-                val created = createWorkspaceTerminalSession(context, current, sessionClient)
+                val created = createWorkspaceTerminalSession(
+                    context = context,
+                    root = current,
+                    initialCwd = initialCwd,
+                    client = sessionClient,
+                )
                 // 创建后若组合已离开, 主动回收以免泄漏 proot 进程, 且不再把已 finish 的 session 暴露为 Ready
                 if (!isActive) {
                     created.finishIfRunning()

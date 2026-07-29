@@ -53,7 +53,7 @@ object OcrTransformer : InputMessageTransformer, KoinComponent {
         }
 
         val hasImages = messages.any { message ->
-            message.parts.any { it is UIMessagePart.Image && it.url.startsWith("file:") }
+            message.parts.any { it is UIMessagePart.Image && it.url.startsWith("file://") }
         }
         if (!hasImages) return messages
 
@@ -64,7 +64,7 @@ object OcrTransformer : InputMessageTransformer, KoinComponent {
                     message.copy(
                         parts = message.parts.map { part ->
                             when {
-                                part is UIMessagePart.Image && part.url.startsWith("file:") -> {
+                                part is UIMessagePart.Image && part.url.startsWith("file://") -> {
                                     UIMessagePart.Text(performOcr(part))
                                 }
 

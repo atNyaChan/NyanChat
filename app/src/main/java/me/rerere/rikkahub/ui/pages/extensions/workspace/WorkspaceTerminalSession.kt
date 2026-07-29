@@ -23,6 +23,7 @@ import java.io.File
 internal fun createWorkspaceTerminalSession(
     context: Context,
     root: String,
+    initialCwd: String,
     client: TerminalSessionClient,
 ): TerminalSession {
     val appContext = context.applicationContext
@@ -42,7 +43,7 @@ internal fun createWorkspaceTerminalSession(
         "-r",
         linuxDir.absolutePath,
         "-w",
-        WORKSPACE_DIR,
+        initialCwd,
         "-b",
         "${filesDir.absolutePath}:$WORKSPACE_DIR",
         "-b",

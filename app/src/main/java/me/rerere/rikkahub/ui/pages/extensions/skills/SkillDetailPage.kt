@@ -58,6 +58,7 @@ import com.composables.icons.lucide.FolderOpen
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Plus
 import com.composables.icons.lucide.Trash2
+import com.dokar.sonner.ToastType
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalToaster
@@ -146,7 +147,7 @@ fun SkillDetailPage(skillName: String) {
             onConfirm = { content ->
                 vm.saveFile(skillFile.relativePath, content) { error ->
                     if (error == null) editingFile = null
-                    else toaster.show(error)
+                    else toaster.show(error, type = ToastType.Error)
                 }
             },
         )
@@ -158,7 +159,7 @@ fun SkillDetailPage(skillName: String) {
             onConfirm = { fileName, content ->
                 vm.saveFile(fileName, content) { error ->
                     if (error == null) showAddDialog = false
-                    else toaster.show(error)
+                    else toaster.show(error, type = ToastType.Error)
                 }
             },
         )
@@ -172,7 +173,7 @@ fun SkillDetailPage(skillName: String) {
         onConfirm = {
             deleteTarget?.let { skillFile ->
                 vm.deleteFile(skillFile) { success ->
-                    if (!success) toaster.show(deleteFailedMsg)
+                    if (!success) toaster.show(deleteFailedMsg, type = ToastType.Error)
                 }
             }
             deleteTarget = null
@@ -190,7 +191,11 @@ fun SkillDetailPage(skillName: String) {
         onConfirm = {
             showDeleteSkillConfirm = false
             vm.deleteSkill { success ->
-                if (success) navController.popBackStack() else toaster.show(deleteFailedMsg)
+                if (success) {
+                    navController.popBackStack()
+                } else {
+                    toaster.show(deleteFailedMsg, type = ToastType.Error)
+                }
             }
         },
         onDismiss = { showDeleteSkillConfirm = false },

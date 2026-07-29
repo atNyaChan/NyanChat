@@ -54,6 +54,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dokar.sonner.ToastType
 import kotlinx.coroutines.launch
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.ArrowTurnBackward
@@ -64,6 +65,7 @@ import me.rerere.hugeicons.stroke.Edit01
 import me.rerere.hugeicons.stroke.File02
 import me.rerere.hugeicons.stroke.FileImport
 import me.rerere.hugeicons.stroke.Folder01
+import me.rerere.hugeicons.stroke.FolderExport
 import me.rerere.hugeicons.stroke.MoreVertical
 import me.rerere.hugeicons.stroke.Refresh01
 import me.rerere.hugeicons.stroke.Settings03
@@ -77,6 +79,8 @@ import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.ImagePreviewDialog
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalNavController
+import me.rerere.rikkahub.ui.context.LocalToaster
+import me.rerere.rikkahub.ui.pages.backup.components.BackupDialog
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.fileSizeToString
 import me.rerere.rikkahub.utils.plus
@@ -95,7 +99,8 @@ fun WorkspaceDetailPage(id: String) {
     val state by vm.state.collectAsStateWithLifecycle()
     val installProgress by vm.installProgress.collectAsStateWithLifecycle()
     val installError by vm.installError.collectAsStateWithLifecycle()
-    val pagerState = rememberPagerState { 2 }
+    val hasRootfs = state.workspace?.shellStatus == WorkspaceShellStatus.READY.name
+    val pagerState = rememberPagerState { if (hasRootfs) 2 else 1 }
     val scope = rememberCoroutineScope()
     var deleteTarget by remember { mutableStateOf<WorkspaceFileEntry?>(null) }
     var showInstallDialog by remember { mutableStateOf(false) }
@@ -103,6 +108,7 @@ fun WorkspaceDetailPage(id: String) {
     var showDeleteWorkspaceConfirm by remember { mutableStateOf(false) }
     var previewImageUri by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
+    val toaster = LocalToaster.current
     val filePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
     ) { uri ->
@@ -125,10 +131,57 @@ fun WorkspaceDetailPage(id: String) {
         val outputStream = context.contentResolver.openOutputStream(uri) ?: return@rememberLauncherForActivityResult
         vm.exportFile(entry, outputStream)
     }
+    var isExportingRootfs by rememberSaveable { mutableStateOf(false) }
+    val rootfsExportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/zstd"),
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        val outputStream = context.contentResolver.openOutputStream(uri)
+        if (outputStream == null) {
+            toaster.show(
+                context.getString(R.string.workspace_detail_export_failed, ""),
+                type = ToastType.Error,
+            )
+            return@rememberLauncherForActivityResult
+        }
+        isExportingRootfs = true
+        vm.exportRootfsArchive(outputStream) { error ->
+            isExportingRootfs = false
+            if (error == null) {
+                toaster.show(
+                    context.getString(R.string.workspace_detail_export_success),
+                    type = ToastType.Success,
+                )
+            } else {
+                toaster.show(
+                    context.getString(R.string.workspace_detail_export_failed, error.message.orEmpty()),
+                    type = ToastType.Error,
+                )
+            }
+        }
+    }
+    val rootfsImportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        val fileName = context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (nameIndex >= 0) cursor.getString(nameIndex) else null
+            } else {
+                null
+            }
+        } ?: uri.lastPathSegment ?: "rootfs.tar.gz"
+        val inputStream = context.contentResolver.openInputStream(uri)
+            ?: return@rememberLauncherForActivityResult
+        showInstallDialog = false
+        vm.installRootfs(inputStream, fileName)
+    }
 
     BackHandler(enabled = pagerState.currentPage == 1 && state.path.isNotBlank()) {
         vm.goUp()
     }
+    BackHandler(enabled = isExportingRootfs) {}
 
     Scaffold(
         topBar = {
@@ -154,13 +207,47 @@ fun WorkspaceDetailPage(id: String) {
                         IconButton(onClick = { vm.refresh() }) {
                             Icon(HugeIcons.Refresh01, contentDescription = null)
                         }
-                    }
-                    if (state.workspace?.shellStatus != WorkspaceShellStatus.DISABLED.name) {
-                        IconButton(onClick = { navController.navigate(Screen.WorkspaceTerminal(id)) }) {
-                            Icon(HugeIcons.ComputerTerminal01, contentDescription = null)
+                        if (state.workspace?.shellStatus != WorkspaceShellStatus.DISABLED.name) {
+                            IconButton(
+                                onClick = {
+                                    val cwd = when (state.area) {
+                                        WorkspaceStorageArea.FILES -> {
+                                            state.path.takeIf(String::isNotBlank)
+                                                ?.let { "/workspace/$it" }
+                                                ?: "/workspace"
+                                        }
+
+                                        WorkspaceStorageArea.LINUX -> {
+                                            state.path.takeIf(String::isNotBlank)
+                                                ?.let { "/$it" }
+                                                ?: "/"
+                                        }
+                                    }
+                                    navController.navigate(Screen.WorkspaceTerminal(id, cwd))
+                                }
+                            ) {
+                                Icon(HugeIcons.ComputerTerminal01, contentDescription = null)
+                            }
                         }
                     }
                     if (pagerState.currentPage == 0) {
+                        if (hasRootfs) {
+                            IconButton(
+                                onClick = {
+                                    val name = state.workspace?.name
+                                        ?.replace(Regex("""[\\/:*?"<>|]"""), "_")
+                                        ?.ifBlank { "workspace" }
+                                        ?: "workspace"
+                                    rootfsExportLauncher.launch("$name.tar.zst")
+                                },
+                                enabled = !isExportingRootfs,
+                            ) {
+                                Icon(
+                                    HugeIcons.FolderExport,
+                                    contentDescription = stringResource(R.string.common_export),
+                                )
+                            }
+                        }
                         IconButton(onClick = { showRenameDialog = true }) {
                             Icon(HugeIcons.Edit01, contentDescription = stringResource(R.string.common_rename))
                         }
@@ -184,12 +271,14 @@ fun WorkspaceDetailPage(id: String) {
                     icon = { Icon(HugeIcons.Settings03, contentDescription = null) },
                     onClick = { scope.launch { pagerState.animateScrollToPage(0) } },
                 )
-                NavigationBarItem(
-                    selected = pagerState.currentPage == 1,
-                    label = { Text(stringResource(R.string.workspace_detail_tab_files)) },
-                    icon = { Icon(HugeIcons.File02, contentDescription = null) },
-                    onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
-                )
+                if (hasRootfs) {
+                    NavigationBarItem(
+                        selected = pagerState.currentPage == 1,
+                        label = { Text(stringResource(R.string.workspace_detail_tab_files)) },
+                        icon = { Icon(HugeIcons.File02, contentDescription = null) },
+                        onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
+                    )
+                }
             }
         },
         containerColor = CustomColors.topBarColors.containerColor,
@@ -278,6 +367,7 @@ fun WorkspaceDetailPage(id: String) {
             InstallRootfsDialog(
                 workspace = workspace,
                 onDismiss = { showInstallDialog = false },
+                onImportLocal = { rootfsImportLauncher.launch(arrayOf("*/*")) },
                 onConfirm = { url ->
                     vm.installRootfs(url)
                     showInstallDialog = false
@@ -356,6 +446,10 @@ fun WorkspaceDetailPage(id: String) {
         )
     }
 
+    if (isExportingRootfs) {
+        BackupDialog(exporting = true)
+    }
+
     RikkaConfirmDialog(
         show = showDeleteWorkspaceConfirm,
         title = stringResource(R.string.workspace_page_delete),
@@ -380,6 +474,7 @@ private fun WorkspaceBasicPage(
 ) {
     val shellStatus = workspace?.shellStatus
     val installing = installProgress != null || shellStatus == WorkspaceShellStatus.INSTALLING.name
+    val hasRootfs = shellStatus == WorkspaceShellStatus.READY.name
     val installButtonText = when {
         installing -> stringResource(R.string.workspace_detail_installing)
         shellStatus == WorkspaceShellStatus.READY.name ->
@@ -403,35 +498,16 @@ private fun WorkspaceBasicPage(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     Text(
-                        text = stringResource(R.string.workspace_detail_workspace_info),
+                        text = installButtonText,
                         style = MaterialTheme.typography.titleMedium,
                     )
-                    WorkspaceInfoRow(stringResource(R.string.workspace_detail_name), workspace?.name ?: stringResource(R.string.workspace_detail_loading))
-                    WorkspaceInfoRow(stringResource(R.string.workspace_detail_shell_status), workspace?.shellStatus?.toShellStatusLabel() ?: "-")
-                }
-            }
-        }
-
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CustomColors.cardColorsOnSurfaceContainer,
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    Text(
-                        text = stringResource(R.string.workspace_detail_enable_shell),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Text(
-                        text = stringResource(R.string.workspace_detail_enable_shell_desc),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    if (!hasRootfs) {
+                        Text(
+                            text = stringResource(R.string.workspace_detail_enable_shell_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
 
                     Button(
                         onClick = onInstallRootfs,
@@ -452,11 +528,13 @@ private fun WorkspaceBasicPage(
             }
         }
 
-        item {
-            WorkspaceToolApprovalCard(
-                workspace = workspace,
-                onToolApprovalChange = onToolApprovalChange,
-            )
+        if (hasRootfs) {
+            item {
+                WorkspaceToolApprovalCard(
+                    workspace = workspace,
+                    onToolApprovalChange = onToolApprovalChange,
+                )
+            }
         }
     }
 }
@@ -532,34 +610,6 @@ private fun workspaceToolApprovalItems() = listOf(
 )
 
 @Composable
-private fun WorkspaceInfoRow(
-    label: String,
-    value: String,
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = label,
-            modifier = Modifier.weight(0.35f),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        Text(
-            text = value,
-            modifier = Modifier.weight(0.65f),
-            style = MaterialTheme.typography.bodyMedium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-    }
-}
-
-@Composable
 private fun RootfsProgress(progress: RootfsInstallProgress) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -602,6 +652,7 @@ private fun RootfsProgress(progress: RootfsInstallProgress) {
 private fun InstallRootfsDialog(
     workspace: WorkspaceEntity,
     onDismiss: () -> Unit,
+    onImportLocal: () -> Unit,
     onConfirm: (String) -> Unit,
 ) {
     var url by rememberSaveable(workspace.id) { mutableStateOf(DEFAULT_ROOTFS_URL) }
@@ -620,9 +671,15 @@ private fun InstallRootfsDialog(
                     value = url,
                     onValueChange = { url = it },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.workspace_detail_download_url)) },
+                    placeholder = { Text(DEFAULT_ROOTFS_URL) },
                     maxLines = 5,
                 )
+                Button(
+                    onClick = onImportLocal,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.workspace_detail_import_rootfs_local))
+                }
             }
         },
         confirmButton = {
