@@ -907,6 +907,8 @@
   <string name="setting_tts_page_base_url_description">APIベースURLエンドポイント</string>
   <string name="setting_tts_page_base_url_placeholder">https://api.openai.com/v1</string>
   <string name="setting_tts_page_default_name">システムTTS</string>
+  <string name="setting_tts_page_default_playback_speed">デフォルトの再生速度</string>
+  <string name="setting_tts_page_default_playback_speed_description">合成設定を変更せず、すべてのTTSプロバイダーにローカルで適用されます。</string>
   <string name="setting_tts_page_edit_provider">プロバイダーを編集</string>
   <string name="setting_tts_page_delete_provider">TTS プロバイダーを削除</string>
   <string name="setting_tts_page_delete_provider_confirm">TTS プロバイダー「%1$s」を削除しますか？この操作は元に戻せません。</string>

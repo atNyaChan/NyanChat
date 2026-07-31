@@ -170,8 +170,8 @@ fun SkillsPage() {
                 }
             }
 
-            items(skills, key = { it.name }) { skill ->
-                ReorderableItem(reorderableState, key = skill.name) {
+            items(skills, key = { it.skillDir.absolutePath }) { skill ->
+                ReorderableItem(reorderableState, key = skill.skillDir.absolutePath) {
                     SkillCard(
                         skill = skill,
                         onClick = { navController.navigate(Screen.SkillDetail(skill.name)) },

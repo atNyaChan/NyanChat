@@ -907,6 +907,8 @@
   <string name="setting_tts_page_base_url_description">Базовый URL-адрес конечной точки API</string>
   <string name="setting_tts_page_base_url_placeholder">https://api.openai.com/v1</string>
   <string name="setting_tts_page_default_name">Системный TTS</string>
+  <string name="setting_tts_page_default_playback_speed">Скорость воспроизведения по умолчанию</string>
+  <string name="setting_tts_page_default_playback_speed_description">Применяется локально ко всем провайдерам TTS без изменения настроек синтеза.</string>
   <string name="setting_tts_page_edit_provider">Редактировать поставщика</string>
   <string name="setting_tts_page_delete_provider">Удалить поставщика TTS</string>
   <string name="setting_tts_page_delete_provider_confirm">Удалить поставщика TTS «%1$s»? Это действие нельзя отменить.</string>

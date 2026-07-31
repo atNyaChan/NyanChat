@@ -20,8 +20,8 @@ android {
         applicationId = "moe.nyanw.nyanchat"
         minSdk = 26
         targetSdk = 37
-        versionCode = 171
-        versionName = "1.0.0-2.4.3"
+        versionCode = 172
+        versionName = "1.0.0-2.4.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

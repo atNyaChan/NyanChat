@@ -974,6 +974,8 @@
   <string name="setting_tts_page_base_url_description">API base URL endpoint</string>
   <string name="setting_tts_page_base_url_placeholder">https://api.openai.com/v1</string>
   <string name="setting_tts_page_default_name">System TTS</string>
+  <string name="setting_tts_page_default_playback_speed">Default playback speed</string>
+  <string name="setting_tts_page_default_playback_speed_description">Applied locally to every TTS provider without changing its synthesis settings.</string>
   <string name="setting_tts_page_edit_provider">Edit Provider</string>
   <string name="setting_tts_page_delete_provider">Delete TTS Provider</string>
   <string name="setting_tts_page_delete_provider_confirm">Are you sure you want to delete TTS provider “%1$s”? This action cannot be undone.</string>
