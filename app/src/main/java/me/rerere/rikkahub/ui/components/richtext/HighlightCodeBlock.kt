@@ -117,6 +117,11 @@ fun HighlightCodeBlock(
     }
     val autoWrap = settings.displaySetting.codeBlockAutoWrap
     val showLineNumbers = settings.displaySetting.showLineNumbers
+    val fontFeatureSettings = if (settings.displaySetting.enableCodeLigatures) {
+        "\"liga\", \"calt\""
+    } else {
+        "\"liga\" 0, \"calt\" 0"
+    }
 
     val createDocumentLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("*/*")
@@ -195,6 +200,7 @@ fun HighlightCodeBlock(
                                 language = language,
                                 textStyle = textStyle,
                                 colorPalette = colorPalette,
+                                fontFeatureSettings = fontFeatureSettings,
                             )
                         }
                         else -> {
@@ -207,6 +213,7 @@ fun HighlightCodeBlock(
                                 autoWrap = autoWrap,
                                 showLineNumbers = showLineNumbers,
                                 scrollState = scrollState,
+                                fontFeatureSettings = fontFeatureSettings,
                             )
                         }
                     }
@@ -258,6 +265,7 @@ private fun CodeBlockWithLineNumbersWrapped(
     language: String,
     textStyle: TextStyle,
     colorPalette: HighlightTextColorPalette,
+    fontFeatureSettings: String?,
 ) {
     val lineNumberWidth = remember(displayLines.size) {
         displayLines.size.toString().length
@@ -286,6 +294,7 @@ private fun CodeBlockWithLineNumbersWrapped(
                         overflow = TextOverflow.Visible,
                         softWrap = true,
                         fontFamily = JetbrainsMono,
+                        fontFeatureSettings = fontFeatureSettings,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -304,6 +313,7 @@ private fun CodeBlockDefault(
     autoWrap: Boolean,
     showLineNumbers: Boolean,
     scrollState: ScrollState,
+    fontFeatureSettings: String?,
 ) {
     Row(
         modifier = Modifier.then(
@@ -346,7 +356,8 @@ private fun CodeBlockDefault(
                 colors = colorPalette,
                 overflow = TextOverflow.Visible,
                 softWrap = autoWrap,
-                fontFamily = JetbrainsMono
+                fontFamily = JetbrainsMono,
+                fontFeatureSettings = fontFeatureSettings,
             )
         }
     }

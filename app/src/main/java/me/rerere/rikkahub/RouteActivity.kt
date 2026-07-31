@@ -114,6 +114,7 @@ import me.rerere.rikkahub.ui.pages.setting.SettingPage
 import me.rerere.rikkahub.ui.pages.setting.SettingProviderDetailPage
 import me.rerere.rikkahub.ui.pages.setting.SettingProviderPage
 import me.rerere.rikkahub.ui.pages.setting.SettingSearchDetailPage
+import me.rerere.rikkahub.ui.pages.setting.SettingSearchCommonPage
 import me.rerere.rikkahub.ui.pages.setting.SettingSearchPage
 import me.rerere.rikkahub.ui.pages.setting.SettingSpeechPage
 import me.rerere.rikkahub.ui.pages.setting.SettingWebPage
@@ -459,6 +460,10 @@ class RouteActivity : AppCompatActivity() {
                                 SettingSearchPage()
                             }
 
+                            entry<Screen.SettingSearchCommon> {
+                                SettingSearchCommonPage()
+                            }
+
                             entry<Screen.SettingSearchDetail> { key ->
                                 val id = Uuid.parse(key.serviceId)
                                 SettingSearchDetailPage(id)
@@ -640,6 +645,9 @@ sealed interface Screen : NavKey {
 
     @Serializable
     data object SettingSearch : Screen
+
+    @Serializable
+    data object SettingSearchCommon : Screen
 
     @Serializable
     data class SettingSearchDetail(val serviceId: String) : Screen

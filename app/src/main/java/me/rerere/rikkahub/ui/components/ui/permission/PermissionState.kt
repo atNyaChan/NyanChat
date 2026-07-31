@@ -7,7 +7,6 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
 import androidx.core.content.ContextCompat
 import me.rerere.common.android.Logging
@@ -208,6 +207,7 @@ class PermissionState internal constructor(
         val permissionsToRequest = permissionInfos.map { it.permission }.toTypedArray()
         Logging.logPermission(
             type = "请求系统权限",
+            toolName = "android_permission",
             rawData = permissionsToRequest.joinToString(
                 prefix = "[",
                 postfix = "]",

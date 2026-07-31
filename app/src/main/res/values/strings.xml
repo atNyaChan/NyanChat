@@ -90,6 +90,7 @@
   <string name="local_tool_authorization_create_calendar">create a calendar event</string>
   <string name="permission_log_page_granted"> (Allowed)</string>
   <string name="permission_log_page_denied"> (Denied)</string>
+  <string name="permission_log_page_always_allowed"> (Always allowed)</string>
   <string name="assistant_page_local_tools_battery_desc">Let AI get the device battery level</string>
   <string name="assistant_page_local_tools_battery_title">Battery Level</string>
   <string name="assistant_page_local_tools_javascript_engine_desc">Let AI execute JavaScript code with the QuickJS engine for calculations and scripting</string>
@@ -524,7 +525,7 @@
   <string name="search_page_no_results">No results</string>
   <string name="search_page_placeholder">Search message content...</string>
   <string name="search_page_rebuild_button">Rebuild Index</string>
-  <string name="search_page_rebuild_index">Rebuild Fuzzy Search Index</string>
+  <string name="search_page_rebuild_index">Rebuild Search Index</string>
   <string name="search_page_rebuild_index_desc">This will clear the existing index and re-scan all chat history. The more messages, the longer it takes. Continue?</string>
   <string name="search_page_rebuilding">Rebuilding index (%1$d / %2$d)...</string>
   <string name="search_page_rebuilding_simple">Rebuilding index...</string>
@@ -664,6 +665,8 @@
   <string name="setting_display_page_show_datetime_in_message_title">Show Date and Time in Message</string>
   <string name="setting_display_page_show_line_numbers_desc">Display line numbers in code blocks</string>
   <string name="setting_display_page_show_line_numbers_title">Show Line Numbers</string>
+  <string name="setting_display_page_enable_ligatures_desc">Use ligatures in code blocks</string>
+  <string name="setting_display_page_enable_ligatures_title">Enable Ligatures</string>
   <string name="setting_display_page_message_jumper_left">Left</string>
   <string name="setting_display_page_show_message_jumper_desc">Display quick jump buttons when scrolling the chat list</string>
   <string name="setting_display_page_show_message_jumper_title">Show Message Jumper</string>
@@ -681,6 +684,11 @@
   <string name="setting_display_page_tts_only_read_quoted_title">TTS Read Quoted Content Only</string>
   <string name="setting_display_page_tts_read_outside_brackets_desc">When enabled, TTS will not read content inside brackets</string>
   <string name="setting_display_page_tts_read_outside_brackets_title">TTS Skip Bracketed Content</string>
+  <string name="setting_display_page_screen_corner_adaptation_title">Adapt to Screen Corners</string>
+  <string name="setting_display_page_screen_corner_adaptation_desc">Adapt component corners to the screen edges</string>
+  <string name="setting_display_page_screen_corner_adaptation_disabled">Disabled</string>
+  <string name="setting_display_page_screen_corner_adaptation_input_only">Input Only</string>
+  <string name="setting_display_page_screen_corner_adaptation_all">All</string>
   <string name="setting_display_page_volume_key_scroll_desc">Set the scroll amount when using volume keys to turn pages, suitable for e-ink screens</string>
   <string name="setting_display_page_volume_key_scroll_title">Volume Key Page Scroll</string>
   <string name="setting_files_page_clean_action">Clean</string>
@@ -807,6 +815,7 @@
   <string name="permission_log_page_clear_confirm">Clear permission request logs?</string>
   <string name="setting_page_search_add_provider">Add Provider</string>
   <string name="setting_page_search_common_options">Common Options</string>
+  <string name="setting_page_search_common_title">General Search Settings</string>
   <string name="setting_page_search_config">Configuration</string>
   <string name="setting_page_search_result_size">Result Size</string>
   <string name="setting_page_search_service_desc">Set up search service</string>
@@ -836,12 +845,10 @@
   <string name="setting_page_web_server">Web Server</string>
   <string name="setting_page_web_server_desc">Allow you to access NyanChat via Web</string>
   <string name="setting_page_web_server_error">Error</string>
-  <string name="setting_page_web_server_jwt_enable">Enable authentication</string>
-  <string name="setting_page_web_server_jwt_enable_desc">Require password verification when accessing the web interface</string>
   <string name="setting_page_web_server_localhost_only">Only localhost</string>
   <string name="setting_page_web_server_localhost_only_desc">Listen only on localhost (127.0.0.1), disable LAN and mDNS access</string>
   <string name="setting_page_web_server_password">Access password</string>
-  <string name="setting_page_web_server_password_desc">Password required for web interface access</string>
+  <string name="setting_page_web_server_password_desc">Password required for web interface access; leave blank to require no password</string>
   <string name="setting_page_web_server_port">Port</string>
   <string name="setting_page_web_server_port_desc">Web server listen port (1024-65535)</string>
   <string name="setting_page_web_server_start">Start</string>

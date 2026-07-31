@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
@@ -17,11 +19,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,10 +42,10 @@ import me.rerere.common.android.LogEntry
 import me.rerere.common.android.Logging
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Delete01
-import me.rerere.hugeicons.stroke.Copy01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.JsonTree
+import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.utils.JsonInstantPretty
@@ -53,8 +56,6 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun PermissionLogPage() {
-    val clipboard = LocalClipboard.current
-    val scope = rememberCoroutineScope()
     var logs by remember { mutableStateOf(Logging.getPermissionLogs()) }
     var selectedLog by remember { mutableStateOf<LogEntry.PermissionLog?>(null) }
     var showClearConfirm by remember { mutableStateOf(false) }
@@ -95,8 +96,7 @@ fun PermissionLogPage() {
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items(logs, key = { it.id }) { log ->
-                    OutlinedCard(
-                        modifier = Modifier.fillMaxWidth(),
+                    OutlinedItemCard(
                         onClick = { selectedLog = log },
                     ) {
                         Row(
@@ -111,7 +111,9 @@ fun PermissionLogPage() {
                                 log.granted?.let { granted ->
                                     Text(
                                         text = stringResource(
-                                            if (granted) {
+                                            if (log.alwaysAllowed) {
+                                                R.string.permission_log_page_always_allowed
+                                            } else if (granted) {
                                                 R.string.permission_log_page_granted
                                             } else {
                                                 R.string.permission_log_page_denied
@@ -139,33 +141,19 @@ fun PermissionLogPage() {
     }
 
     selectedLog?.let { log ->
-        ModalBottomSheet(onDismissRequest = { selectedLog = null }) {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Text(log.type, style = MaterialTheme.typography.titleLarge)
-                PermissionLogDataField(
-                    label = stringResource(R.string.permission_log_page_input),
-                    value = log.rawData,
-                    onCopy = {
-                        scope.launch {
-                            clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("permission-input", log.rawData)))
-                        }
-                    },
-                )
-                log.resultData?.let { result ->
-                    PermissionLogDataField(
-                        label = stringResource(R.string.permission_log_page_output),
-                        value = result,
-                        onCopy = {
-                            scope.launch {
-                                clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("permission-output", result)))
-                            }
-                        },
-                    )
-                }
-            }
+        ModalBottomSheet(
+            sheetState = rememberBottomSheetState(
+                initialValue = SheetValue.Hidden,
+                enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
+            ),
+            onDismissRequest = { selectedLog = null },
+        ) {
+            PermissionToolDetailContent(
+                title = log.type,
+                toolName = log.toolName,
+                input = log.rawData,
+                output = log.resultData,
+            )
         }
     }
 
@@ -188,6 +176,66 @@ fun PermissionLogPage() {
                 }
             },
         )
+    }
+}
+
+@Composable
+internal fun PermissionToolDetailContent(
+    title: String,
+    toolName: String,
+    input: String,
+    output: String?,
+    headerActions: (@Composable () -> Unit)? = null,
+    additionalContent: (@Composable () -> Unit)? = null,
+) {
+    val clipboard = LocalClipboard.current
+    val scope = rememberCoroutineScope()
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = toolName,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontFamily = JetbrainsMono,
+            )
+            headerActions?.invoke()
+        }
+        PermissionLogDataField(
+            label = stringResource(R.string.permission_log_page_input),
+            value = input,
+            onCopy = {
+                scope.launch {
+                    clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("permission-input", input)))
+                }
+            },
+        )
+        output?.let { result ->
+            PermissionLogDataField(
+                label = stringResource(R.string.permission_log_page_output),
+                value = result,
+                onCopy = {
+                    scope.launch {
+                        clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("permission-output", result)))
+                    }
+                },
+            )
+        }
+        additionalContent?.invoke()
     }
 }
 

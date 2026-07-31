@@ -57,6 +57,7 @@ import me.rerere.rikkahub.ui.components.ai.ModelSelector
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.CustomColors
+import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.utils.getText
 import org.koin.androidx.compose.koinViewModel
 import java.util.Locale
@@ -134,6 +135,7 @@ fun TranslatorPage(vm: TranslatorVM = koinViewModel()) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CustomColors.cardColorsOnSurfaceContainer,
+                shape = rememberScreenEdgeCornerShape(),
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
                 OutlinedTextField(
@@ -181,6 +183,7 @@ fun TranslatorPage(vm: TranslatorVM = koinViewModel()) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CustomColors.cardColorsOnSurfaceContainer,
+                shape = rememberScreenEdgeCornerShape(),
             ) {
                 Column(
                     modifier = Modifier.padding(12.dp),

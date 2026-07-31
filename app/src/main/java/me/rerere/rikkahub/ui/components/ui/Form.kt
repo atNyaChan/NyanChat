@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -18,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import me.rerere.rikkahub.ui.theme.CustomColors
+import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 
 private val LocalGroupedFormItem = staticCompositionLocalOf { false }
 
@@ -30,7 +30,7 @@ fun FormItemGroup(
         Column(
             modifier = modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(20.dp)),
+                .clip(rememberScreenEdgeCornerShape()),
             verticalArrangement = Arrangement.spacedBy(2.dp),
             content = content,
         )
@@ -49,7 +49,13 @@ fun FormItem(
     ListItem(
         modifier = modifier
             .fillMaxWidth()
-            .then(if (grouped) Modifier else Modifier.clip(RoundedCornerShape(20.dp))),
+            .then(
+                if (grouped) {
+                    Modifier
+                } else {
+                    Modifier.clip(rememberScreenEdgeCornerShape())
+                }
+            ),
         supportingContent = if (description != null || content != null) {
             {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

@@ -79,7 +79,8 @@ class WebDavSync(
 
         resources
             .filter {
-                !it.isCollection && it.displayName.startsWith("backup_") &&
+                !it.isCollection &&
+                    (it.displayName.startsWith("backup_") || it.displayName.startsWith("NyanChatBackup-")) &&
                     (it.displayName.endsWith(BackupArchive.EXTENSION) || it.displayName.endsWith(".zip"))
             }
             .map { resource ->
@@ -142,8 +143,8 @@ class WebDavSync(
     }
 
     suspend fun prepareBackupFile(config: WebDavConfig): File = withContext(Dispatchers.IO) {
-        val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
-        val backupFile = File(context.cacheDir, "backup_$timestamp${BackupArchive.EXTENSION}")
+        val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
+        val backupFile = File(context.cacheDir, "NyanChatBackup-$timestamp${BackupArchive.EXTENSION}")
         BackupArchive.create(
             context = context,
             output = backupFile,
@@ -237,14 +238,7 @@ class WebDavSync(
     }
 
     private fun legacyCompatibleSettingsJson(): String {
-        fun strip(element: JsonElement): JsonElement = when (element) {
-            is JsonObject -> JsonObject(
-                element.filterKeys { it != "price" }.mapValues { (_, value) -> strip(value) }
-            )
-            is JsonArray -> JsonArray(element.map(::strip))
-            else -> element
-        }
-        return strip(
+        return makeRikkaHubCompatible(
             json.encodeToJsonElement(Settings.serializer(), settingsStore.settingsFlow.value)
         ).toString()
     }
@@ -463,6 +457,47 @@ class WebDavSync(
         zipOut.closeEntry()
         Log.i(TAG, "addVirtualFileToZip: $name (${content.length} bytes)")
     }
+}
+
+internal fun makeRikkaHubCompatible(settings: JsonElement): JsonElement {
+    fun stripForkFields(element: JsonElement): JsonElement = when (element) {
+        is JsonObject -> JsonObject(
+            element.filterKeys { it != "price" }.mapValues { (_, value) -> stripForkFields(value) }
+        )
+        is JsonArray -> JsonArray(element.map(::stripForkFields))
+        else -> element
+    }
+
+    val root = stripForkFields(settings) as? JsonObject ?: return settings
+    val compatibleRoot = root - setOf("skillOrder", "workspaceOrder")
+
+    val displaySetting = (compatibleRoot["displaySetting"] as? JsonObject)?.let {
+        it - setOf("enableCodeLigatures", "useChatFontGlobally", "screenCornerAdaptation")
+    }
+    val assistants = (compatibleRoot["assistants"] as? JsonArray)?.let { array ->
+        JsonArray(array.map { assistantElement ->
+            val assistant = assistantElement as? JsonObject ?: return@map assistantElement
+            val compatibleAssistant = assistant - setOf("contextCache", "manualAuthorizationTools")
+            val localTools = (compatibleAssistant["localTools"] as? JsonArray)?.let { tools ->
+                JsonArray(tools.filterNot { tool ->
+                    val type = (tool as? JsonObject)?.get("type")?.toString()?.trim('"')
+                    type == "battery" || type == "location"
+                })
+            }
+            JsonObject(
+                if (localTools == null) {
+                    compatibleAssistant
+                } else {
+                    compatibleAssistant + ("localTools" to localTools)
+                }
+            )
+        })
+    }
+
+    val result = compatibleRoot.toMutableMap()
+    displaySetting?.let { result["displaySetting"] = JsonObject(it) }
+    assistants?.let { result["assistants"] = it }
+    return JsonObject(result)
 }
 
 data class WebDavBackupItem(

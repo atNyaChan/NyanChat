@@ -28,7 +28,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LocalContentColor
@@ -65,6 +64,7 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
+import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.Tag
 import me.rerere.rikkahub.ui.components.ui.TagType
 import me.rerere.rikkahub.ui.components.ui.decodeProviderSetting
@@ -442,16 +442,14 @@ private fun ProviderItem(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    OutlinedCard(
+    OutlinedItemCard(
         modifier = modifier,
         colors = CardDefaults.cardColors(
             containerColor = if (provider.enabled) {
                 MaterialTheme.colorScheme.surface
             } else MaterialTheme.colorScheme.errorContainer,
         ),
-        onClick = {
-            onClick()
-        }
+        onClick = onClick,
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),

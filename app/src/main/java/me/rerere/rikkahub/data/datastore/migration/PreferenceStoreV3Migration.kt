@@ -20,10 +20,12 @@ class PreferenceStoreV3Migration : DataMigration<Preferences> {
     override suspend fun migrate(currentData: Preferences): Preferences {
         val prefs = currentData.toMutablePreferences()
 
-        val (migratedAssistants, extractedQuickMessages) =
-            migrateAssistantsQuickMessages(prefs[SettingsStore.ASSISTANTS] ?: "[]")
+        val assistantsJson = prefs[SettingsStore.ASSISTANTS]
+        val (migratedAssistants, extractedQuickMessages) = assistantsJson?.let {
+            migrateAssistantsQuickMessages(it)
+        } ?: (null to JsonArray(emptyList()))
 
-        prefs[SettingsStore.ASSISTANTS] = migratedAssistants
+        migratedAssistants?.let { prefs[SettingsStore.ASSISTANTS] = it }
 
         // 合并已有的全局快捷消息（防止重复）
         val existingQuickMessages = prefs[SettingsStore.QUICK_MESSAGES]?.let { json ->

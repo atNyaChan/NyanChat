@@ -20,7 +20,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -28,7 +27,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -82,6 +80,8 @@ import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.datastore.findModelById
 import me.rerere.rikkahub.data.datastore.findProvider
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
+import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
+import me.rerere.rikkahub.ui.components.ui.SearchFieldShape
 import me.rerere.rikkahub.ui.components.ui.Tag
 import me.rerere.rikkahub.ui.components.ui.TagType
 import me.rerere.rikkahub.ui.components.ui.icons.HeartIcon
@@ -419,7 +419,7 @@ private fun ColumnScope.ModelList(
     }
 
     Surface(
-        shape = RoundedCornerShape(50),
+        shape = SearchFieldShape,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp),
@@ -433,7 +433,7 @@ private fun ColumnScope.ModelList(
                     text = stringResource(R.string.model_list_search_placeholder),
                 )
             },
-            shape = RoundedCornerShape(50),
+            shape = SearchFieldShape,
             colors = TextFieldDefaults.colors(
                 unfocusedIndicatorColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
@@ -676,7 +676,7 @@ private fun ModelItem(
 ) {
     val navController = LocalNavController.current
     val interactionSource = remember { MutableInteractionSource() }
-    OutlinedCard(
+    OutlinedItemCard(
         modifier = modifier.combinedClickable(
             enabled = true,
             onLongClick = {

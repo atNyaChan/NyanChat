@@ -254,7 +254,7 @@ class ChatVM(
 
     fun deleteConversation(conversation: Conversation): Job =
         viewModelScope.launch {
-            conversationRepo.deleteConversation(conversation)
+            chatService.deleteConversation(conversation)
         }
 
     fun updateConversationTitle(conversation: Conversation, title: String) {

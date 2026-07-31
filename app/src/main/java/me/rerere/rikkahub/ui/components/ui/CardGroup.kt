@@ -17,12 +17,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemColors
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -34,8 +34,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import me.rerere.rikkahub.ui.theme.CustomColors
+import me.rerere.rikkahub.ui.theme.LocalScreenCornerAdaptationEnabled
+import me.rerere.rikkahub.ui.theme.LocalScreenEdgeCornerRadii
+import me.rerere.rikkahub.ui.theme.ScreenEdgeCornerRadii
+import me.rerere.rikkahub.ui.theme.inset
 
 private val CardGroupCorner = 20.dp
+private val CardGroupScreenInset = 16.dp
 private val CardGroupItemSpacing = 2.dp
 private val CardGroupInnerCorner = 4.dp
 
@@ -133,6 +138,7 @@ private fun CardGroupListItem(
     index: Int,
     continueFromPrevious: Boolean,
     continueToNext: Boolean,
+    screenCornerRadii: ScreenEdgeCornerRadii?,
 ) {
     val isFirst = index == 0
     val isLast = index == count - 1
@@ -140,34 +146,49 @@ private fun CardGroupListItem(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
-    val topCorner by animateDpAsState(
+    val topStartCorner by animateDpAsState(
         targetValue = if (isPressed || (isFirst && !continueFromPrevious)) {
-            CardGroupCorner
+            screenCornerRadii?.start ?: CardGroupCorner
         } else {
             CardGroupInnerCorner
         },
         animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
     )
-    val bottomCorner by animateDpAsState(
-        targetValue = if (isPressed || (isLast && !continueToNext)) {
-            CardGroupCorner
+    val topEndCorner by animateDpAsState(
+        targetValue = if (isPressed || (isFirst && !continueFromPrevious)) {
+            screenCornerRadii?.end ?: CardGroupCorner
         } else {
             CardGroupInnerCorner
         },
         animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+    )
+    val bottomStartCorner by animateDpAsState(
+        targetValue = if (isPressed || (isLast && !continueToNext)) {
+            screenCornerRadii?.start ?: CardGroupCorner
+        } else {
+            CardGroupInnerCorner
+        },
+        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+    )
+    val bottomEndCorner by animateDpAsState(
+        targetValue = if (isPressed || (isLast && !continueToNext)) {
+            screenCornerRadii?.end ?: CardGroupCorner
+        } else {
+            CardGroupInnerCorner
+        },
+        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+    )
+    val itemShape = RoundedCornerShape(
+        topStart = topStartCorner,
+        topEnd = topEndCorner,
+        bottomStart = bottomStartCorner,
+        bottomEnd = bottomEndCorner,
     )
 
     ListItem(
         modifier = item.modifier
             .fillMaxWidth()
-            .clip(
-                RoundedCornerShape(
-                    topStart = topCorner,
-                    topEnd = topCorner,
-                    bottomStart = bottomCorner,
-                    bottomEnd = bottomCorner,
-                )
-            )
+            .clip(itemShape)
             .then(
                 if (item.onClick != null) {
                     Modifier.clickable(
@@ -182,6 +203,14 @@ private fun CardGroupListItem(
         leadingContent = item.leadingContent,
         trailingContent = item.trailingContent,
         verticalAlignment = Alignment.CenterVertically,
+        shapes = ListItemDefaults.shapes(
+            itemShape,
+            itemShape,
+            itemShape,
+            itemShape,
+            itemShape,
+            itemShape,
+        ),
         colors = item.colors ?: CustomColors.listItemColors,
     ) { item.headlineContent() }
 }
@@ -196,6 +225,14 @@ fun CardGroup(
 ) {
     val scope = CardGroupScopeImpl()
     scope.content()
+    val screenCornerRadii = if (LocalScreenCornerAdaptationEnabled.current) {
+        LocalScreenEdgeCornerRadii.current?.inset(
+            horizontalInset = CardGroupScreenInset,
+            bottomInset = CardGroupScreenInset,
+        )
+    } else {
+        null
+    }
 
     Column(modifier = modifier) {
         if (title != null) {
@@ -215,6 +252,7 @@ fun CardGroup(
                 index = index,
                 continueFromPrevious = continueFromPrevious,
                 continueToNext = continueToNext,
+                screenCornerRadii = screenCornerRadii,
             )
             if (index != count - 1) {
                 Spacer(modifier = Modifier.height(CardGroupItemSpacing))

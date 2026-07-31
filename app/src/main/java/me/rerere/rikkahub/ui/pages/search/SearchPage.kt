@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.BasicTextField
@@ -30,7 +29,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -69,6 +67,8 @@ import me.rerere.rikkahub.data.db.fts.MessageAttachmentState
 import me.rerere.rikkahub.data.db.fts.MessageSearchMode
 import me.rerere.rikkahub.data.db.fts.MessageSearchSort
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
+import me.rerere.rikkahub.ui.components.ui.SearchFieldShape
 import me.rerere.rikkahub.ui.components.ai.ModelListSheet
 import me.rerere.rikkahub.ui.components.ai.rememberModelListState
 import me.rerere.rikkahub.ui.context.LocalNavController
@@ -229,7 +229,7 @@ fun SearchPage(initialModelId: String? = null, vm: SearchVM = koinViewModel()) {
                         }
                     )
                 },
-                shape = RoundedCornerShape(50),
+                shape = SearchFieldShape,
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(
@@ -633,9 +633,8 @@ private fun SearchResultItem(
         buildAnnotatedString { append(displayTitle) }
     }
 
-    OutlinedCard(
+    OutlinedItemCard(
         onClick = onClick,
-        shape = MaterialTheme.shapes.large,
     ) {
         Column(
             modifier = Modifier

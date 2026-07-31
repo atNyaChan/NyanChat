@@ -98,6 +98,7 @@ import me.rerere.rikkahub.ui.components.message.ChatMessage
 import me.rerere.rikkahub.ui.components.ui.ErrorCardsDisplay
 import me.rerere.rikkahub.ui.components.ui.ListSelectableItem
 import me.rerere.rikkahub.ui.components.ui.AppLoadingIndicator
+import me.rerere.rikkahub.ui.components.ui.SearchFieldShape
 import me.rerere.rikkahub.ui.components.ui.Tooltip
 import me.rerere.rikkahub.ui.hooks.ImeLazyListAutoScroller
 import me.rerere.rikkahub.ui.theme.ChatFontProvider
@@ -655,7 +656,7 @@ private fun ChatListPreview(
                 }
             },
             singleLine = true,
-            shape = CircleShape,
+            shape = SearchFieldShape,
             maxLines = 1,
         )
 

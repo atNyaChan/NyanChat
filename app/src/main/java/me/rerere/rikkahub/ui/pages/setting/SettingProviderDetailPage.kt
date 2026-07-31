@@ -114,6 +114,7 @@ import me.rerere.rikkahub.ui.components.ai.ProviderBalanceText
 import me.rerere.rikkahub.ui.components.ai.rememberModelListState
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
+import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.ShareSheet
 import me.rerere.rikkahub.ui.components.ui.SiliconFlowPowerByIcon
 import me.rerere.rikkahub.ui.components.ui.Tag
@@ -1593,7 +1594,7 @@ private fun ModelCard(
         }
     }
 
-    OutlinedCard(
+    OutlinedItemCard(
         modifier = modifier,
         onClick = { dialogState.open(model.copy()) },
     ) {

@@ -75,14 +75,13 @@ class StepTTSProvider : TTSProvider<TTSProviderSetting.Step> {
         val response = httpClient.newCall(httpRequest).execute()
         if (!response.isSuccessful) {
             // 把错误响应体读出来方便排查 (4xx 通常返回 JSON 错误信息)
-            val errorBody = runCatching { response.body?.string() }.getOrNull().orEmpty()
+            val errorBody = runCatching { response.body.string() }.getOrNull().orEmpty()
             throw Exception(
                 "Step TTS request failed: HTTP ${response.code} ${response.message}. body=$errorBody"
             )
         }
 
-        val audioBytes = response.body?.bytes()
-            ?: throw Exception("Step TTS returned empty body")
+        val audioBytes = response.body.bytes()
 
         if (audioBytes.isEmpty()) {
             throw Exception("Step TTS returned 0 bytes")

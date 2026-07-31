@@ -78,7 +78,7 @@ fun AssistantMcpPage(id: String) {
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
                     start = innerPadding.calculateStartPadding(layoutDirection) + 16.dp,
-                    top = innerPadding.calculateTopPadding(),
+                    top = innerPadding.calculateTopPadding() + 8.dp,
                     end = innerPadding.calculateEndPadding(layoutDirection) + 16.dp,
                     bottom = innerPadding.calculateBottomPadding() + 16.dp,
                 ),

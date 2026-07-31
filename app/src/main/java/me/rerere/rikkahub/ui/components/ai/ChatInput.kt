@@ -35,7 +35,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
@@ -98,6 +97,7 @@ import me.rerere.hugeicons.stroke.Upload02
 import me.rerere.hugeicons.stroke.Zap
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.ai.transformers.DocumentAsPromptTransformer
+import me.rerere.rikkahub.data.datastore.ScreenCornerAdaptation
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.getCurrentAssistant
 import me.rerere.rikkahub.data.datastore.getCurrentChatModel
@@ -117,6 +117,7 @@ import me.rerere.rikkahub.ui.context.LocalASRState
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.hooks.ChatInputState
+import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.utils.SoundEffectPlayer
 import me.rerere.rikkahub.utils.formatNumber
 import me.rerere.rikkahub.utils.wordCount
@@ -170,16 +171,14 @@ fun ChatInput(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
-    // 键盘弹出时让底部两角变直角，贴合 IME
     val imeVisible = WindowInsets.isImeVisible
-    val containerShape = if (imeVisible) {
-        MaterialTheme.shapes.largeIncreased.copy(
-            bottomStart = CornerSize(0.dp),
-            bottomEnd = CornerSize(0.dp),
-        )
-    } else {
-        MaterialTheme.shapes.largeIncreased
-    }
+    val containerShape = rememberScreenEdgeCornerShape(
+        horizontalInset = 8.dp,
+        bottomInset = if (imeVisible) 0.dp else 8.dp,
+        squareBottom = imeVisible,
+        enabled = !imeVisible &&
+            settings.displaySetting.screenCornerAdaptation != ScreenCornerAdaptation.DISABLED,
+    )
 
     fun sendMessage() {
         focusManager.clearFocus(force = true)
@@ -518,7 +517,7 @@ private fun TextInputRow(
     ) {
         if (state.isEditing()) {
             Surface(
-                shape = RoundedCornerShape(16.dp),
+                shape = rememberScreenEdgeCornerShape(),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
             ) {
                 Row(
@@ -689,7 +688,7 @@ private fun CompletionPopup(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(max = 280.dp),
-        shape = RoundedCornerShape(18.dp),
+        shape = rememberScreenEdgeCornerShape(),
         tonalElevation = 2.dp,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -832,7 +831,9 @@ private fun FullScreenEditor(
                 modifier = Modifier
                     .widthIn(max = 800.dp)
                     .fillMaxHeight(0.9f),
-                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                shape = rememberScreenEdgeCornerShape(
+                    squareBottom = true,
+                )
             ) {
                 Column(
                     modifier = Modifier

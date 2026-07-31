@@ -19,7 +19,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
@@ -53,6 +52,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.dokar.sonner.ToastType
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Add01
 import me.rerere.hugeicons.stroke.Download01
@@ -251,9 +251,9 @@ private fun SkillCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    OutlinedCard(
+    OutlinedItemCard(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier,
     ) {
         Row(
             modifier = Modifier

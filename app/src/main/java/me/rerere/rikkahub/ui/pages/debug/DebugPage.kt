@@ -55,6 +55,7 @@ import me.rerere.rikkahub.ui.components.richtext.Mermaid
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
+import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import org.koin.androidx.compose.koinViewModel
 import kotlin.random.Random
 import kotlin.random.nextInt
@@ -347,7 +348,7 @@ private fun ColorsPage() {
 
 @Composable
 private fun ColorTokenItem(name: String, color: Color) {
-    val shape = RoundedCornerShape(8.dp)
+    val shape = rememberScreenEdgeCornerShape()
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -363,7 +364,11 @@ private fun ColorTokenItem(name: String, color: Color) {
                 .weight(1f)
                 .clip(RoundedCornerShape(4.dp))
                 .background(color)
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(4.dp))
+                .border(
+                    1.dp,
+                    MaterialTheme.colorScheme.outlineVariant,
+                    RoundedCornerShape(4.dp),
+                )
         )
         Column(modifier = Modifier.weight(2f)) {
             Text(name, style = MaterialTheme.typography.bodyMedium)

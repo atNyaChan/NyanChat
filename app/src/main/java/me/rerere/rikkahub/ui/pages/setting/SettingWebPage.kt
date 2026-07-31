@@ -89,6 +89,14 @@ fun SettingWebPage() {
     var passwordVisible by remember {
         mutableStateOf(false)
     }
+    LaunchedEffect(settings.webServerAccessPassword, settings.webServerJwtEnabled) {
+        val authenticationEnabled = settings.webServerAccessPassword.isNotBlank()
+        if (settings.webServerJwtEnabled != authenticationEnabled) {
+            settingsStore.update {
+                it.copy(webServerJwtEnabled = authenticationEnabled)
+            }
+        }
+    }
 
     val permissionState = rememberPermissionState(
         permissions = buildSet {
@@ -192,7 +200,12 @@ fun SettingWebPage() {
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = innerPadding + PaddingValues(8.dp),
+            contentPadding = innerPadding + PaddingValues(
+                start = 8.dp,
+                top = 8.dp,
+                end = 8.dp,
+                bottom = 16.dp,
+            ),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
@@ -240,23 +253,6 @@ fun SettingWebPage() {
                         },
                     )
                     item(
-                        headlineContent = { Text(stringResource(R.string.setting_page_web_server_jwt_enable)) },
-                        supportingContent = { Text(stringResource(R.string.setting_page_web_server_jwt_enable_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = settings.webServerJwtEnabled,
-                                onCheckedChange = { checked ->
-                                    scope.launch {
-                                        settingsStore.update {
-                                            it.copy(webServerJwtEnabled = checked)
-                                        }
-                                    }
-                                },
-                                enabled = settings.webServerJwtEnabled || accessPasswordText.isNotBlank(),
-                            )
-                        },
-                    )
-                    item(
                         headlineContent = { Text(stringResource(R.string.setting_page_web_server_password)) },
                         supportingContent = { Text(stringResource(R.string.setting_page_web_server_password_desc)) },
                         trailingContent = {
@@ -268,7 +264,7 @@ fun SettingWebPage() {
                                         settingsStore.update {
                                             it.copy(
                                                 webServerAccessPassword = value,
-                                                webServerJwtEnabled = it.webServerJwtEnabled && value.isNotBlank()
+                                                webServerJwtEnabled = value.isNotBlank(),
                                             )
                                         }
                                     }
@@ -289,8 +285,8 @@ fun SettingWebPage() {
                                     }
                                 },
                                 singleLine = true,
-                                isError = settings.webServerJwtEnabled && accessPasswordText.isBlank(),
-                                modifier = Modifier.width(180.dp),
+                                enabled = !serverState.isRunning,
+                                modifier = Modifier.width(140.dp),
                                 shape = CircleShape,
                                 colors = TextFieldDefaults.colors(
                                     focusedIndicatorColor = Color.Transparent,

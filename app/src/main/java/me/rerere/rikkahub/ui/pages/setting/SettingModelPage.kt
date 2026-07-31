@@ -74,7 +74,10 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = contentPadding + PaddingValues(horizontal = 16.dp),
+        contentPadding = contentPadding + PaddingValues(
+            horizontal = 16.dp,
+            vertical = 8.dp,
+        ),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {

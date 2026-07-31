@@ -211,8 +211,8 @@ fun ImportExportTab(
                         {
                             exportLegacy = false
                             val timestamp = LocalDateTime.now()
-                                .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
-                            createDocumentLauncher.launch("rikkahub_backup_$timestamp.tar")
+                                .format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
+                            createDocumentLauncher.launch("NyanChatBackup-$timestamp.tar")
                         }
                     } else null,
                     headlineContent = { Text(stringResource(R.string.backup_page_local_backup_export)) },
@@ -236,7 +236,7 @@ fun ImportExportTab(
                             exportLegacy = true
                             val timestamp = LocalDateTime.now()
                                 .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
-                            createDocumentLauncher.launch("rikkahub_backup_legacy_$timestamp.zip")
+                            createDocumentLauncher.launch("rikkahub_backup_$timestamp.zip")
                         }
                     } else null,
                     headlineContent = { Text(stringResource(R.string.backup_page_legacy_export)) },

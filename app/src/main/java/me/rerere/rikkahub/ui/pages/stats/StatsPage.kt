@@ -44,6 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.theme.CustomColors
+import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.utils.plus
 import org.koin.androidx.compose.koinViewModel
 import java.time.DayOfWeek
@@ -83,7 +84,12 @@ fun StatsPage(vm: StatsVM = koinViewModel()) {
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = padding + PaddingValues(8.dp),
+                contentPadding = padding + PaddingValues(
+                    start = 8.dp,
+                    top = 8.dp,
+                    end = 8.dp,
+                    bottom = 16.dp,
+                ),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 item {
@@ -108,6 +114,7 @@ private fun HeatmapCard(conversationsPerDay: Map<LocalDate, Int>, modifier: Modi
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CustomColors.cardColorsOnSurfaceContainer,
+        shape = rememberScreenEdgeCornerShape(),
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -342,7 +349,11 @@ private fun StatCard(
     label: String,
     value: String,
 ) {
-    Card(modifier = modifier, colors = CustomColors.cardColorsOnSurfaceContainer) {
+    Card(
+        modifier = modifier,
+        colors = CustomColors.cardColorsOnSurfaceContainer,
+        shape = rememberScreenEdgeCornerShape(),
+    ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),

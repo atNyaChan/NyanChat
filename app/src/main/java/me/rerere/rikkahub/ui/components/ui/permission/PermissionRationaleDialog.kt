@@ -31,6 +31,7 @@ import androidx.compose.ui.window.Dialog
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.AlertCircle
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 
 /**
  * 权限请求说明对话框
@@ -51,7 +52,7 @@ internal fun PermissionRationaleDialog(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            shape = RoundedCornerShape(16.dp),
+            shape = rememberScreenEdgeCornerShape(),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             )
@@ -174,7 +175,7 @@ private fun PermissionItem(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
         ),
-        shape = RoundedCornerShape(8.dp)
+        shape = rememberScreenEdgeCornerShape()
     ) {
         Column(
             modifier = Modifier

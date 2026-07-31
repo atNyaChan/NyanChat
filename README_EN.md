@@ -8,17 +8,14 @@
 
 </div>
 
-> [!IMPORTANT]
-> This project is under rapid development. Many features documented here are not yet implemented, and the code has not been thoroughly tested. Do not use this project at the moment.
+## ✨ Improvements over RikkaHub: (Why NyanChat)
 
-## ✨ Improvements over RikkaHub:
-
-- 🧠 **Experimental [Tidal Memory](https://github.com/0xblewalker/tidal-memory) support** — From [@3nvoy](https://www.xiaohongshu.com/user/profile/67f3dfbe000000000e0113e5)'s open source project! Makes AI memory more human-like and optimizes cache hit rate.
-- 📍 **Device Context Awareness** — Can access location, battery level, device shake, and more, bringing AI closer to reality
-- 💾 **Cache Friendly** — Prompts for operations that may break KV cache, optimized Claude model caching for cost savings
+- 📍 **Device Context Awareness** — Can access location, battery level, and more, bringing AI closer to reality
+- 💾 **Cache Friendly** — Prompts for operations that may break KV cache, optimized Claude model caching for **cost savings**
 - 💰 **Message Price Display** — See the cost of each message directly, better budget management
 - 📂 **Batch Move Conversations** — Multi-select and move chats to different folders for better conversation management
-- ⚠️ **Delete Confirmation** — Confirmation dialog before deleting messages (yes, the original didn't have one)
+- 🔑 **Permission Confirmation** — For each permission, you can individually set `Deny` / `Ask Every Time` / `Always Allow`, for **better privacy protection**. NyanChat also **logs permission usage** for your peace of mind.
+- ⚠️ **Delete Confirmation** — Confirmation dialog before deleting messages or conversations (yes, the original didn't have one)
 - 🧹 **Refactored settings pages and UI layout** — Cleaner layout, easier to get started
 
 > See [NyanwChanges.md](docs/NyanwChanges.md) for the full list of changes.
@@ -37,16 +34,15 @@
 
 - Supports importing data from RikkaHub 2.x and exporting data to RikkaHub Latest (**conversations can be migrated bidirectionally without data loss!**).
 - Notes:
-  - Due to RikkaHub limitations, some data (such as workspace files, assistant avatars, and backgrounds) cannot be imported from RikkaHub.
-  - When exporting to RikkaHub, NyanChat-specific settings and metadata (such as model pricing, tidal memory details) will be lost.
+  - Due to RikkaHub limitations, some data (such as workspaces, assistant avatars, and backgrounds) cannot be imported from RikkaHub. Also, **RikkaHub exports may not contain some chat files or images, so importing conversations may result in loss of images or files**.
+  - When exporting to RikkaHub, NyanChat-specific settings and metadata (such as model pricing) will be lost.
   - NyanChat only supports importing data from RikkaHub 2.x. To import data from RikkaHub 1.x, first update RikkaHub to 2.x and complete the database migration. Migrated data cannot be re-imported into RikkaHub 1.x.
   - Older versions of RikkaHub (e.g., `2.3.x`) cannot read NyanChat archives. Please update RikkaHub to `2.4.x` (the latest version) first.
 - NyanChat **follows RikkaHub updates** — most future RikkaHub features will be merged into NyanChat, so you can use it with confidence.
 
 ## 🔒 Privacy
 
-NyanChat **does not** send data to any third party except the model providers you specify. Information obtained from your device (such as app usage time, clipboard, location, battery level) is **only sent to the LLM provider you configure**, and nowhere else. API keys are stored locally and never leaked.
-> The model requires manual authorization each time it requests device information (unless you permanently allow the model to access all information), and NyanChat logs permission usage.
+**Only with user consent**, NyanChat accesses specified information from the device (such as app usage time, clipboard, location, battery level), and **sends it only to the LLM provider you specify** — not anywhere else. API keys are stored locally with minimal risk of leakage.
 
 ## ⚠️ Disclaimer
 
@@ -57,7 +53,9 @@ NyanChat **does not** send data to any third party except the model providers yo
 
 ## 🚀 Get NyanChat
 
-Use the latest [Releases](https://github.com/atNyaChan/NyanChat/releases/latest), or [build the app yourself](docs/BuildArchLinuxZh.md).
+Download the APK from [Releases](https://github.com/atNyaChan/NyanChat/releases/latest) and install it. **iOS is not currently supported**.
+
+~~If you want to build it yourself, you can refer to the [build instructions](docs/BuildArchLinuxZh.md) (*though this documentation is quite rough and barely useful*)~~
 
 ## 📄 License
 

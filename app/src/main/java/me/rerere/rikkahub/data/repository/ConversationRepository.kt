@@ -351,7 +351,7 @@ class ConversationRepository(
                 conversationToConversationEntity(conversation)
             )
         }
-        runCatching { filesManager.invalidateAttachmentIndex() }
+        runCatching { filesManager.removeConversationFromAttachmentIndex(conversation.id) }
         filesManager.deleteChatFiles(fullConversation.files)
     }
 
@@ -389,16 +389,7 @@ class ConversationRepository(
         messageFtsManager.countSearch(keyword, mode)
 
     suspend fun rebuildAllIndexes(onProgress: (current: Int, total: Int) -> Unit = { _, _ -> }) {
-        messageFtsManager.deleteAll()
-        val allIds = conversationDAO.getAllIds()
-        val total = allIds.size
-        allIds.forEachIndexed { index, id ->
-            val entity = conversationDAO.getConversationById(id) ?: return@forEachIndexed
-            val nodes = loadMessageNodes(entity.id)
-            val conversation = conversationEntityToConversation(entity, nodes)
-            messageFtsManager.indexConversation(conversation)
-            onProgress(index + 1, total)
-        }
+        messageFtsManager.rebuildAll(onProgress)
     }
 
     suspend fun migrateMessageModelId(sourceModelId: Uuid, targetModelId: Uuid): Int {

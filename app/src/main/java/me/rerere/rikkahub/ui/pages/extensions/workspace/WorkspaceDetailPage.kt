@@ -82,6 +82,7 @@ import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.pages.backup.components.BackupDialog
 import me.rerere.rikkahub.ui.theme.CustomColors
+import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.utils.fileSizeToString
 import me.rerere.rikkahub.utils.plus
 import me.rerere.workspace.RootfsInstallProgress
@@ -490,6 +491,7 @@ private fun WorkspaceBasicPage(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CustomColors.cardColorsOnSurfaceContainer,
+                shape = rememberScreenEdgeCornerShape(),
             ) {
                 Column(
                     modifier = Modifier
@@ -549,6 +551,7 @@ private fun WorkspaceToolApprovalCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CustomColors.cardColorsOnSurfaceContainer,
+        shape = rememberScreenEdgeCornerShape(),
     ) {
         Column(
             modifier = Modifier
@@ -939,6 +942,7 @@ private fun ErrorCard(message: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CustomColors.cardColorsOnSurfaceContainer,
+        shape = rememberScreenEdgeCornerShape(),
     ) {
         Text(
             text = message,

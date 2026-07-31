@@ -265,6 +265,18 @@ class ChatService(
         sessions[conversationId]?.release()
     }
 
+    suspend fun deleteConversation(conversation: Conversation) {
+        val mutex = persistenceMutexes.computeIfAbsent(conversation.id) { Mutex() }
+        mutex.withLock {
+            conversationRepo.deleteConversation(conversation)
+            sessions.remove(conversation.id)?.let { session ->
+                session.cleanup()
+                _sessionsVersion.value++
+            }
+        }
+        persistenceMutexes.remove(conversation.id, mutex)
+    }
+
     private fun launchWithConversationReference(
         conversationId: Uuid,
         block: suspend () -> Unit
@@ -941,8 +953,11 @@ class ChatService(
 
         runCatching {
             val title = generateTitleCandidate(conversation) ?: return
-            val latestConversation = getConversationFlow(conversationId).value
-            saveConversation(conversationId, latestConversation.copy(title = title))
+            val persistedConversation = conversationRepo.getConversationById(conversationId) ?: return
+            val latestConversation = sessions[conversationId]?.state?.value ?: persistedConversation
+            val updatedConversation = latestConversation.copy(title = title)
+            sessions[conversationId]?.state?.value = updatedConversation
+            conversationRepo.updateConversation(updatedConversation)
         }.onFailure {
             it.printStackTrace()
             addError(
@@ -1012,15 +1027,13 @@ class ChatService(
                 result.choices[0].message?.toText()?.split("\n")?.map { it.trim() }
                     ?.filter { it.isNotBlank() } ?: emptyList()
 
-            val latestConversation = sessions[conversationId]?.state?.value ?: conversation
-            saveConversation(
-                conversationId,
-                latestConversation.copy(
-                    chatSuggestions = suggestions.take(
-                        10
-                    )
-                )
+            val persistedConversation = conversationRepo.getConversationById(conversationId) ?: return
+            val latestConversation = sessions[conversationId]?.state?.value ?: persistedConversation
+            val updatedConversation = latestConversation.copy(
+                chatSuggestions = suggestions.take(10)
             )
+            sessions[conversationId]?.state?.value = updatedConversation
+            conversationRepo.updateConversation(updatedConversation)
         }.onFailure {
             it.printStackTrace()
         }

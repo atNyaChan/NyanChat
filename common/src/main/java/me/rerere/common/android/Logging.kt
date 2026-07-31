@@ -1,5 +1,7 @@
 package me.rerere.common.android
 
+import kotlinx.coroutines.asContextElement
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlin.uuid.Uuid
 
@@ -41,14 +43,18 @@ sealed class LogEntry {
         override val timestamp: Long = System.currentTimeMillis(),
         override val tag: String = "Permission",
         val type: String,
+        val toolName: String,
         val rawData: String,
         val resultData: String? = null,
         val granted: Boolean? = null,
+        val alwaysAllowed: Boolean = false,
     ) : LogEntry()
 }
 
 object Logging {
     private val recentLogs = arrayListOf<LogEntry>()
+    private val alwaysAllowedPermissionContext = ThreadLocal.withInitial { false }
+
     fun log(tag: String, message: String) {
         addLog(LogEntry.TextLog(tag = tag, message = message))
     }
@@ -59,6 +65,7 @@ object Logging {
 
     fun logPermission(
         type: String,
+        toolName: String,
         rawData: String,
         resultData: String? = null,
         granted: Boolean? = null,
@@ -66,11 +73,19 @@ object Logging {
         addLog(
             LogEntry.PermissionLog(
                 type = type,
+                toolName = toolName,
                 rawData = rawData,
                 resultData = resultData,
                 granted = granted,
+                alwaysAllowed = alwaysAllowedPermissionContext.get() == true,
             )
         )
+    }
+
+    suspend fun <T> withAlwaysAllowedPermissionLogging(block: suspend () -> T): T {
+        return withContext(alwaysAllowedPermissionContext.asContextElement(true)) {
+            block()
+        }
     }
 
     private fun addLog(entry: LogEntry) {

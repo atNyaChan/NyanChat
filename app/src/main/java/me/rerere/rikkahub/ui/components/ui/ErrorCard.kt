@@ -45,6 +45,7 @@ import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.service.ChatError
 import me.rerere.rikkahub.service.ChatErrorSolution
 import me.rerere.rikkahub.ui.context.LocalNavController
+import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import kotlin.uuid.Uuid
 
 @Composable
@@ -122,7 +123,7 @@ fun ErrorCard(
 
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = rememberScreenEdgeCornerShape(),
         color = MaterialTheme.colorScheme.errorContainer,
         shadowElevation = 4.dp,
     ) {

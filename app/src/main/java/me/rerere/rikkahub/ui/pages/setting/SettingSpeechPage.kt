@@ -7,7 +7,6 @@ import me.rerere.hugeicons.stroke.Mic01
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.VolumeHigh
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -26,7 +25,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LocalContentColor
@@ -61,6 +59,7 @@ import me.rerere.rikkahub.data.datastore.DEFAULT_SYSTEM_TTS_ID
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
+import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalTTSState
 import me.rerere.rikkahub.ui.pages.setting.components.ASRProviderConfigure
@@ -621,8 +620,9 @@ private fun TTSProviderItem(
     val tts = LocalTTSState.current
     val isSpeaking by tts.isSpeaking.collectAsState()
 
-    OutlinedCard(
-        modifier = modifier.clickable(onClick = onEdit),
+    OutlinedItemCard(
+        modifier = modifier,
+        onClick = onEdit,
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) {
                 MaterialTheme.colorScheme.primaryContainer
@@ -719,8 +719,9 @@ private fun ASRProviderItem(
     onSelect: () -> Unit,
     onEdit: () -> Unit,
 ) {
-    OutlinedCard(
-        modifier = modifier.clickable(onClick = onEdit),
+    OutlinedItemCard(
+        modifier = modifier,
+        onClick = onEdit,
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) {
                 MaterialTheme.colorScheme.primaryContainer

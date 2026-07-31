@@ -22,7 +22,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -83,6 +82,7 @@ import me.rerere.rikkahub.ui.pages.setting.components.PresetThemeButtonGroup
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.CustomTheme
 import me.rerere.rikkahub.ui.theme.LocalDarkMode
+import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.utils.plus
 import org.koin.androidx.compose.koinViewModel
 import kotlin.math.roundToInt
@@ -123,7 +123,12 @@ fun SettingThemePage(vm: SettingVM = koinViewModel()) {
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = innerPadding + PaddingValues(8.dp),
+            contentPadding = innerPadding + PaddingValues(
+                start = 8.dp,
+                top = 8.dp,
+                end = 8.dp,
+                bottom = 16.dp,
+            ),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item("dynamicColor") {
@@ -172,7 +177,7 @@ fun SettingThemePage(vm: SettingVM = koinViewModel()) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(20.dp))
+                                .clip(rememberScreenEdgeCornerShape())
                                 .background(MaterialTheme.colorScheme.surfaceBright)
                         ) {
                             PresetThemeButtonGroup(
@@ -340,7 +345,7 @@ private fun CustomThemeItem(
     ListItem(
         modifier = Modifier
             .padding(horizontal = 8.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(rememberScreenEdgeCornerShape())
             .clickable { onSelect() },
         leadingContent = {
             Box(contentAlignment = Alignment.Center) {
@@ -691,7 +696,7 @@ private fun ThemePreview(theme: CustomTheme) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
+                .clip(rememberScreenEdgeCornerShape())
                 .background(scheme.surface)
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,

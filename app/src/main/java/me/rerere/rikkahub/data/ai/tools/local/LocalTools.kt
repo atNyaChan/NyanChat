@@ -52,7 +52,7 @@ class LocalTools(
                 tools += if (option in manualAuthorizationTools) {
                     tool.withManualAuthorization(option)
                 } else {
-                    tool
+                    tool.withAlwaysAllowedAuthorizationLog()
                 }
             }
         }
@@ -77,6 +77,17 @@ class LocalTools(
         return tools
     }
 
+    private fun Tool.withAlwaysAllowedAuthorizationLog(): Tool {
+        val originalExecute = execute
+        return copy(
+            execute = { arguments ->
+                Logging.withAlwaysAllowedPermissionLogging {
+                    originalExecute(arguments)
+                }
+            }
+        )
+    }
+
     private fun Tool.withManualAuthorization(option: LocalToolOption): Tool {
         val originalExecute = execute
         return copy(
@@ -95,6 +106,7 @@ class LocalTools(
                 } else {
                     Logging.logPermission(
                         type = action,
+                        toolName = name,
                         rawData = arguments.toString(),
                         granted = false,
                     )

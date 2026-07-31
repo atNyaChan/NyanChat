@@ -452,6 +452,7 @@ sealed class UIMessagePart {
         val approvalState: ToolApprovalState = ToolApprovalState.Auto,
         override var metadata: JsonObject? = null
     ) : UIMessagePart() {
+        @Suppress("DEPRECATION")
         fun merge(other: ToolCall): ToolCall {
             return ToolCall(
                 toolCallId = toolCallId,
@@ -525,6 +526,7 @@ sealed class UIMessagePart {
     message = "Only use for migration. May break semantic order for messages with multiple Reasoning/Text parts.",
     level = DeprecationLevel.WARNING
 )
+@Suppress("DEPRECATION")
 fun List<UIMessagePart>.toSortedMessageParts(): List<UIMessagePart> {
     // Skip sorting if multiple Reasoning or Text parts exist to preserve semantic order
     val reasoningCount = count { it is UIMessagePart.Reasoning }

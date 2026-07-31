@@ -19,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
@@ -55,6 +54,7 @@ import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ai.AssistantListItemContent
 import me.rerere.rikkahub.ui.components.ui.FormItem
+import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.hooks.EditState
 import me.rerere.rikkahub.ui.hooks.EditStateContent
@@ -118,7 +118,7 @@ fun AssistantPage(vm: AssistantVM = koinViewModel()) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(it)
-                .padding(top = 16.dp)
+                .padding(top = 8.dp)
                 .consumeWindowInsets(it),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -343,10 +343,7 @@ private fun AssistantCreationSheet(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     lazyItems(existingAssistants, key = { it.id }) { source ->
-                        OutlinedCard(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            shape = MaterialTheme.shapes.large,
+                        OutlinedItemCard(
                             onClick = {
                                 val currentName = state.currentState?.name.orEmpty()
                                 state.currentState = source.copy(
@@ -403,8 +400,8 @@ private fun AssistantItem(
     modifier: Modifier = Modifier,
     onEdit: () -> Unit,
 ) {
-    OutlinedCard(
-        modifier = modifier.fillMaxWidth(),
+    OutlinedItemCard(
+        modifier = modifier,
         onClick = onEdit,
     ) {
         AssistantListItemContent(

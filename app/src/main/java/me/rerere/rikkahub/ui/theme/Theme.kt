@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import kotlinx.serialization.Serializable
+import me.rerere.rikkahub.data.datastore.ScreenCornerAdaptation
 import me.rerere.rikkahub.ui.hooks.rememberAmoledDarkMode
 import me.rerere.rikkahub.ui.hooks.rememberCurrentColorMode
 import me.rerere.rikkahub.ui.hooks.rememberUserSettingsState
@@ -84,6 +85,7 @@ fun RikkahubTheme(
         }
     }
     val extendColors = if (darkTheme) ExtendDarkColors else ExtendLightColors
+    val screenCornerRadii = rememberScreenEdgeCornerRadii()
 
     // 更新状态栏图标颜色
     val view = LocalView.current
@@ -100,6 +102,9 @@ fun RikkahubTheme(
     CompositionLocalProvider(
         LocalDarkMode provides darkTheme,
         LocalExtendColors provides extendColors,
+        LocalScreenEdgeCornerRadii provides screenCornerRadii,
+        LocalScreenCornerAdaptationEnabled provides
+            (settings.displaySetting.screenCornerAdaptation == ScreenCornerAdaptation.ALL),
         LocalOverscrollFactory provides null
     ) {
         MaterialExpressiveTheme(

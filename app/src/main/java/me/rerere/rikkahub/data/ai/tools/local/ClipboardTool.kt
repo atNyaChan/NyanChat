@@ -68,6 +68,7 @@ internal fun buildClipboardTool(context: Context): Tool = Tool(
         }
         Logging.logPermission(
             type = type,
+            toolName = "clipboard_tool",
             rawData = params.toString(),
             resultData = payload.toString(),
             granted = true,

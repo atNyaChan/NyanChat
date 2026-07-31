@@ -90,6 +90,7 @@
   <string name="local_tool_authorization_create_calendar">캘린더 일정을 만들기</string>
   <string name="permission_log_page_granted"> (허용됨)</string>
   <string name="permission_log_page_denied"> (거부됨)</string>
+  <string name="permission_log_page_always_allowed"> (항상 허용)</string>
   <string name="assistant_page_local_tools_battery_desc">AI가 기기 배터리 잔량을 가져오도록 합니다</string>
   <string name="assistant_page_local_tools_battery_title">배터리 잔량</string>
   <string name="assistant_page_local_tools_javascript_engine_desc">AI가 QuickJS 엔진으로 JavaScript 코드를 실행하여 계산 및 스크립팅을 수행하도록 합니다</string>
@@ -509,7 +510,7 @@
   <string name="search_page_no_results">결과 없음</string>
   <string name="search_page_placeholder">메시지 내용 검색...</string>
   <string name="search_page_rebuild_button">색인 다시 빌드</string>
-  <string name="search_page_rebuild_index">퍼지 검색 색인 재구축</string>
+  <string name="search_page_rebuild_index">검색 색인 재구축</string>
   <string name="search_page_rebuild_index_desc">기존 색인을 삭제하고 모든 채팅 기록을 다시 검색합니다. 메시지가 많을수록 시간이 오래 걸립니다. 계속하시겠습니까?</string>
   <string name="search_page_rebuilding">색인 재구성 중 (%1$d / %2$d)...</string>
   <string name="search_page_rebuilding_simple">색인 재구성 중...</string>
@@ -612,6 +613,8 @@
   <string name="setting_display_page_show_datetime_in_message_title">메시지에 날짜와 시간 표시</string>
   <string name="setting_display_page_show_line_numbers_desc">코드 블록에 줄 번호 표시</string>
   <string name="setting_display_page_show_line_numbers_title">줄 번호 표시</string>
+  <string name="setting_display_page_enable_ligatures_desc">코드 블록에서 합자 사용</string>
+  <string name="setting_display_page_enable_ligatures_title">합자 사용</string>
   <string name="setting_display_page_message_jumper_left">왼쪽</string>
   <string name="setting_display_page_show_message_jumper_desc">채팅 목록을 스크롤할 때 빠른 이동 버튼 표시</string>
   <string name="setting_display_page_show_message_jumper_title">메시지 점프 버튼 표시</string>
@@ -627,6 +630,11 @@
   <string name="setting_display_page_skip_crop_image_title">이미지 편집 건너뛰기</string>
   <string name="setting_display_page_tts_only_read_quoted_desc">활성화하면 TTS가 따옴표 안의 내용만 읽습니다</string>
   <string name="setting_display_page_tts_only_read_quoted_title">TTS가 인용 콘텐츠만 읽기</string>
+  <string name="setting_display_page_screen_corner_adaptation_title">화면 모서리 둥글기에 맞춤</string>
+  <string name="setting_display_page_screen_corner_adaptation_desc">구성 요소의 둥근 모서리를 화면 가장자리에 맞춥니다</string>
+  <string name="setting_display_page_screen_corner_adaptation_disabled">사용 안 함</string>
+  <string name="setting_display_page_screen_corner_adaptation_input_only">입력창만</string>
+  <string name="setting_display_page_screen_corner_adaptation_all">전체</string>
   <string name="setting_display_page_volume_key_scroll_desc">볼륨 키로 페이지를 넘길 때의 스크롤 양을 설정합니다. 전자 잉크 화면에 적합합니다</string>
   <string name="setting_display_page_volume_key_scroll_title">볼륨 키 페이지 스크롤</string>
   <string name="setting_files_page_clean_action">정리</string>
@@ -748,6 +756,7 @@
   <string name="permission_log_page_clear_confirm">권한 요청 로그를 지울까요?</string>
   <string name="setting_page_search_add_provider">제공업체 추가</string>
   <string name="setting_page_search_common_options">일반 옵션</string>
+  <string name="setting_page_search_common_title">일반 검색 설정</string>
   <string name="setting_page_search_config">설정</string>
   <string name="setting_page_search_result_size">결과 크기</string>
   <string name="setting_page_search_service_desc">검색 서비스 설정</string>
@@ -774,12 +783,10 @@
   <string name="setting_page_web_server">웹 서버</string>
   <string name="setting_page_web_server_desc">웹을 통해 NyanChat에 접근할 수 있도록 허용</string>
   <string name="setting_page_web_server_error">오류</string>
-  <string name="setting_page_web_server_jwt_enable">인증 활성화</string>
-  <string name="setting_page_web_server_jwt_enable_desc">웹 인터페이스에 접근할 때 비밀번호 인증이 필요합니다</string>
   <string name="setting_page_web_server_localhost_only">localhost만</string>
   <string name="setting_page_web_server_localhost_only_desc">localhost(127.0.0.1)에서만 수신, LAN 및 mDNS 접근 비활성화</string>
   <string name="setting_page_web_server_password">접속 비밀번호</string>
-  <string name="setting_page_web_server_password_desc">웹 인터페이스 접근에 필요한 비밀번호</string>
+  <string name="setting_page_web_server_password_desc">웹 인터페이스 접근에 필요한 비밀번호이며, 비워 두면 비밀번호가 필요하지 않습니다</string>
   <string name="setting_page_web_server_port">포트</string>
   <string name="setting_page_web_server_port_desc">웹 서버 수신 포트(1024-65535)</string>
   <string name="setting_page_web_server_start">시작</string>

@@ -270,7 +270,7 @@ class SettingsStore(
             }
             it.copy(
                 providers = providers,
-                assistants = it.assistants,
+                assistants = it.assistants.ifEmpty { DEFAULT_ASSISTANTS },
                 ttsProviders = ttsProviders,
             )
         }
@@ -568,6 +568,18 @@ enum class ChatFontFamily {
 }
 
 @Serializable
+enum class ScreenCornerAdaptation {
+    @SerialName("disabled")
+    DISABLED,
+
+    @SerialName("input_only")
+    INPUT_ONLY,
+
+    @SerialName("all")
+    ALL,
+}
+
+@Serializable
 data class DisplaySetting(
     val userAvatar: Avatar = Avatar.Dummy,
     val userNickname: String = "",
@@ -590,6 +602,7 @@ data class DisplaySetting(
     val codeBlockAutoWrap: Boolean = false,
     val codeBlockAutoCollapse: Boolean = false,
     val showLineNumbers: Boolean = false,
+    val enableCodeLigatures: Boolean = true,
     val ttsOnlyReadQuoted: Boolean = false,
     val ttsOnlyReadOutsideBrackets: Boolean = false,
     val autoPlayTTSAfterGeneration: Boolean = false,
@@ -603,6 +616,7 @@ data class DisplaySetting(
     val chatCustomFontPath: String = "",
     val chatCustomFontName: String = "",
     val useChatFontGlobally: Boolean = false,
+    val screenCornerAdaptation: ScreenCornerAdaptation = ScreenCornerAdaptation.ALL,
     val enableVolumeKeyScroll: Boolean = false,
     val volumeKeyScrollRatio: Float = 1.0f,
 )
@@ -656,7 +670,9 @@ fun Settings.getCurrentChatModel(): Model? {
 }
 
 fun Settings.getCurrentAssistant(): Assistant {
-    return this.assistants.find { it.id == assistantId } ?: this.assistants.first()
+    return assistants.find { it.id == assistantId }
+        ?: assistants.firstOrNull()
+        ?: DEFAULT_ASSISTANTS.first()
 }
 
 fun Settings.getAssistantById(id: Uuid): Assistant? {

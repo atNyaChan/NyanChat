@@ -36,7 +36,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -107,6 +106,7 @@ import me.rerere.rikkahub.ui.components.ui.ImagePreviewDialog
 import me.rerere.rikkahub.ui.components.ui.OutlinedNumberInput
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.CustomColors
+import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.utils.ImageUtils
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
@@ -274,6 +274,7 @@ private fun ImageGenScreen(
                 .fillMaxWidth()
                 .weight(1f),
             colors = CustomColors.cardColorsOnSurfaceContainer,
+            shape = rememberScreenEdgeCornerShape(),
         ) {
             Box(
                 modifier = Modifier
@@ -331,6 +332,7 @@ private fun ImageGenScreen(
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CustomColors.cardColorsOnSurfaceContainer,
+            shape = rememberScreenEdgeCornerShape(),
         ) {
             InputBar(
                 prompt = prompt,

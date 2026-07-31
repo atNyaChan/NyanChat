@@ -90,6 +90,7 @@
   <string name="local_tool_authorization_create_calendar">创建日历事件</string>
   <string name="permission_log_page_granted">（已同意）</string>
   <string name="permission_log_page_denied">（已拒绝）</string>
+  <string name="permission_log_page_always_allowed">（始终允许）</string>
   <string name="assistant_page_local_tools_battery_desc">让 AI 获取设备电池电量</string>
   <string name="assistant_page_local_tools_battery_title">电池电量</string>
   <string name="assistant_page_local_tools_javascript_engine_desc">让 AI 使用 QuickJS 引擎执行 JavaScript 代码，进行计算和脚本处理</string>
@@ -518,7 +519,7 @@
   <string name="search_page_no_results">无结果</string>
   <string name="search_page_placeholder">搜索消息内容…</string>
   <string name="search_page_rebuild_button">重建索引</string>
-  <string name="search_page_rebuild_index">重建模糊搜索索引</string>
+  <string name="search_page_rebuild_index">重建搜索索引</string>
   <string name="search_page_rebuild_index_desc">这将清除现有索引并重新扫描所有聊天记录。消息越多，耗时越长。是否继续？</string>
   <string name="search_page_rebuilding">正在重建索引 (%1$d / %2$d)…</string>
   <string name="search_page_rebuilding_simple">正在重建索引…</string>
@@ -658,6 +659,8 @@
   <string name="setting_display_page_show_datetime_in_message_title">在消息中显示日期和时间</string>
   <string name="setting_display_page_show_line_numbers_desc">在代码块中显示行号</string>
   <string name="setting_display_page_show_line_numbers_title">显示行号</string>
+  <string name="setting_display_page_enable_ligatures_desc">在代码块中使用连字</string>
+  <string name="setting_display_page_enable_ligatures_title">启用连字</string>
   <string name="setting_display_page_message_jumper_left">左</string>
   <string name="setting_display_page_show_message_jumper_desc">在滚动聊天列表时显示快速跳转按钮</string>
   <string name="setting_display_page_show_message_jumper_title">消息导航按钮</string>
@@ -675,6 +678,11 @@
   <string name="setting_display_page_tts_only_read_quoted_title">TTS 仅朗读引用内容</string>
   <string name="setting_display_page_tts_read_outside_brackets_desc">启用后，TTS 将不朗读括号内的内容</string>
   <string name="setting_display_page_tts_read_outside_brackets_title">TTS 不朗读括号内的内容</string>
+  <string name="setting_display_page_screen_corner_adaptation_title">适配屏幕圆角</string>
+  <string name="setting_display_page_screen_corner_adaptation_desc">让组件的圆角适配屏幕边缘</string>
+  <string name="setting_display_page_screen_corner_adaptation_disabled">禁用</string>
+  <string name="setting_display_page_screen_corner_adaptation_input_only">仅输入框</string>
+  <string name="setting_display_page_screen_corner_adaptation_all">全部</string>
   <string name="setting_display_page_volume_key_scroll_desc">设置使用音量键翻页时的滚动幅度，适合墨水屏</string>
   <string name="setting_display_page_volume_key_scroll_title">音量键翻页</string>
   <string name="setting_files_page_clean_action">清理</string>
@@ -796,6 +804,7 @@
   <string name="permission_log_page_clear_confirm">是否清空权限请求日志</string>
   <string name="setting_page_search_add_provider">添加提供商</string>
   <string name="setting_page_search_common_options">通用选项</string>
+  <string name="setting_page_search_common_title">通用搜索设置</string>
   <string name="setting_page_search_config">配置</string>
   <string name="setting_page_search_result_size">结果数量</string>
   <string name="setting_page_search_service_desc">设置搜索服务</string>
@@ -822,12 +831,10 @@
   <string name="setting_page_web_server">Web 服务器</string>
   <string name="setting_page_web_server_desc">允许你通过网页访问 NyanChat</string>
   <string name="setting_page_web_server_error">错误</string>
-  <string name="setting_page_web_server_jwt_enable">启用身份验证</string>
-  <string name="setting_page_web_server_jwt_enable_desc">访问网页界面时需要密码验证</string>
   <string name="setting_page_web_server_localhost_only">仅本地主机</string>
   <string name="setting_page_web_server_localhost_only_desc">仅监听 localhost (127.0.0.1)，禁用 LAN 和 mDNS 访问</string>
   <string name="setting_page_web_server_password">访问密码</string>
-  <string name="setting_page_web_server_password_desc">网页界面访问所需的密码</string>
+  <string name="setting_page_web_server_password_desc">网页界面访问所需的密码，留空则不需要密码</string>
   <string name="setting_page_web_server_port">端口</string>
   <string name="setting_page_web_server_port_desc">Web 服务器监听端口（1024-65535）</string>
   <string name="setting_page_web_server_start">启动</string>

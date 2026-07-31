@@ -46,6 +46,7 @@ fun <T> Select(
     onOptionSelected: (T) -> Unit,
     modifier: Modifier = Modifier,
     fitToOptions: Boolean = false,
+    fitToSelectedOption: Boolean = false,
     optionToString: @Composable (T) -> String = { it.toString() },
     optionLeading: @Composable ((T) -> Unit)? = null,
     leading: @Composable () -> Unit = {},
@@ -61,10 +62,22 @@ fun <T> Select(
             textMeasurer.measure(AnnotatedString(label), style = textStyle).size.width
         }?.toDp() ?: 0.dp
     }
-    val fittedModifier = if (fitToOptions) {
-        modifier.width(longestOptionWidth + 74.dp + if (optionLeading != null) 30.dp else 0.dp)
-    } else {
-        modifier
+    val selectedOptionWidth = with(density) {
+        textMeasurer.measure(
+            text = AnnotatedString(
+                optionLabels.getOrElse(options.indexOf(selectedOption)) { selectedOption.toString() }
+            ),
+            style = textStyle,
+        ).size.width.toDp()
+    }
+    val fittedModifier = when {
+        fitToSelectedOption -> {
+            modifier.width(selectedOptionWidth + 74.dp + if (optionLeading != null) 30.dp else 0.dp)
+        }
+        fitToOptions -> {
+            modifier.width(longestOptionWidth + 74.dp + if (optionLeading != null) 30.dp else 0.dp)
+        }
+        else -> modifier
     }
 
     ExposedDropdownMenuBox(

@@ -88,6 +88,7 @@ import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.theme.ChatFontProvider
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
+import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.utils.UiState
 import me.rerere.rikkahub.utils.insertAtCursor
 import me.rerere.rikkahub.utils.onError
@@ -153,12 +154,14 @@ private fun AssistantPromptContent(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp)
             .padding(innerPadding)
+            .padding(top = 8.dp)
             .padding(bottom = 16.dp)
             .imePadding(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Card(
-            colors = CustomColors.cardColorsOnSurfaceContainer
+            colors = CustomColors.cardColorsOnSurfaceContainer,
+            shape = rememberScreenEdgeCornerShape(),
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -271,7 +274,8 @@ private fun AssistantPromptContent(
         }
 
         Card(
-            colors = CustomColors.cardColorsOnSurfaceContainer
+            colors = CustomColors.cardColorsOnSurfaceContainer,
+            shape = rememberScreenEdgeCornerShape(),
         ) {
             Column(
                 modifier = Modifier

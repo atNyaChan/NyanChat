@@ -1,13 +1,11 @@
 package me.rerere.rikkahub.ui.pages.setting
 
 import me.rerere.hugeicons.HugeIcons
-import me.rerere.hugeicons.stroke.Play
 import me.rerere.hugeicons.stroke.Delete01
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -16,7 +14,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
@@ -34,18 +31,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.launch
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import me.rerere.highlight.LocalHighlighter
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.nav.BackButton
@@ -56,9 +48,8 @@ import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.ui.theme.LocalDarkMode
+import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.utils.plus
-import me.rerere.search.SearchCommonOptions
-import me.rerere.search.SearchResult
 import me.rerere.search.SearchService
 import me.rerere.search.SearchServiceOptions
 import org.koin.androidx.compose.koinViewModel
@@ -117,14 +108,20 @@ fun SettingSearchDetailPage(
             modifier = Modifier
                 .fillMaxSize()
                 .imePadding(),
-            contentPadding = padding + PaddingValues(16.dp),
+            contentPadding = padding + PaddingValues(
+                start = 16.dp,
+                top = 8.dp,
+                end = 16.dp,
+                bottom = 16.dp,
+            ),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item("config") {
                 Card(
                     colors = CardDefaults.cardColors(
                         containerColor = CustomColors.listItemColors.containerColor
-                    )
+                    ),
+                    shape = rememberScreenEdgeCornerShape(),
                 ) {
                     Column(
                         modifier = Modifier
@@ -150,12 +147,6 @@ fun SettingSearchDetailPage(
                 }
             }
 
-            item("test") {
-                SearchTestSection(
-                    options = options,
-                    commonOptions = settings.searchCommonOptions
-                )
-            }
         }
     }
     RikkaConfirmDialog(
@@ -234,127 +225,6 @@ private fun SearchServiceOptionsEditor(
         }
         is SearchServiceOptions.CustomJsOptions -> {
             CustomJsOptions(options) { onUpdateOptions(it) }
-        }
-    }
-}
-
-@Composable
-private fun SearchTestSection(
-    options: SearchServiceOptions,
-    commonOptions: SearchCommonOptions
-) {
-    var query by remember { mutableStateOf("") }
-    var testing by remember { mutableStateOf(false) }
-    var result by remember { mutableStateOf<Result<SearchResult>?>(null) }
-    val scope = rememberCoroutineScope()
-
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = CustomColors.listItemColors.containerColor
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .animateContentSize()
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.setting_page_search_test),
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedTextField(
-                    value = query,
-                    onValueChange = { query = it },
-                    modifier = Modifier.weight(1f),
-                    placeholder = { Text(stringResource(R.string.setting_page_search_test_query_hint)) },
-                    singleLine = true
-                )
-
-                IconButton(
-                    onClick = {
-                        if (query.isNotBlank() && !testing) {
-                            testing = true
-                            result = null
-                            scope.launch {
-                                val service = SearchService.getService(options)
-                                val params = JsonObject(
-                                    mapOf("query" to JsonPrimitive(query))
-                                )
-                                result = service.search(params, commonOptions, options)
-                                testing = false
-                            }
-                        }
-                    },
-                    enabled = query.isNotBlank() && !testing
-                ) {
-                    if (testing) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.padding(4.dp),
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Icon(
-                            imageVector = HugeIcons.Play,
-                            contentDescription = stringResource(R.string.setting_page_search_test_run)
-                        )
-                    }
-                }
-            }
-
-            result?.let { res ->
-                res.onSuccess { searchResult ->
-                    searchResult.answer?.let { answer ->
-                        Text(
-                            text = answer,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    searchResult.items.forEachIndexed { index, item ->
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-                            )
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Text(
-                                    text = "${index + 1}. ${item.title}",
-                                    style = MaterialTheme.typography.titleSmall
-                                )
-                                Text(
-                                    text = item.url,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                Text(
-                                    text = item.text.take(200),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-                }
-                res.onFailure { error ->
-                    Text(
-                        text = error.message ?: stringResource(R.string.search_detail_unknown_error),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            }
         }
     }
 }

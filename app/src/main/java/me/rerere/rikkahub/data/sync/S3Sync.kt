@@ -72,7 +72,8 @@ class S3Sync(
 
         result.objects
             .filter {
-                it.key.startsWith("rikkahub_backups/backup_") &&
+                (it.key.startsWith("rikkahub_backups/backup_") ||
+                    it.key.startsWith("rikkahub_backups/NyanChatBackup-")) &&
                     (it.key.endsWith(BackupArchive.EXTENSION) || it.key.endsWith(".zip"))
             }
             .map { obj ->
@@ -115,8 +116,8 @@ class S3Sync(
     }
 
     suspend fun prepareBackupFile(config: S3Config): File = withContext(Dispatchers.IO) {
-        val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
-        val backupFile = File(context.cacheDir, "backup_$timestamp${BackupArchive.EXTENSION}")
+        val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"))
+        val backupFile = File(context.cacheDir, "NyanChatBackup-$timestamp${BackupArchive.EXTENSION}")
         BackupArchive.create(
             context = context,
             output = backupFile,

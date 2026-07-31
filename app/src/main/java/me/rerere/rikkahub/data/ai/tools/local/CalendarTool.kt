@@ -87,6 +87,7 @@ internal fun buildCalendarQueryTool(context: Context): Tool = Tool(
         fun respond(payload: JsonObject): List<UIMessagePart> {
             Logging.logPermission(
                 type = "读取日历",
+                toolName = "calendar_query",
                 rawData = args.toString(),
                 resultData = payload.toString(),
                 granted = true,
@@ -284,6 +285,7 @@ internal fun buildCalendarCreateTool(context: Context): Tool = Tool(
         fun respond(payload: JsonObject): List<UIMessagePart> {
             Logging.logPermission(
                 type = "写入日历",
+                toolName = "calendar_create",
                 rawData = args.toString(),
                 resultData = payload.toString(),
                 granted = true,

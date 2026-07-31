@@ -162,6 +162,7 @@ internal fun AssistantBasicContent(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp)
             .padding(innerPadding)
+            .padding(top = 8.dp)
             .padding(bottom = 16.dp)
             .imePadding(),
         verticalArrangement = Arrangement.spacedBy(16.dp)

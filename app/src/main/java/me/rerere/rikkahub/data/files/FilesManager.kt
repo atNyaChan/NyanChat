@@ -33,6 +33,7 @@ import me.rerere.rikkahub.utils.exportImageFile
 import me.rerere.rikkahub.utils.getActivity
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
+import kotlin.uuid.Uuid
 
 class FilesManager(
     private val context: Context,
@@ -143,23 +144,31 @@ class FilesManager(
                     }
                 }
             }
-            val existingForConversation = existing.filter { it.conversationId == conversation.id.toString() }
-            if (existingForConversation.any { it.relativePath.substringAfterLast('/') !in referencedNodes }) {
-                attachmentIndexFile.delete()
-                return@withLock
-            }
-            val updated = existing.associateByTo(linkedMapOf()) { it.relativePath }
+            val conversationId = conversation.id.toString()
+            val updated = existing
+                .filterNot { it.conversationId == conversationId }
+                .associateByTo(linkedMapOf()) { it.relativePath }
             referencedNodes.forEach { (fileName, nodeId) ->
                 val relativePath = "${FileFolders.UPLOAD}/$fileName"
                 updated[relativePath] = AttachmentIndexEntry(
                     relativePath = relativePath,
-                    conversationId = conversation.id.toString(),
+                    conversationId = conversationId,
                     nodeId = nodeId,
                 )
             }
             val newEntries = updated.values.toList()
             if (newEntries != existing) {
                 writeAttachmentIndex(newEntries)
+            }
+        }
+    }
+
+    suspend fun removeConversationFromAttachmentIndex(conversationId: Uuid) = withContext(Dispatchers.IO) {
+        attachmentIndexMutex.withLock {
+            val existing = readAttachmentIndex() ?: return@withLock
+            val updated = existing.filterNot { it.conversationId == conversationId.toString() }
+            if (updated.size != existing.size) {
+                writeAttachmentIndex(updated)
             }
         }
     }

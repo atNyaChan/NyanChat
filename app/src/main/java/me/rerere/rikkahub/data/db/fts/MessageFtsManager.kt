@@ -1,8 +1,8 @@
 package me.rerere.rikkahub.data.db.fts
 
-import android.util.Log
 import androidx.core.net.toFile
 import androidx.core.net.toUri
+import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.rerere.ai.ui.UIMessage
@@ -22,10 +22,10 @@ data class MessageSearchResult(
     val snippet: String,
 )
 
-enum class MessageSearchSort(val orderBy: String) {
-    RELEVANCE("rank, update_at DESC"),
-    NEWEST_FIRST("update_at DESC, rank"),
-    OLDEST_FIRST("update_at ASC, rank"),
+enum class MessageSearchSort {
+    RELEVANCE,
+    NEWEST_FIRST,
+    OLDEST_FIRST,
 }
 
 enum class MessageSearchMode {
@@ -39,21 +39,23 @@ enum class MessageAttachmentState {
     MISSING,
 }
 
-private const val TAG = "MessageFtsManager"
-
 class MessageFtsManager(private val database: AppDatabase) {
 
     private val db get() = database.openHelper.writableDatabase
 
     suspend fun indexConversation(conversation: Conversation) = withContext(Dispatchers.IO) {
         val conversationId = conversation.id.toString()
-        db.execSQL("DELETE FROM message_fts WHERE conversation_id = ?", arrayOf(conversationId))
+        db.execSQL("DELETE FROM message_search_cache WHERE conversation_id = ?", arrayOf(conversationId))
         conversation.messageNodes.forEach { node ->
             node.messages.forEach { message ->
                 val text = message.extractFtsText()
                 if (text.isNotBlank()) {
                     db.execSQL(
-                        "INSERT INTO message_fts(text, node_id, message_id, conversation_id, title, update_at) VALUES (?, ?, ?, ?, ?, ?)",
+                        """
+                        INSERT INTO message_search_cache(
+                            text, node_id, message_id, conversation_id, title, update_at
+                        ) VALUES (?, ?, ?, ?, ?, ?)
+                        """.trimIndent(),
                         arrayOf(
                             text,
                             node.id.toString(),
@@ -69,11 +71,13 @@ class MessageFtsManager(private val database: AppDatabase) {
     }
 
     suspend fun deleteConversation(conversationId: String) = withContext(Dispatchers.IO) {
-        db.execSQL("DELETE FROM message_fts WHERE conversation_id = ?", arrayOf(conversationId))
+        db.execSQL("DELETE FROM message_search_cache WHERE conversation_id = ?", arrayOf(conversationId))
     }
 
-    suspend fun deleteAll() = withContext(Dispatchers.IO) {
-        db.execSQL("DELETE FROM message_fts")
+    suspend fun rebuildAll(
+        onProgress: (current: Int, total: Int) -> Unit = { _, _ -> },
+    ) = withContext(Dispatchers.IO) {
+        rebuildMessageSearchCache(db, onProgress)
     }
 
     suspend fun search(
@@ -86,34 +90,47 @@ class MessageFtsManager(private val database: AppDatabase) {
         if (mode != MessageSearchMode.FUZZY) {
             return@withContext searchExact(keyword, sort, mode, limit, offset)
         }
-        val results = mutableListOf<MessageSearchResult>()
+        val terms = keyword.split(Regex("\\s+")).filter(String::isNotEmpty)
+        if (terms.isEmpty()) return@withContext emptyList()
+        val orderBy = when (sort) {
+            MessageSearchSort.RELEVANCE, MessageSearchSort.NEWEST_FIRST -> "update_at DESC"
+            MessageSearchSort.OLDEST_FIRST -> "update_at ASC"
+        }
         val cursor = db.query(
             """
-            SELECT node_id, message_id, conversation_id, title, update_at,
-                   simple_snippet(message_fts, 0, '[', ']', '...', 30) AS snippet
-            FROM message_fts
-            WHERE text MATCH jieba_query(?)
-            ORDER BY ${sort.orderBy}
-            LIMIT ? OFFSET ?
+            SELECT node_id, message_id, conversation_id, title, update_at, text
+            FROM message_search_cache
+            WHERE instr(text, ?) > 0
+            ORDER BY $orderBy
             """.trimIndent(),
-            arrayOf<Any?>(keyword, limit, offset)
+            arrayOf(terms.first())
         )
-        Log.i(TAG, "search: $keyword")
-        cursor.use {
-            while (it.moveToNext()) {
-                results.add(
-                    MessageSearchResult(
-                        nodeId = it.getString(0),
-                        messageId = it.getString(1),
-                        conversationId = it.getString(2),
-                        title = it.getString(3),
-                        updateAt = Instant.ofEpochMilli(it.getLong(4)),
-                        snippet = it.getString(5),
-                    )
-                )
+        val matches = buildList {
+            cursor.use {
+                while (it.moveToNext()) {
+                    val text = it.getString(5)
+                    text.findOrderedTerms(terms)?.let { ranges ->
+                        add(
+                            ranges.orderedTermGapCount() to MessageSearchResult(
+                                nodeId = it.getString(0),
+                                messageId = it.getString(1),
+                                conversationId = it.getString(2),
+                                title = it.getString(3),
+                                updateAt = Instant.ofEpochMilli(it.getLong(4)),
+                                snippet = text.orderedSnippet(ranges),
+                            )
+                        )
+                    }
+                }
             }
         }
-        results
+        val ordered = if (sort == MessageSearchSort.RELEVANCE) {
+            matches.sortedWith(compareBy<Pair<Int, MessageSearchResult>> { it.first }
+                .thenByDescending { it.second.updateAt })
+        } else {
+            matches
+        }
+        ordered.drop(offset).take(limit).map { it.second }
     }
 
     suspend fun searchByModel(
@@ -256,11 +273,20 @@ class MessageFtsManager(private val database: AppDatabase) {
     }
 
     suspend fun countSearch(keyword: String, mode: MessageSearchMode): Int = withContext(Dispatchers.IO) {
-        val cursor = if (mode == MessageSearchMode.FUZZY) {
-            db.query(
-                "SELECT COUNT(*) FROM message_fts WHERE text MATCH jieba_query(?)",
-                arrayOf(keyword),
+        if (mode == MessageSearchMode.FUZZY) {
+            val terms = keyword.split(Regex("\\s+")).filter(String::isNotEmpty)
+            if (terms.isEmpty()) return@withContext 0
+            val cursor = db.query(
+                "SELECT text FROM message_search_cache WHERE instr(text, ?) > 0",
+                arrayOf(terms.first()),
             )
+            return@withContext cursor.use {
+                var count = 0
+                while (it.moveToNext()) {
+                    if (it.getString(0).findOrderedTerms(terms) != null) count++
+                }
+                count
+            }
         } else {
             val column = if (mode == MessageSearchMode.TITLE_ONLY) "title" else "text"
             val countTarget = if (mode == MessageSearchMode.TITLE_ONLY) {
@@ -268,12 +294,12 @@ class MessageFtsManager(private val database: AppDatabase) {
             } else {
                 "COUNT(*)"
             }
-            db.query(
-                "SELECT $countTarget FROM message_fts WHERE instr($column, ?) > 0",
+            val cursor = db.query(
+                "SELECT $countTarget FROM message_search_cache WHERE instr($column, ?) > 0",
                 arrayOf(keyword),
             )
+            return@withContext cursor.use { if (it.moveToFirst()) it.getInt(0) else 0 }
         }
-        cursor.use { if (it.moveToFirst()) it.getInt(0) else 0 }
     }
 
     private fun searchExact(
@@ -292,7 +318,7 @@ class MessageFtsManager(private val database: AppDatabase) {
         val cursor = db.query(
             """
             SELECT node_id, message_id, conversation_id, title, update_at, text
-            FROM message_fts
+            FROM message_search_cache
             WHERE instr(${if (titleOnly) "title" else "text"}, ?) > 0
             $groupBy
             ORDER BY $orderBy
@@ -397,7 +423,129 @@ private fun String.exactSnippet(keyword: String): String {
     }
 }
 
+internal fun String.findOrderedTerms(terms: List<String>): List<IntRange>? {
+    if (terms.isEmpty()) return emptyList()
+    var searchStart = 0
+    var bestRanges: List<IntRange>? = null
+    var bestGapCount = Int.MAX_VALUE
+    while (searchStart < length) {
+        val forwardRanges = mutableListOf<IntRange>()
+        var nextSearchStart = searchStart
+        for (term in terms) {
+            val start = indexOf(term, startIndex = nextSearchStart)
+            if (start < 0) return bestRanges
+            forwardRanges += start until start + term.length
+            nextSearchStart = start + term.length
+        }
+
+        val compactRanges = forwardRanges.toMutableList()
+        for (index in terms.lastIndex - 1 downTo 0) {
+            val latestStart = compactRanges[index + 1].first - terms[index].length
+            val start = lastIndexOf(terms[index], startIndex = latestStart)
+            compactRanges[index] = start until start + terms[index].length
+        }
+        val gapCount = compactRanges.orderedTermGapCount()
+        if (gapCount < bestGapCount) {
+            bestRanges = compactRanges
+            bestGapCount = gapCount
+            if (gapCount == 0) break
+        }
+        searchStart = compactRanges.first().first + 1
+    }
+    return bestRanges
+}
+
+internal fun List<IntRange>.orderedTermGapCount(): Int =
+    zipWithNext().sumOf { (current, next) -> (next.first - current.last - 1).coerceAtLeast(0) }
+
+private fun String.orderedSnippet(ranges: List<IntRange>): String {
+    val firstMatch = ranges.first().first
+    val lastMatch = ranges.last().last
+    val lineStart = lastIndexOf('\n', startIndex = (firstMatch - 1).coerceAtLeast(0))
+        .let { if (it < 0) 0 else it + 1 }
+    val previousLineStart = if (lineStart == 0) {
+        0
+    } else {
+        lastIndexOf('\n', startIndex = (lineStart - 2).coerceAtLeast(0))
+            .let { if (it < 0) 0 else it + 1 }
+    }
+    val lineEnd = indexOf('\n', startIndex = lastMatch + 1)
+        .let { if (it < 0) length else it }
+    val nextLineEnd = if (lineEnd == length) {
+        length
+    } else {
+        indexOf('\n', startIndex = lineEnd + 1).let { if (it < 0) length else it }
+    }
+    return buildString {
+        if (previousLineStart > 0) append("...")
+        var sourceIndex = previousLineStart
+        ranges.forEach { range ->
+            if (range.first > sourceIndex) append(this@orderedSnippet, sourceIndex, range.first)
+            append('[')
+            append(this@orderedSnippet, range.first, range.last + 1)
+            append(']')
+            sourceIndex = range.last + 1
+        }
+        if (sourceIndex < nextLineEnd) append(this@orderedSnippet, sourceIndex, nextLineEnd)
+        if (nextLineEnd < length) append("...")
+    }
+}
+
 private fun UIMessage.extractFtsText(): String =
     parts.filterIsInstance<UIMessagePart.Text>()
         .joinToString("\n") { it.text }
         .take(10_000)
+
+internal fun rebuildMessageSearchCache(
+    db: SupportSQLiteDatabase,
+    onProgress: (current: Int, total: Int) -> Unit = { _, _ -> },
+) {
+    db.execSQL("DELETE FROM message_search_cache")
+    val total = db.query("SELECT COUNT(*) FROM conversationentity").use { cursor ->
+        if (cursor.moveToFirst()) cursor.getInt(0) else 0
+    }
+    db.query("SELECT id, title, update_at FROM conversationentity").use { conversations ->
+        var current = 0
+        while (conversations.moveToNext()) {
+            val conversationId = conversations.getString(0)
+            val title = conversations.getString(1)
+            val updateAt = conversations.getLong(2).toString()
+            db.query(
+                """
+                SELECT id, messages
+                FROM message_node
+                WHERE conversation_id = ?
+                ORDER BY node_index
+                """.trimIndent(),
+                arrayOf(conversationId),
+            ).use { nodes ->
+                while (nodes.moveToNext()) {
+                    val nodeId = nodes.getString(0)
+                    val messages = JsonInstant.decodeFromString<List<UIMessage>>(nodes.getString(1))
+                    messages.forEach { message ->
+                        val text = message.extractFtsText()
+                        if (text.isNotBlank()) {
+                            db.execSQL(
+                                """
+                                INSERT INTO message_search_cache(
+                                    text, node_id, message_id, conversation_id, title, update_at
+                                ) VALUES (?, ?, ?, ?, ?, ?)
+                                """.trimIndent(),
+                                arrayOf(
+                                    text,
+                                    nodeId,
+                                    message.id.toString(),
+                                    conversationId,
+                                    title,
+                                    updateAt,
+                                ),
+                            )
+                        }
+                    }
+                }
+            }
+            current++
+            onProgress(current, total)
+        }
+    }
+}

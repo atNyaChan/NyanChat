@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -46,7 +45,6 @@ import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -85,8 +83,10 @@ import me.rerere.rikkahub.data.model.InjectionPosition
 import me.rerere.rikkahub.data.model.Lorebook
 import me.rerere.rikkahub.data.model.PromptInjection
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.ExportDialog
 import me.rerere.rikkahub.ui.components.ui.FormItem
+import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.components.ui.Tag
 import me.rerere.rikkahub.ui.components.ui.TagType
@@ -304,8 +304,9 @@ private fun ModeInjectionCard(
     modifier: Modifier = Modifier,
     onEdit: () -> Unit,
 ) {
-    OutlinedCard(
-        modifier = modifier.clickable(onClick = onEdit),
+    OutlinedItemCard(
+        modifier = modifier,
+        onClick = onEdit,
     ) {
             Row(
                 modifier = Modifier
@@ -734,8 +735,9 @@ private fun LorebookCard(
     modifier: Modifier = Modifier,
     onEdit: () -> Unit,
 ) {
-    OutlinedCard(
-        modifier = modifier.clickable(onClick = onEdit),
+    OutlinedItemCard(
+        modifier = modifier,
+        onClick = onEdit,
     ) {
             Row(
                 modifier = Modifier
@@ -1020,17 +1022,58 @@ private fun RegexInjectionEditDialog(
     onEdit: (PromptInjection.RegexInjection) -> Unit
 ) {
     var newKeyword by remember { mutableStateOf("") }
+    val sheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
+    )
+    val scope = rememberCoroutineScope()
+    val contentState = rememberTextFieldState(entry.content)
+    val currentEntry by rememberUpdatedState(entry)
 
-    AlertDialog(
+    LaunchedEffect(entry.id) {
+        snapshotFlow { contentState.text.toString() }
+            .collect { content ->
+                if (content != currentEntry.content) {
+                    onEdit(currentEntry.copy(content = content))
+                }
+            }
+    }
+
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.prompt_page_edit_entry)) },
-        text = {
+        sheetState = sheetState,
+        sheetGesturesEnabled = false,
+        dragHandle = {
+            IconButton(onClick = {
+                scope.launch {
+                    sheetState.hide()
+                    onDismiss()
+                }
+            }) {
+                Icon(HugeIcons.ArrowDown01, null)
+            }
+        },
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.95f)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.prompt_page_edit_entry),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+            )
+
             Column(
                 modifier = Modifier
+                    .weight(1f)
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
                     .imePadding(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 OutlinedTextField(
                     value = entry.name,
@@ -1128,36 +1171,38 @@ private fun RegexInjectionEditDialog(
                     }
                 }
 
-                FormItem(
-                    label = { Text(stringResource(R.string.prompt_page_use_regex)) },
-                    tail = {
-                        Switch(
-                            checked = entry.useRegex,
-                            onCheckedChange = { onEdit(entry.copy(useRegex = it)) }
-                        )
-                    }
-                )
+                CardGroup {
+                    FormItem(
+                        label = { Text(stringResource(R.string.prompt_page_use_regex)) },
+                        tail = {
+                            Switch(
+                                checked = entry.useRegex,
+                                onCheckedChange = { onEdit(entry.copy(useRegex = it)) }
+                            )
+                        }
+                    )
 
-                FormItem(
-                    label = { Text(stringResource(R.string.prompt_page_case_sensitive)) },
-                    tail = {
-                        Switch(
-                            checked = entry.caseSensitive,
-                            onCheckedChange = { onEdit(entry.copy(caseSensitive = it)) }
-                        )
-                    }
-                )
+                    FormItem(
+                        label = { Text(stringResource(R.string.prompt_page_case_sensitive)) },
+                        tail = {
+                            Switch(
+                                checked = entry.caseSensitive,
+                                onCheckedChange = { onEdit(entry.copy(caseSensitive = it)) }
+                            )
+                        }
+                    )
 
-                FormItem(
-                    label = { Text(stringResource(R.string.prompt_page_constant_active)) },
-                    description = { Text(stringResource(R.string.prompt_page_constant_active_desc)) },
-                    tail = {
-                        Switch(
-                            checked = entry.constantActive,
-                            onCheckedChange = { onEdit(entry.copy(constantActive = it)) }
-                        )
-                    }
-                )
+                    FormItem(
+                        label = { Text(stringResource(R.string.prompt_page_constant_active)) },
+                        description = { Text(stringResource(R.string.prompt_page_constant_active_desc)) },
+                        tail = {
+                            Switch(
+                                checked = entry.constantActive,
+                                onCheckedChange = { onEdit(entry.copy(constantActive = it)) }
+                            )
+                        }
+                    )
+                }
 
                 OutlinedTextField(
                     value = entry.scanDepth.toString(),
@@ -1182,30 +1227,35 @@ private fun RegexInjectionEditDialog(
                     }
                 }
 
-                OutlinedTextField(
-                    value = entry.content,
-                    onValueChange = { onEdit(entry.copy(content = it)) },
-                    label = { Text(stringResource(R.string.prompt_page_injection_content)) },
+                TextArea(
+                    state = contentState,
+                    label = stringResource(R.string.prompt_page_injection_content),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(150.dp),
-                    minLines = 4
+                        .height(200.dp),
+                    minLines = 5,
+                    maxLines = 8,
+                    enableImport = false,
+                    fullscreenButtonInsideField = true,
                 )
             }
-        },
-        confirmButton = {
+
             val canSave = entry.keywords.isNotEmpty() || entry.constantActive
-            TextButton(
-                onClick = onConfirm,
-                enabled = canSave
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(stringResource(R.string.common_confirm_action))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.common_cancel))
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+                TextButton(
+                    onClick = onConfirm,
+                    enabled = canSave,
+                ) {
+                    Text(stringResource(R.string.common_confirm_action))
+                }
             }
         }
-    )
+    }
 }

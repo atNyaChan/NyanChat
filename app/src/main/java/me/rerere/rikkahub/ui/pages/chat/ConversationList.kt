@@ -31,7 +31,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
@@ -55,9 +54,7 @@ import androidx.paging.compose.itemKey
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.ui.theme.extendColors
-import me.rerere.rikkahub.utils.toLocalString
 import java.time.LocalDate
-import java.time.ZoneId
 import kotlin.uuid.Uuid
 
 /**
@@ -139,18 +136,16 @@ fun ColumnScope.ConversationList(
         ) {
         if (conversations.itemCount == 0) {
             item {
-                Surface(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainerLow
+                        .fillParentMaxHeight(),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = stringResource(id = R.string.chat_page_no_conversations),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(16.dp)
                     )
                 }
             }

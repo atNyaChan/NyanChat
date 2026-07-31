@@ -77,7 +77,7 @@ fun <T> ChainOfThought(
         ) {
             Column(
                 modifier = Modifier
-                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                    .padding(vertical = 4.dp)
                     .animateContentSize(
                         animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec()
                     ),
@@ -86,7 +86,7 @@ fun <T> ChainOfThought(
                 val scope = remember { ChainOfThoughtScopeImpl() }
                 Box(
                     modifier = Modifier.drawBehind {
-                        val x = 12.dp.toPx()
+                        val x = 24.dp.toPx()
                         val offsetPx = 18.dp.toPx()
                         drawLine(
                             color = lineColor,
@@ -246,6 +246,7 @@ private class ChainOfThoughtScopeImpl : ChainOfThoughtScope {
                             Modifier
                         }
                     )
+                    .padding(horizontal = 4.dp)
                     .then(
                         if (onClick != null) {
                             Modifier
@@ -259,7 +260,7 @@ private class ChainOfThoughtScopeImpl : ChainOfThoughtScope {
                             Modifier
                         }
                     )
-                    .padding(vertical = 8.dp),
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -339,7 +340,7 @@ private class ChainOfThoughtScopeImpl : ChainOfThoughtScope {
                                 Modifier
                             }
                         )
-                        .padding(start = 32.dp, top = 4.dp, bottom = 8.dp)
+                        .padding(start = 44.dp, end = 12.dp, top = 4.dp, bottom = 8.dp)
                 ) {
                     content()
                 }

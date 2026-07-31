@@ -52,6 +52,7 @@ import me.rerere.hugeicons.stroke.FileImport
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.ChatFontFamily
 import me.rerere.rikkahub.data.datastore.DisplaySetting
+import me.rerere.rikkahub.data.datastore.ScreenCornerAdaptation
 import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.files.FileUtils
 import me.rerere.rikkahub.ui.components.nav.BackButton
@@ -439,6 +440,25 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                         },
                     )
                     item(
+                        headlineContent = {
+                            Text(stringResource(R.string.setting_display_page_screen_corner_adaptation_title))
+                        },
+                        supportingContent = {
+                            Text(stringResource(R.string.setting_display_page_screen_corner_adaptation_desc))
+                        },
+                        trailingContent = {
+                            Select(
+                                options = ScreenCornerAdaptation.entries,
+                                selectedOption = displaySetting.screenCornerAdaptation,
+                                onOptionSelected = {
+                                    updateDisplaySetting(displaySetting.copy(screenCornerAdaptation = it))
+                                },
+                                optionToString = { stringResource(it.labelRes) },
+                                fitToSelectedOption = true,
+                            )
+                        },
+                    )
+                    item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_volume_key_scroll_title)) },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_volume_key_scroll_desc)) },
                         trailingContent = {
@@ -641,6 +661,18 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                             )
                         },
                     )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_enable_ligatures_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_enable_ligatures_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.enableCodeLigatures,
+                                onCheckedChange = {
+                                    updateDisplaySetting(displaySetting.copy(enableCodeLigatures = it))
+                                }
+                            )
+                        },
+                    )
                 }
             }
 
@@ -825,6 +857,13 @@ private enum class VolumeKeyScrollMode(val ratio: Float?) {
     PERCENT_75(0.75f),
     PERCENT_100(1f),
 }
+
+private val ScreenCornerAdaptation.labelRes: Int
+    get() = when (this) {
+        ScreenCornerAdaptation.DISABLED -> R.string.setting_display_page_screen_corner_adaptation_disabled
+        ScreenCornerAdaptation.INPUT_ONLY -> R.string.setting_display_page_screen_corner_adaptation_input_only
+        ScreenCornerAdaptation.ALL -> R.string.setting_display_page_screen_corner_adaptation_all
+    }
 
 internal enum class AppLanguage(val tag: String, val labelRes: Int) {
     SYSTEM("", R.string.setting_general_language_system),

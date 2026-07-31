@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -82,6 +83,8 @@ import me.rerere.rikkahub.ui.hooks.EditStateContent
 import me.rerere.rikkahub.ui.hooks.readBooleanPreference
 import me.rerere.rikkahub.ui.hooks.useEditState
 import me.rerere.rikkahub.ui.modifier.onClick
+import me.rerere.rikkahub.ui.theme.LocalScreenCornerAdaptationEnabled
+import me.rerere.rikkahub.ui.theme.LocalScreenEdgeCornerRadii
 import me.rerere.rikkahub.utils.navigateToChatPage
 import me.rerere.rikkahub.utils.toDp
 import org.koin.androidx.compose.koinViewModel
@@ -159,8 +162,18 @@ fun ChatDrawerContent(
 
     // Menu popup 状态
 
+    val drawerEndCorner = if (LocalScreenCornerAdaptationEnabled.current) {
+        LocalScreenEdgeCornerRadii.current?.end ?: 20.dp
+    } else {
+        20.dp
+    }
+
     ModalDrawerSheet(
-        modifier = Modifier.width(300.dp)
+        modifier = Modifier.width(300.dp),
+        drawerShape = RoundedCornerShape(
+            topEnd = drawerEndCorner,
+            bottomEnd = drawerEndCorner,
+        ),
     ) {
         Column(
             modifier = Modifier.padding(8.dp),
