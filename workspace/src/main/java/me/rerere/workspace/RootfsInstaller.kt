@@ -77,6 +77,53 @@ class RootfsInstaller(
         }
     }
 
+    fun restoreWorkspaceArchive(
+        root: String,
+        input: InputStream,
+    ) {
+        manager.ensureWorkspace(root)
+        val tempDir = manager.tempDir(root)
+        val archive = File(tempDir, "workspace-backup.tar.zst")
+        val stagingDir = File(tempDir, "workspace-restore-staging")
+        val linuxDir = manager.linuxDir(root)
+        val workspaceDir = manager.filesDir(root)
+
+        try {
+            stagingDir.deleteRecursively()
+            stagingDir.mkdirs()
+            archive.outputStream().buffered(BUFFER_SIZE).use { output ->
+                input.copyTo(output, BUFFER_SIZE)
+            }
+            extractTar(
+                archive = archive,
+                targetDir = stagingDir,
+                format = ArchiveFormat.TAR_ZST,
+                onProgress = {},
+            )
+
+            val restoredWorkspaceDir = File(stagingDir, "workspace")
+            workspaceDir.deleteRecursively()
+            if (restoredWorkspaceDir.exists()) {
+                require(restoredWorkspaceDir.renameTo(workspaceDir)) {
+                    "Failed to restore workspace files"
+                }
+            } else {
+                workspaceDir.mkdirs()
+            }
+
+            linuxDir.deleteRecursively()
+            require(stagingDir.renameTo(linuxDir)) {
+                "Failed to restore workspace Rootfs"
+            }
+            if (File(linuxDir, "bin/sh").isFile) {
+                patcher.patch(linuxDir)
+            }
+        } finally {
+            archive.delete()
+            stagingDir.deleteRecursively()
+        }
+    }
+
     private fun installArchive(
         archive: File,
         stagingDir: File,

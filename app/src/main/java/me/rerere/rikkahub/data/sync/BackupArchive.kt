@@ -5,6 +5,8 @@ import android.database.sqlite.SQLiteDatabase
 import com.github.luben.zstd.ZstdInputStream
 import com.github.luben.zstd.ZstdOutputStream
 import me.rerere.rikkahub.data.files.FileFolders
+import me.rerere.rikkahub.data.repository.WorkspaceRepository
+import me.rerere.workspace.WorkspaceShellStatus
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream
@@ -17,12 +19,13 @@ import java.util.zip.ZipOutputStream
 internal object BackupArchive {
     const val EXTENSION = ".tar"
 
-    fun create(
+    suspend fun create(
         context: Context,
         output: File,
         settingsJson: String,
         includeDatabase: Boolean,
         includeFiles: Boolean,
+        workspaceRepository: WorkspaceRepository,
     ) {
         TarArchiveOutputStream(FileOutputStream(output).buffered()).use { tar ->
             tar.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX)
@@ -54,9 +57,39 @@ internal object BackupArchive {
                     val folder = File(context.filesDir, folderName)
                     if (folder.isDirectory) addDirectory(tar, folder, folderName)
                 }
+                addWorkspaceArchives(
+                    tar = tar,
+                    context = context,
+                    workspaceRepository = workspaceRepository,
+                )
             }
             tar.finish()
         }
+    }
+
+    private suspend fun addWorkspaceArchives(
+        tar: TarArchiveOutputStream,
+        context: Context,
+        workspaceRepository: WorkspaceRepository,
+    ) {
+        tar.putArchiveEntry(TarArchiveEntry(WORKSPACES_ENTRY))
+        tar.closeArchiveEntry()
+        workspaceRepository.list()
+            .filter { it.shellStatus != WorkspaceShellStatus.DISABLED.name }
+            .forEach { workspace ->
+                val archive = File.createTempFile("workspace_", ".tar.zst", context.cacheDir)
+                try {
+                    archive.outputStream().use { output ->
+                        workspaceRepository.exportRootfsArchive(workspace.id, output)
+                    }
+                    require(workspace.root.isValidWorkspaceRoot()) {
+                        "Invalid workspace root: ${workspace.root}"
+                    }
+                    addFile(tar, archive, "$WORKSPACES_ENTRY${workspace.root}.tar.zst")
+                } finally {
+                    archive.delete()
+                }
+            }
     }
 
     /** Converts the new tar format to the historical zip entry layout used by the restore pipeline. */
@@ -125,4 +158,8 @@ internal object BackupArchive {
     private val ZSTD_WORKERS = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
     private const val DATABASE_COMPRESSION_LEVEL = 9
     private const val IO_BUFFER_SIZE = 128 * 1024
+    private const val WORKSPACES_ENTRY = "workspaces/"
+    private val WORKSPACE_ROOT_PATTERN = Regex("[A-Za-z0-9._-]+")
+    private fun String.isValidWorkspaceRoot(): Boolean =
+        this != "." && this != ".." && matches(WORKSPACE_ROOT_PATTERN)
 }

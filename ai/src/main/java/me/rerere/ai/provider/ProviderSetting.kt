@@ -14,15 +14,6 @@ data class BalanceOption(
 )
 
 @Serializable
-enum class ClaudePromptCacheTtl(val apiValue: String?) {
-    @SerialName("5m")
-    FIVE_MINUTES(null),
-
-    @SerialName("1h")
-    ONE_HOUR("1h")
-}
-
-@Serializable
 sealed class ProviderSetting {
     abstract val id: Uuid
     abstract val enabled: Boolean
@@ -189,8 +180,6 @@ sealed class ProviderSetting {
         @Transient override val shortDescription: @Composable (() -> Unit) = {},
         var apiKey: String = "",
         var baseUrl: String = "https://api.anthropic.com/v1",
-        var promptCaching: Boolean = false,
-        var promptCacheTtl: ClaudePromptCacheTtl = ClaudePromptCacheTtl.FIVE_MINUTES,
     ) : ProviderSetting() {
         override fun addModel(model: Model): ProviderSetting {
             return copy(models = models + model)

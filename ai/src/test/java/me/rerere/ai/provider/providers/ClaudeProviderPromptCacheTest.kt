@@ -1,12 +1,13 @@
 package me.rerere.ai.provider.providers
 
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
 import me.rerere.ai.core.InputSchema
 import me.rerere.ai.core.Tool
-import me.rerere.ai.provider.ClaudePromptCacheTtl
 import me.rerere.ai.provider.Model
 import me.rerere.ai.provider.ModelAbility
 import me.rerere.ai.provider.ProviderSetting
@@ -54,9 +55,14 @@ class ClaudeProviderPromptCacheTest {
         )
     }
 
+    private fun cacheControl(ttl: String? = null) = buildJsonObject {
+        put("type", "ephemeral")
+        ttl?.let { put("ttl", it) }
+    }
+
     @Test
-    fun `promptCaching=false should not add cache_control anywhere`() {
-        val providerSetting = ProviderSetting.Claude(promptCaching = false)
+    fun `missing cacheControl should not add cache_control anywhere`() {
+        val providerSetting = ProviderSetting.Claude()
         val messages = listOf(
             UIMessage.system("system prompt"),
             UIMessage.user("hello")
@@ -91,15 +97,16 @@ class ClaudeProviderPromptCacheTest {
     }
 
     @Test
-    fun `promptCaching=true should add cache_control to last system block and last tool`() {
-        val providerSetting = ProviderSetting.Claude(promptCaching = true)
+    fun `cacheControl should be added to last system block and last tool`() {
+        val providerSetting = ProviderSetting.Claude()
         val messages = listOf(
             UIMessage.system("system prompt"),
             UIMessage.user("hello")
         )
         val params = TextGenerationParams(
             model = Model(modelId = "claude-test", abilities = listOf(ModelAbility.TOOL)),
-            tools = listOf(dummyTool())
+            tools = listOf(dummyTool()),
+            cacheControl = cacheControl(),
         )
 
         val request = buildRequest(providerSetting, messages, params)
@@ -118,12 +125,13 @@ class ClaudeProviderPromptCacheTest {
     }
 
     @Test
-    fun `promptCaching=true without system should add cache_control to last tool`() {
-        val providerSetting = ProviderSetting.Claude(promptCaching = true)
+    fun `cacheControl without system should be added to last tool`() {
+        val providerSetting = ProviderSetting.Claude()
         val messages = listOf(UIMessage.user("hello"))
         val params = TextGenerationParams(
             model = Model(modelId = "claude-test", abilities = listOf(ModelAbility.TOOL)),
-            tools = listOf(dummyTool())
+            tools = listOf(dummyTool()),
+            cacheControl = cacheControl(),
         )
 
         val request = buildRequest(providerSetting, messages, params)
@@ -137,11 +145,8 @@ class ClaudeProviderPromptCacheTest {
     }
 
     @Test
-    fun `promptCaching=true with one hour ttl should add ttl to cache_control`() {
-        val providerSetting = ProviderSetting.Claude(
-            promptCaching = true,
-            promptCacheTtl = ClaudePromptCacheTtl.ONE_HOUR
-        )
+    fun `one hour cacheControl should add ttl to cache_control`() {
+        val providerSetting = ProviderSetting.Claude()
         val messages = listOf(
             UIMessage.system("system prompt"),
             UIMessage.user("first question"),
@@ -150,7 +155,8 @@ class ClaudeProviderPromptCacheTest {
         )
         val params = TextGenerationParams(
             model = Model(modelId = "claude-test", abilities = listOf(ModelAbility.TOOL)),
-            tools = listOf(dummyTool())
+            tools = listOf(dummyTool()),
+            cacheControl = cacheControl("1h"),
         )
 
         val request = buildRequest(providerSetting, messages, params)
@@ -177,8 +183,8 @@ class ClaudeProviderPromptCacheTest {
     }
 
     @Test
-    fun `promptCaching=true should add cache_control to second-to-last real user message`() {
-        val providerSetting = ProviderSetting.Claude(promptCaching = true)
+    fun `cacheControl should be added to second-to-last real user message`() {
+        val providerSetting = ProviderSetting.Claude()
         val messages = listOf(
             UIMessage.system("system prompt"),
             UIMessage.user("first question"),
@@ -189,7 +195,8 @@ class ClaudeProviderPromptCacheTest {
         )
         val params = TextGenerationParams(
             model = Model(modelId = "claude-test", abilities = emptyList()),
-            tools = emptyList()
+            tools = emptyList(),
+            cacheControl = cacheControl(),
         )
 
         val request = buildRequest(providerSetting, messages, params)
@@ -228,15 +235,16 @@ class ClaudeProviderPromptCacheTest {
     }
 
     @Test
-    fun `promptCaching=true with only one user message should not add cache_control to messages`() {
-        val providerSetting = ProviderSetting.Claude(promptCaching = true)
+    fun `cacheControl with only one user message should not be added to messages`() {
+        val providerSetting = ProviderSetting.Claude()
         val messages = listOf(
             UIMessage.system("system prompt"),
             UIMessage.user("only question")
         )
         val params = TextGenerationParams(
             model = Model(modelId = "claude-test", abilities = emptyList()),
-            tools = emptyList()
+            tools = emptyList(),
+            cacheControl = cacheControl(),
         )
 
         val request = buildRequest(providerSetting, messages, params)

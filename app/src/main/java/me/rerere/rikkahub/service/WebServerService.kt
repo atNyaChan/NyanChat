@@ -151,7 +151,7 @@ class WebServerService : Service() {
     )
 
     private fun buildStartingNotification() = NotificationCompat.Builder(this, WEB_SERVER_NOTIFICATION_CHANNEL_ID)
-        .setSmallIcon(R.drawable.small_icon)
+        .setSmallIcon(R.drawable.ic_launcher_foreground)
         .setContentTitle(getString(R.string.notification_channel_web_server))
         .setContentText(getString(R.string.notification_web_server_starting))
         .setContentIntent(buildLaunchPendingIntent())
@@ -170,7 +170,7 @@ class WebServerService : Service() {
             PendingIntent.FLAG_IMMUTABLE
         )
         return NotificationCompat.Builder(this, WEB_SERVER_NOTIFICATION_CHANNEL_ID)
-            .setSmallIcon(R.drawable.small_icon)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(getString(R.string.notification_web_server_running))
             .setContentText(url)
             .setContentIntent(buildLaunchPendingIntent())

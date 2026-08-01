@@ -172,11 +172,13 @@ fun ChatInput(
     val focusManager = LocalFocusManager.current
 
     val imeVisible = WindowInsets.isImeVisible
+    val attachToKeyboard = imeVisible &&
+        settings.displaySetting.squareChatInputBottomWhenKeyboardVisible
     val containerShape = rememberScreenEdgeCornerShape(
         horizontalInset = 8.dp,
-        bottomInset = if (imeVisible) 0.dp else 8.dp,
-        squareBottom = imeVisible,
-        enabled = !imeVisible &&
+        bottomInset = if (attachToKeyboard) 0.dp else 8.dp,
+        squareBottom = attachToKeyboard,
+        enabled = !attachToKeyboard &&
             settings.displaySetting.screenCornerAdaptation != ScreenCornerAdaptation.DISABLED,
     )
 

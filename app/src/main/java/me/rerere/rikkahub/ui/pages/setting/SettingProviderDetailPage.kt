@@ -116,7 +116,6 @@ import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.ShareSheet
-import me.rerere.rikkahub.ui.components.ui.SiliconFlowPowerByIcon
 import me.rerere.rikkahub.ui.components.ui.Tag
 import me.rerere.rikkahub.ui.components.ui.TagType
 import me.rerere.rikkahub.ui.components.ui.rememberShareSheetState
@@ -365,14 +364,6 @@ private fun SettingProviderConfigPage(
             }
         }
 
-        // 硅基流动图标
-        if (provider is ProviderSetting.OpenAI && provider.baseUrl.contains("siliconflow.cn")) {
-            SiliconFlowPowerByIcon(
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(vertical = 16.dp)
-            )
-        }
     }
 
     // Delete confirmation dialog
@@ -1737,17 +1728,6 @@ private fun ProviderOverrideSettings(
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
-            text = stringResource(R.string.setting_provider_page_provider_override),
-            style = MaterialTheme.typography.titleSmall
-        )
-
-        Text(
-            text = stringResource(R.string.setting_provider_page_provider_override_desc),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
         if (providerOverride != null) {
             OutlinedCard(
                 modifier = Modifier.fillMaxWidth()
@@ -1807,6 +1787,12 @@ private fun ProviderOverrideSettings(
                 Text(stringResource(R.string.setting_provider_page_add_provider_override))
             }
         }
+
+        Text(
+            text = stringResource(R.string.setting_provider_page_provider_override_desc),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
 
         // Provider configuration modal
         if (showProviderConfig && editingProvider != null) {

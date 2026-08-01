@@ -29,7 +29,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.dokar.sonner.ToastType
-import me.rerere.ai.provider.ClaudePromptCacheTtl
 import me.rerere.ai.provider.ProviderSetting
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.DEFAULT_PROVIDERS
@@ -340,41 +339,6 @@ private fun ProviderConfigureClaude(
         )
     }
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(stringResource(R.string.setting_provider_page_claude_prompt_caching))
-        Switch(
-            checked = provider.promptCaching,
-            onCheckedChange = { onEdit(provider.copy(promptCaching = it)) }
-        )
-    }
-
-    if (provider.promptCaching) {
-        Text(stringResource(R.string.setting_provider_page_claude_prompt_cache_ttl))
-        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-            ClaudePromptCacheTtl.entries.forEachIndexed { index, ttl ->
-                SegmentedButton(
-                    shape = SegmentedButtonDefaults.itemShape(
-                        index = index,
-                        count = ClaudePromptCacheTtl.entries.size
-                    ),
-                    label = {
-                        Text(
-                            when (ttl) {
-                                ClaudePromptCacheTtl.FIVE_MINUTES -> stringResource(R.string.setting_provider_page_claude_prompt_cache_ttl_5m)
-                                ClaudePromptCacheTtl.ONE_HOUR -> stringResource(R.string.setting_provider_page_claude_prompt_cache_ttl_1h)
-                            }
-                        )
-                    },
-                    selected = provider.promptCacheTtl == ttl,
-                    onClick = { onEdit(provider.copy(promptCacheTtl = ttl)) }
-                )
-            }
-        }
-    }
 }
 
 @Composable

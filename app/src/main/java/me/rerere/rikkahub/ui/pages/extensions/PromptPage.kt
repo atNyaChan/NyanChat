@@ -4,7 +4,6 @@ import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.ArrowDown01
 import me.rerere.hugeicons.stroke.FileImport
 import me.rerere.hugeicons.stroke.Add01
-import me.rerere.hugeicons.stroke.Tools
 import me.rerere.hugeicons.stroke.Share03
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.Cancel01
@@ -34,7 +33,7 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FloatingToolbarDefaults.ScreenOffset
 import androidx.compose.material3.FloatingToolbarDefaults.floatingToolbarVerticalNestedScroll
 import androidx.compose.material3.HorizontalFloatingToolbar
@@ -808,6 +807,13 @@ private fun LorebookEditSheet(
             onEdit(book.copy(entries = book.entries + edited))
         }
     }
+    val entryListState = rememberLazyListState()
+    val entryReorderableState = rememberReorderableLazyListState(entryListState) { from, to ->
+        val reordered = book.entries.toMutableList()
+        val item = reordered.removeAt(from.index)
+        reordered.add(to.index, item)
+        onEdit(book.copy(entries = reordered))
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -884,14 +890,32 @@ private fun LorebookEditSheet(
                     }
                 }
 
-                book.entries.forEach { entry ->
-                    RegexInjectionEntryCard(
-                        entry = entry,
-                        onEdit = { entryEditState.open(entry) },
-                        onDelete = {
-                            onEdit(book.copy(entries = book.entries - entry))
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height((book.entries.size * 80).coerceAtMost(360).dp),
+                    state = entryListState,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(book.entries, key = { it.id }) { entry ->
+                        ReorderableItem(
+                            state = entryReorderableState,
+                            key = entry.id,
+                        ) { isDragging ->
+                            RegexInjectionEntryCard(
+                                entry = entry,
+                                onEdit = { entryEditState.open(entry) },
+                                modifier = Modifier
+                                    .longPressDraggableHandle()
+                                    .graphicsLayer {
+                                        if (isDragging) {
+                                            scaleX = 1.05f
+                                            scaleY = 1.05f
+                                        }
+                                    },
+                            )
                         }
-                    )
+                    }
                 }
             }
 
@@ -956,7 +980,15 @@ private fun LorebookEditSheet(
                 entry = state,
                 onDismiss = { entryEditState.dismiss() },
                 onConfirm = { entryEditState.confirm() },
-                onEdit = { entryEditState.currentState = it }
+                onEdit = { entryEditState.currentState = it },
+                onDelete = book.entries
+                    .firstOrNull { it.id == state.id }
+                    ?.let { original ->
+                        {
+                            onEdit(book.copy(entries = book.entries - original))
+                            entryEditState.dismiss()
+                        }
+                    },
             )
         }
     }
@@ -965,10 +997,13 @@ private fun LorebookEditSheet(
 @Composable
 private fun RegexInjectionEntryCard(
     entry: PromptInjection.RegexInjection,
+    modifier: Modifier = Modifier,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    OutlinedItemCard(
+        modifier = modifier,
+        onClick = onEdit,
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1003,12 +1038,6 @@ private fun RegexInjectionEntryCard(
                     }
                 }
             }
-            IconButton(onClick = onEdit) {
-                Icon(HugeIcons.Tools, stringResource(R.string.prompt_page_edit))
-            }
-            IconButton(onClick = onDelete) {
-                Icon(HugeIcons.Delete01, stringResource(R.string.common_delete))
-            }
         }
     }
 }
@@ -1019,9 +1048,11 @@ private fun RegexInjectionEditDialog(
     entry: PromptInjection.RegexInjection,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
-    onEdit: (PromptInjection.RegexInjection) -> Unit
+    onEdit: (PromptInjection.RegexInjection) -> Unit,
+    onDelete: (() -> Unit)?,
 ) {
     var newKeyword by remember { mutableStateOf("") }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
     val sheetState = rememberBottomSheetState(
         initialValue = SheetValue.Hidden,
         enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
@@ -1123,52 +1154,61 @@ private fun RegexInjectionEditDialog(
                     )
                 }
 
-                // 关键词
-                Text(stringResource(R.string.prompt_page_keywords_label), style = MaterialTheme.typography.titleSmall)
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    entry.keywords.forEach { keyword ->
-                        InputChip(
-                            selected = false,
-                            onClick = {},
-                            label = { Text(keyword) },
-                            trailingIcon = {
-                                IconButton(
-                                    onClick = {
-                                        onEdit(entry.copy(keywords = entry.keywords - keyword))
-                                    },
-                                    modifier = Modifier.size(16.dp)
-                                ) {
-                                    Icon(HugeIcons.Cancel01, null, modifier = Modifier.size(12.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        stringResource(R.string.prompt_page_keywords_label),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        entry.keywords.forEach { keyword ->
+                            InputChip(
+                                selected = false,
+                                onClick = {},
+                                label = { Text(keyword) },
+                                trailingIcon = {
+                                    IconButton(
+                                        onClick = {
+                                            onEdit(entry.copy(keywords = entry.keywords - keyword))
+                                        },
+                                        modifier = Modifier.size(16.dp),
+                                    ) {
+                                        Icon(HugeIcons.Cancel01, null, modifier = Modifier.size(12.dp))
+                                    }
+                                }
+                            )
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        OutlinedTextField(
+                            value = newKeyword,
+                            onValueChange = { newKeyword = it },
+                            label = { Text(stringResource(R.string.prompt_page_new_keyword)) },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                        )
+                        IconButton(
+                            onClick = {
+                                if (newKeyword.isNotBlank()) {
+                                    onEdit(entry.copy(keywords = entry.keywords + newKeyword.trim()))
+                                    newKeyword = ""
                                 }
                             }
-                        )
-                    }
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = newKeyword,
-                        onValueChange = { newKeyword = it },
-                        label = { Text(stringResource(R.string.prompt_page_new_keyword)) },
-                        modifier = Modifier.weight(1f),
-                        singleLine = true
-                    )
-                    IconButton(
-                        onClick = {
-                            if (newKeyword.isNotBlank()) {
-                                onEdit(entry.copy(keywords = entry.keywords + newKeyword.trim()))
-                                newKeyword = ""
-                            }
+                        ) {
+                            Icon(HugeIcons.Add01, stringResource(R.string.common_add))
                         }
-                    ) {
-                        Icon(HugeIcons.Add01, stringResource(R.string.common_add))
                     }
+                    Text(
+                        text = stringResource(R.string.prompt_page_new_keyword_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
 
                 CardGroup {
@@ -1238,6 +1278,22 @@ private fun RegexInjectionEditDialog(
                     enableImport = false,
                     fullscreenButtonInsideField = true,
                 )
+                if (onDelete != null) {
+                    Button(
+                        onClick = { showDeleteConfirm = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError,
+                        ),
+                    ) {
+                        Icon(HugeIcons.Delete01, contentDescription = null)
+                        Text(
+                            stringResource(R.string.prompt_page_delete_entry),
+                            modifier = Modifier.padding(start = 8.dp),
+                        )
+                    }
+                }
             }
 
             val canSave = entry.keywords.isNotEmpty() || entry.constantActive
@@ -1257,5 +1313,25 @@ private fun RegexInjectionEditDialog(
                 }
             }
         }
+    }
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text(stringResource(R.string.prompt_page_delete_entry)) },
+            text = { Text(stringResource(R.string.prompt_page_delete_entry_confirm)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteConfirm = false
+                    onDelete?.invoke()
+                }) {
+                    Text(stringResource(R.string.common_delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            },
+        )
     }
 }

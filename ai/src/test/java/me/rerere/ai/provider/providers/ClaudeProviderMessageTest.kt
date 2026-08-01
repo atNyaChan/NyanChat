@@ -1,11 +1,11 @@
 package me.rerere.ai.provider.providers
 
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import me.rerere.ai.core.MessageRole
-import me.rerere.ai.provider.ClaudePromptCacheTtl
 import me.rerere.ai.ui.UIMessage
 import me.rerere.ai.ui.UIMessagePart
 import okhttp3.OkHttpClient
@@ -38,11 +38,10 @@ class ClaudeProviderMessageTest {
         val method = ClaudeProvider::class.java.getDeclaredMethod(
             "buildMessages",
             List::class.java,
-            Boolean::class.javaPrimitiveType,
-            ClaudePromptCacheTtl::class.java
+            JsonObject::class.java
         )
         method.isAccessible = true
-        return method.invoke(provider, messages, false, ClaudePromptCacheTtl.FIVE_MINUTES) as JsonArray
+        return method.invoke(provider, messages, null) as JsonArray
     }
 
     @Test

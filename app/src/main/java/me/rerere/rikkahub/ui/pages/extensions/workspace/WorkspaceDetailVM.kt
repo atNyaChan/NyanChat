@@ -36,8 +36,10 @@ class WorkspaceDetailVM(
     val installError = _installError.asStateFlow()
 
     init {
-        loadWorkspace()
-        refresh()
+        viewModelScope.launch {
+            repository.checkIntegrity()
+            loadWorkspace()
+        }
     }
 
     fun selectArea(area: WorkspaceStorageArea) {
@@ -139,6 +141,23 @@ class WorkspaceDetailVM(
                 refresh()
             }.onFailure { error ->
                 _state.update { it.copy(error = error.message ?: "导入文件失败") }
+            }
+        }
+    }
+
+    fun createDirectory(name: String) {
+        viewModelScope.launch {
+            runCatching {
+                repository.createDirectory(
+                    id = id,
+                    area = state.value.area,
+                    destinationPath = state.value.path,
+                    name = name,
+                )
+            }.onSuccess {
+                refresh()
+            }.onFailure { error ->
+                _state.update { it.copy(error = error.message ?: "新建文件夹失败") }
             }
         }
     }
@@ -298,13 +317,23 @@ class WorkspaceDetailVM(
     private fun loadWorkspace() {
         viewModelScope.launch {
             val workspace = repository.getById(id)
-            _state.update { it.copy(workspace = workspace) }
+            val workspaceHasContent = repository.workspaceHasContent(id)
+            _state.update {
+                it.copy(
+                    workspace = workspace,
+                    workspaceHasContent = workspaceHasContent,
+                )
+            }
+            if (workspaceHasContent) {
+                refresh()
+            }
         }
     }
 }
 
 data class WorkspaceDetailState(
     val workspace: WorkspaceEntity? = null,
+    val workspaceHasContent: Boolean = false,
     val area: WorkspaceStorageArea = WorkspaceStorageArea.FILES,
     val path: String = "",
     val entries: List<WorkspaceFileEntry> = emptyList(),

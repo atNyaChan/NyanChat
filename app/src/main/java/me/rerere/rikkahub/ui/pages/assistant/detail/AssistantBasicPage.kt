@@ -161,7 +161,7 @@ internal fun AssistantBasicContent(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp)
-            .padding(innerPadding)
+            .padding(top = innerPadding.calculateTopPadding())
             .padding(top = 8.dp)
             .padding(bottom = 16.dp)
             .imePadding(),

@@ -16,9 +16,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.svg.css
-import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.hooks.rememberAvatarShape
-import me.rerere.rikkahub.ui.theme.LocalDarkMode
 import me.rerere.rikkahub.utils.computeAIIconByName
 import me.rerere.rikkahub.utils.toCssHex
 
@@ -82,15 +80,5 @@ fun AutoAIIcon(
 private fun PreviewAutoAIIcon() {
     Column {
         AutoAIIcon("测试")
-    }
-}
-
-@Composable
-fun SiliconFlowPowerByIcon(modifier: Modifier = Modifier) {
-    val darkMode = LocalDarkMode.current
-    if (!darkMode) {
-        AsyncImage(model = R.drawable.siliconflow_light, contentDescription = null, modifier = modifier)
-    } else {
-        AsyncImage(model = R.drawable.siliconflow_dark, contentDescription = null, modifier = modifier)
     }
 }

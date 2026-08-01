@@ -5,9 +5,7 @@ import androidx.room.Embedded
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.RawQuery
 import androidx.room.Update
-import androidx.sqlite.db.SupportSQLiteQuery
 import kotlinx.coroutines.flow.Flow
 import me.rerere.rikkahub.data.db.entity.ManagedFileEntity
 
@@ -15,6 +13,11 @@ data class ManagedFileWithReference(
     @Embedded val file: ManagedFileEntity,
     val conversationId: String?,
     val nodeId: String?,
+)
+
+data class AttachmentReference(
+    val nodeId: String,
+    val attachmentUrl: String,
 )
 
 @Dao
@@ -34,8 +37,21 @@ interface ManagedFileDAO {
     @Query("SELECT * FROM managed_files WHERE folder = :folder ORDER BY created_at DESC")
     fun listByFolder(folder: String): Flow<List<ManagedFileEntity>>
 
-    @RawQuery
-    suspend fun listWithReferencesByFolderRaw(query: SupportSQLiteQuery): List<ManagedFileWithReference>
+    @Query("SELECT id FROM conversationentity ORDER BY update_at DESC")
+    suspend fun listConversationIdsByLatest(): List<String>
+
+    @Query(
+        """
+        SELECT mn.id AS nodeId, json_extract(part.value, '$.url') AS attachmentUrl
+        FROM message_node mn
+        JOIN json_each(mn.messages) message
+        JOIN json_tree(message.value, '$.parts') part
+        WHERE mn.conversation_id = :conversationId
+          AND part.type = 'object'
+          AND json_extract(part.value, '$.url') IS NOT NULL
+        """
+    )
+    suspend fun listAttachmentReferences(conversationId: String): List<AttachmentReference>
 
     @Query("DELETE FROM managed_files WHERE id = :id")
     suspend fun deleteById(id: Long): Int

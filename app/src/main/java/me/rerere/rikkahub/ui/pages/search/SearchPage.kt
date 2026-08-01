@@ -27,6 +27,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -150,7 +151,7 @@ fun SearchPage(initialModelId: String? = null, vm: SearchVM = koinViewModel()) {
                         verticalAlignment = Alignment.Bottom,
                     ) {
                         Text(stringResource(R.string.search_page_title))
-                        if (vm.hasSearchCriteria && !vm.isLoading) {
+                        if (vm.hasSearchCriteria && !vm.isLoading && !vm.isRebuilding) {
                             Text(
                                 text = stringResource(R.string.search_page_result_count, vm.resultCount),
                                 style = MaterialTheme.typography.labelSmall,
@@ -193,12 +194,22 @@ fun SearchPage(initialModelId: String? = null, vm: SearchVM = koinViewModel()) {
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = CustomColors.topBarColors.containerColor,
     ) { contentPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(contentPadding)
-        ) {
-            OutlinedTextField(
+        if (vm.isRebuilding) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(contentPadding),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(contentPadding)
+            ) {
+                OutlinedTextField(
                 value = vm.searchQuery,
                 onValueChange = { vm.onQueryChange(it) },
                 modifier = Modifier
@@ -235,39 +246,22 @@ fun SearchPage(initialModelId: String? = null, vm: SearchVM = koinViewModel()) {
                 keyboardActions = KeyboardActions(
                     onSearch = { vm.search() }
                 ),
-            )
-
-            if (vm.resultCount > 20) {
-                SearchPagination(
-                    currentPage = vm.currentPage,
-                    totalPages = vm.totalPages,
-                    onPageChange = vm::goToPage,
                 )
-            }
 
-            Box(modifier = Modifier.weight(1f)) {
-                if (vm.isLoading || vm.isRebuilding) {
-                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                if (vm.resultCount > 20) {
+                    SearchPagination(
+                        currentPage = vm.currentPage,
+                        totalPages = vm.totalPages,
+                        onPageChange = vm::goToPage,
+                    )
                 }
 
-                when {
-                    vm.isRebuilding -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            val (current, total) = vm.rebuildProgress
-                            Text(
-                                text = if (total > 0) stringResource(
-                                    R.string.search_page_rebuilding,
-                                    current,
-                                    total
-                                ) else stringResource(R.string.search_page_rebuilding_simple),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                Box(modifier = Modifier.weight(1f)) {
+                    if (vm.isLoading) {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                     }
+
+                    when {
                     !vm.hasSearchCriteria -> {
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -317,6 +311,7 @@ fun SearchPage(initialModelId: String? = null, vm: SearchVM = koinViewModel()) {
                                 )
                             }
                         }
+                    }
                     }
                 }
             }

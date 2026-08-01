@@ -16,9 +16,12 @@ import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.datastore.WebDavConfig
 import me.rerere.rikkahub.data.datastore.migration.SettingsJsonMigrator
 import me.rerere.rikkahub.data.db.AppDatabase
+import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.rikkahub.data.sync.BackupArchive
 import me.rerere.rikkahub.data.sync.RestoredAttachmentUrlRewriter
+import me.rerere.rikkahub.data.sync.RestoredZipWorkspaceStatusResetter
 import me.rerere.rikkahub.utils.fileSizeToString
+import me.rerere.workspace.RootfsInstaller
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -30,6 +33,7 @@ import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
 private const val TAG = "WebDavSync"
+private val WORKSPACE_ROOT_PATTERN = Regex("[A-Za-z0-9._-]+")
 
 class WebDavSync(
     private val settingsStore: SettingsStore,
@@ -37,6 +41,8 @@ class WebDavSync(
     private val context: Context,
     private val httpClient: HttpClient,
     private val database: AppDatabase,
+    private val workspaceRepository: WorkspaceRepository,
+    private val rootfsInstaller: RootfsInstaller,
 ) {
     private fun getClient(config: WebDavConfig): WebDavClient {
         return WebDavClient(config, httpClient)
@@ -151,6 +157,7 @@ class WebDavSync(
             settingsJson = json.encodeToString(settingsStore.settingsFlow.value),
             includeDatabase = config.items.contains(WebDavConfig.BackupItem.DATABASE),
             includeFiles = config.items.contains(WebDavConfig.BackupItem.FILES),
+            workspaceRepository = workspaceRepository,
         )
         backupFile
     }
@@ -243,7 +250,11 @@ class WebDavSync(
         ).toString()
     }
 
-    private suspend fun restoreFromBackupFile(backupFile: File, config: WebDavConfig): Unit =
+    private suspend fun restoreFromBackupFile(
+        backupFile: File,
+        config: WebDavConfig,
+        isCompatibleZipRestore: Boolean = true,
+    ): Unit =
         withContext(Dispatchers.IO) {
         Log.i(TAG, "restoreFromBackupFile: Starting restore from ${backupFile.absolutePath}")
 
@@ -251,7 +262,11 @@ class WebDavSync(
             val legacyZip = File(context.cacheDir, "restore_${System.currentTimeMillis()}.zip")
             try {
                 BackupArchive.toLegacyZip(backupFile, legacyZip)
-                restoreFromBackupFile(legacyZip, config)
+                restoreFromBackupFile(
+                    backupFile = legacyZip,
+                    config = config,
+                    isCompatibleZipRestore = false,
+                )
             } finally {
                 legacyZip.delete()
             }
@@ -320,6 +335,17 @@ class WebDavSync(
 
                         else -> {
                             if (config.items.contains(WebDavConfig.BackupItem.FILES) &&
+                                zipEntry.name.startsWith("workspaces/") &&
+                                zipEntry.name.endsWith(".tar.zst")
+                            ) {
+                                val workspaceRoot = zipEntry.name
+                                    .removePrefix("workspaces/")
+                                    .removeSuffix(".tar.zst")
+                                require(workspaceRoot.isValidWorkspaceRoot()) {
+                                    "Invalid workspace archive entry: ${zipEntry.name}"
+                                }
+                                rootfsInstaller.restoreWorkspaceArchive(workspaceRoot, zipIn)
+                            } else if (config.items.contains(WebDavConfig.BackupItem.FILES) &&
                                 zipEntry.name.startsWith("${FileFolders.UPLOAD}/")
                             ) {
                                 val fileName = zipEntry.name.substringAfter("${FileFolders.UPLOAD}/")
@@ -384,6 +410,9 @@ class WebDavSync(
         ) {
             runCatching { RestoredAttachmentUrlRewriter.rewrite(context, json) }
                 .onFailure { Log.w(TAG, "Failed to rewrite restored attachment URLs", it) }
+        }
+        if (isCompatibleZipRestore && config.items.contains(WebDavConfig.BackupItem.DATABASE)) {
+            RestoredZipWorkspaceStatusResetter.resetAfterCompatibleZipRestore(context)
         }
 
         Log.i(TAG, "restoreFromBackupFile: Restore completed successfully")
@@ -458,6 +487,9 @@ class WebDavSync(
         Log.i(TAG, "addVirtualFileToZip: $name (${content.length} bytes)")
     }
 }
+
+private fun String.isValidWorkspaceRoot(): Boolean =
+    this != "." && this != ".." && matches(WORKSPACE_ROOT_PATTERN)
 
 internal fun makeRikkaHubCompatible(settings: JsonElement): JsonElement {
     fun stripForkFields(element: JsonElement): JsonElement = when (element) {

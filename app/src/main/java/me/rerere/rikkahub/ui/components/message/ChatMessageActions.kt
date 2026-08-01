@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -90,6 +91,20 @@ fun ColumnScope.ChatMessageActionButtons(
         val actionIconColor = MaterialTheme.colorScheme.onSurfaceVariant
         val statsColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
 
+        if (
+            message.role == MessageRole.USER &&
+            settings.displaySetting.showDateTimeInMessage
+        ) {
+            Text(
+                text = message.createdAt.toJavaLocalDateTime().toMessageTimeString(
+                    todayLabel = stringResource(R.string.chat_page_today),
+                    yesterdayLabel = stringResource(R.string.chat_page_yesterday),
+                ),
+                style = MaterialTheme.typography.labelSmall,
+                color = statsColor,
+                maxLines = 1,
+            )
+        }
         if (message.role == MessageRole.USER && settings.displaySetting.showTokenUsage) {
             ProvideTextStyle(MaterialTheme.typography.labelSmall.copy(color = statsColor)) {
                 ExpandableCountStatsItem(
@@ -192,12 +207,19 @@ fun ColumnScope.ChatMessageActionButtons(
             onUpdate = onUpdate,
         )
 
-        if (settings.displaySetting.showDateTimeInMessage) {
+        if (
+            message.role != MessageRole.USER &&
+            settings.displaySetting.showDateTimeInMessage
+        ) {
             Text(
-                text = message.createdAt.toJavaLocalDateTime().toMessageTimeString(),
+                text = message.createdAt.toJavaLocalDateTime().toMessageTimeString(
+                    todayLabel = stringResource(R.string.chat_page_today),
+                    yesterdayLabel = stringResource(R.string.chat_page_yesterday),
+                ),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                color = statsColor,
                 maxLines = 1,
+                modifier = Modifier.offset(x = (-4).dp),
             )
         }
     }

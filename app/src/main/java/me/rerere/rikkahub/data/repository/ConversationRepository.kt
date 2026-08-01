@@ -388,8 +388,8 @@ class ConversationRepository(
     suspend fun countSearchMessages(keyword: String, mode: MessageSearchMode): Int =
         messageFtsManager.countSearch(keyword, mode)
 
-    suspend fun rebuildAllIndexes(onProgress: (current: Int, total: Int) -> Unit = { _, _ -> }) {
-        messageFtsManager.rebuildAll(onProgress)
+    suspend fun rebuildAllIndexes() {
+        messageFtsManager.rebuildAll()
     }
 
     suspend fun migrateMessageModelId(sourceModelId: Uuid, targetModelId: Uuid): Int {

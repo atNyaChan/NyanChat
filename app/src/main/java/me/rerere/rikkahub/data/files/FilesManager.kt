@@ -180,15 +180,26 @@ class FilesManager(
     }
 
     private suspend fun rebuildAttachmentIndex(folder: String): List<AttachmentIndexEntry> {
-        val entries = repository.listWithReferencesByFolder(folder).mapNotNull {
-            val conversationId = it.conversationId ?: return@mapNotNull null
-            val nodeId = it.nodeId ?: return@mapNotNull null
-            AttachmentIndexEntry(
-                relativePath = it.file.relativePath,
-                conversationId = conversationId,
-                nodeId = nodeId,
-            )
+        val files = repository.listByFolder(folder).first()
+        val filesByName = files.associateBy { it.relativePath.substringAfter('/') }
+        val conversationIds = repository.listConversationIdsByLatest()
+        val entriesByPath = linkedMapOf<String, AttachmentIndexEntry>()
+        conversationIds.forEach { conversationId ->
+            repository.listAttachmentReferences(conversationId).forEach references@{ reference ->
+                val file = filesByName.entries.firstOrNull { (fileName, _) ->
+                    reference.attachmentUrl.contains(fileName)
+                }?.value ?: return@references
+                entriesByPath.putIfAbsent(
+                    file.relativePath,
+                    AttachmentIndexEntry(
+                        relativePath = file.relativePath,
+                        conversationId = conversationId,
+                        nodeId = reference.nodeId,
+                    ),
+                )
+            }
         }
+        val entries = entriesByPath.values.toList()
         writeAttachmentIndex(entries)
         return entries
     }

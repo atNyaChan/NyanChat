@@ -103,6 +103,7 @@ fun SettingFilesPage(
     var showCleanDialog by remember { mutableStateOf(false) }
     var showRebuildDialog by remember { mutableStateOf(false) }
     var loadedFiles by remember { mutableStateOf<List<ManagedFileWithReference>?>(null) }
+    var isRebuilding by remember { mutableStateOf(false) }
     LaunchedEffect(filesManager) {
         loadedFiles = filesManager.listWithReferences(FileFolders.UPLOAD)
     }
@@ -137,11 +138,16 @@ fun SettingFilesPage(
                     onClick = {
                         showRebuildDialog = false
                         loadedFiles = null
+                        isRebuilding = true
                         scope.launch {
-                            loadedFiles = filesManager.listWithReferences(
-                                folder = FileFolders.UPLOAD,
-                                forceRebuild = true,
-                            )
+                            try {
+                                loadedFiles = filesManager.listWithReferences(
+                                    folder = FileFolders.UPLOAD,
+                                    forceRebuild = true,
+                                )
+                            } finally {
+                                isRebuilding = false
+                            }
                         }
                     }
                 ) {
@@ -290,56 +296,56 @@ fun SettingFilesPage(
                     end = innerPadding.calculateEndPadding(layoutDirection),
                 )
         ) {
-            FolderRow(
-                folders = folders,
-                selectedFolder = selectedFolder,
-                onFolderSelected = { selectedFolder = it }
-            )
-
-            if (loading) {
+            if (isRebuilding || loading) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator()
                 }
-            } else if (files.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(stringResource(R.string.setting_files_page_no_files))
-                }
             } else {
-                LazyVerticalStaggeredGrid(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(
-                        start = 16.dp,
-                        top = 16.dp,
-                        end = 16.dp,
-                        bottom = innerPadding.calculateBottomPadding() + 16.dp,
-                    ),
-                    verticalItemSpacing = 8.dp,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    state = gridState,
-                    columns = StaggeredGridCells.Fixed(2)
-                ) {
-                    items(files, key = { it.file.id }) { item ->
-                        FileItem(
-                            file = item.file,
-                            fileOnDisk = filesManager.getFile(item.file),
-                            showReference = selectedFolder != UNUSED_ATTACHMENTS,
-                            reference = item,
-                            onReference = { conversationId, nodeId ->
-                                navigateToChatPage(
-                                    navigator = navController,
-                                    chatId = Uuid.parse(conversationId),
-                                    nodeId = Uuid.parse(nodeId),
-                                )
-                            },
-                            onDelete = { pendingDelete = item.file },
-                        )
+                FolderRow(
+                    folders = folders,
+                    selectedFolder = selectedFolder,
+                    onFolderSelected = { selectedFolder = it }
+                )
+                if (files.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(stringResource(R.string.setting_files_page_no_files))
+                    }
+                } else {
+                    LazyVerticalStaggeredGrid(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            top = 16.dp,
+                            end = 16.dp,
+                            bottom = innerPadding.calculateBottomPadding() + 16.dp,
+                        ),
+                        verticalItemSpacing = 8.dp,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        state = gridState,
+                        columns = StaggeredGridCells.Fixed(2)
+                    ) {
+                        items(files, key = { it.file.id }) { item ->
+                            FileItem(
+                                file = item.file,
+                                fileOnDisk = filesManager.getFile(item.file),
+                                showReference = selectedFolder != UNUSED_ATTACHMENTS,
+                                reference = item,
+                                onReference = { conversationId, nodeId ->
+                                    navigateToChatPage(
+                                        navigator = navController,
+                                        chatId = Uuid.parse(conversationId),
+                                        nodeId = Uuid.parse(nodeId),
+                                    )
+                                },
+                                onDelete = { pendingDelete = item.file },
+                            )
+                        }
                     }
                 }
             }

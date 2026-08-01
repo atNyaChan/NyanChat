@@ -20,7 +20,7 @@ android {
         applicationId = "moe.nyanw.nyanchat"
         minSdk = 26
         targetSdk = 37
-        versionCode = 172
+        versionCode = 1
         versionName = "1.0.0-2.4.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -46,7 +46,7 @@ android {
                 if (storeFilePath != null && storePasswordValue != null &&
                     keyAliasValue != null && keyPasswordValue != null
                 ) {
-                    storeFile = file(storeFilePath)
+                    storeFile = rootProject.file(storeFilePath)
                     storePassword = storePasswordValue
                     keyAlias = keyAliasValue
                     keyPassword = keyPasswordValue
@@ -57,8 +57,7 @@ android {
 
     buildTypes {
         release {
-            // Personal builds use the local debug key while retaining release optimizations.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

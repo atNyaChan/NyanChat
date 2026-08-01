@@ -28,7 +28,6 @@ import kotlinx.serialization.json.putJsonArray
 import me.rerere.ai.core.MessageRole
 import me.rerere.ai.core.ReasoningLevel
 import me.rerere.ai.core.TokenUsage
-import me.rerere.ai.provider.ClaudePromptCacheTtl
 import me.rerere.ai.provider.ImageGenerationParams
 import me.rerere.ai.provider.Model
 import me.rerere.ai.provider.ModelAbility
@@ -277,14 +276,12 @@ class ClaudeProvider(private val client: OkHttpClient, context: Context? = null)
             put("model", params.model.modelId)
             put(
                 "messages",
-                buildMessages(messages, providerSetting.promptCaching, providerSetting.promptCacheTtl)
+                buildMessages(messages, params.cacheControl)
             )
             put("max_tokens", params.maxTokens ?: 64_000)
 
             // 顶层 cache_control: 让 Anthropic 自动管理缓存断点
-            if (providerSetting.promptCaching) {
-                put("cache_control", cacheControlEphemeral(providerSetting.promptCacheTtl))
-            }
+            params.cacheControl?.let { put("cache_control", it) }
 
             if (params.temperature != null && !params.reasoningLevel.isEnabled) put(
                 "temperature",
@@ -303,8 +300,8 @@ class ClaudeProvider(private val client: OkHttpClient, context: Context? = null)
                         add(buildJsonObject {
                             put("type", "text")
                             put("text", part.text)
-                            if (providerSetting.promptCaching && index == systemTextParts.lastIndex) {
-                                put("cache_control", cacheControlEphemeral(providerSetting.promptCacheTtl))
+                            if (params.cacheControl != null && index == systemTextParts.lastIndex) {
+                                put("cache_control", params.cacheControl)
                             }
                         })
                     }
@@ -347,8 +344,8 @@ class ClaudeProvider(private val client: OkHttpClient, context: Context? = null)
                             put("name", tool.name)
                             put("description", tool.description)
                             put("input_schema", json.encodeToJsonElement(tool.parameters()))
-                            if (providerSetting.promptCaching && index == params.tools.lastIndex) {
-                                put("cache_control", cacheControlEphemeral(providerSetting.promptCacheTtl))
+                            if (params.cacheControl != null && index == params.tools.lastIndex) {
+                                put("cache_control", params.cacheControl)
                             }
                         })
                     }
@@ -357,15 +354,9 @@ class ClaudeProvider(private val client: OkHttpClient, context: Context? = null)
         }.mergeCustomBody(params.customBody)
     }
 
-    private fun cacheControlEphemeral(promptCacheTtl: ClaudePromptCacheTtl) = buildJsonObject {
-        put("type", "ephemeral")
-        promptCacheTtl.apiValue?.let { put("ttl", it) }
-    }
-
     private fun buildMessages(
         messages: List<UIMessage>,
-        promptCaching: Boolean,
-        promptCacheTtl: ClaudePromptCacheTtl
+        cacheControl: JsonObject?,
     ) = buildJsonArray {
         messages
             .filter { it.isValidToUpload() && it.role != MessageRole.SYSTEM }
@@ -377,8 +368,8 @@ class ClaudeProvider(private val client: OkHttpClient, context: Context? = null)
                 }
             }
     }.let { messagesArray ->
-        if (!promptCaching) return@let messagesArray
-        insertMessagesCacheControl(messagesArray, promptCacheTtl)
+        if (cacheControl == null) return@let messagesArray
+        insertMessagesCacheControl(messagesArray, cacheControl)
     }
 
     /**
@@ -386,7 +377,7 @@ class ClaudeProvider(private val client: OkHttpClient, context: Context? = null)
      */
     private fun insertMessagesCacheControl(
         messages: JsonArray,
-        promptCacheTtl: ClaudePromptCacheTtl
+        cacheControl: JsonObject,
     ): JsonArray {
         // 找出所有非 tool_result 的 user message 的索引
         val realUserIndices = messages.mapIndexedNotNull { index, msg ->
@@ -413,7 +404,7 @@ class ClaudeProvider(private val client: OkHttpClient, context: Context? = null)
                 val newContent = JsonArray(content.mapIndexed { contentIndex, block ->
                     if (contentIndex == content.lastIndex) {
                         JsonObject(
-                            block.jsonObject + mapOf("cache_control" to cacheControlEphemeral(promptCacheTtl))
+                            block.jsonObject + mapOf("cache_control" to cacheControl)
                         )
                     } else block
                 })

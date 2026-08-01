@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonArrayBuilder
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -211,7 +212,7 @@ class ResponseAPI(
             if (params.maxTokens != null) put("max_output_tokens", params.maxTokens)
 
             // system instructions
-            if (messages.any { it.role == MessageRole.SYSTEM }) {
+            if (params.cacheControl == null && messages.any { it.role == MessageRole.SYSTEM }) {
                 val parts = messages.first { it.role == MessageRole.SYSTEM }.parts
                 put(
                     "instructions",
@@ -219,7 +220,8 @@ class ResponseAPI(
             }
 
             // messages
-            put("input", buildMessages(messages))
+            put("input", buildMessages(messages).withCacheBreakpoints(messages, params.cacheControl))
+            params.cacheControl?.let { put("cache_control", it) }
 
             // reasoning
             if (params.model.abilities.contains(ModelAbility.REASONING)) {
@@ -247,7 +249,7 @@ class ResponseAPI(
             if (useFunctionTools || params.model.tools.isNotEmpty()) {
                 putJsonArray("tools") {
                     if (useFunctionTools) {
-                        params.tools.forEach { tool ->
+                        params.tools.forEachIndexed { index, tool ->
                             add(buildJsonObject {
                                 put("type", "function")
                                 put("name", tool.name)
@@ -258,6 +260,9 @@ class ResponseAPI(
                                         tool.parameters()
                                     )
                                 )
+                                if (params.cacheControl != null && index == params.tools.lastIndex) {
+                                    put("cache_control", params.cacheControl)
+                                }
                             })
                         }
                     }
@@ -295,6 +300,69 @@ class ResponseAPI(
                     addUserItems(message)
                 }
             }
+    }
+
+    private fun JsonArray.withCacheBreakpoints(
+        sourceMessages: List<UIMessage>,
+        cacheControl: JsonObject?,
+    ): JsonArray {
+        if (cacheControl == null) return this
+        val userIndices = mapIndexedNotNull { index, item ->
+            val itemObject = item.jsonObject
+            if (itemObject["role"]?.jsonPrimitive?.contentOrNull == "user") index else null
+        }
+        val historyIndex = userIndices.getOrNull(userIndices.lastIndex - 1)
+        val cachedItems = mapIndexed { index, item ->
+            if (index == historyIndex) {
+                item.jsonObject.withCacheControlOnLastContent(cacheControl)
+            } else {
+                item
+            }
+        }
+        val systemText = sourceMessages.firstOrNull { it.role == MessageRole.SYSTEM }
+            ?.parts
+            ?.filterIsInstance<UIMessagePart.Text>()
+            ?.joinToString("\n") { it.text }
+            ?.takeIf { it.isNotBlank() }
+        return buildJsonArray {
+            if (systemText != null) {
+                add(buildJsonObject {
+                    put("role", "system")
+                    putJsonArray("content") {
+                        add(buildJsonObject {
+                            put("type", "input_text")
+                            put("text", systemText)
+                            put("cache_control", cacheControl)
+                        })
+                    }
+                })
+            }
+            cachedItems.forEach(::add)
+        }
+    }
+
+    private fun JsonObject.withCacheControlOnLastContent(cacheControl: JsonObject): JsonObject {
+        val content = this["content"] ?: return this
+        val cachedContent = when (content) {
+            is JsonArray -> JsonArray(content.mapIndexed { index, part ->
+                if (index == content.lastIndex && part is JsonObject) {
+                    JsonObject(part + ("cache_control" to cacheControl))
+                } else {
+                    part
+                }
+            })
+
+            is JsonPrimitive -> buildJsonArray {
+                add(buildJsonObject {
+                    put("type", "input_text")
+                    put("text", content)
+                    put("cache_control", cacheControl)
+                })
+            }
+
+            else -> content
+        }
+        return JsonObject(this + ("content" to cachedContent))
     }
 
     private fun JsonArrayBuilder.addAssistantItems(message: UIMessage) {

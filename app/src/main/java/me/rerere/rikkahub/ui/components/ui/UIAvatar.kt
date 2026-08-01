@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.layout.ContentScale
@@ -185,9 +186,14 @@ fun UIAvatar(
 
                     is Avatar.Dummy -> {
                         Image(
-                            painter = painterResource(R.drawable.small_icon),
+                            painter = painterResource(R.drawable.ic_launcher_foreground),
                             contentDescription = null,
-                            modifier = Modifier.fillMaxSize(0.9f),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer(
+                                    scaleX = 1.35f,
+                                    scaleY = 1.35f
+                                ),
                             contentScale = ContentScale.Crop,
                             colorFilter = if (invertDefaultAvatarInDarkMode && LocalDarkMode.current) {
                                 ColorFilter.tint(Color.White)

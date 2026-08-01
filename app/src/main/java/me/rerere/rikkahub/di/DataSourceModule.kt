@@ -243,6 +243,8 @@ val dataSourceModule = module {
             context = get(),
             httpClient = get(),
             database = get(),
+            workspaceRepository = get(),
+            rootfsInstaller = get(),
         )
     }
 
@@ -268,6 +270,8 @@ val dataSourceModule = module {
             context = get(),
             httpClient = get(),
             database = get(),
+            workspaceRepository = get(),
+            rootfsInstaller = get(),
         )
     }
 

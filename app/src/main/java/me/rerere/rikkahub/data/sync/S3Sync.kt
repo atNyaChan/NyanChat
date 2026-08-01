@@ -12,10 +12,12 @@ import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.datastore.migration.SettingsJsonMigrator
 import me.rerere.rikkahub.data.db.AppDatabase
+import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.rikkahub.data.sync.BackupArchive
 import me.rerere.rikkahub.data.sync.s3.S3Client
 import me.rerere.rikkahub.data.sync.s3.S3Config
 import me.rerere.rikkahub.utils.fileSizeToString
+import me.rerere.workspace.RootfsInstaller
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -27,6 +29,7 @@ import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
 private const val TAG = "S3Sync"
+private val WORKSPACE_ROOT_PATTERN = Regex("[A-Za-z0-9._-]+")
 
 class S3Sync(
     private val settingsStore: SettingsStore,
@@ -34,6 +37,8 @@ class S3Sync(
     private val context: Context,
     private val httpClient: HttpClient,
     private val database: AppDatabase,
+    private val workspaceRepository: WorkspaceRepository,
+    private val rootfsInstaller: RootfsInstaller,
 ) {
     private fun getS3Client(config: S3Config): S3Client {
         return S3Client(config, httpClient)
@@ -124,6 +129,7 @@ class S3Sync(
             settingsJson = json.encodeToString(settingsStore.settingsFlow.value),
             includeDatabase = config.items.contains(S3Config.BackupItem.DATABASE),
             includeFiles = config.items.contains(S3Config.BackupItem.FILES),
+            workspaceRepository = workspaceRepository,
         )
         backupFile
     }
@@ -211,7 +217,11 @@ class S3Sync(
         backupFile
     }
 
-    private suspend fun restoreFromBackupFile(backupFile: File, config: S3Config): Unit =
+    private suspend fun restoreFromBackupFile(
+        backupFile: File,
+        config: S3Config,
+        isCompatibleZipRestore: Boolean = true,
+    ): Unit =
         withContext(Dispatchers.IO) {
         Log.i(TAG, "restoreFromBackupFile: Starting restore from ${backupFile.absolutePath}")
 
@@ -219,7 +229,11 @@ class S3Sync(
             val legacyZip = File(context.cacheDir, "restore_${System.currentTimeMillis()}.zip")
             try {
                 BackupArchive.toLegacyZip(backupFile, legacyZip)
-                restoreFromBackupFile(legacyZip, config)
+                restoreFromBackupFile(
+                    backupFile = legacyZip,
+                    config = config,
+                    isCompatibleZipRestore = false,
+                )
             } finally {
                 legacyZip.delete()
             }
@@ -288,6 +302,17 @@ class S3Sync(
 
                         else -> {
                             if (config.items.contains(S3Config.BackupItem.FILES) &&
+                                zipEntry.name.startsWith("workspaces/") &&
+                                zipEntry.name.endsWith(".tar.zst")
+                            ) {
+                                val workspaceRoot = zipEntry.name
+                                    .removePrefix("workspaces/")
+                                    .removeSuffix(".tar.zst")
+                                require(workspaceRoot.isValidWorkspaceRoot()) {
+                                    "Invalid workspace archive entry: ${zipEntry.name}"
+                                }
+                                rootfsInstaller.restoreWorkspaceArchive(workspaceRoot, zipIn)
+                            } else if (config.items.contains(S3Config.BackupItem.FILES) &&
                                 zipEntry.name.startsWith("${FileFolders.UPLOAD}/")
                             ) {
                                 val fileName = zipEntry.name.substringAfter("${FileFolders.UPLOAD}/")
@@ -352,6 +377,9 @@ class S3Sync(
         ) {
             runCatching { RestoredAttachmentUrlRewriter.rewrite(context, json) }
                 .onFailure { Log.w(TAG, "Failed to rewrite restored attachment URLs", it) }
+        }
+        if (isCompatibleZipRestore && config.items.contains(S3Config.BackupItem.DATABASE)) {
+            RestoredZipWorkspaceStatusResetter.resetAfterCompatibleZipRestore(context)
         }
 
         Log.i(TAG, "restoreFromBackupFile: Restore completed successfully")
@@ -426,6 +454,9 @@ class S3Sync(
         Log.i(TAG, "addVirtualFileToZip: $name (${content.length} bytes)")
     }
 }
+
+private fun String.isValidWorkspaceRoot(): Boolean =
+    this != "." && this != ".." && matches(WORKSPACE_ROOT_PATTERN)
 
 data class S3BackupItem(
     val key: String,

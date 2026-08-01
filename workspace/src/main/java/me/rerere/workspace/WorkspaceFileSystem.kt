@@ -61,6 +61,13 @@ class WorkspaceFileSystem(
         return target.toEntry(root)
     }
 
+    fun createDirectory(root: File, path: String): WorkspaceFileEntry {
+        val directory = resolvePath(root, path)
+        require(!directory.exists()) { "Path already exists: $path" }
+        require(directory.mkdir()) { "Failed to create directory: $path" }
+        return directory.toEntry(root)
+    }
+
     private fun resolveConflict(file: File): File {
         val stem = file.nameWithoutExtension
         val ext = file.extension.let { if (it.isNotEmpty()) ".$it" else "" }

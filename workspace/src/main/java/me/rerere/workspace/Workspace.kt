@@ -12,9 +12,8 @@ data class Workspace(
 
 enum class WorkspaceShellStatus {
     DISABLED,
-    INSTALLING,
-    READY,
     BROKEN,
+    READY,
 }
 
 enum class WorkspaceStorageArea {

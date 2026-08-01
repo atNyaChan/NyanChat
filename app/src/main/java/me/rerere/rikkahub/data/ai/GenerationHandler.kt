@@ -440,20 +440,15 @@ class GenerationHandler(
             customBody = buildList {
                 addAll(assistant.customBodies)
                 addAll(model.customBodies)
-                if (assistant.contextCache != ContextCache.OFF) {
-                    add(
-                        CustomBody(
-                            key = "cache_control",
-                            value = buildJsonObject {
-                                put("type", JsonPrimitive("ephemeral"))
-                                if (assistant.contextCache == ContextCache.ONE_HOUR) {
-                                    put("ttl", JsonPrimitive("1h"))
-                                }
-                            }
-                        )
-                    )
+            },
+            cacheControl = assistant.contextCache.takeIf { it != ContextCache.OFF }?.let {
+                buildJsonObject {
+                    put("type", JsonPrimitive("ephemeral"))
+                    if (it == ContextCache.ONE_HOUR) {
+                        put("ttl", JsonPrimitive("1h"))
+                    }
                 }
-            }
+            },
         )
         if (stream) {
             providerImpl.streamText(

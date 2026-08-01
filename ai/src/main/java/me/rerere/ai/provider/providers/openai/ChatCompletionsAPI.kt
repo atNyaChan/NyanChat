@@ -267,8 +267,9 @@ class ChatCompletionsAPI(
                     messages = messages,
                     includeHistoryReasoning = providerSetting.includeHistoryReasoning,
                     supportInputModalities = params.model.inputModalities,
-                )
+                ).withCacheBreakpoints(params.cacheControl, textType = "text")
             )
+            params.cacheControl?.let { put("cache_control", it) }
 
             if (isModelAllowTemperature(params.model)) {
                 if (params.temperature != null) put("temperature", params.temperature)
@@ -433,7 +434,7 @@ class ChatCompletionsAPI(
 
             if (params.model.abilities.contains(ModelAbility.TOOL) && params.tools.isNotEmpty()) {
                 putJsonArray("tools") {
-                    params.tools.forEach { tool ->
+                    params.tools.forEachIndexed { index, tool ->
                         add(buildJsonObject {
                             put("type", "function")
                             put("function", buildJsonObject {
@@ -446,6 +447,9 @@ class ChatCompletionsAPI(
                                     )
                                 )
                             })
+                            if (params.cacheControl != null && index == params.tools.lastIndex) {
+                                put("cache_control", params.cacheControl)
+                            }
                         })
                     }
                 }
@@ -481,6 +485,60 @@ class ChatCompletionsAPI(
                 addNonAssistantMessage(message)
             }
         }
+    }
+
+    private fun JsonArray.withCacheBreakpoints(
+        cacheControl: JsonObject?,
+        textType: String,
+    ): JsonArray {
+        if (cacheControl == null) return this
+        val systemIndex = indexOfLast {
+            it.jsonObject["role"]?.jsonPrimitive?.contentOrNull == "system"
+        }
+        val userIndices = mapIndexedNotNull { index, message ->
+            val messageObject = message.jsonObject
+            if (messageObject["role"]?.jsonPrimitive?.contentOrNull != "user") return@mapIndexedNotNull null
+            val content = messageObject["content"]
+            val isToolResult = content is JsonArray && content.any {
+                it.jsonObject["type"]?.jsonPrimitive?.contentOrNull == "tool_result"
+            }
+            index.takeUnless { isToolResult }
+        }
+        val historyIndex = userIndices.getOrNull(userIndices.lastIndex - 1)
+        return JsonArray(mapIndexed { index, message ->
+            if (index == systemIndex || index == historyIndex) {
+                message.jsonObject.withCacheControlOnLastContent(cacheControl, textType)
+            } else {
+                message
+            }
+        })
+    }
+
+    private fun JsonObject.withCacheControlOnLastContent(
+        cacheControl: JsonObject,
+        textType: String,
+    ): JsonObject {
+        val content = this["content"] ?: return this
+        val cachedContent = when (content) {
+            is JsonArray -> JsonArray(content.mapIndexed { index, part ->
+                if (index == content.lastIndex && part is JsonObject) {
+                    JsonObject(part + ("cache_control" to cacheControl))
+                } else {
+                    part
+                }
+            })
+
+            is JsonPrimitive -> buildJsonArray {
+                add(buildJsonObject {
+                    put("type", textType)
+                    put("text", content)
+                    put("cache_control", cacheControl)
+                })
+            }
+
+            else -> content
+        }
+        return JsonObject(this + ("content" to cachedContent))
     }
 
     private fun JsonArrayBuilder.addAssistantMessages(

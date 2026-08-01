@@ -19,7 +19,7 @@ class NotificationConfig {
     var title: String = ""
     var content: String = ""
     var subText: String? = null
-    var smallIcon: Int = R.drawable.small_icon
+    var smallIcon: Int = R.drawable.ic_launcher_foreground
     var autoCancel: Boolean = false
     var ongoing: Boolean = false
     var onlyAlertOnce: Boolean = false

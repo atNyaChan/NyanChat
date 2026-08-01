@@ -362,6 +362,7 @@ class GoogleProvider(private val client: OkHttpClient, context: Context? = null)
                             "text",
                             systemMessage.parts.filterIsInstance<UIMessagePart.Text>()
                                 .joinToString { it.text })
+                        params.cacheControl?.let { put("cache_control", it) }
                     })
                 }
             })
@@ -416,15 +417,16 @@ class GoogleProvider(private val client: OkHttpClient, context: Context? = null)
         // Contents (user messages)
         put(
             "contents",
-            buildContents(messages)
+            buildContents(messages).withCacheBreakpoint(params.cacheControl)
         )
+        params.cacheControl?.let { put("cache_control", it) }
 
         // Tools
         if (params.tools.isNotEmpty() && params.model.abilities.contains(ModelAbility.TOOL)) {
             put("tools", buildJsonArray {
                 add(buildJsonObject {
                     put("functionDeclarations", buildJsonArray {
-                        params.tools.forEach { tool ->
+                        params.tools.forEachIndexed { index, tool ->
                             add(buildJsonObject {
                                 put("name", JsonPrimitive(tool.name))
                                 put("description", JsonPrimitive(tool.description))
@@ -442,6 +444,9 @@ class GoogleProvider(private val client: OkHttpClient, context: Context? = null)
                                             )
                                         )
                                 )
+                                if (params.cacheControl != null && index == params.tools.lastIndex) {
+                                    put("cache_control", params.cacheControl)
+                                }
                             })
                         }
                     })
@@ -614,6 +619,32 @@ class GoogleProvider(private val client: OkHttpClient, context: Context? = null)
                     }
                 }
         }
+    }
+
+    private fun JsonArray.withCacheBreakpoint(cacheControl: JsonObject?): JsonArray {
+        if (cacheControl == null) return this
+        val realUserIndices = mapIndexedNotNull { index, content ->
+            val contentObject = content.jsonObject
+            if (contentObject["role"]?.jsonPrimitive?.contentOrNull != "user") {
+                return@mapIndexedNotNull null
+            }
+            val parts = contentObject["parts"]?.jsonArray.orEmpty()
+            val isToolResult = parts.any { "functionResponse" in it.jsonObject }
+            index.takeUnless { isToolResult }
+        }
+        val historyIndex = realUserIndices.getOrNull(realUserIndices.lastIndex - 1) ?: return this
+        return JsonArray(mapIndexed { index, content ->
+            if (index != historyIndex) return@mapIndexed content
+            val contentObject = content.jsonObject
+            val parts = contentObject["parts"]?.jsonArray ?: return@mapIndexed content
+            JsonObject(contentObject + ("parts" to JsonArray(parts.mapIndexed { partIndex, part ->
+                if (partIndex == parts.lastIndex && part is JsonObject) {
+                    JsonObject(part + ("cache_control" to cacheControl))
+                } else {
+                    part
+                }
+            })))
+        })
     }
 
     private fun JsonArrayBuilder.addModelMessage(message: UIMessage) {

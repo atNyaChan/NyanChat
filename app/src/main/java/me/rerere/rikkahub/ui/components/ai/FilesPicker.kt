@@ -329,7 +329,7 @@ private fun WorkspacePickerListItem(
         trailingContent = {
             if (boundWorkspace != null) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (boundWorkspace.shellStatus != WorkspaceShellStatus.DISABLED.name) {
+                    if (boundWorkspace.shellStatus == WorkspaceShellStatus.READY.name) {
                         IconButton(onClick = { onNavigateToTerminal(boundWorkspace.id) }) {
                             Icon(
                                 imageVector = HugeIcons.ComputerTerminal01,

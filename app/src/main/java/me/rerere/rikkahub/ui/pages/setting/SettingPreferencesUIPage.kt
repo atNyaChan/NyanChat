@@ -276,6 +276,24 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                         },
                     )
                     item(
+                        headlineContent = {
+                            Text(stringResource(R.string.setting_display_page_square_input_on_keyboard_title))
+                        },
+                        supportingContent = {
+                            Text(stringResource(R.string.setting_display_page_square_input_on_keyboard_desc))
+                        },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.squareChatInputBottomWhenKeyboardVisible,
+                                onCheckedChange = {
+                                    updateDisplaySetting(
+                                        displaySetting.copy(squareChatInputBottomWhenKeyboardVisible = it)
+                                    )
+                                },
+                            )
+                        },
+                    )
+                    item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_enable_message_generation_haptic_effect_title)) },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_enable_message_generation_haptic_effect_desc)) },
                         trailingContent = {

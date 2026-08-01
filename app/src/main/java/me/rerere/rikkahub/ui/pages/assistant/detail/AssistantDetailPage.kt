@@ -40,7 +40,6 @@ import me.rerere.rikkahub.ui.components.ui.UIAvatar
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.hooks.heroAnimation
 import me.rerere.rikkahub.ui.theme.CustomColors
-import me.rerere.rikkahub.utils.plus
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -77,12 +76,14 @@ fun AssistantDetailPage(id: String) {
         containerColor = CustomColors.topBarColors.containerColor
     ) { innerPadding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = innerPadding + PaddingValues(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = innerPadding.calculateTopPadding()),
+            contentPadding = PaddingValues(
                 start = 8.dp,
                 top = 8.dp,
                 end = 8.dp,
-                bottom = 16.dp,
+                bottom = 8.dp,
             ),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {

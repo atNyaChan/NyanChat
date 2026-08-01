@@ -42,6 +42,10 @@ class WorkspaceManager(
 
     fun hasRootfs(root: String): Boolean = File(linuxDir(root), "bin/sh").isFile
 
+    fun hasWorkspaceContent(root: String): Boolean =
+        linuxDir(root).listFiles()?.isNotEmpty() == true ||
+            filesDir(root).listFiles()?.isNotEmpty() == true
+
     /** Rootfs 内由宿主机或内核提供内容的挂载点，不属于 Rootfs 归档内容。 */
     fun externalRootfsMountTargets(): Set<String> = buildSet {
         add(ROOTFS_WORKSPACE_DIR)
@@ -55,8 +59,34 @@ class WorkspaceManager(
         root: String,
         path: String = "",
         area: WorkspaceStorageArea = WorkspaceStorageArea.FILES,
-    ): List<WorkspaceFileEntry> =
-        fileSystem.list(areaDir(root, area), path)
+    ): List<WorkspaceFileEntry> {
+        val location = storageLocation(root, area, path)
+        val logicalParent = path.replace('\\', '/').trim().trim('/')
+        val entries = fileSystem.list(location.rootDir, location.relativePath).map { entry ->
+            entry.copy(
+                path = logicalParent.takeIf(String::isNotBlank)
+                    ?.let { "$it/${entry.name}" }
+                    ?: entry.name,
+            )
+        }
+        if (area != WorkspaceStorageArea.LINUX) return entries
+
+        val mountedEntries = mountedRootfsLocations(root)
+            .filter { it.target.substringBeforeLast('/', missingDelimiterValue = "").trim('/') == logicalParent }
+            .map { mount ->
+                WorkspaceFileEntry(
+                    path = mount.target.trim('/'),
+                    name = mount.target.substringAfterLast('/'),
+                    isDirectory = true,
+                    sizeBytes = 0L,
+                    updatedAt = mount.source.lastModified(),
+                )
+            }
+        return (entries + mountedEntries)
+            .distinctBy(WorkspaceFileEntry::name)
+            .sortedWith(compareBy<WorkspaceFileEntry> { !it.isDirectory }.thenBy { it.name.lowercase() })
+            .take(config.maxListEntries)
+    }
 
     fun readText(
         root: String,
@@ -79,9 +109,28 @@ class WorkspaceManager(
         fileName: String,
         inputStream: InputStream,
     ): WorkspaceFileEntry {
-        val areaRoot = areaDir(root, area)
-        val targetPath = if (destinationPath.isBlank()) fileName else "$destinationPath/$fileName"
-        return fileSystem.importBytes(areaRoot, targetPath, inputStream)
+        val location = storageLocation(root, area, destinationPath)
+        val targetPath = location.relativePath
+            .takeIf(String::isNotBlank)
+            ?.let { "$it/$fileName" }
+            ?: fileName
+        return fileSystem.importBytes(location.rootDir, targetPath, inputStream)
+    }
+
+    fun createDirectory(
+        root: String,
+        destinationPath: String,
+        area: WorkspaceStorageArea = WorkspaceStorageArea.FILES,
+        name: String,
+    ): WorkspaceFileEntry {
+        require(name.isNotBlank()) { "Directory name is required" }
+        require('/' !in name && '\\' !in name) { "Directory name cannot contain path separators" }
+        val location = storageLocation(root, area, destinationPath)
+        val targetPath = location.relativePath
+            .takeIf(String::isNotBlank)
+            ?.let { "$it/$name" }
+            ?: name
+        return fileSystem.createDirectory(location.rootDir, targetPath)
     }
 
     fun fileSize(
@@ -89,7 +138,8 @@ class WorkspaceManager(
         path: String,
         area: WorkspaceStorageArea = WorkspaceStorageArea.FILES,
     ): Long {
-        val file = fileSystem.resolve(areaDir(root, area), path)
+        val location = storageLocation(root, area, path)
+        val file = fileSystem.resolve(location.rootDir, location.relativePath)
         require(file.exists()) { "File does not exist: $path" }
         require(file.isFile) { "Path is not a file: $path" }
         return file.length()
@@ -101,7 +151,8 @@ class WorkspaceManager(
         area: WorkspaceStorageArea = WorkspaceStorageArea.FILES,
         outputStream: OutputStream,
     ) {
-        val file = fileSystem.resolve(areaDir(root, area), path)
+        val location = storageLocation(root, area, path)
+        val file = fileSystem.resolve(location.rootDir, location.relativePath)
         require(file.exists()) { "File does not exist: $path" }
         require(file.isFile) { "Path is not a file: $path" }
         outputStream.use { out -> file.inputStream().use { it.copyTo(out) } }
@@ -165,8 +216,10 @@ class WorkspaceManager(
         path: String,
         recursive: Boolean = false,
         area: WorkspaceStorageArea = WorkspaceStorageArea.FILES,
-    ): Boolean =
-        fileSystem.delete(areaDir(root, area), path, recursive)
+    ): Boolean {
+        val location = storageLocation(root, area, path)
+        return fileSystem.delete(location.rootDir, location.relativePath, recursive)
+    }
 
     fun moveFile(root: String, source: String, target: String, overwrite: Boolean = false): WorkspaceFileEntry =
         fileSystem.move(filesDir(root), source, target, overwrite)
@@ -218,10 +271,18 @@ class WorkspaceManager(
         }
     }
 
-    private fun areaDir(root: String, area: WorkspaceStorageArea): File = when (area) {
-        WorkspaceStorageArea.FILES -> filesDir(root)
-        WorkspaceStorageArea.LINUX -> linuxDir(root)
+    private fun storageLocation(
+        root: String,
+        area: WorkspaceStorageArea,
+        path: String,
+    ): RootfsLocation = when (area) {
+        WorkspaceStorageArea.FILES -> RootfsLocation(filesDir(root), path)
+        WorkspaceStorageArea.LINUX -> resolveRootfsPath(root, "/${path.trimStart('/')}")
     }
+
+    private fun mountedRootfsLocations(root: String): List<MountedRootfsLocation> =
+        listOf(MountedRootfsLocation(ROOTFS_WORKSPACE_DIR, filesDir(root))) +
+            bindMounts.map { MountedRootfsLocation(it.target, it.source) }
 
     fun cleanupAllTempDirs() {
         val roots = baseDir.listFiles()?.filter { it.isDirectory } ?: return
@@ -256,4 +317,9 @@ class WorkspaceManager(
 data class RootfsLocation(
     val rootDir: File,
     val relativePath: String,
+)
+
+private data class MountedRootfsLocation(
+    val target: String,
+    val source: File,
 )

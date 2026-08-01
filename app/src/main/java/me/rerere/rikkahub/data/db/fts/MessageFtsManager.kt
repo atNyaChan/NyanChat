@@ -74,10 +74,8 @@ class MessageFtsManager(private val database: AppDatabase) {
         db.execSQL("DELETE FROM message_search_cache WHERE conversation_id = ?", arrayOf(conversationId))
     }
 
-    suspend fun rebuildAll(
-        onProgress: (current: Int, total: Int) -> Unit = { _, _ -> },
-    ) = withContext(Dispatchers.IO) {
-        rebuildMessageSearchCache(db, onProgress)
+    suspend fun rebuildAll() = withContext(Dispatchers.IO) {
+        rebuildMessageSearchCache(db)
     }
 
     suspend fun search(
@@ -494,18 +492,10 @@ private fun String.orderedSnippet(ranges: List<IntRange>): String {
 private fun UIMessage.extractFtsText(): String =
     parts.filterIsInstance<UIMessagePart.Text>()
         .joinToString("\n") { it.text }
-        .take(10_000)
 
-internal fun rebuildMessageSearchCache(
-    db: SupportSQLiteDatabase,
-    onProgress: (current: Int, total: Int) -> Unit = { _, _ -> },
-) {
+internal fun rebuildMessageSearchCache(db: SupportSQLiteDatabase) {
     db.execSQL("DELETE FROM message_search_cache")
-    val total = db.query("SELECT COUNT(*) FROM conversationentity").use { cursor ->
-        if (cursor.moveToFirst()) cursor.getInt(0) else 0
-    }
     db.query("SELECT id, title, update_at FROM conversationentity").use { conversations ->
-        var current = 0
         while (conversations.moveToNext()) {
             val conversationId = conversations.getString(0)
             val title = conversations.getString(1)
@@ -544,8 +534,6 @@ internal fun rebuildMessageSearchCache(
                     }
                 }
             }
-            current++
-            onProgress(current, total)
         }
     }
 }

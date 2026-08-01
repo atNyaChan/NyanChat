@@ -70,8 +70,6 @@ class SearchVM(
         private set
     var isRebuilding by mutableStateOf(false)
         private set
-    var rebuildProgress by mutableStateOf(0 to 0)
-        private set
 
     init {
         if (searchMode != MessageSearchMode.FUZZY && sortOrder == MessageSearchSort.RELEVANCE) {
@@ -210,11 +208,8 @@ class SearchVM(
     fun rebuildIndex() {
         viewModelScope.launch {
             isRebuilding = true
-            rebuildProgress = 0 to 0
             try {
-                conversationRepo.rebuildAllIndexes { current, total ->
-                    rebuildProgress = current to total
-                }
+                conversationRepo.rebuildAllIndexes()
             } finally {
                 isRebuilding = false
             }

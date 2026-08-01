@@ -27,6 +27,12 @@ class WorkspaceVM(
         }
     }
 
+    fun checkIntegrity() {
+        viewModelScope.launch {
+            repository.checkIntegrity()
+        }
+    }
+
     fun reorderWorkspaces(workspaces: List<WorkspaceEntity>) {
         viewModelScope.launch {
             settingsStore.update { it.copy(workspaceOrder = workspaces.map(WorkspaceEntity::id)) }
