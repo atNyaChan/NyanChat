@@ -194,8 +194,7 @@
   <string name="backup_page_path">路径</string>
   <string name="backup_page_reminder">提醒</string>
   <string name="backup_page_reminder_dismiss">忽略</string>
-  <string name="backup_page_reminder_enable">启用备份提醒</string>
-  <string name="backup_page_reminder_interval">提醒间隔</string>
+  <string name="backup_page_reminder_enable">备份提醒</string>
   <string name="backup_page_reminder_interval_days">%1$d 天</string>
   <string name="backup_page_reminder_last_days">上次备份于 %1$d 天前</string>
   <string name="backup_page_reminder_last_time">上次备份：%1$s</string>
@@ -686,6 +685,7 @@
   <string name="setting_display_page_screen_corner_adaptation_disabled">禁用</string>
   <string name="setting_display_page_screen_corner_adaptation_input_only">仅输入框</string>
   <string name="setting_display_page_screen_corner_adaptation_all">全部</string>
+  <string name="setting_display_page_screen_corner_adaptation_square">直角</string>
   <string name="setting_display_page_volume_key_scroll_desc">设置使用音量键翻页时的滚动幅度，适合墨水屏</string>
   <string name="setting_display_page_volume_key_scroll_title">音量键翻页</string>
   <string name="setting_files_page_clean_action">清理</string>
@@ -784,7 +784,7 @@
   <string name="setting_page_config">配置</string>
   <string name="setting_page_config_api_desc">你还没有配置 API 和模型，请先配置</string>
   <string name="setting_page_config_api_title">请配置 API 和模型</string>
-  <string name="setting_page_chat_and_prompts">聊天和提示词</string>
+  <string name="setting_page_chat_and_prompts">聊天与提示词</string>
   <string name="setting_page_data_backup_desc">备份或覆盖还原整个 NyanChat</string>
   <string name="setting_page_data_settings">数据管理</string>
   <string name="setting_page_default_model_desc">设置各个功能的默认模型</string>
@@ -905,6 +905,8 @@
   <string name="setting_provider_page_model_id_placeholder">例如：gpt-3.5-turbo</string>
   <string name="setting_provider_page_model_name">模型名称</string>
   <string name="setting_provider_page_set_price">设置价格</string>
+  <string name="setting_provider_page_price_formula_without_cache">未出现缓存读取：输入价格 × 输入 token + 输出价格 × 输出 token</string>
+  <string name="setting_provider_page_price_formula_with_cache">出现缓存读取：缓存写入价格 ×（输入 token − 缓存读取 token）+ 缓存读取价格 × 缓存读取 token + 输出价格 × 输出 token</string>
   <string name="setting_provider_page_price_unit">单位：美元 / 百万 Token</string>
   <string name="setting_provider_page_input_price">输入价格</string>
   <string name="setting_provider_page_output_price">输出价格</string>
@@ -1243,7 +1245,9 @@
   <string name="backup_page_export_failed_detail">导出失败：%1$s</string>
   <string name="backup_page_rikkahub_format">类 RikkaHub 格式</string>
   <string name="backup_page_tar_desc">导出 App 数据为 TAR 文件（不兼容 RikkaHub）</string>
-  <string name="backup_page_legacy_export">导出旧版格式（RikkaHub 兼容）</string>
+  <string name="backup_page_legacy_export">导出旧版格式（兼容 RikkaHub）</string>
+  <string name="backup_page_delete_remote_title">删除 %1$s 备份文件</string>
+  <string name="backup_page_delete_remote_desc">确定删除这个备份文件吗？此操作无法撤销。</string>
   <string name="backup_page_legacy_export_desc">移除本 Fork 新增的不兼容设置字段；不包含工作区环境</string>
   <string name="backup_page_import_local">导入本地文件</string>
   <string name="setting_page_web_server_url">网址</string>

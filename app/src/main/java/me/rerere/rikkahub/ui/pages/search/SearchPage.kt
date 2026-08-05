@@ -409,6 +409,7 @@ private fun SearchModeMenuButton(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
+            shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
         ) {
             MessageSearchMode.entries.forEach { mode ->
                 DropdownMenuItem(
@@ -450,6 +451,7 @@ private fun SearchModeMenuButton(
         DropdownMenu(
             expanded = modelOptionsExpanded,
             onDismissRequest = { modelOptionsExpanded = false },
+            shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
         ) {
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.search_page_model_existing)) },
@@ -476,6 +478,7 @@ private fun SearchModeMenuButton(
         DropdownMenu(
             expanded = attachmentOptionsExpanded,
             onDismissRequest = { attachmentOptionsExpanded = false },
+            shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
         ) {
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.search_page_attachment_existing)) },
@@ -495,6 +498,7 @@ private fun SearchModeMenuButton(
         DropdownMenu(
             expanded = deletedModelsExpanded,
             onDismissRequest = { deletedModelsExpanded = false },
+            shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
         ) {
             if (deletedModelIds.isEmpty()) {
                 DropdownMenuItem(
@@ -534,6 +538,7 @@ private fun SortMenuButton(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
+            shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
         ) {
             MessageSearchSort.entries
                 .filter { it != MessageSearchSort.RELEVANCE || allowRelevance }

@@ -194,8 +194,7 @@
   <string name="backup_page_path">Path</string>
   <string name="backup_page_reminder">Reminder</string>
   <string name="backup_page_reminder_dismiss">Dismiss</string>
-  <string name="backup_page_reminder_enable">Enable Backup Reminder</string>
-  <string name="backup_page_reminder_interval">Reminder Interval</string>
+  <string name="backup_page_reminder_enable">Backup Reminder</string>
   <string name="backup_page_reminder_interval_days">%1$d days</string>
   <string name="backup_page_reminder_last_days">Last backup %1$d days ago</string>
   <string name="backup_page_reminder_last_time">Last backup: %1$s</string>
@@ -692,6 +691,7 @@
   <string name="setting_display_page_screen_corner_adaptation_disabled">Disabled</string>
   <string name="setting_display_page_screen_corner_adaptation_input_only">Input Only</string>
   <string name="setting_display_page_screen_corner_adaptation_all">All</string>
+  <string name="setting_display_page_screen_corner_adaptation_square">Square</string>
   <string name="setting_display_page_volume_key_scroll_desc">Set the scroll amount when using volume keys to turn pages, suitable for e-ink screens</string>
   <string name="setting_display_page_volume_key_scroll_title">Volume Key Page Scroll</string>
   <string name="setting_files_page_clean_action">Clean</string>
@@ -919,6 +919,8 @@
   <string name="setting_provider_page_model_id_placeholder">e.g.: gpt-3.5-turbo</string>
   <string name="setting_provider_page_model_name">Model Name</string>
   <string name="setting_provider_page_set_price">Set pricing</string>
+  <string name="setting_provider_page_price_formula_without_cache">Without cache reads: input price × input tokens + output price × output tokens</string>
+  <string name="setting_provider_page_price_formula_with_cache">With cache reads: cache write price × (input tokens − cache read tokens) + cache read price × cache read tokens + output price × output tokens</string>
   <string name="setting_provider_page_price_unit">Prices are in USD per million tokens</string>
   <string name="setting_provider_page_input_price">Input price</string>
   <string name="setting_provider_page_output_price">Output price</string>
@@ -1245,6 +1247,8 @@
   <string name="backup_page_rikkahub_format">RikkaHub-like format</string>
   <string name="backup_page_tar_desc">Export app data as a TAR file (not compatible with RikkaHub)</string>
   <string name="backup_page_legacy_export">Export legacy format (RikkaHub compatible)</string>
+  <string name="backup_page_delete_remote_title">Delete %1$s backup file</string>
+  <string name="backup_page_delete_remote_desc">Are you sure you want to delete this backup file? This action cannot be undone.</string>
   <string name="backup_page_legacy_export_desc">Remove incompatible settings added by this fork; workspace environments are not included</string>
   <string name="backup_page_import_local">Import local file</string>
   <string name="setting_page_web_server_url">URL</string>

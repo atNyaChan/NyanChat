@@ -178,8 +178,10 @@ fun ChatInput(
         horizontalInset = 8.dp,
         bottomInset = if (attachToKeyboard) 0.dp else 8.dp,
         squareBottom = attachToKeyboard,
-        enabled = !attachToKeyboard &&
-            settings.displaySetting.screenCornerAdaptation != ScreenCornerAdaptation.DISABLED,
+        enabled = !attachToKeyboard && (
+            settings.displaySetting.screenCornerAdaptation == ScreenCornerAdaptation.INPUT_ONLY ||
+                settings.displaySetting.screenCornerAdaptation == ScreenCornerAdaptation.ALL
+        ),
     )
 
     fun sendMessage() {
@@ -512,20 +514,23 @@ private fun TextInputRow(
     val quickMessages = remember(settings.quickMessages, assistant.quickMessageIds) {
         settings.getQuickMessagesOfAssistant(assistant)
     }
+    val attachToKeyboard = WindowInsets.isImeVisible &&
+        settings.displaySetting.squareChatInputBottomWhenKeyboardVisible
 
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         if (state.isEditing()) {
             Surface(
-                shape = rememberScreenEdgeCornerShape(),
+                shape = RoundedCornerShape(20.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                modifier = Modifier.padding(horizontal = if (attachToKeyboard) 4.dp else 8.dp),
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 14.dp, vertical = 4.dp),
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(text = stringResource(R.string.editing))
@@ -776,6 +781,7 @@ private fun QuickMessageButton(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
+            shape = rememberScreenEdgeCornerShape(),
             modifier = Modifier
                 .widthIn(min = 200.dp, max = 360.dp)
         ) {

@@ -133,6 +133,38 @@ fun SettingPage(vm: SettingVM = koinViewModel()) {
                 }
             }
 
+            item("modelServices") {
+                CardGroup(
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    title = { Text(stringResource(R.string.setting_page_model_and_services)) },
+                ) {
+                    item(
+                        onClick = { navController.navigate(Screen.SettingProvider) },
+                        leadingContent = { Icon(HugeIcons.Brain02, null) },
+                        supportingContent = { Text(stringResource(R.string.setting_page_providers_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_provider_page_title)) },
+                    )
+                    item(
+                        onClick = { navController.navigate(Screen.SettingSearch) },
+                        leadingContent = { Icon(HugeIcons.GlobalSearch, null) },
+                        supportingContent = { Text(stringResource(R.string.setting_page_search_service_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_page_search_title)) },
+                    )
+                    item(
+                        onClick = { navController.navigate(Screen.SettingMcp) },
+                        leadingContent = { Icon(HugeIcons.McpServer, null) },
+                        supportingContent = { Text(stringResource(R.string.setting_page_mcp_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_mcp_page_title)) },
+                    )
+                    item(
+                        onClick = { navController.navigate(Screen.SettingSpeech) },
+                        leadingContent = { Icon(HugeIcons.Megaphone01, null) },
+                        supportingContent = { Text(stringResource(R.string.setting_page_tts_service_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_page_tts_service)) },
+                    )
+                }
+            }
+
             item("chatAndPrompts") {
                 CardGroup(
                     modifier = Modifier.padding(horizontal = 8.dp),
@@ -167,38 +199,6 @@ fun SettingPage(vm: SettingVM = koinViewModel()) {
                         leadingContent = { Icon(HugeIcons.Folder01, null) },
                         headlineContent = { Text(stringResource(R.string.workspace_page_title)) },
                         supportingContent = { Text(stringResource(R.string.extensions_page_workspace_desc)) },
-                    )
-                }
-            }
-
-            item("modelServices") {
-                CardGroup(
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                    title = { Text(stringResource(R.string.setting_page_model_and_services)) },
-                ) {
-                    item(
-                        onClick = { navController.navigate(Screen.SettingProvider) },
-                        leadingContent = { Icon(HugeIcons.Brain02, null) },
-                        supportingContent = { Text(stringResource(R.string.setting_page_providers_desc)) },
-                        headlineContent = { Text(stringResource(R.string.setting_provider_page_title)) },
-                    )
-                    item(
-                        onClick = { navController.navigate(Screen.SettingSearch) },
-                        leadingContent = { Icon(HugeIcons.GlobalSearch, null) },
-                        supportingContent = { Text(stringResource(R.string.setting_page_search_service_desc)) },
-                        headlineContent = { Text(stringResource(R.string.setting_page_search_title)) },
-                    )
-                    item(
-                        onClick = { navController.navigate(Screen.SettingMcp) },
-                        leadingContent = { Icon(HugeIcons.McpServer, null) },
-                        supportingContent = { Text(stringResource(R.string.setting_page_mcp_desc)) },
-                        headlineContent = { Text(stringResource(R.string.setting_mcp_page_title)) },
-                    )
-                    item(
-                        onClick = { navController.navigate(Screen.SettingSpeech) },
-                        leadingContent = { Icon(HugeIcons.Megaphone01, null) },
-                        supportingContent = { Text(stringResource(R.string.setting_page_tts_service_desc)) },
-                        headlineContent = { Text(stringResource(R.string.setting_page_tts_service)) },
                     )
                 }
             }

@@ -194,8 +194,7 @@
   <string name="backup_page_path">경로</string>
   <string name="backup_page_reminder">알림</string>
   <string name="backup_page_reminder_dismiss">무시</string>
-  <string name="backup_page_reminder_enable">백업 알림 활성화</string>
-  <string name="backup_page_reminder_interval">알림 간격</string>
+  <string name="backup_page_reminder_enable">백업 알림</string>
   <string name="backup_page_reminder_interval_days">%1$d일</string>
   <string name="backup_page_reminder_last_days">마지막 백업이 %1$d일 전이에요</string>
   <string name="backup_page_reminder_last_time">마지막 백업: %1$s</string>
@@ -638,6 +637,7 @@
   <string name="setting_display_page_screen_corner_adaptation_disabled">사용 안 함</string>
   <string name="setting_display_page_screen_corner_adaptation_input_only">입력창만</string>
   <string name="setting_display_page_screen_corner_adaptation_all">전체</string>
+  <string name="setting_display_page_screen_corner_adaptation_square">직각</string>
   <string name="setting_display_page_volume_key_scroll_desc">볼륨 키로 페이지를 넘길 때의 스크롤 양을 설정합니다. 전자 잉크 화면에 적합합니다</string>
   <string name="setting_display_page_volume_key_scroll_title">볼륨 키 페이지 스크롤</string>
   <string name="setting_files_page_clean_action">정리</string>
@@ -1224,6 +1224,8 @@
   <string name="backup_page_rikkahub_format">RikkaHub 유사 형식</string>
   <string name="backup_page_tar_desc">앱 데이터를 TAR 파일로 내보내기(RikkaHub와 호환되지 않음)</string>
   <string name="backup_page_legacy_export">레거시 형식 내보내기(RikkaHub 호환)</string>
+  <string name="backup_page_delete_remote_title">%1$s 백업 파일 삭제</string>
+  <string name="backup_page_delete_remote_desc">이 백업 파일을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.</string>
   <string name="backup_page_legacy_export_desc">이 Fork에서 추가한 비호환 설정 제거; 작업 공간 환경은 포함되지 않음</string>
   <string name="backup_page_import_local">로컬 파일 가져오기</string>
   <string name="setting_page_web_server_url">URL</string>
@@ -1256,6 +1258,8 @@
   <string name="setting_provider_page_output_price">출력 가격</string>
   <string name="setting_provider_page_price_unit">단위: 백만 token당 미국 달러</string>
   <string name="setting_provider_page_set_price">가격 설정</string>
+  <string name="setting_provider_page_price_formula_without_cache">캐시 읽기 없음: 입력 가격 × 입력 토큰 + 출력 가격 × 출력 토큰</string>
+  <string name="setting_provider_page_price_formula_with_cache">캐시 읽기 있음: 캐시 쓰기 가격 × (입력 토큰 − 캐시 읽기 토큰) + 캐시 읽기 가격 × 캐시 읽기 토큰 + 출력 가격 × 출력 토큰</string>
   <string name="setting_tts_page_fish_audio_speed_description">음성 속도(0.5~2.0, 1.0은 보통 속도)</string>
   <string name="setting_tts_page_temperature">온도</string>
   <string name="setting_tts_page_temperature_description">음성의 무작위성을 조절합니다(0.0~1.0, 높을수록 표현력이 풍부함)</string>

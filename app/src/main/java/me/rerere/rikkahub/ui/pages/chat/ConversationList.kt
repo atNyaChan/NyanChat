@@ -329,6 +329,7 @@ private fun ConversationItem(
             DropdownMenu(
                 expanded = showDropdownMenu,
                 onDismissRequest = { showDropdownMenu = false },
+                shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
             ) {
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.conversation_multi_select)) },

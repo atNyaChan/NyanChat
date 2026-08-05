@@ -68,7 +68,6 @@ import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.ArrowRight01
 import me.rerere.hugeicons.stroke.Brain02
 import me.rerere.hugeicons.stroke.Cancel01
-import me.rerere.hugeicons.stroke.DragDropHorizontal
 import me.rerere.hugeicons.stroke.Favourite
 import me.rerere.hugeicons.stroke.Image03
 import me.rerere.hugeicons.stroke.Search01
@@ -490,7 +489,15 @@ private fun ColumnScope.ModelList(
                         onSelect = onSelect,
                         modifier = Modifier
                             .scale(if (isDragging) 0.95f else 1f)
-                            .animateItem(),
+                            .animateItem()
+                            .longPressDraggableHandle(
+                                onDragStarted = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
+                                },
+                                onDragStopped = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
+                                },
+                            ),
                         providerSetting = provider,
                         select = model.id == currentModel,
                         onDismiss = {
@@ -516,20 +523,7 @@ private fun ColumnScope.ModelList(
                                 )
                             }
                         },
-                        dragHandle = {
-                            Icon(
-                                imageVector = HugeIcons.DragDropHorizontal,
-                                contentDescription = null,
-                                modifier = Modifier.longPressDraggableHandle(
-                                    onDragStarted = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
-                                    },
-                                    onDragStopped = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
-                                    }
-                                )
-                            )
-                        }
+                        longPressToEdit = false,
                     )
                 }
             }
@@ -672,21 +666,25 @@ private fun ModelItem(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     tail: @Composable RowScope.() -> Unit = {},
-    dragHandle: @Composable (RowScope.() -> Unit)? = null
+    longPressToEdit: Boolean = true,
 ) {
     val navController = LocalNavController.current
     val interactionSource = remember { MutableInteractionSource() }
     OutlinedItemCard(
         modifier = modifier.combinedClickable(
             enabled = true,
-            onLongClick = {
-                onDismiss()
-                navController.navigate(
-                    Screen.SettingProviderDetail(
-                        providerId = providerSetting.id.toString(),
-                        modelId = model.id.toString(),
+            onLongClick = if (longPressToEdit) {
+                {
+                    onDismiss()
+                    navController.navigate(
+                        Screen.SettingProviderDetail(
+                            providerId = providerSetting.id.toString(),
+                            modelId = model.id.toString(),
+                        )
                     )
-                )
+                }
+            } else {
+                null
             },
             onClick = { onSelect(model) },
             interactionSource = interactionSource,
@@ -746,7 +744,6 @@ private fun ModelItem(
                 }
                 tail()
             }
-            dragHandle?.let { it() }
         }
     }
 }

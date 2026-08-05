@@ -752,6 +752,16 @@ private fun ModelSettingsForm(
                                     modifier = Modifier.weight(1f),
                                 )
                             }
+                            Text(
+                                text = stringResource(R.string.setting_provider_page_price_formula_without_cache),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Text(
+                                text = stringResource(R.string.setting_provider_page_price_formula_with_cache),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
 
                         if (isEdit && onDeleteModel != null) {

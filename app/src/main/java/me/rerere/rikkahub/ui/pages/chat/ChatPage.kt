@@ -208,6 +208,12 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
             }
         }
     }
+    val invalidateRequestWordCount = {
+        requestWordCountJob?.cancel()
+        requestWordCountJob = null
+        cachedRequestBaseWordCount = null
+        cachedRequestToolCount = 0
+    }
 
     // 初始化输入状态（处理传入的 files 和 text 参数）
     LaunchedEffect(files, text) {
@@ -269,6 +275,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
                     requestWordCount = requestWordCount,
                     requestToolCount = cachedRequestToolCount,
                     onRequestWordCountRefresh = refreshRequestWordCount,
+                    onRequestWordCountInvalidate = invalidateRequestWordCount,
                     loadingJob = loadingJob,
                     processingStatus = processingStatus,
                     setting = setting,
@@ -304,6 +311,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
                     requestWordCount = requestWordCount,
                     requestToolCount = cachedRequestToolCount,
                     onRequestWordCountRefresh = refreshRequestWordCount,
+                    onRequestWordCountInvalidate = invalidateRequestWordCount,
                     loadingJob = loadingJob,
                     processingStatus = processingStatus,
                     setting = setting,
@@ -333,6 +341,7 @@ private fun ChatPageContent(
     requestWordCount: Int?,
     requestToolCount: Int,
     onRequestWordCountRefresh: () -> Unit,
+    onRequestWordCountInvalidate: () -> Unit,
     loadingJob: Job?,
     processingStatus: String? = null,
     setting: Settings,
@@ -470,6 +479,7 @@ private fun ChatPageContent(
                         )
                     },
                     onMoreClick = {
+                        onRequestWordCountInvalidate()
                         showFilesSheet = true
                     },
                 )
@@ -565,7 +575,10 @@ private fun ChatPageContent(
                 conversation = conversation,
                 assistant = assistant,
                 vm = vm,
-                onDismiss = { showFilesSheet = false },
+                onDismiss = {
+                    showFilesSheet = false
+                    onRequestWordCountRefresh()
+                },
             )
         }
     }
@@ -821,8 +834,9 @@ private fun TopBar(
                     }
                 },
                 color = Color.Transparent,
+                modifier = Modifier.fillMaxWidth(),
             ) {
-                Column {
+                Column(modifier = Modifier.fillMaxWidth()) {
                     val assistant = settings.getCurrentAssistant()
                     val model = settings.getCurrentChatModel()
                     Text(

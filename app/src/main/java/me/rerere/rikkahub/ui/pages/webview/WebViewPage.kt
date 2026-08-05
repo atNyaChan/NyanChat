@@ -115,7 +115,8 @@ fun WebViewPage(url: String, contentId: String) {
 
                         DropdownMenu(
                             expanded = showDropdown,
-                            onDismissRequest = { showDropdown = false }
+                            onDismissRequest = { showDropdown = false },
+                            shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
                         ) {
                             DropdownMenuItem(
                                 text = { Text("Open in Browser") },

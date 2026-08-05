@@ -25,6 +25,7 @@ import me.rerere.hugeicons.stroke.Cancel01
 import me.rerere.hugeicons.stroke.DatabaseRestore
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
+import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 
 @Composable
 fun BackupReminderCard(
@@ -39,7 +40,13 @@ fun BackupReminderCard(
 
     if (!isDue || dismissed) return
 
-    Card(onClick = onClick) {
+    Card(
+        onClick = onClick,
+        shape = rememberScreenEdgeCornerShape(
+            horizontalInset = 8.dp,
+            bottomInset = 8.dp,
+        ),
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

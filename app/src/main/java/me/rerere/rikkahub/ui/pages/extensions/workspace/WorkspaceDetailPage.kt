@@ -997,6 +997,7 @@ private fun WorkspaceFileCard(
                 DropdownMenu(
                     expanded = menuExpanded,
                     onDismissRequest = { menuExpanded = false },
+                    shape = rememberScreenEdgeCornerShape(),
                 ) {
                     if (!entry.isDirectory) {
                         DropdownMenuItem(

@@ -166,7 +166,7 @@ fun UIAvatar(
                         AsyncImage(
                             model = value.url,
                             contentDescription = null,
-                            modifier = Modifier.fillMaxSize(0.9f),
+                            modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop,
                         )
                     }

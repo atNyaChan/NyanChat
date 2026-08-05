@@ -270,7 +270,7 @@ fun ChatMessageActionsSheet(
                     onDismissRequest()
                     onEdit()
                 },
-                shape = MaterialTheme.shapes.medium
+                shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape()
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -298,7 +298,7 @@ fun ChatMessageActionsSheet(
                         onDismissRequest()
                         onTranslateRequest()
                     },
-                    shape = MaterialTheme.shapes.medium,
+                    shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -317,7 +317,7 @@ fun ChatMessageActionsSheet(
                     onDismissRequest()
                     onShare()
                 },
-                shape = MaterialTheme.shapes.medium,
+                shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -344,7 +344,7 @@ fun ChatMessageActionsSheet(
                     onDismissRequest()
                     onFork()
                 },
-                shape = MaterialTheme.shapes.medium,
+                shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -371,7 +371,7 @@ fun ChatMessageActionsSheet(
                         onDismissRequest()
                         onToggleFavorite()
                     },
-                    shape = MaterialTheme.shapes.medium,
+                    shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -399,7 +399,7 @@ fun ChatMessageActionsSheet(
             // Delete
             Card(
                 onClick = { showDeleteConfirm = true },
-                shape = MaterialTheme.shapes.medium,
+                shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.errorContainer
                 )

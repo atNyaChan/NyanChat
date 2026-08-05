@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import kotlinx.serialization.Serializable
 import me.rerere.rikkahub.data.datastore.ScreenCornerAdaptation
@@ -105,6 +106,8 @@ fun RikkahubTheme(
         LocalScreenEdgeCornerRadii provides screenCornerRadii,
         LocalScreenCornerAdaptationEnabled provides
             (settings.displaySetting.screenCornerAdaptation == ScreenCornerAdaptation.ALL),
+        LocalScreenCornerFallbackRadius provides
+            if (settings.displaySetting.screenCornerAdaptation == ScreenCornerAdaptation.SQUARE) 4.dp else 20.dp,
         LocalOverscrollFactory provides null
     ) {
         MaterialExpressiveTheme(

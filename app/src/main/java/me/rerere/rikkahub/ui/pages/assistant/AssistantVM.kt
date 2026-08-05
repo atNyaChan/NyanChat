@@ -14,6 +14,7 @@ import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.Avatar
 import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.rikkahub.data.repository.MemoryRepository
+import kotlin.uuid.Uuid
 
 class AssistantVM(
     private val settingsStore: SettingsStore,
@@ -41,18 +42,30 @@ class AssistantVM(
         }
     }
 
-    fun removeAssistant(assistant: Assistant) {
+    fun removeAssistant(
+        assistant: Assistant,
+        onRemoved: (fallbackChatId: Uuid?) -> Unit = {},
+    ) {
         viewModelScope.launch {
             cleanupAssistantFiles(assistant)
 
             val settings = settings.value
+            val remainingAssistants = settings.assistants.filter { it.id != assistant.id }
+            val fallbackAssistant = if (settings.assistantId == assistant.id) {
+                remainingAssistants.firstOrNull()
+            } else {
+                null
+            }
             settingsStore.update(
                 settings.copy(
-                    assistants = settings.assistants.filter { it.id != assistant.id }
+                    assistants = remainingAssistants,
+                    assistantId = fallbackAssistant?.id ?: settings.assistantId,
                 )
             )
             memoryRepository.deleteMemoriesOfAssistant(assistant.id.toString())
             conversationRepo.deleteConversationOfAssistant(assistant.id)
+            val fallbackChatId = fallbackAssistant?.let { Uuid.random() }
+            onRemoved(fallbackChatId)
         }
     }
 

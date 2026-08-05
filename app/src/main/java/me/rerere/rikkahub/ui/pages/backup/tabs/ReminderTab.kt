@@ -8,10 +8,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,6 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.BackupReminderConfig
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.pages.backup.BackupVM
 import me.rerere.rikkahub.utils.toLocalDateTime
 import java.time.Instant
@@ -48,53 +45,45 @@ fun ReminderTab(vm: BackupVM) {
         ) {
             item(
                 trailingContent = {
-                    Switch(
-                        checked = config.enabled,
-                        onCheckedChange = { updateConfig(config.copy(enabled = it)) },
+                    val intervals = listOf<Int?>(null, 1, 3, 7, 14, 30)
+                    Select(
+                        options = intervals,
+                        selectedOption = config.intervalDays.takeIf { config.enabled },
+                        onOptionSelected = { days ->
+                            updateConfig(
+                                config.copy(
+                                    enabled = days != null,
+                                    intervalDays = days ?: config.intervalDays,
+                                )
+                            )
+                        },
+                        optionToString = { days ->
+                            if (days == null) {
+                                stringResource(R.string.common_off)
+                            } else {
+                                stringResource(R.string.backup_page_reminder_interval_days, days)
+                            }
+                        },
+                        fitToOptions = true,
                     )
                 },
                 headlineContent = { Text(stringResource(R.string.backup_page_reminder_enable)) },
             )
 
-            if (config.enabled) {
-                item(
-                    headlineContent = { Text(stringResource(R.string.backup_page_reminder_interval)) },
-                    supportingContent = {
-                        val intervals = listOf(1, 3, 7, 14, 30)
-                        SingleChoiceSegmentedButtonRow(
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            intervals.forEachIndexed { index, days ->
-                                SegmentedButton(
-                                    shape = SegmentedButtonDefaults.itemShape(
-                                        index = index,
-                                        count = intervals.size,
-                                    ),
-                                    onClick = { updateConfig(config.copy(intervalDays = days)) },
-                                    selected = config.intervalDays == days,
-                                ) {
-                                    Text(stringResource(R.string.backup_page_reminder_interval_days, days))
-                                }
-                            }
+            item(
+                headlineContent = {
+                    Text(
+                        if (config.lastBackupTime == 0L) {
+                            stringResource(R.string.backup_page_reminder_no_record)
+                        } else {
+                            stringResource(
+                                R.string.backup_page_reminder_last_time,
+                                Instant.ofEpochMilli(config.lastBackupTime).toLocalDateTime()
+                            )
                         }
-                    },
-                )
-
-                item(
-                    headlineContent = {
-                        Text(
-                            if (config.lastBackupTime == 0L) {
-                                stringResource(R.string.backup_page_reminder_no_record)
-                            } else {
-                                stringResource(
-                                    R.string.backup_page_reminder_last_time,
-                                    Instant.ofEpochMilli(config.lastBackupTime).toLocalDateTime()
-                                )
-                            }
-                        )
-                    },
-                )
-            }
+                    )
+                },
+            )
         }
     }
 }

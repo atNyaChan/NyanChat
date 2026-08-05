@@ -194,8 +194,7 @@
   <string name="backup_page_path">Путь</string>
   <string name="backup_page_reminder">Напоминание</string>
   <string name="backup_page_reminder_dismiss">Отклонить</string>
-  <string name="backup_page_reminder_enable">Включить напоминание о резервном копировании</string>
-  <string name="backup_page_reminder_interval">Интервал напоминания</string>
+  <string name="backup_page_reminder_enable">Напоминание о резервном копировании</string>
   <string name="backup_page_reminder_interval_days">%1$d дн.</string>
   <string name="backup_page_reminder_last_days">Последняя резервная копия создана %1$d дн. назад</string>
   <string name="backup_page_reminder_last_time">Последнее резервное копирование: %1$s</string>
@@ -638,6 +637,7 @@
   <string name="setting_display_page_screen_corner_adaptation_disabled">Отключено</string>
   <string name="setting_display_page_screen_corner_adaptation_input_only">Только поле ввода</string>
   <string name="setting_display_page_screen_corner_adaptation_all">Все</string>
+  <string name="setting_display_page_screen_corner_adaptation_square">Прямые углы</string>
   <string name="setting_display_page_volume_key_scroll_desc">Задаёт величину прокрутки при перелистывании клавишами громкости, подходит для экранов E-Ink</string>
   <string name="setting_display_page_volume_key_scroll_title">Прокрутка клавишами громкости</string>
   <string name="setting_files_page_clean_action">Очистить</string>
@@ -1224,6 +1224,8 @@
   <string name="backup_page_rikkahub_format">Формат, подобный RikkaHub</string>
   <string name="backup_page_tar_desc">Экспорт данных приложения в TAR (несовместимо с RikkaHub)</string>
   <string name="backup_page_legacy_export">Экспорт в старом формате (совместимо с RikkaHub)</string>
+  <string name="backup_page_delete_remote_title">Удалить файл резервной копии %1$s</string>
+  <string name="backup_page_delete_remote_desc">Удалить этот файл резервной копии? Это действие нельзя отменить.</string>
   <string name="backup_page_legacy_export_desc">Удалить несовместимые настройки, добавленные в этом форке; окружения рабочих пространств не включены</string>
   <string name="backup_page_import_local">Импорт локального файла</string>
   <string name="setting_page_web_server_url">URL</string>
@@ -1256,6 +1258,8 @@
   <string name="setting_provider_page_output_price">Цена вывода</string>
   <string name="setting_provider_page_price_unit">Цены в долларах США за миллион token</string>
   <string name="setting_provider_page_set_price">Настроить цены</string>
+  <string name="setting_provider_page_price_formula_without_cache">Без чтения кэша: цена ввода × входные токены + цена вывода × выходные токены</string>
+  <string name="setting_provider_page_price_formula_with_cache">С чтением кэша: цена записи кэша × (входные токены − токены чтения кэша) + цена чтения кэша × токены чтения кэша + цена вывода × выходные токены</string>
   <string name="setting_tts_page_fish_audio_speed_description">Скорость речи (0.5–2.0, нормальная — 1.0)</string>
   <string name="setting_tts_page_temperature">Температура</string>
   <string name="setting_tts_page_temperature_description">Управляет случайностью голоса (0.0–1.0; чем выше, тем выразительнее)</string>

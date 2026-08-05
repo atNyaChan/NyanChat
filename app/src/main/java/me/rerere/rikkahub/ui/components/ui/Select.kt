@@ -114,6 +114,7 @@ fun <T> Select(
         }
         ExposedDropdownMenu(
             expanded = expanded,
+            shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
             onDismissRequest = {
                 expanded = false
             }
@@ -196,6 +197,7 @@ fun <T> SelectTextField(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
+            shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
             modifier = Modifier
                 .width(with(density) { anchorWidth.toDp() })
                 .heightIn(max = 240.dp)

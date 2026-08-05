@@ -31,6 +31,7 @@ data class ScreenEdgeCornerRadii(
 
 val LocalScreenEdgeCornerRadii = compositionLocalOf<ScreenEdgeCornerRadii?> { null }
 val LocalScreenCornerAdaptationEnabled = compositionLocalOf { true }
+val LocalScreenCornerFallbackRadius = compositionLocalOf { 20.dp }
 
 fun ScreenEdgeCornerRadii.inset(
     horizontalInset: Dp,
@@ -123,7 +124,7 @@ fun rememberScreenEdgeCornerShape(
     squareBottom: Boolean = false,
     enabled: Boolean = LocalScreenCornerAdaptationEnabled.current,
 ): CornerBasedShape {
-    val baseShape = RoundedCornerShape(20.dp)
+    val baseShape = RoundedCornerShape(LocalScreenCornerFallbackRadius.current)
     val radii = if (enabled) {
         LocalScreenEdgeCornerRadii.current?.inset(
             horizontalInset = horizontalInset,

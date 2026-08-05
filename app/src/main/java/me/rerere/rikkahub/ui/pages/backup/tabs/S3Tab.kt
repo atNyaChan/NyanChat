@@ -59,6 +59,7 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.sync.S3BackupItem
 import me.rerere.rikkahub.data.sync.s3.S3Config
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.pages.backup.BackupVM
 import me.rerere.rikkahub.ui.pages.backup.components.RestoreWarningDialog
@@ -84,6 +85,7 @@ fun S3Tab(
     var showBackupFiles by remember { mutableStateOf(false) }
     var restoringItemId by remember { mutableStateOf<String?>(null) }
     var pendingRestoreItem by remember { mutableStateOf<S3BackupItem?>(null) }
+    var pendingDeleteItem by remember { mutableStateOf<S3BackupItem?>(null) }
     val isBackingUp by vm.isBackupOrRestoreRunning.collectAsStateWithLifecycle()
 
     fun updateS3Config(newConfig: S3Config) {
@@ -352,27 +354,7 @@ fun S3Tab(
                             S3BackupItemCard(
                                 item = item,
                                 isRestoring = restoringItemId == item.displayName,
-                                onDelete = {
-                                    scope.launch {
-                                        runCatching {
-                                            vm.deleteS3BackupFile(item)
-                                            toaster.show(
-                                                context.getString(R.string.backup_page_delete_success),
-                                                type = ToastType.Success
-                                            )
-                                            vm.loadS3BackupFileItems()
-                                        }.onFailure { err ->
-                                            err.printStackTrace()
-                                            toaster.show(
-                                                context.getString(
-                                                    R.string.backup_page_delete_failed,
-                                                    err.message ?: ""
-                                                ),
-                                                type = ToastType.Error
-                                            )
-                                        }
-                                    }
-                                },
+                                onDelete = { pendingDeleteItem = it },
                                 onRestore = { restoreItem ->
                                     pendingRestoreItem = restoreItem
                                 },
@@ -428,6 +410,29 @@ fun S3Tab(
         },
         onDismiss = { pendingRestoreItem = null },
     )
+    RikkaConfirmDialog(
+        show = pendingDeleteItem != null,
+        title = stringResource(R.string.backup_page_delete_remote_title, "S3"),
+        confirmText = stringResource(R.string.common_delete),
+        dismissText = stringResource(R.string.common_cancel),
+        onConfirm = {
+            val item = pendingDeleteItem ?: return@RikkaConfirmDialog
+            pendingDeleteItem = null
+            scope.launch {
+                runCatching {
+                    vm.deleteS3BackupFile(item)
+                    toaster.show(context.getString(R.string.backup_page_delete_success), type = ToastType.Success)
+                    vm.loadS3BackupFileItems()
+                }.onFailure { err ->
+                    toaster.show(
+                        context.getString(R.string.backup_page_delete_failed, err.message ?: ""),
+                        type = ToastType.Error,
+                    )
+                }
+            }
+        },
+        onDismiss = { pendingDeleteItem = null },
+    ) { Text(stringResource(R.string.backup_page_delete_remote_desc)) }
 }
 
 @Composable

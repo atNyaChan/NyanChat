@@ -25,7 +25,7 @@
 > 如果想知道 NyanChat 具体改了什么，请看 [NyanwChanges.md](docs/NyanwChanges.md)
 
 ## 🔮 未来可能添加的功能
-- 🧠 **内置[Ombre Brain](https://github.com/P0luz/Ombre-Brain)**：使用 proot 直接在 NyanChat 里纯本地运行 Ombre Brain，不需要租服务器了！
+- 🧠 **实验性的[潮汐记忆](https://github.com/0xblewalker/tidal-memory)支持** — 来自 [@3nvoy](https://www.xiaohongshu.com/user/profile/67f3dfbe000000000e0113e5) 老师的开源项目！让 AI 的记忆更接近真人，并优化缓存命中率。
 - 📱 **类似即时聊天软件的交互体验（？）**：可以连续发送多条短消息，LLM 会在觉得需要的时候回复，也可以一次性回复多条消息，就像跟真人聊天一样！
 
 ## 🎯 RikkaHub 已有的功能
@@ -52,7 +52,7 @@
 
 - 支持从 RikkaHub 2.x 导入数据，也可以导出数据到 RikkaHub Latest（**聊天记录文字可以双向无损迁移！**）。
 - 注意：
-  - 由于 RikkaHub 限制，部分数据（如工作区、助手头像和背景）无法从 RikkaHub 导入。且**RikkaHub 导出的数据中可能不含部分聊天文件或图片，因此导入聊天记录后可能丢失图片或文件**。
+  - 由于 RikkaHub 限制，部分数据（如工作区、助手头像和背景）无法从 RikkaHub 导入。
   - 导出到 RikkaHub 时，NyanChat 独有的设置和元数据（如模型价格）会丢失。
   - NyanChat 仅支持导入 RikkaHub 2.x 的数据。如果要从 RikkaHub 1.x 导入数据，请先把 RikkaHub 更新至 2.x 并完成数据库迁移。迁移后的数据不能重新导入 RikkaHub 1.x。
   - 旧版本 RikkaHub（如`2.3.x`）无法读取 NyanChat 存档，请先将 RikkaHub 更新至 `2.4.x`（目前的最新版）。

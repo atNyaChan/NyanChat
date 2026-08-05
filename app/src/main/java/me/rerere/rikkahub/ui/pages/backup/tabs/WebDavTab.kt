@@ -58,6 +58,7 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.WebDavConfig
 import me.rerere.rikkahub.data.sync.webdav.WebDavBackupItem
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.pages.backup.BackupVM
 import me.rerere.rikkahub.ui.pages.backup.components.RestoreWarningDialog
@@ -83,6 +84,7 @@ fun WebDavTab(
     var showBackupFiles by remember { mutableStateOf(false) }
     var restoringItemId by remember { mutableStateOf<String?>(null) }
     var pendingRestoreItem by remember { mutableStateOf<WebDavBackupItem?>(null) }
+    var pendingDeleteItem by remember { mutableStateOf<WebDavBackupItem?>(null) }
     val isBackingUp by vm.isBackupOrRestoreRunning.collectAsStateWithLifecycle()
 
     fun updateWebDavConfig(newConfig: WebDavConfig) {
@@ -333,27 +335,7 @@ fun WebDavTab(
                             WebDavBackupItemCard(
                                 item = item,
                                 isRestoring = restoringItemId == item.displayName,
-                                onDelete = {
-                                    scope.launch {
-                                        runCatching {
-                                            vm.deleteWebDavBackupFile(item)
-                                            toaster.show(
-                                                context.getString(R.string.backup_page_delete_success),
-                                                type = ToastType.Success
-                                            )
-                                            vm.loadBackupFileItems()
-                                        }.onFailure { err ->
-                                            err.printStackTrace()
-                                            toaster.show(
-                                                context.getString(
-                                                    R.string.backup_page_delete_failed,
-                                                    err.message ?: ""
-                                                ),
-                                                type = ToastType.Error
-                                            )
-                                        }
-                                    }
-                                },
+                                onDelete = { pendingDeleteItem = it },
                                 onRestore = { restoreItem ->
                                     pendingRestoreItem = restoreItem
                                 },
@@ -409,6 +391,29 @@ fun WebDavTab(
         },
         onDismiss = { pendingRestoreItem = null },
     )
+    RikkaConfirmDialog(
+        show = pendingDeleteItem != null,
+        title = stringResource(R.string.backup_page_delete_remote_title, "WebDAV"),
+        confirmText = stringResource(R.string.common_delete),
+        dismissText = stringResource(R.string.common_cancel),
+        onConfirm = {
+            val item = pendingDeleteItem ?: return@RikkaConfirmDialog
+            pendingDeleteItem = null
+            scope.launch {
+                runCatching {
+                    vm.deleteWebDavBackupFile(item)
+                    toaster.show(context.getString(R.string.backup_page_delete_success), type = ToastType.Success)
+                    vm.loadBackupFileItems()
+                }.onFailure { err ->
+                    toaster.show(
+                        context.getString(R.string.backup_page_delete_failed, err.message ?: ""),
+                        type = ToastType.Error,
+                    )
+                }
+            }
+        },
+        onDismiss = { pendingDeleteItem = null },
+    ) { Text(stringResource(R.string.backup_page_delete_remote_desc)) }
 }
 
 @Composable

@@ -84,6 +84,7 @@ import me.rerere.rikkahub.ui.hooks.readBooleanPreference
 import me.rerere.rikkahub.ui.hooks.useEditState
 import me.rerere.rikkahub.ui.modifier.onClick
 import me.rerere.rikkahub.ui.theme.LocalScreenCornerAdaptationEnabled
+import me.rerere.rikkahub.ui.theme.LocalScreenCornerFallbackRadius
 import me.rerere.rikkahub.ui.theme.LocalScreenEdgeCornerRadii
 import me.rerere.rikkahub.utils.navigateToChatPage
 import me.rerere.rikkahub.utils.toDp
@@ -163,9 +164,9 @@ fun ChatDrawerContent(
     // Menu popup 状态
 
     val drawerEndCorner = if (LocalScreenCornerAdaptationEnabled.current) {
-        LocalScreenEdgeCornerRadii.current?.end ?: 20.dp
+        LocalScreenEdgeCornerRadii.current?.end ?: LocalScreenCornerFallbackRadius.current
     } else {
-        20.dp
+        LocalScreenCornerFallbackRadius.current
     }
 
     ModalDrawerSheet(
@@ -866,6 +867,7 @@ private fun FolderBar(
                 DropdownMenu(
                     expanded = menuExpanded,
                     onDismissRequest = { menuExpanded = false },
+                    shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
                 ) {
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.common_rename)) },

@@ -194,8 +194,7 @@
   <string name="backup_page_path">パス</string>
   <string name="backup_page_reminder">リマインダー</string>
   <string name="backup_page_reminder_dismiss">閉じる</string>
-  <string name="backup_page_reminder_enable">バックアップリマインダーを有効にする</string>
-  <string name="backup_page_reminder_interval">リマインダー間隔</string>
+  <string name="backup_page_reminder_enable">バックアップリマインダー</string>
   <string name="backup_page_reminder_interval_days">%1$d日</string>
   <string name="backup_page_reminder_last_days">最終バックアップは%1$d日前</string>
   <string name="backup_page_reminder_last_time">最終バックアップ: %1$s</string>
@@ -638,6 +637,7 @@
   <string name="setting_display_page_screen_corner_adaptation_disabled">無効</string>
   <string name="setting_display_page_screen_corner_adaptation_input_only">入力欄のみ</string>
   <string name="setting_display_page_screen_corner_adaptation_all">すべて</string>
+  <string name="setting_display_page_screen_corner_adaptation_square">直角</string>
   <string name="setting_display_page_volume_key_scroll_desc">音量キーでページを送る際のスクロール量を設定します。電子ペーパーに適しています</string>
   <string name="setting_display_page_volume_key_scroll_title">音量キーでページスクロール</string>
   <string name="setting_files_page_clean_action">クリーンアップ</string>
@@ -1224,6 +1224,8 @@
   <string name="backup_page_rikkahub_format">RikkaHub類似形式</string>
   <string name="backup_page_tar_desc">アプリデータをTARファイルにエクスポート（RikkaHub非対応）</string>
   <string name="backup_page_legacy_export">旧形式でエクスポート（RikkaHub対応）</string>
+  <string name="backup_page_delete_remote_title">%1$s バックアップファイルを削除</string>
+  <string name="backup_page_delete_remote_desc">このバックアップファイルを削除しますか？この操作は元に戻せません。</string>
   <string name="backup_page_legacy_export_desc">この Fork で追加された非互換設定を削除；ワークスペース環境は含まれません</string>
   <string name="backup_page_import_local">ローカルファイルをインポート</string>
   <string name="setting_page_web_server_url">URL</string>
@@ -1256,6 +1258,8 @@
   <string name="setting_provider_page_output_price">出力料金</string>
   <string name="setting_provider_page_price_unit">単位：100万tokenあたりの米ドル</string>
   <string name="setting_provider_page_set_price">料金を設定</string>
+  <string name="setting_provider_page_price_formula_without_cache">キャッシュ読み取りなし：入力価格 × 入力トークン + 出力価格 × 出力トークン</string>
+  <string name="setting_provider_page_price_formula_with_cache">キャッシュ読み取りあり：キャッシュ書き込み価格 ×（入力トークン − キャッシュ読み取りトークン）+ キャッシュ読み取り価格 × キャッシュ読み取りトークン + 出力価格 × 出力トークン</string>
   <string name="setting_tts_page_fish_audio_speed_description">音声速度（0.5～2.0、1.0が標準）</string>
   <string name="setting_tts_page_temperature">温度</string>
   <string name="setting_tts_page_temperature_description">音声のランダム性を調整します（0.0～1.0、高いほど表現豊か）</string>

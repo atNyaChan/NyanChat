@@ -287,7 +287,8 @@ private fun LanguageSelector(
 
             ExposedDropdownMenu(
                 expanded = expanded,
-                onDismissRequest = { expanded = false }
+                onDismissRequest = { expanded = false },
+                shape = rememberScreenEdgeCornerShape(),
             ) {
                 Locales.forEach { language ->
                     DropdownMenuItem(

@@ -31,15 +31,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.LocalScreenCornerAdaptationEnabled
+import me.rerere.rikkahub.ui.theme.LocalScreenCornerFallbackRadius
 import me.rerere.rikkahub.ui.theme.LocalScreenEdgeCornerRadii
 import me.rerere.rikkahub.ui.theme.ScreenEdgeCornerRadii
 import me.rerere.rikkahub.ui.theme.inset
 
-private val CardGroupCorner = 20.dp
 private val CardGroupScreenInset = 16.dp
 private val CardGroupItemSpacing = 2.dp
 private val CardGroupInnerCorner = 4.dp
@@ -139,6 +140,7 @@ private fun CardGroupListItem(
     continueFromPrevious: Boolean,
     continueToNext: Boolean,
     screenCornerRadii: ScreenEdgeCornerRadii?,
+    fallbackCorner: Dp,
 ) {
     val isFirst = index == 0
     val isLast = index == count - 1
@@ -148,7 +150,7 @@ private fun CardGroupListItem(
 
     val topStartCorner by animateDpAsState(
         targetValue = if (isPressed || (isFirst && !continueFromPrevious)) {
-            screenCornerRadii?.start ?: CardGroupCorner
+            screenCornerRadii?.start ?: fallbackCorner
         } else {
             CardGroupInnerCorner
         },
@@ -156,7 +158,7 @@ private fun CardGroupListItem(
     )
     val topEndCorner by animateDpAsState(
         targetValue = if (isPressed || (isFirst && !continueFromPrevious)) {
-            screenCornerRadii?.end ?: CardGroupCorner
+            screenCornerRadii?.end ?: fallbackCorner
         } else {
             CardGroupInnerCorner
         },
@@ -164,7 +166,7 @@ private fun CardGroupListItem(
     )
     val bottomStartCorner by animateDpAsState(
         targetValue = if (isPressed || (isLast && !continueToNext)) {
-            screenCornerRadii?.start ?: CardGroupCorner
+            screenCornerRadii?.start ?: fallbackCorner
         } else {
             CardGroupInnerCorner
         },
@@ -172,7 +174,7 @@ private fun CardGroupListItem(
     )
     val bottomEndCorner by animateDpAsState(
         targetValue = if (isPressed || (isLast && !continueToNext)) {
-            screenCornerRadii?.end ?: CardGroupCorner
+            screenCornerRadii?.end ?: fallbackCorner
         } else {
             CardGroupInnerCorner
         },
@@ -253,6 +255,7 @@ fun CardGroup(
                 continueFromPrevious = continueFromPrevious,
                 continueToNext = continueToNext,
                 screenCornerRadii = screenCornerRadii,
+                fallbackCorner = LocalScreenCornerFallbackRadius.current,
             )
             if (index != count - 1) {
                 Spacer(modifier = Modifier.height(CardGroupItemSpacing))

@@ -8,6 +8,7 @@ import me.rerere.hugeicons.stroke.Message02
 import me.rerere.hugeicons.stroke.Settings03
 import me.rerere.hugeicons.stroke.Api
 import me.rerere.hugeicons.stroke.Wrench01
+import me.rerere.hugeicons.stroke.Delete01
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
@@ -21,9 +22,14 @@ import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -37,9 +43,12 @@ import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.UIAvatar
+import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.pages.assistant.AssistantVM
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.hooks.heroAnimation
 import me.rerere.rikkahub.ui.theme.CustomColors
+import me.rerere.rikkahub.utils.navigateToChatPage
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -52,6 +61,8 @@ fun AssistantDetailPage(id: String) {
     )
     val assistant by vm.assistant.collectAsStateWithLifecycle()
     val navController = LocalNavController.current
+    val assistantVm: AssistantVM = koinViewModel()
+    var showDeleteConfirm by remember { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
@@ -83,7 +94,7 @@ fun AssistantDetailPage(id: String) {
                 start = 8.dp,
                 top = 8.dp,
                 end = 8.dp,
-                bottom = 8.dp,
+                bottom = 16.dp,
             ),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -142,7 +153,45 @@ fun AssistantDetailPage(id: String) {
                     )
                 }
             }
+            item {
+                Button(
+                    onClick = { showDeleteConfirm = true },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError,
+                    ),
+                ) {
+                    Icon(HugeIcons.Delete01, contentDescription = null)
+                    Text(
+                        stringResource(R.string.assistant_page_delete_assistant),
+                        modifier = Modifier.padding(start = 8.dp),
+                    )
+                }
+            }
         }
+    }
+
+    RikkaConfirmDialog(
+        show = showDeleteConfirm,
+        title = stringResource(R.string.assistant_page_delete_assistant),
+        confirmText = stringResource(R.string.common_delete),
+        dismissText = stringResource(R.string.common_cancel),
+        onConfirm = {
+            showDeleteConfirm = false
+            assistantVm.removeAssistant(assistant) { fallbackChatId ->
+                if (fallbackChatId != null) {
+                    navigateToChatPage(navController, fallbackChatId)
+                } else {
+                    navController.popBackStack()
+                }
+            }
+        },
+        onDismiss = { showDeleteConfirm = false },
+    ) {
+        Text(stringResource(R.string.assistant_page_delete_dialog_text))
     }
 }
 

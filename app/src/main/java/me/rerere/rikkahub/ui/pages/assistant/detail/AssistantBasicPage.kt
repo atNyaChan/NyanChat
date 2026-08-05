@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
@@ -40,24 +38,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.ai.provider.ModelType
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.ArrowRight01
-import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
-import me.rerere.rikkahub.data.datastore.findModelById
-import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
 import me.rerere.rikkahub.data.model.Assistant
-import me.rerere.rikkahub.ui.pages.assistant.AssistantVM
-import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
-import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.components.ai.ModelListSheet
 import me.rerere.rikkahub.ui.components.ai.rememberModelListState
 import me.rerere.rikkahub.ui.components.ai.ContextCachePicker
 import me.rerere.rikkahub.ui.components.ai.ReasoningButton
-import me.rerere.rikkahub.ui.components.ai.SearchPickerIcon
-import me.rerere.rikkahub.ui.components.ai.SearchPickerSheet
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
-import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.components.ui.TagsInput
 import me.rerere.rikkahub.ui.components.ui.UIAvatar
 import me.rerere.rikkahub.ui.hooks.heroAnimation
@@ -66,7 +55,6 @@ import me.rerere.rikkahub.utils.toFixed
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 import kotlin.math.roundToInt
-import kotlin.uuid.Uuid
 import me.rerere.rikkahub.data.model.Tag as DataTag
 
 @Composable
@@ -79,13 +67,10 @@ fun AssistantBasicPage(
             parametersOf(id)
         }
     )
-    val assistantVm: AssistantVM = koinViewModel()
-    val navController = LocalNavController.current
     val assistant by vm.assistant.collectAsStateWithLifecycle()
     val settings by vm.settings.collectAsStateWithLifecycle()
     val providers by vm.providers.collectAsStateWithLifecycle()
     val tags by vm.tags.collectAsStateWithLifecycle()
-    val workspaces by vm.workspaces.collectAsStateWithLifecycle()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
@@ -118,17 +103,8 @@ fun AssistantBasicPage(
             settings = settings,
             providers = providers,
             tags = tags,
-            workspaces = workspaces,
             onUpdate = { vm.update(it) },
-            onUpdateSearchService = { vm.updateSearchService(it) },
             vm = vm,
-            onDelete = {
-                assistantVm.removeAssistant(assistant)
-                navController.navigate(me.rerere.rikkahub.Screen.Assistant) {
-                    popUpTo(me.rerere.rikkahub.Screen.Assistant)
-                    launchSingleTop = true
-                }
-            },
             requestSettingsOnly = requestSettingsOnly,
         )
     }
@@ -141,11 +117,8 @@ internal fun AssistantBasicContent(
     settings: Settings,
     providers: List<me.rerere.ai.provider.ProviderSetting>,
     tags: List<DataTag>,
-    workspaces: List<WorkspaceEntity>,
     onUpdate: (Assistant) -> Unit,
-    onUpdateSearchService: (Int) -> Unit,
     vm: AssistantDetailVM,
-    onDelete: () -> Unit = {},
     requestSettingsOnly: Boolean = false,
 ) {
     val chatModelState = rememberModelListState(
@@ -153,8 +126,6 @@ internal fun AssistantBasicContent(
         providers = providers,
         type = ModelType.CHAT,
     )
-    var showDeleteConfirm by remember { mutableStateOf(false) }
-    var showSearchPicker by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -194,7 +165,7 @@ internal fun AssistantBasicContent(
 
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         CardGroup(
-            continueToNext = true,
+            continueToNext = !assistant.useGradientBackground,
         ) {
             FormItem(
                 label = {
@@ -338,7 +309,7 @@ internal fun AssistantBasicContent(
                 background = assistant.background,
                 backgroundOpacity = assistant.backgroundOpacity,
                 continueFromPrevious = true,
-                continueToNext = true,
+                continueToNext = assistant.background != null,
                 onUpdate = { background ->
                     onUpdate(assistant.copy(background = background))
                 }
@@ -348,7 +319,6 @@ internal fun AssistantBasicContent(
             val backgroundOpacity = assistant.backgroundOpacity.coerceIn(0.1f, 1f)
             CardGroup(
                 continueFromPrevious = true,
-                continueToNext = true,
             ) {
                 FormItem(
                     label = {
@@ -383,63 +353,6 @@ internal fun AssistantBasicContent(
                 }
             }
         }
-        CardGroup(
-            continueFromPrevious = true,
-        ) {
-            item(
-                onClick = { showSearchPicker = true },
-                headlineContent = {
-                    Text(stringResource(R.string.search_ability_search))
-                },
-                supportingContent = {
-                    Text(stringResource(R.string.assistant_page_web_search_desc))
-                },
-                trailingContent = {
-                    SearchPickerIcon(
-                        enableSearch = assistant.enableWebSearch,
-                        settings = settings,
-                        model = settings.findModelById(assistant.chatModelId ?: settings.chatModelId),
-                    )
-                },
-            )
-            item(
-                headlineContent = {
-                    Text(stringResource(R.string.assistant_page_workspace))
-                },
-                supportingContent = {
-                    Text(stringResource(R.string.assistant_page_workspace_desc))
-                },
-                trailingContent = {
-                val selectedWorkspace = workspaces.find { it.id == assistant.workspaceId?.toString() }
-                Select(
-                    options = listOf<WorkspaceEntity?>(null) + workspaces,
-                    selectedOption = selectedWorkspace,
-                    onOptionSelected = { workspace ->
-                        onUpdate(
-                            assistant.copy(
-                                workspaceId = workspace?.id?.let { Uuid.parse(it) }
-                            )
-                        )
-                    },
-                    fitToOptions = true,
-                    optionToString = { workspace ->
-                        workspace?.name ?: stringResource(R.string.workspace_no_binding)
-                    },
-                )
-                },
-            )
-        }
-        SearchPickerSheet(
-            show = showSearchPicker,
-            enableSearch = assistant.enableWebSearch,
-            settings = settings,
-            onToggleSearch = { enabled ->
-                onUpdate(assistant.copy(enableWebSearch = enabled))
-            },
-            onUpdateSearchService = onUpdateSearchService,
-            model = settings.findModelById(assistant.chatModelId ?: settings.chatModelId),
-            onDismiss = { showSearchPicker = false },
-        )
         }
         }
 
@@ -649,40 +562,11 @@ internal fun AssistantBasicContent(
         }
         }
 
-        if (!requestSettingsOnly) {
-            Button(
-                onClick = { showDeleteConfirm = true },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error,
-                    contentColor = MaterialTheme.colorScheme.onError,
-                ),
-            ) {
-                Icon(HugeIcons.Delete01, contentDescription = null)
-                Text(
-                    stringResource(R.string.assistant_page_delete_assistant),
-                    modifier = Modifier.padding(start = 8.dp),
-                )
-            }
-        }
     }
     ModelListSheet(
         state = chatModelState,
         onSelect = { onUpdate(assistant.copy(chatModelId = it.id)) },
     )
-    RikkaConfirmDialog(
-        show = showDeleteConfirm,
-        title = stringResource(R.string.assistant_page_delete_assistant),
-        confirmText = stringResource(R.string.common_delete),
-        dismissText = stringResource(R.string.common_cancel),
-        onConfirm = {
-            showDeleteConfirm = false
-            onDelete()
-        },
-        onDismiss = { showDeleteConfirm = false },
-    ) {
-        Text(stringResource(R.string.assistant_page_delete_dialog_text))
-    }
 }
 
 /**

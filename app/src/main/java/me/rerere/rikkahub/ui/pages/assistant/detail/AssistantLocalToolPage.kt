@@ -16,6 +16,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -25,7 +28,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dokar.sonner.ToastType
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.ai.tools.local.LocalToolOption
+import me.rerere.rikkahub.data.datastore.Settings
+import me.rerere.rikkahub.data.datastore.findModelById
+import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
 import me.rerere.rikkahub.data.model.Assistant
+import me.rerere.rikkahub.ui.components.ai.SearchPickerIcon
+import me.rerere.rikkahub.ui.components.ai.SearchPickerSheet
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupScope
@@ -39,6 +47,7 @@ import me.rerere.rikkahub.utils.hasUsageStatsPermission
 import me.rerere.rikkahub.utils.openUsageAccessSettings
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
+import kotlin.uuid.Uuid
 
 private enum class LocalToolAuthorizationMode {
     DENIED,
@@ -54,6 +63,8 @@ fun AssistantLocalToolPage(id: String) {
         }
     )
     val assistant by vm.assistant.collectAsStateWithLifecycle()
+    val settings by vm.settings.collectAsStateWithLifecycle()
+    val workspaces by vm.workspaces.collectAsStateWithLifecycle()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
@@ -75,7 +86,10 @@ fun AssistantLocalToolPage(id: String) {
         AssistantLocalToolContent(
             innerPadding = innerPadding,
             assistant = assistant,
-            onUpdate = { vm.update(it) }
+            settings = settings,
+            workspaces = workspaces,
+            onUpdate = { vm.update(it) },
+            onUpdateSearchService = { vm.updateSearchService(it) },
         )
     }
 }
@@ -84,12 +98,16 @@ fun AssistantLocalToolPage(id: String) {
 private fun AssistantLocalToolContent(
     innerPadding: PaddingValues,
     assistant: Assistant,
-    onUpdate: (Assistant) -> Unit
+    settings: Settings,
+    workspaces: List<WorkspaceEntity>,
+    onUpdate: (Assistant) -> Unit,
+    onUpdateSearchService: (Int) -> Unit,
 ) {
     val context = LocalContext.current
     val toaster = LocalToaster.current
     val permissionRequiredText =
         stringResource(R.string.assistant_page_local_tools_screen_time_permission_required)
+    var showSearchPicker by remember { mutableStateOf(false) }
 
     val calendarPermissionState = rememberPermissionState(
         permissions = setOf(
@@ -264,6 +282,40 @@ private fun AssistantLocalToolContent(
                 R.string.assistant_page_local_tools_javascript_engine_title,
                 R.string.assistant_page_local_tools_javascript_engine_desc,
             )
+            item(
+                onClick = { showSearchPicker = true },
+                headlineContent = { Text(stringResource(R.string.search_ability_search)) },
+                supportingContent = { Text(stringResource(R.string.assistant_page_web_search_desc)) },
+                trailingContent = {
+                    SearchPickerIcon(
+                        enableSearch = assistant.enableWebSearch,
+                        settings = settings,
+                        model = settings.findModelById(assistant.chatModelId ?: settings.chatModelId),
+                    )
+                },
+            )
+            item(
+                headlineContent = { Text(stringResource(R.string.assistant_page_workspace)) },
+                supportingContent = { Text(stringResource(R.string.assistant_page_workspace_desc)) },
+                trailingContent = {
+                    val selectedWorkspace = workspaces.find { it.id == assistant.workspaceId?.toString() }
+                    Select(
+                        options = listOf<WorkspaceEntity?>(null) + workspaces,
+                        selectedOption = selectedWorkspace,
+                        onOptionSelected = { workspace ->
+                            onUpdate(
+                                assistant.copy(
+                                    workspaceId = workspace?.id?.let { Uuid.parse(it) },
+                                )
+                            )
+                        },
+                        fitToOptions = true,
+                        optionToString = { workspace ->
+                            workspace?.name ?: stringResource(R.string.workspace_no_binding)
+                        },
+                    )
+                },
+            )
         }
         CardGroup {
             authorizedToolItem(
@@ -293,4 +345,13 @@ private fun AssistantLocalToolContent(
             )
         }
     }
+    SearchPickerSheet(
+        show = showSearchPicker,
+        enableSearch = assistant.enableWebSearch,
+        settings = settings,
+        onToggleSearch = { enabled -> onUpdate(assistant.copy(enableWebSearch = enabled)) },
+        onUpdateSearchService = onUpdateSearchService,
+        model = settings.findModelById(assistant.chatModelId ?: settings.chatModelId),
+        onDismiss = { showSearchPicker = false },
+    )
 }

@@ -25,7 +25,7 @@
 > See [NyanwChanges.md](docs/NyanwChanges.md) for the full list of changes.
 
 ## 🔮 Planned Future Features
-- 🧠 **Built-in [Ombre Brain](https://github.com/P0luz/Ombre-Brain)**: Run Ombre Brain locally on NyanChat using proot, no server rental needed!
+- 🧠 **Experimental [Tidal Memory](https://github.com/0xblewalker/tidal-memory) support** — From [@3nvoy](https://www.xiaohongshu.com/user/profile/67f3dfbe000000000e0113e5)'s open source project! Makes AI memory more human-like and optimizes cache hit rate.
 - 📱 **Instant Messaging Style Interaction (?)**: Send multiple short messages continuously; the LLM replies when it sees fit, or responds to multiple messages at once, just like chatting with a real person!
 
 ## 🎯 Existing RikkaHub Features
@@ -52,7 +52,7 @@
 
 - Supports importing data from RikkaHub 2.x and exporting data to RikkaHub Latest (**chat text can be migrated bidirectionally without data loss!**).
 - Notes:
-  - Due to RikkaHub limitations, some data (such as workspaces, assistant avatars, and backgrounds) cannot be imported from RikkaHub. Also, **RikkaHub exports may not contain some chat files or images, so importing conversations may result in loss of images or files**.
+  - Due to RikkaHub limitations, some data (such as workspaces, assistant avatars, and backgrounds) cannot be imported from RikkaHub.
   - When exporting to RikkaHub, NyanChat-specific settings and metadata (such as model pricing) will be lost.
   - NyanChat only supports importing data from RikkaHub 2.x. To import data from RikkaHub 1.x, first update RikkaHub to 2.x and complete the database migration. Migrated data cannot be re-imported into RikkaHub 1.x.
   - Older versions of RikkaHub (e.g., `2.3.x`) cannot read NyanChat archives. Please update RikkaHub to `2.4.x` (the latest version) first.

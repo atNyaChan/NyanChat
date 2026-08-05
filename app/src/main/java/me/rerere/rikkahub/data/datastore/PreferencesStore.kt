@@ -582,6 +582,9 @@ enum class ScreenCornerAdaptation {
 
     @SerialName("all")
     ALL,
+
+    @SerialName("square")
+    SQUARE,
 }
 
 @Serializable

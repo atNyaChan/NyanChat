@@ -283,12 +283,9 @@ private fun FileContentPreview(path: String?, code: String) {
     }
 }
 
-/**
- * 工作空间执行 Shell: 摘要显示退出状态与输出首部, 详情为命令 + stdout/stderr
- */
+/** 工作空间执行 Shell：聊天流不展示输出；点开详情后显示命令、退出状态与 stdout/stderr。 */
 object ShellToolUI : ToolUIRenderer {
     private const val TITLE_MAX_CHARS = 40
-    private const val SUMMARY_MAX_LINES = 8
 
     override val toolName: String = "workspace_shell"
 
@@ -302,39 +299,11 @@ object ShellToolUI : ToolUIRenderer {
         return stringResource(R.string.tool_ui_shell, truncated)
     }
 
-    override fun hasSummary(context: ToolUIContext): Boolean = context.content != null
+    override fun hasSummary(context: ToolUIContext): Boolean = false
 
     @Composable
     override fun Summary(context: ToolUIContext) {
-        val content = context.content ?: return
-        val combined = remember(content) {
-            listOf(content.getStringContent("stdout"), content.getStringContent("stderr"))
-                .filterNot { it.isNullOrBlank() }
-                .joinToString("\n")
-                .trim()
-        }
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            ShellExitStatus(content, MaterialTheme.typography.labelSmall)
-            if (combined.isNotEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(MaterialTheme.shapes.small)
-                        .background(MaterialTheme.colorScheme.surfaceContainer)
-                        .padding(horizontal = 8.dp, vertical = 6.dp)
-                        .shimmer(isLoading = context.loading),
-                ) {
-                    Text(
-                        text = combined.lineSequence().take(SUMMARY_MAX_LINES).joinToString("\n"),
-                        style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace),
-                        fontSize = 11.sp,
-                        lineHeight = 14.sp,
-                        maxLines = SUMMARY_MAX_LINES,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-            }
-        }
+        // Intentionally hidden in chat.
     }
 
     @Composable
