@@ -92,6 +92,25 @@ class ModelRegistryTest {
     }
 
     @Test
+    fun testQwen38MaxAndMiMoV3() {
+        val toolReasoningAbilities = listOf(ModelAbility.TOOL, ModelAbility.REASONING)
+        assertEquals(
+            toolReasoningAbilities,
+            ModelRegistry.MODEL_ABILITIES.getData("qwen-3.8-max")
+        )
+        listOf("mimo-v3", "mimo-v3-pro").forEach { modelId ->
+            assertEquals(
+                listOf(Modality.TEXT, Modality.IMAGE),
+                ModelRegistry.MODEL_INPUT_MODALITIES.getData(modelId)
+            )
+            assertEquals(
+                toolReasoningAbilities,
+                ModelRegistry.MODEL_ABILITIES.getData(modelId)
+            )
+        }
+    }
+
+    @Test
     fun testDeepseekV4() {
         val reasonerAbilities = ModelRegistry.MODEL_ABILITIES.getData("deepseek-reasoner")
         assertEquals(
