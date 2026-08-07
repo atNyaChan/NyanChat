@@ -1,0 +1,4 @@
+interface:
+  display_name: "NyanChat UI Review"
+  short_description: "Review NyanChat Compose UI changes consistently"
+  default_prompt: "Use $review-nyanchat-ui to review this NyanChat Compose UI change."

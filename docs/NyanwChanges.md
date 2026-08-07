@@ -4,6 +4,7 @@
 - `AGENTS.md` 要求 Agent 在每次代码、资源或配置修改后同步维护本文件。
 - 编辑本文件前先从头到尾阅读一次，不要只是往最后添加信息，也不要只使用 grep 简略阅读。
 - 同步 RikkaHub 上游改动时原样保留上游 commit 的 SHA、作者和提交边界；NyanChat 专属适配、测试及文档更新使用后续独立 commit，不改写或重建上游提交。
+- 仓库内固定版本维护 Android、Compose 与性能 skills，并用 `review-nyanchat-ui` 统一路由 Compose 页面、组件、设置表单、列表、弹窗、Navigation 3、IME/insets 及 UI/UX review；性能改动要求先提供 compiler report、trace、benchmark 或明确复现证据。
 - 修改完成后要静态检查本次改动涉及的未引用组件，并删除未引用的翻译资源字符串，并使得各翻译资源与英文源文件同步。
 - 禁止 Agent 自行执行编译、构建、测试或 Lint；相关验证由维护者手动完成。
 

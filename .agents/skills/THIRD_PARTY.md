@@ -13,10 +13,11 @@ All three sources are distributed under the Apache License 2.0. A copy is availa
 
 ## Validation Notes
 
-Run the repository-local validator environment with:
+Run the validator in an isolated, disposable dependency environment with:
 
 ```bash
-.agents/.venv/bin/python /home/ayang/.codex/skills/.system/skill-creator/scripts/quick_validate.py \
+uv run --no-cache --no-project --with pyyaml \
+  "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_validate.py" \
   .agents/skills/<skill-name>
 ```
 
