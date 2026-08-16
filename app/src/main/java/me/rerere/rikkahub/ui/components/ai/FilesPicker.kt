@@ -83,6 +83,7 @@ internal fun FilesPicker(
     mcpManager: McpManager,
     onCompressContext: (additionalPrompt: String, targetTokens: Int, keepRecentMessages: Int) -> Job,
     onUpdateAssistant: (Assistant) -> Unit,
+    onUpdateSearchMode: (SearchMode) -> Unit,
     onUpdateSearchService: (Int) -> Unit,
     onUpdateConversation: (Conversation) -> Unit,
     showInjectionSheet: Boolean,
@@ -263,9 +264,7 @@ internal fun FilesPicker(
         show = showSearchPicker,
         enableSearch = assistant.enableWebSearch,
         settings = settings,
-        onToggleSearch = { enabled ->
-            onUpdateAssistant(assistant.copy(enableWebSearch = enabled))
-        },
+        onUpdateSearchMode = onUpdateSearchMode,
         onUpdateSearchService = onUpdateSearchService,
         model = settings.getCurrentChatModel(),
         onDismiss = { showSearchPicker = false },

@@ -1283,4 +1283,11 @@
   <string name="assistant_page_context_message_limit_desc">모델로 전송되는 최근 메시지 수를 제한합니다. 제한을 초과하면 한 번에 하나씩 메시지를 삭제하는 대신 컨텍스트가 한 번에 약 절반으로 줄어들어 요청 접두사가 안정적으로 유지되고 프롬프트 캐싱이 여러 턴 동안 계속 작동합니다. 최솟값은 20입니다. 비워 두면 제한이 없습니다.</string>
   <string name="assistant_page_context_message_limit_placeholder">제한 없음</string>
   <string name="assistant_page_context_message_limit_warning">컨텍스트가 정리될 때마다 프롬프트 캐시가 무효화됩니다. 제한 값이 클수록 정리 빈도가 줄어듭니다.</string>
+  <string name="search_picker_local_title">로컬 검색</string>
+  <string name="search_picker_local_description">다양한 타사 검색 제공업체에 연결합니다.</string>
+  <string name="search_picker_model_title">모델 내장 검색</string>
+  <string name="search_picker_model_description">모델 제공자에 내장된 클라우드 검색</string>
+  <string name="search_picker_select_provider">검색 제공자 선택</string>
+  <string name="search_picker_turn_off">검색 끄기</string>
+  <string name="reasoning_max">최대</string>
 </resources>

@@ -34,6 +34,7 @@ import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.ui.components.ai.SearchPickerIcon
 import me.rerere.rikkahub.ui.components.ai.SearchPickerSheet
+import me.rerere.rikkahub.ui.components.ai.SearchMode
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupScope
@@ -89,6 +90,7 @@ fun AssistantLocalToolPage(id: String) {
             settings = settings,
             workspaces = workspaces,
             onUpdate = { vm.update(it) },
+            onUpdateSearchMode = { mode -> vm.updateSearchMode(assistant, mode) },
             onUpdateSearchService = { vm.updateSearchService(it) },
         )
     }
@@ -101,6 +103,7 @@ private fun AssistantLocalToolContent(
     settings: Settings,
     workspaces: List<WorkspaceEntity>,
     onUpdate: (Assistant) -> Unit,
+    onUpdateSearchMode: (SearchMode) -> Unit,
     onUpdateSearchService: (Int) -> Unit,
 ) {
     val context = LocalContext.current
@@ -349,7 +352,7 @@ private fun AssistantLocalToolContent(
         show = showSearchPicker,
         enableSearch = assistant.enableWebSearch,
         settings = settings,
-        onToggleSearch = { enabled -> onUpdate(assistant.copy(enableWebSearch = enabled)) },
+        onUpdateSearchMode = onUpdateSearchMode,
         onUpdateSearchService = onUpdateSearchService,
         model = settings.findModelById(assistant.chatModelId ?: settings.chatModelId),
         onDismiss = { showSearchPicker = false },

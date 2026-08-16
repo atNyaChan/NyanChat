@@ -37,6 +37,7 @@ import kotlinx.serialization.json.jsonObject
 import me.rerere.ai.core.MessageRole
 import me.rerere.ai.core.ReasoningLevel
 import me.rerere.ai.core.Tool
+import me.rerere.ai.provider.BuiltInTools
 import me.rerere.ai.provider.Model
 import me.rerere.ai.provider.ModelAbility
 import me.rerere.ai.provider.ProviderManager
@@ -112,6 +113,10 @@ internal fun backgroundTextGenerationParams(
     customHeaders = model.customHeaders,
     customBody = model.customBodies,
 )
+
+internal fun shouldUseExternalWebSearch(assistant: Assistant, model: Model): Boolean {
+    return assistant.enableWebSearch && BuiltInTools.Search !in model.tools
+}
 
 data class ChatError(
     val id: Uuid = Uuid.random(),
@@ -414,7 +419,7 @@ class ChatService(
         } else {
             memoryRepository.getMemoriesOfAssistant(assistant.id.toString())
         }
-        val tools = buildRequestTools(settings, assistant, conversation)
+        val tools = buildRequestTools(settings, assistant, model, conversation)
         val wordCount = generationHandler.prepareRequestMessages(
             settings = settings,
             model = model,
@@ -448,9 +453,10 @@ class ChatService(
     private suspend fun buildRequestTools(
         settings: Settings,
         assistant: Assistant,
+        model: Model,
         conversation: Conversation,
     ): List<Tool> = buildList {
-        if (assistant.enableWebSearch) {
+        if (shouldUseExternalWebSearch(assistant, model)) {
             addAll(createSearchTools(settings))
         }
         addAll(
@@ -645,6 +651,7 @@ class ChatService(
             model.displayName
         }
         val activePendingResponse = pendingResponse ?: UIMessage.assistant("")
+        val useExternalWebSearch = shouldUseExternalWebSearch(assistant, model)
 
         return runCatching {
 
@@ -653,7 +660,7 @@ class ChatService(
 
             // memory tool
             if (!model.abilities.contains(ModelAbility.TOOL)) {
-                if (assistant.enableWebSearch || mcpManager.getAllAvailableTools().isNotEmpty()) {
+                if (useExternalWebSearch || mcpManager.getAllAvailableTools().isNotEmpty()) {
                     addError(
                         IllegalStateException(context.getString(R.string.tools_warning)),
                         conversationId,
@@ -710,7 +717,7 @@ class ChatService(
                     add(workspaceReminderTransformer)
                 },
                 outputTransformers = outputTransformers,
-                tools = buildRequestTools(settings, assistant, conversation),
+                tools = buildRequestTools(settings, assistant, model, conversation),
             ).onCompletion { cause ->
                 // 只有生成流正常完成时才允许保留 API 返回的空助手消息；取消、断网或其他异常
                 // 都会移除尚无内容的临时消息。取消状态下保存必须放进 NonCancellable。
@@ -931,17 +938,17 @@ class ChatService(
         conversationId: Uuid,
         conversation: Conversation,
         force: Boolean = false
-    ) {
+    ) = withContext(Dispatchers.IO) {
         val shouldGenerate = when {
             force -> true
             conversation.title.isBlank() -> true
             else -> false
         }
-        if (!shouldGenerate) return
+        if (!shouldGenerate) return@withContext
 
         runCatching {
-            val title = generateTitleCandidate(conversation) ?: return
-            val persistedConversation = conversationRepo.getConversationById(conversationId) ?: return
+            val title = generateTitleCandidate(conversation) ?: return@withContext
+            val persistedConversation = conversationRepo.getConversationById(conversationId) ?: return@withContext
             val latestConversation = sessions[conversationId]?.state?.value ?: persistedConversation
             val updatedConversation = latestConversation.copy(title = title)
             sessions[conversationId]?.state?.value = updatedConversation
@@ -978,18 +985,22 @@ class ChatService(
                 params = backgroundTextGenerationParams(model),
             )
 
-            result.choices[0].message?.toText()?.trim()
+            result.message.toText().trim()
         }.getOrNull()
     }
 
     // ---- 生成建议 ----
 
-    suspend fun generateSuggestion(conversationId: Uuid, conversation: Conversation) {
+    suspend fun generateSuggestion(
+        conversationId: Uuid,
+        conversation: Conversation,
+    ) = withContext(Dispatchers.IO) {
         runCatching {
             val settings = settingsStore.settingsFlow.first()
-            if (!settings.enableSuggestion) return
-            val model = settings.findModelById(settings.suggestionModelId, fallback = settings.fastModelId) ?: return
-            val provider = model.findProvider(settings.providers) ?: return
+            if (!settings.enableSuggestion) return@runCatching
+            val model = settings.findModelById(settings.suggestionModelId, fallback = settings.fastModelId)
+                ?: return@runCatching
+            val provider = model.findProvider(settings.providers) ?: return@runCatching
 
             sessions[conversationId]?.let { session ->
                 updateConversation(
@@ -1012,10 +1023,10 @@ class ChatService(
                 params = backgroundTextGenerationParams(model),
             )
             val suggestions =
-                result.choices[0].message?.toText()?.split("\n")?.map { it.trim() }
-                    ?.filter { it.isNotBlank() } ?: emptyList()
+                result.message.toText().split("\n").map { it.trim() }
+                    .filter { it.isNotBlank() }
 
-            val persistedConversation = conversationRepo.getConversationById(conversationId) ?: return
+            val persistedConversation = conversationRepo.getConversationById(conversationId) ?: return@runCatching
             val latestConversation = sessions[conversationId]?.state?.value ?: persistedConversation
             val updatedConversation = latestConversation.copy(
                 chatSuggestions = suggestions.take(10)
@@ -1088,7 +1099,7 @@ class ChatService(
                 params = backgroundTextGenerationParams(model),
             )
 
-            return result.choices[0].message?.toText()?.trim()
+            return result.message.toText().trim().takeIf { it.isNotBlank() }
                 ?: throw IllegalStateException("Failed to generate compressed summary")
         }
 

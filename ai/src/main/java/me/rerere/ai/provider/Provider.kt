@@ -6,9 +6,10 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import me.rerere.ai.core.ReasoningLevel
 import me.rerere.ai.core.Tool
+import me.rerere.ai.core.TokenUsage
 import me.rerere.ai.ui.ImageGenSize
 import me.rerere.ai.ui.ImageGenerationItem
-import me.rerere.ai.ui.MessageChunk
+import me.rerere.ai.ui.StreamChunk
 import me.rerere.ai.ui.UIMessage
 
 // 提供商实现
@@ -24,13 +25,13 @@ interface Provider<T : ProviderSetting> {
         providerSetting: T,
         messages: List<UIMessage>,
         params: TextGenerationParams,
-    ): MessageChunk
+    ): TextGenerationResult
 
     suspend fun streamText(
         providerSetting: T,
         messages: List<UIMessage>,
         params: TextGenerationParams,
-    ): Flow<MessageChunk>
+    ): Flow<StreamChunk>
 
     suspend fun generateEmbedding(
         providerSetting: T,
@@ -53,6 +54,15 @@ interface Provider<T : ProviderSetting> {
         error("Image edit is not supported")
     }
 }
+
+@Serializable
+data class TextGenerationResult(
+    val id: String,
+    val model: String,
+    val message: UIMessage,
+    val finishReason: String? = null,
+    val usage: TokenUsage? = null,
+)
 
 @Serializable
 data class TextGenerationParams(

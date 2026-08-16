@@ -61,6 +61,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import me.rerere.ai.core.MessageRole
+import me.rerere.ai.provider.BuiltInTools
 import me.rerere.ai.provider.Model
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.common.android.appTempFolder
@@ -82,6 +83,7 @@ import me.rerere.rikkahub.data.repository.FolderRepository
 import me.rerere.rikkahub.service.ChatError
 import me.rerere.rikkahub.ui.components.ai.ChatInput
 import me.rerere.rikkahub.ui.components.ai.FilesPicker
+import me.rerere.rikkahub.ui.components.ai.SearchMode
 import me.rerere.rikkahub.ui.components.ai.completion.WorkspaceCompletionProvider
 import me.rerere.rikkahub.ui.components.ai.useCropLauncher
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionCamera
@@ -768,6 +770,35 @@ private fun ChatFilesPickerSheet(
                                 assistant
                             }
                         }
+                    )
+                )
+            },
+            onUpdateSearchMode = { mode ->
+                val model = setting.getCurrentChatModel()
+                vm.updateSettings(
+                    setting.copy(
+                        assistants = setting.assistants.map { item ->
+                            if (item.id == assistant.id) {
+                                item.copy(enableWebSearch = mode == SearchMode.LOCAL)
+                            } else {
+                                item
+                            }
+                        },
+                        providers = if (model == null) {
+                            setting.providers
+                        } else {
+                            setting.providers.map { provider ->
+                                provider.editModel(
+                                    model.copy(
+                                        tools = if (mode == SearchMode.BUILT_IN) {
+                                            model.tools + BuiltInTools.Search
+                                        } else {
+                                            model.tools - BuiltInTools.Search
+                                        }
+                                    )
+                                )
+                            }
+                        },
                     )
                 )
             },

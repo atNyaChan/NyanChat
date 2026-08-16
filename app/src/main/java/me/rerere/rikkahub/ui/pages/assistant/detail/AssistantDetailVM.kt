@@ -13,8 +13,10 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import me.rerere.ai.provider.BuiltInTools
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.SettingsStore
+import me.rerere.rikkahub.data.datastore.findModelById
 import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.files.SkillManager
@@ -25,6 +27,7 @@ import me.rerere.rikkahub.data.model.Avatar
 import me.rerere.rikkahub.data.model.Tag
 import me.rerere.rikkahub.data.repository.MemoryRepository
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
+import me.rerere.rikkahub.ui.components.ai.SearchMode
 import kotlin.uuid.Uuid
 
 private const val TAG = "AssistantDetailVM"
@@ -182,6 +185,38 @@ class AssistantDetailVM(
         viewModelScope.launch {
             settingsStore.update { settings ->
                 settings.copy(searchServiceSelected = index)
+            }
+        }
+    }
+
+    fun updateSearchMode(assistant: Assistant, mode: SearchMode) {
+        viewModelScope.launch {
+            settingsStore.update { settings ->
+                val model = settings.findModelById(assistant.chatModelId ?: settings.chatModelId)
+                settings.copy(
+                    assistants = settings.assistants.map {
+                        if (it.id == assistant.id) {
+                            it.copy(enableWebSearch = mode == SearchMode.LOCAL)
+                        } else {
+                            it
+                        }
+                    },
+                    providers = if (model == null) {
+                        settings.providers
+                    } else {
+                        settings.providers.map { provider ->
+                            provider.editModel(
+                                model.copy(
+                                    tools = if (mode == SearchMode.BUILT_IN) {
+                                        model.tools + BuiltInTools.Search
+                                    } else {
+                                        model.tools - BuiltInTools.Search
+                                    }
+                                )
+                            )
+                        }
+                    },
+                )
             }
         }
     }

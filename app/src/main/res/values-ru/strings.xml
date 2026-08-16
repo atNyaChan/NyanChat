@@ -1283,4 +1283,11 @@
   <string name="assistant_page_context_message_limit_desc">Ограничивает количество последних сообщений, отправляемых модели. Когда лимит превышен, контекст сокращается примерно вдвое за один шаг, вместо удаления одного сообщения за каждый оборот, благодаря чему префикс запроса остаётся стабильным, и кэширование промптов продолжает работать на протяжении многих оборотов. Минимальное значение — 20. Оставьте поле пустым, чтобы снять ограничение.</string>
   <string name="assistant_page_context_message_limit_placeholder">Без ограничений</string>
   <string name="assistant_page_context_message_limit_warning">Кеш промпта аннулируется при каждом сокращении контекста. Чем больше лимит, тем реже сокращается контекст.</string>
+  <string name="search_picker_local_title">Локальный поиск</string>
+  <string name="search_picker_local_description">Подключение к различным сторонним поисковым провайдерам</string>
+  <string name="search_picker_model_title">Поиск через модель</string>
+  <string name="search_picker_model_description">Облачный поиск, встроенный в провайдера моделей</string>
+  <string name="search_picker_select_provider">Выберите провайдера поиска</string>
+  <string name="search_picker_turn_off">Отключить поиск</string>
+  <string name="reasoning_max">Максимум</string>
 </resources>

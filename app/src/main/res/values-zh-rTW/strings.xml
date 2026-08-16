@@ -1283,4 +1283,11 @@
   <string name="assistant_page_context_message_limit_desc">限制發送給模型的最近訊息數量。當超出限制時，上下文會一次性修剪到大約一半，而不是每次輪次刪除一條訊息，這樣請求前綴保持穩定，提示詞緩存可以在多次輪次中繼續運作，最小為20。留空表示無限制。</string>
   <string name="assistant_page_context_message_limit_placeholder">無限制</string>
   <string name="assistant_page_context_message_limit_warning">每次截斷上下文時都會使提示詞快取失效，上限越大，截斷越少。</string>
+  <string name="search_picker_local_title">本機搜尋</string>
+  <string name="search_picker_local_description">連線至各種第三方搜尋提供者</string>
+  <string name="search_picker_model_title">模型搜尋</string>
+  <string name="search_picker_model_description">模型提供者內建的雲端搜尋</string>
+  <string name="search_picker_select_provider">選擇搜尋提供者</string>
+  <string name="search_picker_turn_off">關閉搜尋</string>
+  <string name="reasoning_max">最大</string>
 </resources>
