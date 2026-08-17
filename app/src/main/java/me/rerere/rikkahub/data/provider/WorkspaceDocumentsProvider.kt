@@ -56,7 +56,15 @@ class WorkspaceDocumentsProvider : DocumentsProvider() {
 
     override fun queryDocument(documentId: String, projection: Array<String>?): Cursor {
         val cursor = MatrixCursor(projection ?: DEFAULT_DOCUMENT_PROJECTION)
-        addTargetRow(cursor, parseDocId(documentId))
+        val target = parseDocId(documentId)
+        if (target.kind == TargetKind.ROOT || target.kind == TargetKind.WORKSPACES) {
+            addTargetRow(cursor, target)
+        } else {
+            val file = resolveFile(target)
+            if (file.exists()) {
+                addTargetRow(cursor, target)
+            }
+        }
         return cursor
     }
 

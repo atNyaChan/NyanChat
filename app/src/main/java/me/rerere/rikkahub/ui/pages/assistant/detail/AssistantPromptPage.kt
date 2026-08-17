@@ -1,8 +1,6 @@
 package me.rerere.rikkahub.ui.pages.assistant.detail
 
 import me.rerere.hugeicons.HugeIcons
-import me.rerere.hugeicons.stroke.ArrowDown01
-import me.rerere.hugeicons.stroke.ArrowUp01
 import me.rerere.hugeicons.stroke.Add01
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.Refresh03
@@ -41,6 +39,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -49,8 +48,11 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -96,6 +98,7 @@ import me.rerere.rikkahub.utils.onSuccess
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
+import sh.calvin.reorderable.ReorderableColumn
 import kotlin.uuid.Uuid
 
 @Composable
@@ -526,15 +529,46 @@ private fun AssistantPromptContent(
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(stringResource(R.string.assistant_page_regex_desc))
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            assistant.regexes.fastForEachIndexed { index, regex ->
-                                AssistantRegexCard(
-                                    regex = regex,
-                                    onUpdate = onUpdate,
-                                    assistant = assistant,
-                                    index = index,
-                                    onRequestDelete = { pendingRegexDeleteIndex = index },
-                                    initiallyExpanded = regex.id == expandedRegexId,
-                                )
+                            val haptic = LocalHapticFeedback.current
+                            ReorderableColumn(
+                                list = assistant.regexes,
+                                onSettle = { fromIndex, toIndex ->
+                                    val regexes = assistant.regexes.toMutableList().apply {
+                                        add(toIndex, removeAt(fromIndex))
+                                    }
+                                    onUpdate(assistant.copy(regexes = regexes))
+                                },
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) { index, regex, isDragging ->
+                                key(regex.id) {
+                                    ReorderableItem(modifier = Modifier.fillMaxWidth()) {
+                                        AssistantRegexCard(
+                                            regex = regex,
+                                            onUpdate = onUpdate,
+                                            assistant = assistant,
+                                            index = index,
+                                            onRequestDelete = {
+                                                pendingRegexDeleteIndex = index
+                                            },
+                                            initiallyExpanded = regex.id == expandedRegexId,
+                                            modifier = Modifier.scale(
+                                                if (isDragging) 0.95f else 1f
+                                            ).longPressDraggableHandle(
+                                                enabled = assistant.regexes.size > 1,
+                                                onDragStarted = {
+                                                    haptic.performHapticFeedback(
+                                                        HapticFeedbackType.GestureThresholdActivate
+                                                    )
+                                                },
+                                                onDragStopped = {
+                                                    haptic.performHapticFeedback(
+                                                        HapticFeedbackType.GestureEnd
+                                                    )
+                                                },
+                                            ),
+                                        )
+                                    }
+                                }
                             }
                             Button(
                                 onClick = {
@@ -623,11 +657,15 @@ private fun AssistantRegexCard(
     index: Int,
     onRequestDelete: () -> Unit,
     initiallyExpanded: Boolean = false,
+    modifier: Modifier = Modifier,
 ) {
     var expanded by remember(regex.id) {
         mutableStateOf(initiallyExpanded)
     }
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+    ElevatedCard(
+        onClick = { expanded = !expanded },
+        modifier = modifier.fillMaxWidth(),
+    ) {
         Column(
             modifier = Modifier
                 .padding(12.dp)
@@ -660,16 +698,6 @@ private fun AssistantRegexCard(
                     },
                     modifier = Modifier.padding(start = 8.dp)
                 )
-                IconButton(
-                    onClick = {
-                        expanded = !expanded
-                    }
-                ) {
-                    Icon(
-                        imageVector = if (expanded) HugeIcons.ArrowUp01 else HugeIcons.ArrowDown01,
-                        contentDescription = null
-                    )
-                }
             }
             if (expanded) {
                 OutlinedTextField(

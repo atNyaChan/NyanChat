@@ -50,6 +50,7 @@ import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.ui.theme.LocalDarkMode
 import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.utils.plus
+import me.rerere.search.DoubaoSearchMode
 import me.rerere.search.SearchService
 import me.rerere.search.SearchServiceOptions
 import org.koin.androidx.compose.koinViewModel
@@ -183,6 +184,9 @@ private fun SearchServiceOptionsEditor(
         is SearchServiceOptions.ZhipuOptions -> {
             ZhipuOptions(options) { onUpdateOptions(it) }
         }
+        is SearchServiceOptions.DoubaoOptions -> {
+            DoubaoOptions(options) { onUpdateOptions(it) }
+        }
         is SearchServiceOptions.SearXNGOptions -> {
             SearXNGOptions(options) { onUpdateOptions(it) }
         }
@@ -225,6 +229,35 @@ private fun SearchServiceOptionsEditor(
         }
         is SearchServiceOptions.CustomJsOptions -> {
             CustomJsOptions(options) { onUpdateOptions(it) }
+        }
+    }
+}
+
+@Composable
+internal fun DoubaoOptions(
+    options: SearchServiceOptions.DoubaoOptions,
+    onUpdateOptions: (SearchServiceOptions.DoubaoOptions) -> Unit
+) {
+    FormItem(label = { Text(stringResource(R.string.search_detail_api_key)) }) {
+        OutlinedTextField(
+            value = options.apiKey,
+            onValueChange = { onUpdateOptions(options.copy(apiKey = it)) },
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+
+    FormItem(label = { Text("Mode") }) {
+        val modes = DoubaoSearchMode.entries
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            modes.forEachIndexed { index, mode ->
+                SegmentedButton(
+                    shape = SegmentedButtonDefaults.itemShape(index, modes.size),
+                    onClick = { onUpdateOptions(options.copy(mode = mode)) },
+                    selected = options.mode == mode
+                ) {
+                    Text(mode.name.lowercase().replaceFirstChar(Char::uppercase))
+                }
+            }
         }
     }
 }
