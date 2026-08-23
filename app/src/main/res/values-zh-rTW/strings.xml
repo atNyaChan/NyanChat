@@ -1264,6 +1264,8 @@
   <string name="setting_tts_page_temperature">溫度</string>
   <string name="setting_tts_page_temperature_description">控制語音的隨機性（0.0 - 1.0，數值越高越有表現力）</string>
   <string name="setting_page_more_settings">更多設定</string>
+  <string name="setting_page_chat_settings">對話設定</string>
+  <string name="setting_page_system_settings">系統設定</string>
   <string name="assistant_page_copy_existing">複製現有助手</string>
   <string name="assistant_page_copy_picker_tag_count">%1$d 個標籤</string>
   <string name="assistant_page_delete_assistant">刪除助手</string>
@@ -1290,4 +1292,9 @@
   <string name="search_picker_select_provider">選擇搜尋提供者</string>
   <string name="search_picker_turn_off">關閉搜尋</string>
   <string name="reasoning_max">最大</string>
+  <string name="setting_page_preferences_network_user_agent">User-Agent</string>
+  <string name="setting_page_preferences_network_user_agent_desc">設定請求時使用的 User Agent 標頭</string>
+  <string name="setting_page_preferences_network_proxy">代理</string>
+  <string name="setting_page_preferences_network_proxy_desc">支援 HTTP 和 SOCKS5 代理網址。留空以使用系統設定。</string>
+  <string name="setting_page_preferences_network_proxy_invalid">請輸入包含主機和連接埠的有效代理 URL。</string>
 </resources>

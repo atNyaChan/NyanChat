@@ -1274,6 +1274,8 @@
   <string name="log_page_stream_interrupted">流式响应已中断</string>
   <string name="safe_mode_enter_app">进入应用</string>
   <string name="setting_page_more_settings">更多设置</string>
+  <string name="setting_page_chat_settings">对话设置</string>
+  <string name="setting_page_system_settings">系统设置</string>
   <string name="search_page_first_page">最前页</string>
   <string name="search_page_previous_page">前一页</string>
   <string name="search_page_next_page">后一页</string>
@@ -1290,4 +1292,9 @@
   <string name="assistant_page_context_message_limit_placeholder">无限制</string>
   <string name="assistant_page_context_message_limit_warning">会在每次截断上下文时使提示词缓存失效，上限越大，截断越少。</string>
   <string name="reasoning_max">最大</string>
+  <string name="setting_page_preferences_network_user_agent">User-Agent</string>
+  <string name="setting_page_preferences_network_user_agent_desc">设置请求时使用的 User Agent 头</string>
+  <string name="setting_page_preferences_network_proxy">代理</string>
+  <string name="setting_page_preferences_network_proxy_desc">支持 HTTP 和 SOCKS5 代理 URL。留空以使用系统设置。</string>
+  <string name="setting_page_preferences_network_proxy_invalid">请输入包含主机和端口的有效代理 URL。</string>
 </resources>

@@ -111,7 +111,13 @@ class RequestLoggingInterceptor : Interceptor {
     private class StreamInterruptedException : Exception("stream_response_interrupted")
 
     private fun okhttp3.Headers.toMap(): Map<String, String> {
-        return names().associateWith { name -> values(name).joinToString("\n") }
+        return names().associateWith { name ->
+            if (name.equals("Proxy-Authorization", ignoreCase = true)) {
+                "██"
+            } else {
+                values(name).joinToString("\n")
+            }
+        }
     }
 
     private fun decodeTextBody(

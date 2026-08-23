@@ -1264,6 +1264,8 @@
   <string name="setting_tts_page_temperature">온도</string>
   <string name="setting_tts_page_temperature_description">음성의 무작위성을 조절합니다(0.0~1.0, 높을수록 표현력이 풍부함)</string>
   <string name="setting_page_more_settings">더 많은 설정</string>
+  <string name="setting_page_chat_settings">대화 설정</string>
+  <string name="setting_page_system_settings">시스템 설정</string>
   <string name="assistant_page_copy_existing">기존 어시스턴트 복사</string>
   <string name="assistant_page_copy_picker_tag_count">태그 %1$d개</string>
   <string name="assistant_page_delete_assistant">어시스턴트 삭제</string>
@@ -1290,4 +1292,9 @@
   <string name="search_picker_select_provider">검색 제공자 선택</string>
   <string name="search_picker_turn_off">검색 끄기</string>
   <string name="reasoning_max">최대</string>
+  <string name="setting_page_preferences_network_user_agent">User-Agent</string>
+  <string name="setting_page_preferences_network_user_agent_desc">요청 시 사용하는 User Agent 헤더 설정</string>
+  <string name="setting_page_preferences_network_proxy">프록시</string>
+  <string name="setting_page_preferences_network_proxy_desc">HTTP 및 SOCKS5 프록시 URL을 지원합니다. 비워 두면 시스템 설정을 사용합니다.</string>
+  <string name="setting_page_preferences_network_proxy_invalid">호스트와 포트가 있는 유효한 프록시 URL을 입력하세요.</string>
 </resources>

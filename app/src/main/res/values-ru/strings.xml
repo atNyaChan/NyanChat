@@ -1264,6 +1264,8 @@
   <string name="setting_tts_page_temperature">Температура</string>
   <string name="setting_tts_page_temperature_description">Управляет случайностью голоса (0.0–1.0; чем выше, тем выразительнее)</string>
   <string name="setting_page_more_settings">Дополнительные настройки</string>
+  <string name="setting_page_chat_settings">Настройки чата</string>
+  <string name="setting_page_system_settings">Системные настройки</string>
   <string name="assistant_page_copy_existing">Копировать существующего ассистента</string>
   <string name="assistant_page_copy_picker_tag_count">Тегов: %1$d</string>
   <string name="assistant_page_delete_assistant">Удалить ассистента</string>
@@ -1290,4 +1292,9 @@
   <string name="search_picker_select_provider">Выберите провайдера поиска</string>
   <string name="search_picker_turn_off">Отключить поиск</string>
   <string name="reasoning_max">Максимум</string>
+  <string name="setting_page_preferences_network_user_agent">User-Agent</string>
+  <string name="setting_page_preferences_network_user_agent_desc">Заголовок User-Agent, используемый в запросах</string>
+  <string name="setting_page_preferences_network_proxy">Прокси</string>
+  <string name="setting_page_preferences_network_proxy_desc">Поддерживает HTTP и SOCKS5 прокси-URL. Оставьте пустым для использования системных настроек.</string>
+  <string name="setting_page_preferences_network_proxy_invalid">Введите корректный URL прокси-сервера с хостом и портом.</string>
 </resources>

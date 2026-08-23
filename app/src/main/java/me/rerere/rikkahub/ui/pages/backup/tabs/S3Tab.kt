@@ -122,7 +122,37 @@ fun S3Tab(
             BackupStatusCard(
                 title = stringResource(R.string.backup_page_s3_backup),
                 lastBackupText = lastBackupText,
-                fileSummaryText = backupFileSummary
+                fileSummaryText = backupFileSummary,
+                backupItemsContent = {
+                    MultiChoiceSegmentedButtonRow(
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        S3Config.BackupItem.entries.forEachIndexed { index, item ->
+                            SegmentedButton(
+                                shape = SegmentedButtonDefaults.itemShape(
+                                    index = index,
+                                    count = S3Config.BackupItem.entries.size
+                                ),
+                                onCheckedChange = { checked ->
+                                    val newItems = if (checked) {
+                                        s3Config.items + item
+                                    } else {
+                                        s3Config.items - item
+                                    }
+                                    updateS3Config(s3Config.copy(items = newItems))
+                                },
+                                checked = item in s3Config.items
+                            ) {
+                                Text(
+                                    when (item) {
+                                        S3Config.BackupItem.DATABASE -> stringResource(R.string.backup_page_chat_records)
+                                        S3Config.BackupItem.FILES -> stringResource(R.string.backup_page_files)
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
             )
 
             CardGroup {
@@ -204,42 +234,6 @@ fun S3Tab(
                             placeholder = { Text("auto") },
                             singleLine = true
                         )
-                    },
-                )
-            }
-
-            CardGroup {
-                item(
-                    headlineContent = { Text(stringResource(R.string.backup_page_backup_items)) },
-                    supportingContent = {
-                        MultiChoiceSegmentedButtonRow(
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            S3Config.BackupItem.entries.forEachIndexed { index, item ->
-                                SegmentedButton(
-                                    shape = SegmentedButtonDefaults.itemShape(
-                                        index = index,
-                                        count = S3Config.BackupItem.entries.size
-                                    ),
-                                    onCheckedChange = { checked ->
-                                        val newItems = if (checked) {
-                                            s3Config.items + item
-                                        } else {
-                                            s3Config.items - item
-                                        }
-                                        updateS3Config(s3Config.copy(items = newItems))
-                                    },
-                                    checked = item in s3Config.items
-                                ) {
-                                    Text(
-                                        when (item) {
-                                            S3Config.BackupItem.DATABASE -> stringResource(R.string.backup_page_chat_records)
-                                            S3Config.BackupItem.FILES -> stringResource(R.string.backup_page_files)
-                                        }
-                                    )
-                                }
-                            }
-                        }
                     },
                 )
             }
@@ -433,40 +427,6 @@ fun S3Tab(
         },
         onDismiss = { pendingDeleteItem = null },
     ) { Text(stringResource(R.string.backup_page_delete_remote_desc)) }
-}
-
-@Composable
-private fun BackupStatusCard(
-    title: String,
-    lastBackupText: String,
-    fileSummaryText: String,
-) {
-    CardGroup {
-        item(
-            headlineContent = {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium
-                )
-            },
-            supportingContent = {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    Text(
-                        text = lastBackupText,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = fileSummaryText,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            },
-        )
-    }
 }
 
 @Composable

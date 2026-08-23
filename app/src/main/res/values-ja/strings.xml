@@ -1264,6 +1264,8 @@
   <string name="setting_tts_page_temperature">温度</string>
   <string name="setting_tts_page_temperature_description">音声のランダム性を調整します（0.0～1.0、高いほど表現豊か）</string>
   <string name="setting_page_more_settings">その他の設定</string>
+  <string name="setting_page_chat_settings">会話設定</string>
+  <string name="setting_page_system_settings">システム設定</string>
   <string name="assistant_page_copy_existing">既存のアシスタントをコピー</string>
   <string name="assistant_page_copy_picker_tag_count">%1$d 個のタグ</string>
   <string name="assistant_page_delete_assistant">アシスタントを削除</string>
@@ -1290,4 +1292,9 @@
   <string name="search_picker_select_provider">検索プロバイダを選択</string>
   <string name="search_picker_turn_off">検索をオフにする</string>
   <string name="reasoning_max">最大</string>
+  <string name="setting_page_preferences_network_user_agent">User-Agent</string>
+  <string name="setting_page_preferences_network_user_agent_desc">リクエスト時に使用するUser Agentヘッダーを設定</string>
+  <string name="setting_page_preferences_network_proxy">プロキシ</string>
+  <string name="setting_page_preferences_network_proxy_desc">HTTPおよびSOCKS5プロキシURLをサポートします。空白の場合はシステム設定を使用します。</string>
+  <string name="setting_page_preferences_network_proxy_invalid">ホストとポートを含む有効なプロキシURLを入力してください。</string>
 </resources>

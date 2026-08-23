@@ -808,6 +808,11 @@
   <string name="setting_page_lorebook_desc">Manage imported lorebooks</string>
   <string name="setting_page_preferences">General Settings</string>
   <string name="setting_page_preferences_desc">Interface, themes, chat interactions, and other general settings</string>
+  <string name="setting_page_preferences_network_user_agent">User-Agent</string>
+  <string name="setting_page_preferences_network_user_agent_desc">Set the User-Agent header used in requests</string>
+  <string name="setting_page_preferences_network_proxy">Proxy</string>
+  <string name="setting_page_preferences_network_proxy_desc">Supports HTTP and SOCKS5 proxy URLs. Leave blank to use system settings.</string>
+  <string name="setting_page_preferences_network_proxy_invalid">Enter a valid proxy URL with a host and port.</string>
   <string name="setting_page_dynamic_color">Dynamic Color</string>
   <string name="setting_page_dynamic_color_desc">Generate the app theme colors dynamically from your wallpaper</string>
   <string name="setting_page_mcp_desc">Configure MCP Servers</string>
@@ -1275,6 +1280,8 @@
   <string name="chat_page_stop_generation_before_delete">Stop generating before deleting messages</string>
   <string name="log_page_stream_interrupted">Stream response interrupted</string>
   <string name="setting_page_more_settings">More settings</string>
+  <string name="setting_page_chat_settings">Chat Settings</string>
+  <string name="setting_page_system_settings">System Settings</string>
   <string name="search_page_first_page">First page</string>
   <string name="search_page_previous_page">Previous page</string>
   <string name="search_page_next_page">Next page</string>
@@ -1291,3 +1298,4 @@
   <string name="assistant_page_context_message_limit_placeholder">Unlimited</string>
   <string name="assistant_page_context_message_limit_warning">The prompt cache is invalidated each time the context is trimmed. A larger limit means less frequent trimming.</string>
 </resources>
+

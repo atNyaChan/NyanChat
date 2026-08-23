@@ -121,7 +121,37 @@ fun WebDavTab(
             BackupStatusCard(
                 title = stringResource(R.string.backup_page_webdav_backup),
                 lastBackupText = lastBackupText,
-                fileSummaryText = backupFileSummary
+                fileSummaryText = backupFileSummary,
+                backupItemsContent = {
+                    MultiChoiceSegmentedButtonRow(
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        WebDavConfig.BackupItem.entries.forEachIndexed { index, item ->
+                            SegmentedButton(
+                                shape = SegmentedButtonDefaults.itemShape(
+                                    index = index,
+                                    count = WebDavConfig.BackupItem.entries.size
+                                ),
+                                onCheckedChange = { checked ->
+                                    val newItems = if (checked) {
+                                        webDavConfig.items + item
+                                    } else {
+                                        webDavConfig.items - item
+                                    }
+                                    updateWebDavConfig(webDavConfig.copy(items = newItems))
+                                },
+                                checked = item in webDavConfig.items
+                            ) {
+                                Text(
+                                    when (item) {
+                                        WebDavConfig.BackupItem.DATABASE -> stringResource(R.string.backup_page_chat_records)
+                                        WebDavConfig.BackupItem.FILES -> stringResource(R.string.backup_page_files)
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
             )
 
             CardGroup {
@@ -186,42 +216,6 @@ fun WebDavTab(
                             onValueChange = { updateWebDavConfig(webDavConfig.copy(path = it.trim())) },
                             singleLine = true
                         )
-                    },
-                )
-            }
-
-            CardGroup {
-                item(
-                    headlineContent = { Text(stringResource(R.string.backup_page_backup_items)) },
-                    supportingContent = {
-                    MultiChoiceSegmentedButtonRow(
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        WebDavConfig.BackupItem.entries.forEachIndexed { index, item ->
-                            SegmentedButton(
-                                shape = SegmentedButtonDefaults.itemShape(
-                                    index = index,
-                                    count = WebDavConfig.BackupItem.entries.size
-                                ),
-                                onCheckedChange = { checked ->
-                                    val newItems = if (checked) {
-                                        webDavConfig.items + item
-                                    } else {
-                                        webDavConfig.items - item
-                                    }
-                                    updateWebDavConfig(webDavConfig.copy(items = newItems))
-                                },
-                                checked = item in webDavConfig.items
-                            ) {
-                                Text(
-                                    when (item) {
-                                        WebDavConfig.BackupItem.DATABASE -> stringResource(R.string.backup_page_chat_records)
-                                        WebDavConfig.BackupItem.FILES -> stringResource(R.string.backup_page_files)
-                                    }
-                                )
-                            }
-                        }
-                    }
                     },
                 )
             }
@@ -414,40 +408,6 @@ fun WebDavTab(
         },
         onDismiss = { pendingDeleteItem = null },
     ) { Text(stringResource(R.string.backup_page_delete_remote_desc)) }
-}
-
-@Composable
-private fun BackupStatusCard(
-    title: String,
-    lastBackupText: String,
-    fileSummaryText: String,
-) {
-    CardGroup {
-        item(
-            headlineContent = {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium
-                )
-            },
-            supportingContent = {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    Text(
-                        text = lastBackupText,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = fileSummaryText,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            },
-        )
-    }
 }
 
 @Composable
