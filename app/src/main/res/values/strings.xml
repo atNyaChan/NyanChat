@@ -481,14 +481,8 @@
   <string name="quick_messages_page_empty_hint">Tap the + button at the bottom right to add a quick message</string>
   <string name="quick_messages_page_empty_title">No Quick Messages</string>
   <string name="quick_messages_page_untitled">Untitled</string>
-  <string name="reasoning_auto">Auto</string>
-  <string name="reasoning_heavy">High</string>
-  <string name="reasoning_light">Low</string>
-  <string name="reasoning_medium">Medium</string>
-  <string name="reasoning_max">Max</string>
   <string name="reasoning_picker_hint">Not all models support depth adjustment. Refer to the model and provider documentation.</string>
   <string name="reasoning_picker_title">Adjust Model Thinking Depth</string>
-  <string name="reasoning_xhigh">XHigh</string>
   <string name="regenerate">Regenerate</string>
   <string name="regenerate_confirm_message">Are you sure you want to regenerate this message?</string>
   <string name="safe_mode_assistants">Assistants</string>
@@ -622,6 +616,8 @@
   <string name="setting_display_page_amoled_dark_mode_title">AMOLED Dark Mode</string>
   <string name="setting_display_page_auto_collapse_thinking_desc">Automatically collapse thinking content after thinking is complete</string>
   <string name="setting_display_page_auto_collapse_thinking_title">Auto Collapse Thinking</string>
+  <string name="setting_display_page_parse_mid_think_title">Parse Mid-Think Tags</string>
+  <string name="setting_display_page_parse_mid_think_desc">Parse &lt;think&gt; tags that are not at the message start as thinking blocks</string>
   <string name="setting_display_page_auto_play_tts_desc">Automatically play TTS after assistant message generation completes</string>
   <string name="setting_display_page_auto_play_tts_title">Auto-play TTS After Generation</string>
   <string name="setting_display_page_chat_font_family_default">Default</string>
@@ -629,8 +625,8 @@
   <string name="setting_display_page_chat_font_family_monospace">Monospace</string>
   <string name="setting_display_page_chat_font_family_serif">Serif</string>
   <string name="setting_display_page_chat_font_family_title">Chat Font</string>
-  <string name="setting_display_page_chat_list_model_icon_desc">Whether to display model icons in chat list messages</string>
-  <string name="setting_display_page_chat_list_model_icon_title">Chat List Model Icon</string>
+  <string name="setting_display_page_chat_list_model_icon_desc">Show model icons in the chat page</string>
+  <string name="setting_display_page_chat_list_model_icon_title">Show Model Icon</string>
   <string name="setting_display_page_code_block_auto_collapse_desc">Automatically collapse code blocks by default</string>
   <string name="setting_display_page_code_block_auto_collapse_title">Code Block Auto Collapse</string>
   <string name="setting_display_page_code_block_auto_wrap_desc">Automatically wrap long lines in code blocks</string>
@@ -649,7 +645,7 @@
   <string name="setting_display_page_use_chat_font_globally_title">Use Chat Font Globally</string>
   <string name="setting_display_page_enable_auto_scroll_desc">Automatically scroll to the bottom when AI is generating content</string>
   <string name="setting_display_page_enable_auto_scroll_title">Auto Scroll</string>
-  <string name="setting_display_page_enable_blur_effect_desc">Enable blur effect on chat input bar</string>
+  <string name="setting_display_page_enable_blur_effect_desc">Add transparency effects to home page UI elements</string>
   <string name="setting_display_page_enable_blur_effect_title">Enable Blur Effect</string>
   <string name="setting_display_page_square_input_on_keyboard_title">Square Input Bottom Corners When Keyboard Opens</string>
   <string name="setting_display_page_square_input_on_keyboard_desc">Let the input box fit more closely against the keyboard</string>
@@ -657,8 +653,15 @@
   <string name="setting_display_page_enable_latex_rendering_title">Enable LaTeX Rendering</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_desc">Enable haptic feedback when messages are being generated</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_title">Message Generation Haptic Effect</string>
-  <string name="setting_display_page_font_size_preview">At four in the morning, I saw the begonia flowers still awake. I am often like this — lying awake alone in the quiet night, thinking: if someone is thinking of me at this moment, that would be wonderful.</string>
   <string name="setting_display_page_font_size_title">Chat Font Size</string>
+    <string name="setting_display_page_font_preview">Font Preview</string>
+<string name="setting_display_page_font_size_preview_part1">At four in the morning, I saw the begonia flowers still awake. I am often like this — lying awake alone in the quiet night, thinking: </string>
+  <string name="setting_display_page_font_size_preview_part2">if someone is thinking of me at this moment, that would be wonderful.</string>
+
+  <string name="setting_display_page_default_font_weight_title">Default Font Weight</string>
+  <string name="setting_display_page_default_font_weight_desc">Set the font weight of the font. Range: 100 - 900, leave blank to use the default.</string>
+  <string name="setting_display_page_bold_font_weight_title">Bold Font Weight</string>
+  <string name="setting_display_page_bold_font_weight_desc">Set the font weight of bold text. Range: 100 - 900, leave blank to use the default.</string>
   <string name="setting_display_page_message_jumper_right">Right</string>
   <string name="setting_display_page_notification_message_generated">Enable notification after message generated</string>
   <string name="setting_display_page_notification_message_generated_desc">Send notifications when messages are generated while the app is not in the foreground</string>
@@ -681,7 +684,7 @@
   <string name="setting_display_page_show_message_jumper_title">Show Message Jumper</string>
   <string name="setting_display_page_show_model_name_desc">Whether to display model names in chat messages</string>
   <string name="setting_display_page_show_model_name_title">Show Model Name</string>
-  <string name="setting_display_page_show_thinking_content_desc">Whether to expand and show the thinking process by default during generation</string>
+  <string name="setting_display_page_show_thinking_content_desc">Expand and show the thinking process by default during generation</string>
   <string name="setting_display_page_show_thinking_content_title">Show Thinking Content</string>
   <string name="setting_display_page_show_token_usage_desc">Show token count, elapsed time, word count, and more</string>
   <string name="setting_display_page_show_token_usage_title">Show Token Counts &amp; Other Statistics</string>
@@ -783,7 +786,7 @@
   <string name="setting_page_about_desc">About this app</string>
   <string name="setting_page_assistant_desc">Set up personalized assistants (agents)</string>
   <string name="setting_page_built_in_tools">Built-in Tools</string>
-  <string name="setting_page_built_in_tools_desc">Select built-in tools supported by the model. These tools are directly provided by the API without requiring app support. Currently, this feature is only supported by the official Gemini API.</string>
+  <string name="setting_page_built_in_tools_desc">Enable tools built into the model API. Only supported by some models.</string>
   <string name="setting_page_built_in_tools_image_generation">Image Generation</string>
   <string name="setting_page_built_in_tools_image_generation_desc">Enable image generation capability</string>
   <string name="setting_page_built_in_tools_search">Search</string>
@@ -812,11 +815,13 @@
   <string name="setting_page_preferences_network_user_agent_desc">Set the User-Agent header used in requests</string>
   <string name="setting_page_preferences_network_proxy">Proxy</string>
   <string name="setting_page_preferences_network_proxy_desc">Supports HTTP and SOCKS5 proxy URLs. Leave blank to use system settings.</string>
+  <string name="setting_page_preferences_network_proxy_list_desc">Supports HTTP and SOCKS5 proxy URLs.</string>
   <string name="setting_page_preferences_network_proxy_invalid">Enter a valid proxy URL with a host and port.</string>
   <string name="setting_page_dynamic_color">Dynamic Color</string>
   <string name="setting_page_dynamic_color_desc">Generate the app theme colors dynamically from your wallpaper</string>
   <string name="setting_page_mcp_desc">Configure MCP Servers</string>
-  <string name="setting_page_message_display_settings">Fonts, Formulas and Code</string>
+  <string name="setting_page_font_settings">Fonts</string>
+  <string name="setting_page_formula_code_settings">Formulas and Code</string>
   <string name="setting_page_model_and_services">Model Services</string>
   <string name="setting_page_providers_desc">Configure LLM service providers</string>
   <string name="setting_page_request_logs">Network Request Logs</string>
@@ -1237,7 +1242,7 @@
   <string name="chat_page_delete_folder">Delete Folder</string>
   <string name="chat_page_folder_default">Chat</string>
   <string name="chat_page_folder_add">New</string>
-  <string name="chat_page_delete_folder_confirm">Delete folder "%1$s"? Conversations inside will not be deleted, only removed from the folder.</string>
+  <string name="chat_page_delete_folder_confirm">Confirm deleting folder “%1$s”? Conversations inside will not be deleted, only removed from the folder.</string>
   <string name="chat_page_delete_folder_generating">Some conversations in this folder are still generating. Please stop them before deleting.</string>
   <string name="setting_general_language">Language</string>
   <string name="setting_general_language_system">Follow system</string>
@@ -1272,7 +1277,10 @@
   <string name="chat_page_current_location">Current location</string>
   <string name="chat_page_confirm_move">Move chats</string>
   <string name="chat_page_confirm_move_desc">Confirm moving the %1$d selected chats to “%2$s”?</string>
-  <string name="chat_page_confirm_single_move_desc">Confirm moving the selected chat to “%1$s”?</string>
+  <string name="chat_page_confirm_single_move_desc">Confirm moving chat “%1$s” to “%2$s”?</string>
+  <string name="chat_page_folder_move_forward">Move Forward</string>
+  <string name="chat_page_folder_move_backward">Move Backward</string>
+  <string name="chat_page_context_message_limit_current">Current context keeps at most %1$d messages</string>
   <string name="chat_page_create_folder_in">Create a folder in “%1$s”</string>
   <string name="about_page_original_github">RikkaHub GitHub</string>
   <string name="about_page_original_website">RikkaHub website</string>
@@ -1281,6 +1289,7 @@
   <string name="log_page_stream_interrupted">Stream response interrupted</string>
   <string name="setting_page_more_settings">More settings</string>
   <string name="setting_page_chat_settings">Chat Settings</string>
+  <string name="setting_page_interface_settings">Interface Settings</string>
   <string name="setting_page_system_settings">System Settings</string>
   <string name="search_page_first_page">First page</string>
   <string name="search_page_previous_page">Previous page</string>

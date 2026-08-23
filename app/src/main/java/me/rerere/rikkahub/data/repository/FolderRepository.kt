@@ -1,6 +1,7 @@
 package me.rerere.rikkahub.data.repository
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import me.rerere.rikkahub.data.db.dao.ConversationDAO
 import me.rerere.rikkahub.data.db.dao.FolderDAO
@@ -42,6 +43,26 @@ class FolderRepository(
     suspend fun deleteFolder(id: Uuid) {
         conversationDAO.clearFolder(id.toString())
         folderDAO.deleteById(id.toString())
+    }
+
+    /**
+     * 移动文件夹在助手内分组中的排序位置。
+     *
+     * @param forward true 表示往前移（更靠前），false 表示往后移（更靠后）。
+     *                已处于最前/最后时不做任何操作。
+     */
+    suspend fun moveFolder(id: Uuid, forward: Boolean) {
+        val target = folderDAO.getFolderById(id.toString()) ?: return
+        val folders = folderDAO.getFoldersOfAssistant(target.assistantId).first()
+        val index = folders.indexOfFirst { it.id == target.id }
+        if (index < 0) return
+        val newIndex = if (forward) index - 1 else index + 1
+        if (newIndex < 0 || newIndex >= folders.size) return
+
+        val reordered = folders.toMutableList().apply { add(newIndex, removeAt(index)) }
+        reordered.forEachIndexed { i, folder ->
+            folderDAO.updateSortIndex(folder.id, i)
+        }
     }
 }
 

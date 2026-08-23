@@ -467,13 +467,8 @@
   <string name="quick_messages_page_empty_hint">點擊右下角的 + 按鈕來新增快速訊息</string>
   <string name="quick_messages_page_empty_title">無快速訊息</string>
   <string name="quick_messages_page_untitled">未命名</string>
-  <string name="reasoning_auto">自動</string>
-  <string name="reasoning_heavy">高</string>
-  <string name="reasoning_light">低</string>
-  <string name="reasoning_medium">中等</string>
   <string name="reasoning_picker_hint">並非所有模型都支援深度調整。請參閱模型與提供者文件。</string>
   <string name="reasoning_picker_title">調整模型思考深度</string>
-  <string name="reasoning_xhigh">超高</string>
   <string name="regenerate">重新生成</string>
   <string name="regenerate_confirm_message">您確定要重新產生這則訊息嗎？</string>
   <string name="safe_mode_assistants">助理</string>
@@ -574,14 +569,16 @@
   <string name="setting_display_page_amoled_dark_mode_title">AMOLED 暗色模式</string>
   <string name="setting_display_page_auto_collapse_thinking_desc">思考完成自動折疊思考內容</string>
   <string name="setting_display_page_auto_collapse_thinking_title">自動折疊思考</string>
+  <string name="setting_display_page_parse_mid_think_title">解析中途思考</string>
+  <string name="setting_display_page_parse_mid_think_desc">把非訊息開頭的&lt;think&gt;標籤解析為思考區塊</string>
   <string name="setting_display_page_auto_play_tts_desc">助理訊息產生完成後自動播放語音</string>
   <string name="setting_display_page_auto_play_tts_title">產生後自動播放 TTS</string>
   <string name="setting_display_page_chat_font_family_default">預設</string>
   <string name="setting_display_page_chat_font_family_monospace">等寬字體</string>
   <string name="setting_display_page_chat_font_family_serif">Serif</string>
   <string name="setting_display_page_chat_font_family_title">聊天字型</string>
-  <string name="setting_display_page_chat_list_model_icon_desc">是否在聊天列表消息中顯示模型圖標</string>
-  <string name="setting_display_page_chat_list_model_icon_title">聊天列表模型圖標</string>
+  <string name="setting_display_page_chat_list_model_icon_desc">在聊天頁面顯示模型圖標</string>
+  <string name="setting_display_page_chat_list_model_icon_title">顯示模型圖標</string>
   <string name="setting_display_page_code_block_auto_collapse_desc">預設自動摺疊程式碼區塊</string>
   <string name="setting_display_page_code_block_auto_collapse_title">程式碼區塊自動摺疊</string>
   <string name="setting_display_page_code_block_auto_wrap_desc">自動換行程式碼區塊中的長行</string>
@@ -590,7 +587,7 @@
   <string name="setting_display_page_create_new_conversation_on_start_title">啟動時新建對話</string>
   <string name="setting_display_page_enable_auto_scroll_desc">AI 正在產生內容時，自動捲動至底部</string>
   <string name="setting_display_page_enable_auto_scroll_title">自動滾動</string>
-  <string name="setting_display_page_enable_blur_effect_desc">在聊天輸入列啟用模糊效果</string>
+  <string name="setting_display_page_enable_blur_effect_desc">為主頁的 UI 元素加上透明效果</string>
   <string name="setting_display_page_enable_blur_effect_title">啟用模糊效果</string>
   <string name="setting_display_page_square_input_on_keyboard_title">鍵盤彈出時輸入框底部改為直角</string>
   <string name="setting_display_page_square_input_on_keyboard_desc">讓輸入框更貼近鍵盤</string>
@@ -598,8 +595,15 @@
   <string name="setting_display_page_enable_latex_rendering_title">啟用 LaTeX 渲染</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_desc">訊息生成時啟用觸覺回饋效果</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_title">訊息生成觸覺回饋</string>
-  <string name="setting_display_page_font_size_preview">凌晨四點鐘，看到海棠花未眠。我常常這樣，在無人的夜裡獨自醒著，想，若有人此刻也在想我，那就好了。</string>
   <string name="setting_display_page_font_size_title">聊天字體大小</string>
+    <string name="setting_display_page_font_preview">字型預覽</string>
+<string name="setting_display_page_font_size_preview_part1">凌晨四點鐘，看到海棠花未眠。我常常這樣，在無人的夜裡獨自醒著，想，</string>
+  <string name="setting_display_page_font_size_preview_part2">若有人此刻也在想我，那就好了。</string>
+
+  <string name="setting_display_page_default_font_weight_title">預設字體字重</string>
+  <string name="setting_display_page_default_font_weight_desc">設定字體的字重。範圍：100 - 900，留空則使用預設值。</string>
+  <string name="setting_display_page_bold_font_weight_title">加粗字體字重</string>
+  <string name="setting_display_page_bold_font_weight_desc">設定加粗字體的字重。範圍：100 - 900，留空則使用預設值。</string>
   <string name="setting_display_page_message_jumper_right">右</string>
   <string name="setting_display_page_notification_message_generated">在訊息產生後啟用通知</string>
   <string name="setting_display_page_notification_message_generated_desc">應用程式不在前景產生訊息時傳送通知</string>
@@ -622,7 +626,7 @@
   <string name="setting_display_page_show_message_jumper_title">消息導航按鈕</string>
   <string name="setting_display_page_show_model_name_desc">是否在聊天消息中顯示模型名稱</string>
   <string name="setting_display_page_show_model_name_title">顯示模型名稱</string>
-  <string name="setting_display_page_show_thinking_content_desc">是否在生成時預設展開並顯示思考過程</string>
+  <string name="setting_display_page_show_thinking_content_desc">在生成時預設展開並顯示思考過程</string>
   <string name="setting_display_page_show_thinking_content_title">顯示思考內容</string>
   <string name="setting_display_page_show_token_usage_desc">顯示 Token 數、耗時、字數等</string>
   <string name="setting_display_page_show_token_usage_title">顯示 Token 數等統計資訊</string>
@@ -719,7 +723,7 @@
   <string name="setting_page_about_desc">關於本 APP</string>
   <string name="setting_page_assistant_desc">設定個性化助手 (智能體)</string>
   <string name="setting_page_built_in_tools">內置工具</string>
-  <string name="setting_page_built_in_tools_desc">選擇模型支援的內置工具，這些工具直接由 API 內置，無需 APP 提供，目前此功能僅支援 Gemini 官方 API 。</string>
+  <string name="setting_page_built_in_tools_desc">啟用模型 API 內建的工具，僅支援部分模型。</string>
   <string name="setting_page_built_in_tools_image_generation">圖像生成</string>
   <string name="setting_page_built_in_tools_image_generation_desc">啟用圖片生成功能</string>
   <string name="setting_page_built_in_tools_search">搜尋</string>
@@ -745,7 +749,8 @@
   <string name="setting_page_dynamic_color">動態顏色</string>
   <string name="setting_page_dynamic_color_desc">是否基於桌布動態生成 app 主題配色</string>
   <string name="setting_page_mcp_desc">配置 MCP 伺服器</string>
-  <string name="setting_page_message_display_settings">字型、公式與程式碼</string>
+  <string name="setting_page_font_settings">字型</string>
+  <string name="setting_page_formula_code_settings">公式與程式碼</string>
   <string name="setting_page_model_and_services">模型服務</string>
   <string name="setting_page_providers_desc">設定 LLM 服務提供者</string>
   <string name="setting_page_request_logs">網路請求記錄</string>
@@ -1200,7 +1205,7 @@
   <string name="chat_page_delete_folder">刪除資料夾</string>
   <string name="chat_page_folder_default">聊天</string>
   <string name="chat_page_folder_add">新增</string>
-  <string name="chat_page_delete_folder_confirm">刪除資料夾「%1$s」？資料夾內的對話不會被刪除，只會從資料夾中移除。</string>
+  <string name="chat_page_delete_folder_confirm">確定刪除資料夾「%1$s」嗎？資料夾內的對話不會被刪除，只會從資料夾中移除。</string>
   <string name="chat_page_delete_folder_generating">此資料夾中的部分對話仍在生成中。請先停止它們再刪除。</string>
   <string name="setting_display_page_tts_read_outside_brackets_title">TTS 不朗讀括號內的內容</string>
   <string name="setting_display_page_tts_read_outside_brackets_desc">啟用後，TTS 將不朗讀括號內的內容</string>
@@ -1237,7 +1242,10 @@
   <string name="chat_page_current_location">目前位置</string>
   <string name="chat_page_confirm_move">移動聊天</string>
   <string name="chat_page_confirm_move_desc">確認將選取的 %1$d 個聊天移動到「%2$s」嗎？</string>
-  <string name="chat_page_confirm_single_move_desc">確認將所選聊天移動到「%1$s」嗎？</string>
+  <string name="chat_page_confirm_single_move_desc">確認將聊天「%1$s」移動到「%2$s」嗎？</string>
+  <string name="chat_page_folder_move_forward">往前移動</string>
+  <string name="chat_page_folder_move_backward">往後移動</string>
+  <string name="chat_page_context_message_limit_current">目前上下文最多保留 %1$d 則訊息</string>
   <string name="chat_page_create_folder_in">在「%1$s」中新建資料夾</string>
   <string name="about_page_original_github">RikkaHub GitHub</string>
   <string name="about_page_original_website">RikkaHub 官網</string>
@@ -1265,6 +1273,7 @@
   <string name="setting_tts_page_temperature_description">控制語音的隨機性（0.0 - 1.0，數值越高越有表現力）</string>
   <string name="setting_page_more_settings">更多設定</string>
   <string name="setting_page_chat_settings">對話設定</string>
+  <string name="setting_page_interface_settings">介面設定</string>
   <string name="setting_page_system_settings">系統設定</string>
   <string name="assistant_page_copy_existing">複製現有助手</string>
   <string name="assistant_page_copy_picker_tag_count">%1$d 個標籤</string>
@@ -1291,10 +1300,10 @@
   <string name="search_picker_model_description">模型提供者內建的雲端搜尋</string>
   <string name="search_picker_select_provider">選擇搜尋提供者</string>
   <string name="search_picker_turn_off">關閉搜尋</string>
-  <string name="reasoning_max">最大</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">設定請求時使用的 User Agent 標頭</string>
   <string name="setting_page_preferences_network_proxy">代理</string>
   <string name="setting_page_preferences_network_proxy_desc">支援 HTTP 和 SOCKS5 代理網址。留空以使用系統設定。</string>
+  <string name="setting_page_preferences_network_proxy_list_desc">支援 HTTP 和 SOCKS5 代理網址。</string>
   <string name="setting_page_preferences_network_proxy_invalid">請輸入包含主機和連接埠的有效代理 URL。</string>
 </resources>

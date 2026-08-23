@@ -12,6 +12,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,11 +46,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
@@ -280,6 +286,7 @@ private fun ConversationItem(
     var showDropdownMenu by remember {
         mutableStateOf(false)
     }
+    var menuOffsetX by remember { mutableStateOf(0f) }
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(50f))
@@ -291,6 +298,13 @@ private fun ConversationItem(
                     if (multiSelecting) onLongClick(conversation) else showDropdownMenu = true
                 }
             )
+            .pointerInput(conversation.id) {
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    menuOffsetX = down.position.x
+                    waitForUpOrCancellation()
+                }
+            }
             .background(backgroundColor),
     ) {
         Row(
@@ -330,6 +344,10 @@ private fun ConversationItem(
                 expanded = showDropdownMenu,
                 onDismissRequest = { showDropdownMenu = false },
                 shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
+                offset = DpOffset(
+                    x = with(LocalDensity.current) { menuOffsetX.toDp() },
+                    y = 0.dp,
+                ),
             ) {
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.conversation_multi_select)) },

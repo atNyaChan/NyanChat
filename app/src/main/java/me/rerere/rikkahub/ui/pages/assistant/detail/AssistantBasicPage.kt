@@ -22,6 +22,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +31,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
@@ -61,6 +64,7 @@ import me.rerere.rikkahub.data.model.Tag as DataTag
 fun AssistantBasicPage(
     id: String,
     requestSettingsOnly: Boolean = false,
+    scrollToContextLimit: Boolean = false,
 ) {
     val vm: AssistantDetailVM = koinViewModel(
         parameters = {
@@ -106,6 +110,7 @@ fun AssistantBasicPage(
             onUpdate = { vm.update(it) },
             vm = vm,
             requestSettingsOnly = requestSettingsOnly,
+            scrollToContextLimit = scrollToContextLimit,
         )
     }
 }
@@ -120,17 +125,27 @@ internal fun AssistantBasicContent(
     onUpdate: (Assistant) -> Unit,
     vm: AssistantDetailVM,
     requestSettingsOnly: Boolean = false,
+    scrollToContextLimit: Boolean = false,
 ) {
     val chatModelState = rememberModelListState(
         modelId = assistant.chatModelId,
         providers = providers,
         type = ModelType.CHAT,
     )
+    val scrollState = rememberScrollState()
+    var containerTop by remember { mutableStateOf<Float?>(null) }
+    var contextLimitTop by remember { mutableStateOf<Float?>(null) }
+    LaunchedEffect(scrollToContextLimit, containerTop, contextLimitTop) {
+        if (scrollToContextLimit && containerTop != null && contextLimitTop != null) {
+            scrollState.scrollTo((contextLimitTop!! - containerTop!!).toInt().coerceAtLeast(0))
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scrollState)
+            .onGloballyPositioned { containerTop = it.positionInRoot().y }
             .padding(horizontal = 16.dp)
             .padding(top = innerPadding.calculateTopPadding())
             .padding(top = 8.dp)
@@ -227,7 +242,9 @@ internal fun AssistantBasicContent(
             )
 
             FormItem(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .onGloballyPositioned { contextLimitTop = it.positionInRoot().y },
                 label = {
                     Text(stringResource(R.string.assistant_page_context_message_limit))
                 },

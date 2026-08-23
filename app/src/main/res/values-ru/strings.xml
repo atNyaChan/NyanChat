@@ -467,13 +467,8 @@
   <string name="quick_messages_page_empty_hint">Нажмите кнопку + в правом нижнем углу, чтобы добавить быстрое сообщение</string>
   <string name="quick_messages_page_empty_title">Нет быстрых сообщений</string>
   <string name="quick_messages_page_untitled">Без названия</string>
-  <string name="reasoning_auto">Авто</string>
-  <string name="reasoning_heavy">Высокая</string>
-  <string name="reasoning_light">Низкий</string>
-  <string name="reasoning_medium">Средний</string>
   <string name="reasoning_picker_hint">Не все модели поддерживают настройку глубины. См. документацию модели и провайдера.</string>
   <string name="reasoning_picker_title">Настроить глубину мышления модели</string>
-  <string name="reasoning_xhigh">Очень высокий</string>
   <string name="regenerate">Сгенерировать заново</string>
   <string name="regenerate_confirm_message">Вы уверены, что хотите перегенерировать это сообщение?</string>
   <string name="safe_mode_assistants">Помощники</string>
@@ -574,14 +569,16 @@
   <string name="setting_display_page_amoled_dark_mode_title">AMOLED-тёмная тема</string>
   <string name="setting_display_page_auto_collapse_thinking_desc">Автоматически сворачивать блок мышления после его завершения</string>
   <string name="setting_display_page_auto_collapse_thinking_title">Автоматически сворачивать мысли</string>
+  <string name="setting_display_page_parse_mid_think_title">Разбирать промежуточные мысли</string>
+  <string name="setting_display_page_parse_mid_think_desc">Разбирать теги &lt;think&gt; вне начала сообщения как блоки размышлений</string>
   <string name="setting_display_page_auto_play_tts_desc">Автоматически воспроизводить TTS после завершения генерации ответа ассистента</string>
   <string name="setting_display_page_auto_play_tts_title">Автовоспроизведение TTS после генерации</string>
   <string name="setting_display_page_chat_font_family_default">По умолчанию</string>
   <string name="setting_display_page_chat_font_family_monospace">Моноширинный</string>
   <string name="setting_display_page_chat_font_family_serif">С засечками</string>
   <string name="setting_display_page_chat_font_family_title">Шрифт чата</string>
-  <string name="setting_display_page_chat_list_model_icon_desc">Отображать значки моделей в списке сообщений чата</string>
-  <string name="setting_display_page_chat_list_model_icon_title">Значок модели в списке чатов</string>
+  <string name="setting_display_page_chat_list_model_icon_desc">Показывать значки моделей на странице чата</string>
+  <string name="setting_display_page_chat_list_model_icon_title">Показывать значок модели</string>
   <string name="setting_display_page_code_block_auto_collapse_desc">Автоматически сворачивать блоки кода по умолчанию</string>
   <string name="setting_display_page_code_block_auto_collapse_title">Автосворачивание блоков кода</string>
   <string name="setting_display_page_code_block_auto_wrap_desc">Автоматически переносить длинные строки в блоках кода</string>
@@ -590,7 +587,7 @@
   <string name="setting_display_page_create_new_conversation_on_start_title">Новый чат при запуске</string>
   <string name="setting_display_page_enable_auto_scroll_desc">Автоматически прокручивать вниз при генерации контента ИИ</string>
   <string name="setting_display_page_enable_auto_scroll_title">Автопрокрутка</string>
-  <string name="setting_display_page_enable_blur_effect_desc">Включить эффект размытия на панели ввода чата</string>
+  <string name="setting_display_page_enable_blur_effect_desc">Добавить эффект прозрачности элементам главного экрана</string>
   <string name="setting_display_page_enable_blur_effect_title">Включить эффект размытия</string>
   <string name="setting_display_page_square_input_on_keyboard_title">Прямые нижние углы поля ввода при открытой клавиатуре</string>
   <string name="setting_display_page_square_input_on_keyboard_desc">Позволяет полю ввода плотнее прилегать к клавиатуре</string>
@@ -598,8 +595,15 @@
   <string name="setting_display_page_enable_latex_rendering_title">Включить рендеринг LaTeX</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_desc">Включить виброотклик при генерации сообщений</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_title">Тактильный эффект при генерации сообщения</string>
-  <string name="setting_display_page_font_size_preview">Это **пример** текста чата</string>
   <string name="setting_display_page_font_size_title">Размер шрифта чата</string>
+    <string name="setting_display_page_font_preview">Предпросмотр шрифта</string>
+<string name="setting_display_page_font_size_preview_part1">В четыре часа утра я увидел, что бегонии всё ещё не спят. Я часто так — бодрствую один среди ночи и думаю: </string>
+  <string name="setting_display_page_font_size_preview_part2">если бы кто-то прямо сейчас думал обо мне, этого было бы достаточно.</string>
+
+  <string name="setting_display_page_default_font_weight_title">Вес шрифта по умолчанию</string>
+  <string name="setting_display_page_default_font_weight_desc">Установить вес шрифта. Диапазон: 100 - 900, оставьте пустым для значения по умолчанию.</string>
+  <string name="setting_display_page_bold_font_weight_title">Вес жирного шрифта</string>
+  <string name="setting_display_page_bold_font_weight_desc">Установить вес жирного шрифта. Диапазон: 100 - 900, оставьте пустым для значения по умолчанию.</string>
   <string name="setting_display_page_message_jumper_right">Справа</string>
   <string name="setting_display_page_notification_message_generated">Включить уведомление после генерации сообщения</string>
   <string name="setting_display_page_notification_message_generated_desc">Отправлять уведомления при генерации сообщений, когда приложение не на переднем плане</string>
@@ -622,7 +626,7 @@
   <string name="setting_display_page_show_message_jumper_title">Показывать переходчик к сообщению</string>
   <string name="setting_display_page_show_model_name_desc">Отображать ли названия моделей в сообщениях чата</string>
   <string name="setting_display_page_show_model_name_title">Показывать название модели</string>
-  <string name="setting_display_page_show_thinking_content_desc">Расширять и показывать процесс мышления по умолчанию во время генерации</string>
+  <string name="setting_display_page_show_thinking_content_desc">По умолчанию разворачивать и показывать процесс мышления во время генерации</string>
   <string name="setting_display_page_show_thinking_content_title">Показывать содержание размышлений</string>
   <string name="setting_display_page_show_token_usage_desc">Показывать количество токенов, время, число слов и прочее</string>
   <string name="setting_display_page_show_token_usage_title">Показывать число токенов и другую статистику</string>
@@ -719,7 +723,7 @@
   <string name="setting_page_about_desc">Об этом приложении</string>
   <string name="setting_page_assistant_desc">Настроить персонализированных ассистентов (агентов)</string>
   <string name="setting_page_built_in_tools">Встроенные инструменты</string>
-  <string name="setting_page_built_in_tools_desc">Выберите встроенные инструменты, поддерживаемые моделью. Эти инструменты предоставляются напрямую API и не требуют поддержки со стороны приложения. В настоящее время эта функция поддерживается только официальным API Gemini.</string>
+  <string name="setting_page_built_in_tools_desc">Включить инструменты, встроенные в API модели. Поддерживается только некоторыми моделями.</string>
   <string name="setting_page_built_in_tools_image_generation">Генерация изображений</string>
   <string name="setting_page_built_in_tools_image_generation_desc">Включить возможность генерации изображений</string>
   <string name="setting_page_built_in_tools_search">Поиск</string>
@@ -745,7 +749,8 @@
   <string name="setting_page_dynamic_color">Динамический цвет</string>
   <string name="setting_page_dynamic_color_desc">Динамически создавать цвета темы приложения на основе обоев</string>
   <string name="setting_page_mcp_desc">Настроить серверы MCP</string>
-  <string name="setting_page_message_display_settings">Шрифты, формулы и код</string>
+  <string name="setting_page_font_settings">Шрифты</string>
+  <string name="setting_page_formula_code_settings">Формулы и код</string>
   <string name="setting_page_model_and_services">Службы моделей</string>
   <string name="setting_page_providers_desc">Настроить поставщиков LLM-сервисов</string>
   <string name="setting_page_request_logs">Журналы сетевых запросов</string>
@@ -1237,7 +1242,10 @@
   <string name="chat_page_current_location">Текущее расположение</string>
   <string name="chat_page_confirm_move">Переместить чаты</string>
   <string name="chat_page_confirm_move_desc">Подтвердить перемещение выбранных чатов (%1$d) в «%2$s»?</string>
-  <string name="chat_page_confirm_single_move_desc">Подтвердить перемещение выбранного чата в «%1$s»?</string>
+  <string name="chat_page_confirm_single_move_desc">Переместить чат «%1$s» в «%2$s»?</string>
+  <string name="chat_page_folder_move_forward">Переместить вперёд</string>
+  <string name="chat_page_folder_move_backward">Переместить назад</string>
+  <string name="chat_page_context_message_limit_current">Контекст сохраняет не более %1$d сообщений</string>
   <string name="chat_page_create_folder_in">Создать папку в «%1$s»</string>
   <string name="about_page_original_github">RikkaHub GitHub</string>
   <string name="about_page_original_website">Сайт RikkaHub</string>
@@ -1265,6 +1273,7 @@
   <string name="setting_tts_page_temperature_description">Управляет случайностью голоса (0.0–1.0; чем выше, тем выразительнее)</string>
   <string name="setting_page_more_settings">Дополнительные настройки</string>
   <string name="setting_page_chat_settings">Настройки чата</string>
+  <string name="setting_page_interface_settings">Настройки интерфейса</string>
   <string name="setting_page_system_settings">Системные настройки</string>
   <string name="assistant_page_copy_existing">Копировать существующего ассистента</string>
   <string name="assistant_page_copy_picker_tag_count">Тегов: %1$d</string>
@@ -1291,10 +1300,10 @@
   <string name="search_picker_model_description">Облачный поиск, встроенный в провайдера моделей</string>
   <string name="search_picker_select_provider">Выберите провайдера поиска</string>
   <string name="search_picker_turn_off">Отключить поиск</string>
-  <string name="reasoning_max">Максимум</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">Заголовок User-Agent, используемый в запросах</string>
   <string name="setting_page_preferences_network_proxy">Прокси</string>
   <string name="setting_page_preferences_network_proxy_desc">Поддерживает HTTP и SOCKS5 прокси-URL. Оставьте пустым для использования системных настроек.</string>
+  <string name="setting_page_preferences_network_proxy_list_desc">Поддерживает HTTP и SOCKS5 прокси-URL.</string>
   <string name="setting_page_preferences_network_proxy_invalid">Введите корректный URL прокси-сервера с хостом и портом.</string>
 </resources>

@@ -17,7 +17,7 @@ Built with Jetpack Compose, Kotlin, and follows Material Design 3 principles.
 ## Agent Change Workflow
 
 - Agent 对仓库完成任何代码、资源或配置修改后，都必须完整阅读并更新 `docs/NyanwChanges.md`，在文档的恰当位置简要记录本次修改内容，不要把修改的内容一直加到文档最后。
-- 修改完成后，必须通过静态搜索检查本次改动涉及的组件是否存在未被引用的实现，并检查是否产生或遗留未被引用的 locale/string 资源；发现后应在交付前清理或明确说明。
+- 修改完成后需要扫描仓库里是否有不需要的代码或者 locale string。如果有，那么把它们删掉。
 - Agent 不得自行运行 Gradle、Android Studio、`pnpm` 或其他编译、构建、测试、Lint 命令。完成修改和静态检查后，应将编译与运行验证留给用户手动执行。
 
 ## Module Structure

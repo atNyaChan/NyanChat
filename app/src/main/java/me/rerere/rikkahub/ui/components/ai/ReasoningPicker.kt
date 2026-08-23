@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -107,7 +108,7 @@ fun ReasoningPicker(
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             // 标题
             Column(
@@ -127,16 +128,18 @@ fun ReasoningPicker(
             }
 
             // 当前等级展示
+            val previewIndex = sliderValue.roundToInt().coerceIn(0, levelCount - 1)
+            val previewLevel = levels[previewIndex]
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 val iconColor by animateColorAsState(
-                    if (reasoningLevel.isEnabled) MaterialTheme.colorScheme.primary
+                    if (previewLevel.isEnabled) MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.onSurface
                 )
                 Icon(
-                    imageVector = when (reasoningLevel) {
+                    imageVector = when (previewLevel) {
                         ReasoningLevel.OFF -> HugeIcons.Idea
                         ReasoningLevel.AUTO -> HugeIcons.Idea01
                         ReasoningLevel.LOW -> ReasoningLow
@@ -150,9 +153,32 @@ fun ReasoningPicker(
                     tint = iconColor,
                 )
                 Text(
-                    text = reasoningLevel.label(),
-                    style = MaterialTheme.typography.titleMedium,
+                    text = previewLevel.label(),
+                    style = MaterialTheme.typography.titleLarge,
                 )
+            }
+
+            // 上方标签（下标为奇数的等级）
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                levels.forEachIndexed { index, level ->
+                    if (index % 2 == 1) {
+                        Text(
+                            text = level.label(),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = if (index == previewIndex) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                            textAlign = TextAlign.Center,
+                        )
+                    } else {
+                        Spacer(Modifier.weight(1f))
+                    }
+                }
             }
 
             Slider(
@@ -190,6 +216,29 @@ fun ReasoningPicker(
                     )
                 }
             )
+
+            // 下方标签（下标为偶数的等级）
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                levels.forEachIndexed { index, level ->
+                    if (index % 2 == 0) {
+                        Text(
+                            text = level.label(),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = if (index == previewIndex) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                            textAlign = TextAlign.Center,
+                        )
+                    } else {
+                        Spacer(Modifier.weight(1f))
+                    }
+                }
+            }
         }
     }
 }
@@ -207,16 +256,18 @@ private fun ReasoningIcon(level: ReasoningLevel) {
     }
 }
 
-@Composable
-private fun ReasoningLevel.label(): String = when (this) {
-    ReasoningLevel.OFF -> stringResource(R.string.common_off)
-    ReasoningLevel.AUTO -> stringResource(R.string.reasoning_auto)
-    ReasoningLevel.LOW -> stringResource(R.string.reasoning_light)
-    ReasoningLevel.MEDIUM -> stringResource(R.string.reasoning_medium)
-    ReasoningLevel.HIGH -> stringResource(R.string.reasoning_heavy)
-    ReasoningLevel.XHIGH -> stringResource(R.string.reasoning_xhigh)
-    ReasoningLevel.MAX -> stringResource(R.string.reasoning_max)
+fun ReasoningLevel.displayLabel(): String = when (this) {
+    ReasoningLevel.OFF -> "Off"
+    ReasoningLevel.AUTO -> "Auto"
+    ReasoningLevel.LOW -> "Low"
+    ReasoningLevel.MEDIUM -> "Medium"
+    ReasoningLevel.HIGH -> "High"
+    ReasoningLevel.XHIGH -> "xHigh"
+    ReasoningLevel.MAX -> "Max"
 }
+
+@Composable
+private fun ReasoningLevel.label(): String = displayLabel()
 
 @Composable
 @Preview(showBackground = true)

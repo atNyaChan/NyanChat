@@ -186,6 +186,12 @@ class ChatDrawerVM(
         }
     }
 
+    fun moveFolder(folderId: Uuid, forward: Boolean) {
+        viewModelScope.launch {
+            folderRepo.moveFolder(folderId, forward)
+        }
+    }
+
     /**
      * 删除文件夹。若文件夹内有正在生成回复的会话，拒绝删除并返回 false（UI 层据此提示用户）。
      */

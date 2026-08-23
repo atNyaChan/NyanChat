@@ -46,7 +46,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -58,6 +62,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.rerere.hugeicons.HugeIcons
+import me.rerere.hugeicons.stroke.ArrowRight01
 import me.rerere.hugeicons.stroke.Delete02
 import me.rerere.hugeicons.stroke.FileImport
 import me.rerere.hugeicons.stroke.View
@@ -71,8 +76,8 @@ import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.files.FileUtils
 import me.rerere.rikkahub.data.network.toProxyOrNull
 import me.rerere.rikkahub.ui.components.nav.BackButton
-import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CompactNumberField
 import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionManager
@@ -123,6 +128,12 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
     }
     var pasteLongTextThresholdInput by remember(pasteLongTextThreshold) {
         mutableStateOf(pasteLongTextThreshold?.toString().orEmpty())
+    }
+    var defaultFontWeightInput by remember(displaySetting.defaultFontWeight) {
+        mutableStateOf(displaySetting.defaultFontWeight?.toString().orEmpty())
+    }
+    var boldFontWeightInput by remember(displaySetting.boldFontWeight) {
+        mutableStateOf(displaySetting.boldFontWeight?.toString().orEmpty())
     }
     val volumeKeyScrollMode = if (!displaySetting.enableVolumeKeyScroll) {
         VolumeKeyScrollMode.OFF
@@ -339,36 +350,6 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                         },
                     )
                     item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_enable_blur_effect_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_enable_blur_effect_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.enableBlurEffect,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(enableBlurEffect = it))
-                                },
-                            )
-                        },
-                    )
-                    item(
-                        headlineContent = {
-                            Text(stringResource(R.string.setting_display_page_square_input_on_keyboard_title))
-                        },
-                        supportingContent = {
-                            Text(stringResource(R.string.setting_display_page_square_input_on_keyboard_desc))
-                        },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.squareChatInputBottomWhenKeyboardVisible,
-                                onCheckedChange = {
-                                    updateDisplaySetting(
-                                        displaySetting.copy(squareChatInputBottomWhenKeyboardVisible = it)
-                                    )
-                                },
-                            )
-                        },
-                    )
-                    item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_enable_message_generation_haptic_effect_title)) },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_enable_message_generation_haptic_effect_desc)) },
                         trailingContent = {
@@ -418,70 +399,13 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                         },
                     )
                     item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_assistant_bubble_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_show_assistant_bubble_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_parse_mid_think_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_parse_mid_think_desc)) },
                         trailingContent = {
                             Switch(
-                                checked = displaySetting.showAssistantBubble,
+                                checked = displaySetting.parseMidThink,
                                 onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(showAssistantBubble = it))
-                                }
-                            )
-                        },
-                    )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_bubble_opacity_title)) },
-                        supportingContent = {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                Slider(
-                                    value = displaySetting.bubbleOpacity,
-                                    onValueChange = {
-                                        updateDisplaySetting(displaySetting.copy(bubbleOpacity = it))
-                                    },
-                                    valueRange = 0.1f..1.0f,
-                                    steps = 8,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Text(text = "${(displaySetting.bubbleOpacity * 100).toInt()}%")
-                            }
-                        }
-                    )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_chat_list_model_icon_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_chat_list_model_icon_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.showModelIcon,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(showModelIcon = it))
-                                }
-                            )
-                        },
-                    )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_thinking_content_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_show_thinking_content_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.showThinkingContent,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(showThinkingContent = it))
-                                }
-                            )
-                        },
-                    )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_auto_collapse_thinking_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_auto_collapse_thinking_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.autoCloseThinking,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(autoCloseThinking = it))
+                                    updateDisplaySetting(displaySetting.copy(parseMidThink = it))
                                 }
                             )
                         },
@@ -554,6 +478,113 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                                     } ?: stringResource(R.string.common_off)
                                 },
                                 fitToOptions = true,
+                            )
+                        },
+                    )
+                }
+            }
+
+            item {
+                CardGroup(
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    title = { Text(stringResource(R.string.setting_page_interface_settings)) },
+                ) {
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_enable_blur_effect_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_enable_blur_effect_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.enableBlurEffect,
+                                onCheckedChange = {
+                                    updateDisplaySetting(displaySetting.copy(enableBlurEffect = it))
+                                },
+                            )
+                        },
+                    )
+                    item(
+                        headlineContent = {
+                            Text(stringResource(R.string.setting_display_page_square_input_on_keyboard_title))
+                        },
+                        supportingContent = {
+                            Text(stringResource(R.string.setting_display_page_square_input_on_keyboard_desc))
+                        },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.squareChatInputBottomWhenKeyboardVisible,
+                                onCheckedChange = {
+                                    updateDisplaySetting(
+                                        displaySetting.copy(squareChatInputBottomWhenKeyboardVisible = it)
+                                    )
+                                },
+                            )
+                        },
+                    )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_assistant_bubble_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_show_assistant_bubble_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.showAssistantBubble,
+                                onCheckedChange = {
+                                    updateDisplaySetting(displaySetting.copy(showAssistantBubble = it))
+                                }
+                            )
+                        },
+                    )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_bubble_opacity_title)) },
+                        supportingContent = {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Slider(
+                                    value = displaySetting.bubbleOpacity,
+                                    onValueChange = {
+                                        updateDisplaySetting(displaySetting.copy(bubbleOpacity = it))
+                                    },
+                                    valueRange = 0.1f..1.0f,
+                                    steps = 8,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Text(text = "${(displaySetting.bubbleOpacity * 100).toInt()}%")
+                            }
+                        }
+                    )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_chat_list_model_icon_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_chat_list_model_icon_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.showModelIcon,
+                                onCheckedChange = {
+                                    updateDisplaySetting(displaySetting.copy(showModelIcon = it))
+                                }
+                            )
+                        },
+                    )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_thinking_content_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_show_thinking_content_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.showThinkingContent,
+                                onCheckedChange = {
+                                    updateDisplaySetting(displaySetting.copy(showThinkingContent = it))
+                                }
+                            )
+                        },
+                    )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_auto_collapse_thinking_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_auto_collapse_thinking_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.autoCloseThinking,
+                                onCheckedChange = {
+                                    updateDisplaySetting(displaySetting.copy(autoCloseThinking = it))
+                                }
                             )
                         },
                     )
@@ -664,12 +695,13 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                         supportingContent = {
                             Text(
                                 if (proxyUrl.isBlank()) {
-                                    stringResource(R.string.setting_page_preferences_network_proxy_desc)
+                                    stringResource(R.string.setting_page_preferences_network_proxy_list_desc)
                                 } else {
                                     proxyUrl
                                 }
                             )
                         },
+                        trailingContent = { Icon(HugeIcons.ArrowRight01, null) },
                     )
                 }
             }
@@ -677,7 +709,7 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
             item {
                 CardGroup(
                     modifier = Modifier.padding(horizontal = 8.dp),
-                    title = { Text(stringResource(R.string.setting_page_message_display_settings)) },
+                    title = { Text(stringResource(R.string.setting_page_font_settings)) },
                 ) {
                     item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_chat_font_family_title)) },
@@ -766,34 +798,127 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                     item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_font_size_title)) },
                         supportingContent = {
-                            Column {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                ) {
-                                    Slider(
-                                        value = displaySetting.fontSizeRatio,
-                                        onValueChange = {
-                                            updateDisplaySetting(displaySetting.copy(fontSizeRatio = it))
-                                        },
-                                        valueRange = 0.5f..2f,
-                                        steps = 11,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    Text(text = "${(displaySetting.fontSizeRatio * 100).toInt()}%")
-                                }
-                                MarkdownBlock(
-                                    content = stringResource(R.string.setting_display_page_font_size_preview),
-                                    style = LocalTextStyle.current.copy(
-                                        fontSize = LocalTextStyle.current.fontSize * displaySetting.fontSizeRatio,
-                                        lineHeight = LocalTextStyle.current.lineHeight * displaySetting.fontSizeRatio,
-                                        fontFamily = chatFontFamily
-                                    )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Slider(
+                                    value = displaySetting.fontSizeRatio,
+                                    onValueChange = {
+                                        updateDisplaySetting(displaySetting.copy(fontSizeRatio = it))
+                                    },
+                                    valueRange = 0.5f..2f,
+                                    steps = 11,
+                                    modifier = Modifier.weight(1f)
                                 )
+                                Text(text = "${(displaySetting.fontSizeRatio * 100).toInt()}%")
                             }
                         }
                     )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_default_font_weight_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_default_font_weight_desc)) },
+                        trailingContent = {
+                            CompactNumberField(
+                                value = defaultFontWeightInput,
+                                onValueChange = { value ->
+                                    val filtered = value.filter(Char::isDigit)
+                                    defaultFontWeightInput = filtered
+                                    filtered.toIntOrNull()?.let { weight ->
+                                        updateDisplaySetting(displaySetting.copy(defaultFontWeight = weight))
+                                    }
+                                },
+                                isError = defaultFontWeightInput.isNotBlank() &&
+                                    defaultFontWeightInput.toIntOrNull()?.let { it !in 100..900 } == true,
+                                onFocusLost = {
+                                    val weight = defaultFontWeightInput.toIntOrNull()
+                                    val normalized = when {
+                                        weight == null -> null
+                                        weight < 100 -> 100
+                                        weight > 900 -> 900
+                                        else -> weight
+                                    }
+                                    defaultFontWeightInput = normalized?.toString().orEmpty()
+                                    updateDisplaySetting(displaySetting.copy(defaultFontWeight = normalized))
+                                },
+                            )
+                        },
+                    )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_bold_font_weight_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_bold_font_weight_desc)) },
+                        trailingContent = {
+                            CompactNumberField(
+                                value = boldFontWeightInput,
+                                onValueChange = { value ->
+                                    val filtered = value.filter(Char::isDigit)
+                                    boldFontWeightInput = filtered
+                                    filtered.toIntOrNull()?.let { weight ->
+                                        updateDisplaySetting(displaySetting.copy(boldFontWeight = weight))
+                                    }
+                                },
+                                isError = boldFontWeightInput.isNotBlank() &&
+                                    boldFontWeightInput.toIntOrNull()?.let { it !in 100..900 } == true,
+                                onFocusLost = {
+                                    val weight = boldFontWeightInput.toIntOrNull()
+                                    val normalized = when {
+                                        weight == null -> null
+                                        weight < 100 -> 100
+                                        weight > 900 -> 900
+                                        else -> weight
+                                    }
+                                    boldFontWeightInput = normalized?.toString().orEmpty()
+                                    updateDisplaySetting(displaySetting.copy(boldFontWeight = normalized))
+                                },
+                            )
+                        },
+                    )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_font_preview)) },
+                        supportingContent = {
+                            val previewPart1 = stringResource(R.string.setting_display_page_font_size_preview_part1)
+                            val previewPart2 = stringResource(R.string.setting_display_page_font_size_preview_part2)
+                            val annotatedPreview = remember(
+                                previewPart1,
+                                previewPart2,
+                                displaySetting.fontSizeRatio,
+                                displaySetting.defaultFontWeight,
+                                displaySetting.boldFontWeight,
+                                chatFontFamily,
+                            ) {
+                                buildAnnotatedString {
+                                    append(previewPart1)
+                                    withStyle(
+                                        SpanStyle(
+                                            fontWeight = FontWeight(
+                                                displaySetting.boldFontWeight ?: FontWeight.Bold.weight
+                                            )
+                                        )
+                                    ) {
+                                        append(previewPart2)
+                                    }
+                                }
+                            }
+                            Text(
+                                text = annotatedPreview,
+                                style = LocalTextStyle.current.copy(
+                                    fontSize = LocalTextStyle.current.fontSize * displaySetting.fontSizeRatio,
+                                    lineHeight = LocalTextStyle.current.lineHeight * displaySetting.fontSizeRatio,
+                                    fontFamily = chatFontFamily,
+                                    fontWeight = displaySetting.defaultFontWeight?.let { FontWeight(it) },
+                                ),
+                            )
+                        },
+                    )
+                }
+            }
+
+            item {
+                CardGroup(
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    title = { Text(stringResource(R.string.setting_page_formula_code_settings)) },
+                ) {
                     item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_enable_latex_rendering_title)) },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_enable_latex_rendering_desc)) },

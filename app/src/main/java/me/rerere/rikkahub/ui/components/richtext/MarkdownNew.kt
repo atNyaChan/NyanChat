@@ -342,6 +342,10 @@ private fun HtmlParagraphContent(
     }
 
     val enableLatexRendering = LocalSettings.current.displaySetting.enableLatexRendering
+    val enableCodeLigatures = LocalSettings.current.displaySetting.enableCodeLigatures
+    val boldFontWeight = FontWeight(
+        LocalSettings.current.displaySetting.boldFontWeight ?: FontWeight.Bold.weight
+    )
     val hasInlineMath = element.select("span.math").any { it.attr("inline") == "true" }
     val colorScheme = MaterialTheme.colorScheme
     val textStyle = LocalTextStyle.current
@@ -349,6 +353,8 @@ private fun HtmlParagraphContent(
     val (annotatedString, inlineContents) = remember(
         element.outerHtml(),
         enableLatexRendering,
+        enableCodeLigatures,
+        boldFontWeight,
         colorScheme,
         density,
         textStyle,
@@ -364,6 +370,8 @@ private fun HtmlParagraphContent(
                     density = density,
                     style = textStyle,
                     enableLatexRendering = enableLatexRendering,
+                    enableCodeLigatures = enableCodeLigatures,
+                    boldFontWeight = boldFontWeight,
                     onClickCitation = onClickCitation,
                 )
             }
@@ -697,6 +705,10 @@ private fun HtmlProgress(element: Element) {
 @Composable
 private fun HtmlInlineGroup(nodes: List<Node>, onClickCitation: (String) -> Unit) {
     val enableLatexRendering = LocalSettings.current.displaySetting.enableLatexRendering
+    val enableCodeLigatures = LocalSettings.current.displaySetting.enableCodeLigatures
+    val boldFontWeight = FontWeight(
+        LocalSettings.current.displaySetting.boldFontWeight ?: FontWeight.Bold.weight
+    )
     val colorScheme = MaterialTheme.colorScheme
     val textStyle = LocalTextStyle.current
     val density = LocalDensity.current
@@ -705,6 +717,8 @@ private fun HtmlInlineGroup(nodes: List<Node>, onClickCitation: (String) -> Unit
     val (annotatedString, inlineContents) = remember(
         key,
         enableLatexRendering,
+        enableCodeLigatures,
+        boldFontWeight,
         colorScheme,
         density,
         textStyle,
@@ -720,6 +734,8 @@ private fun HtmlInlineGroup(nodes: List<Node>, onClickCitation: (String) -> Unit
                     density = density,
                     style = textStyle,
                     enableLatexRendering = enableLatexRendering,
+                    enableCodeLigatures = enableCodeLigatures,
+                    boldFontWeight = boldFontWeight,
                     onClickCitation = onClickCitation,
                 )
             }
@@ -778,9 +794,15 @@ private fun HtmlInlineAsComposable(node: Node, onClickCitation: (String) -> Unit
                     val textStyle = LocalTextStyle.current
                     val density = LocalDensity.current
                     val enableLatexRendering = LocalSettings.current.displaySetting.enableLatexRendering
+                    val enableCodeLigatures = LocalSettings.current.displaySetting.enableCodeLigatures
+                    val boldFontWeight = FontWeight(
+                        LocalSettings.current.displaySetting.boldFontWeight ?: FontWeight.Bold.weight
+                    )
                     val (annotated, inlineContents) = remember(
                         node.outerHtml(),
                         enableLatexRendering,
+                        enableCodeLigatures,
+                        boldFontWeight,
                         colorScheme,
                         density,
                         textStyle,
@@ -795,6 +817,8 @@ private fun HtmlInlineAsComposable(node: Node, onClickCitation: (String) -> Unit
                                 density = density,
                                 style = textStyle,
                                 enableLatexRendering = enableLatexRendering,
+                                enableCodeLigatures = enableCodeLigatures,
+                                boldFontWeight = boldFontWeight,
                                 onClickCitation = onClickCitation,
                             )
                         }
@@ -816,6 +840,8 @@ private fun AnnotatedString.Builder.appendHtmlInlineNode(
     density: Density,
     style: TextStyle,
     enableLatexRendering: Boolean,
+    enableCodeLigatures: Boolean,
+    boldFontWeight: FontWeight,
     onClickCitation: (String) -> Unit,
 ) {
     when (node) {
@@ -827,6 +853,8 @@ private fun AnnotatedString.Builder.appendHtmlInlineNode(
             density = density,
             style = style,
             enableLatexRendering = enableLatexRendering,
+            enableCodeLigatures = enableCodeLigatures,
+            boldFontWeight = boldFontWeight,
             onClickCitation = onClickCitation,
         )
     }
@@ -839,8 +867,15 @@ private fun AnnotatedString.Builder.appendHtmlInlineElement(
     density: Density,
     style: TextStyle,
     enableLatexRendering: Boolean,
+    enableCodeLigatures: Boolean,
+    boldFontWeight: FontWeight,
     onClickCitation: (String) -> Unit,
 ) {
+    val codeFontFeatureSettings = if (enableCodeLigatures) {
+        "\"liga\", \"calt\""
+    } else {
+        "\"liga\" 0, \"calt\" 0"
+    }
     val cssStyle = element.attr("style").takeIf { it.isNotBlank() }?.let {
         parseInlineSpanStyle(
             style = it,
@@ -857,6 +892,8 @@ private fun AnnotatedString.Builder.appendHtmlInlineElement(
             density = density,
             style = inheritedStyle,
             enableLatexRendering = enableLatexRendering,
+            enableCodeLigatures = enableCodeLigatures,
+            boldFontWeight = boldFontWeight,
             onClickCitation = onClickCitation,
         )
     }
@@ -875,7 +912,7 @@ private fun AnnotatedString.Builder.appendHtmlInlineElement(
     }
 
     when (element.tagName().lowercase()) {
-        "b", "strong" -> appendElementChildren(SpanStyle(fontWeight = FontWeight.Bold))
+        "b", "strong" -> appendElementChildren(SpanStyle(fontWeight = boldFontWeight))
 
         "i", "em" -> appendElementChildren(SpanStyle(fontStyle = FontStyle.Italic))
 
@@ -888,6 +925,7 @@ private fun AnnotatedString.Builder.appendHtmlInlineElement(
                 fontFamily = JetbrainsMono,
                 fontSize = 0.9.em,
                 color = colorScheme.primary,
+                fontFeatureSettings = codeFontFeatureSettings,
             ).merge(cssStyle ?: SpanStyle())
         ) {
             append(' ')

@@ -679,7 +679,8 @@ private fun AssistantRegexCard(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
                         .weight(1f)
-                        .widthIn(max = 200.dp),
+                        .widthIn(max = 200.dp)
+                        .padding(start = 8.dp),
                 )
                 Switch(
                     checked = regex.enabled,

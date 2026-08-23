@@ -9,19 +9,27 @@ import kotlin.time.Clock
 import kotlin.time.Instant
 
 private val THINKING_REGEX = Regex("\\A\\s*<think>([\\s\\S]*?)(</think>|$)")
+private val MID_THINKING_REGEX = Regex("<think>([\\s\\S]*?)(</think>|$)")
+
+private fun thinkingRegex(parseMidThink: Boolean): Regex =
+    if (parseMidThink) MID_THINKING_REGEX else THINKING_REGEX
 
 // 部分供应商不会返回reasoning parts, 所以需要这个transformer
 object ThinkTagTransformer : OutputMessageTransformer {
-    fun parseEditedParts(parts: List<UIMessagePart>): List<UIMessagePart> {
+    fun parseEditedParts(
+        parts: List<UIMessagePart>,
+        parseMidThink: Boolean = false,
+    ): List<UIMessagePart> {
         val now = Clock.System.now()
+        val regex = thinkingRegex(parseMidThink)
         return parts.flatMap { part ->
-            if (part !is UIMessagePart.Text || !THINKING_REGEX.containsMatchIn(part.text)) {
+            if (part !is UIMessagePart.Text || !regex.containsMatchIn(part.text)) {
                 return@flatMap listOf(part)
             }
 
             buildList {
                 var cursor = 0
-                THINKING_REGEX.findAll(part.text).forEach { match ->
+                regex.findAll(part.text).forEach { match ->
                     if (match.range.first > cursor) {
                         add(part.copy(text = part.text.substring(cursor, match.range.first)))
                     }
@@ -48,6 +56,7 @@ object ThinkTagTransformer : OutputMessageTransformer {
         return messages.transformThinkTags(
             now = Clock.System.now(),
             generationFinished = false,
+            parseMidThink = ctx.settings.displaySetting.parseMidThink,
         )
     }
 
@@ -58,6 +67,7 @@ object ThinkTagTransformer : OutputMessageTransformer {
         return messages.transformThinkTags(
             now = Clock.System.now(),
             generationFinished = true,
+            parseMidThink = ctx.settings.displaySetting.parseMidThink,
         )
     }
 }
@@ -65,6 +75,7 @@ object ThinkTagTransformer : OutputMessageTransformer {
 internal fun List<UIMessage>.transformThinkTags(
     now: Instant,
     generationFinished: Boolean,
+    parseMidThink: Boolean,
 ): List<UIMessage> = map { message ->
     if (message.role != MessageRole.ASSISTANT) {
         return@map message
@@ -90,20 +101,22 @@ internal fun List<UIMessage>.transformThinkTags(
     }
     val textPart = message.parts.getOrNull(textPartIndex) as? UIMessagePart.Text
         ?: return@map message
-    val match = THINKING_REGEX.find(textPart.text) ?: return@map message
+    val match = thinkingRegex(parseMidThink).find(textPart.text) ?: return@map message
     val hasClosingTag = match.groups[2]?.value == "</think>"
     val reasoning = UIMessagePart.Reasoning(
         reasoning = match.groupValues[1].trim(),
         createdAt = message.createdAt.toInstant(timeZone = TimeZone.currentSystemDefault()),
         finishedAt = if (generationFinished || hasClosingTag) now else null,
     )
-    val strippedText = textPart.copy(text = textPart.text.removeRange(match.range))
 
     message.copy(
         parts = buildList {
             addAll(message.parts.subList(0, textPartIndex))
+            if (match.range.first > 0) {
+                add(textPart.copy(text = textPart.text.substring(0, match.range.first)))
+            }
             add(reasoning)
-            add(strippedText)
+            add(textPart.copy(text = textPart.text.substring(match.range.last + 1)))
             addAll(message.parts.subList(textPartIndex + 1, message.parts.size))
         }
     )

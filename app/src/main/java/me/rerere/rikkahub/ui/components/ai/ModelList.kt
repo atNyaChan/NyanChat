@@ -434,8 +434,6 @@ private fun ColumnScope.ModelList(
             },
             shape = SearchFieldShape,
             colors = TextFieldDefaults.colors(
-                unfocusedIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,
             ),

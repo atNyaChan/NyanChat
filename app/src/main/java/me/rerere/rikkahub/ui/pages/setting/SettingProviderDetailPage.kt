@@ -114,6 +114,7 @@ import me.rerere.rikkahub.ui.components.ai.ProviderBalanceText
 import me.rerere.rikkahub.ui.components.ai.rememberModelListState
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
+import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.ShareSheet
 import me.rerere.rikkahub.ui.components.ui.Tag
@@ -535,8 +536,7 @@ private fun ModelSettingsForm(
     onMigrateModelId: ((Model, Model) -> Unit)? = null,
     onDeleteModel: (() -> Unit)? = null,
 ) {
-    val usesGeminiApi = (model.providerOverwrite ?: parentProvider) is ProviderSetting.Google
-    val pagerState = rememberPagerState { if (usesGeminiApi) 3 else 2 }
+    val pagerState = rememberPagerState { 3 }
     val scope = rememberCoroutineScope()
     val settingsStore = koinInject<me.rerere.rikkahub.data.datastore.SettingsStore>()
     val settings by settingsStore.settingsFlow.collectAsStateWithLifecycle()
@@ -550,12 +550,6 @@ private fun ModelSettingsForm(
         providers = settings.providers,
         type = model.type,
     )
-
-    LaunchedEffect(usesGeminiApi) {
-        if (!usesGeminiApi && pagerState.currentPage == 2) {
-            pagerState.scrollToPage(1)
-        }
-    }
 
     LaunchedEffect(model.id, isEdit) {
         if (isEdit) {
@@ -610,17 +604,15 @@ private fun ModelSettingsForm(
                 },
                 text = { Text(stringResource(R.string.setting_provider_page_advanced_settings)) }
             )
-            if (usesGeminiApi) {
-                Tab(
-                    selected = pagerState.currentPage == 2,
-                    onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(2)
-                        }
-                    },
-                    text = { Text(stringResource(R.string.setting_page_built_in_tools)) }
-                )
-            }
+            Tab(
+                selected = pagerState.currentPage == 2,
+                onClick = {
+                    scope.launch {
+                        pagerState.animateScrollToPage(2)
+                    }
+                },
+                text = { Text(stringResource(R.string.setting_page_built_in_tools)) }
+            )
         }
 
         HorizontalPager(
@@ -1655,18 +1647,20 @@ private fun BuiltInToolsSettings(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+            .padding(vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
             text = stringResource(R.string.setting_page_built_in_tools),
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = 16.dp),
         )
 
         Text(
             text = stringResource(R.string.setting_page_built_in_tools_desc),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp),
         )
 
         val availableTools = listOf(
@@ -1684,43 +1678,27 @@ private fun BuiltInToolsSettings(
             )
         )
 
-        availableTools.forEach { (tool, info) ->
-            val (title, description) = info
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                        Text(
-                            text = description,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Switch(
-                        checked = tool in tools,
-                        onCheckedChange = { checked ->
-                            if (checked) {
-                                onUpdateTools(tools + tool)
-                            } else {
-                                onUpdateTools(tools - tool)
+        CardGroup(
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            availableTools.forEach { (tool, info) ->
+                val (title, description) = info
+                item(
+                    headlineContent = { Text(title) },
+                    supportingContent = { Text(description) },
+                    trailingContent = {
+                        Switch(
+                            checked = tool in tools,
+                            onCheckedChange = { checked ->
+                                if (checked) {
+                                    onUpdateTools(tools + tool)
+                                } else {
+                                    onUpdateTools(tools - tool)
+                                }
                             }
-                        }
-                    )
-                }
+                        )
+                    },
+                )
             }
         }
     }

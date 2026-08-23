@@ -1337,7 +1337,10 @@ class ChatService(
             }
             edited = true
             val processedParts = if (node.role == MessageRole.ASSISTANT) {
-                ThinkTagTransformer.parseEditedParts(parts)
+                ThinkTagTransformer.parseEditedParts(
+                    parts = parts,
+                    parseMidThink = settings.displaySetting.parseMidThink,
+                )
             } else {
                 processedUserParts
             }

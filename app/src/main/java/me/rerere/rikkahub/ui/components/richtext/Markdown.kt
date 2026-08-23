@@ -122,7 +122,6 @@ private val parser by lazy {
 
 private val INLINE_LATEX_REGEX = Regex("\\\\\\((.+?)\\\\\\)")
 private val BLOCK_LATEX_REGEX = Regex("\\\\\\[(.+?)\\\\\\]", RegexOption.DOT_MATCHES_ALL)
-val THINKING_REGEX = Regex("<think>([\\s\\S]*?)(?:</think>|$)", RegexOption.DOT_MATCHES_ALL)
 private val CODE_BLOCK_REGEX = Regex("```[\\s\\S]*?```|`[^`\n]*`", RegexOption.DOT_MATCHES_ALL)
 private val BREAK_LINE_REGEX = Regex("(?i)<br\\s*/?>")
 private val LATEX_BLOCK_LINE_BREAK_REGEX = Regex("""[ \t]*\r?\n[ \t]*""")
@@ -487,7 +486,10 @@ private fun MarkdownNode(
         }
 
         MarkdownElementTypes.STRONG -> {
-            ProvideTextStyle(TextStyle(fontWeight = FontWeight.Bold)) {
+            val boldFontWeight = FontWeight(
+                LocalSettings.current.displaySetting.boldFontWeight ?: FontWeight.Bold.weight
+            )
+            ProvideTextStyle(TextStyle(fontWeight = boldFontWeight)) {
                 node.children.fastForEach { child ->
                     MarkdownNode(
                         node = child, content = content, modifier = modifier, onClickCitation = onClickCitation
@@ -575,8 +577,18 @@ private fun MarkdownNode(
 
         MarkdownElementTypes.CODE_SPAN -> {
             val code = node.getTextInNode(content).trim('`')
+            val enableCodeLigatures = LocalSettings.current.displaySetting.enableCodeLigatures
             Text(
-                text = code, fontFamily = JetbrainsMono, modifier = modifier
+                text = code,
+                style = TextStyle(
+                    fontFamily = JetbrainsMono,
+                    fontFeatureSettings = if (enableCodeLigatures) {
+                        "\"liga\", \"calt\""
+                    } else {
+                        "\"liga\" 0, \"calt\" 0"
+                    },
+                ),
+                modifier = modifier
             )
         }
 
@@ -787,6 +799,10 @@ private fun Paragraph(
         node.findChildOfTypeRecursive(GFMElementTypes.INLINE_MATH) != null
     }
     val enableLatexRendering = LocalSettings.current.displaySetting.enableLatexRendering
+    val enableCodeLigatures = LocalSettings.current.displaySetting.enableCodeLigatures
+    val boldFontWeight = FontWeight(
+        LocalSettings.current.displaySetting.boldFontWeight ?: FontWeight.Bold.weight
+    )
 
     val textStyle = LocalTextStyle.current
     val density = LocalDensity.current
@@ -797,7 +813,13 @@ private fun Paragraph(
             else Modifier
         )
     ) {
-        val annotatedString = remember(content, enableLatexRendering, latexColorArgb) {
+        val annotatedString = remember(
+            content,
+            enableLatexRendering,
+            enableCodeLigatures,
+            boldFontWeight,
+            latexColorArgb,
+        ) {
             buildAnnotatedString {
                 node.children.fastForEach { child ->
                     appendMarkdownNodeContent(
@@ -810,6 +832,8 @@ private fun Paragraph(
                         density = density,
                         trim = trim,
                         enableLatexRendering = enableLatexRendering,
+                        enableCodeLigatures = enableCodeLigatures,
+                        boldFontWeight = boldFontWeight,
                         latexColorArgb = latexColorArgb,
                     )
                 }
@@ -994,9 +1018,16 @@ private fun AnnotatedString.Builder.appendMarkdownNodeContent(
     density: Density,
     style: TextStyle,
     enableLatexRendering: Boolean = true,
+    enableCodeLigatures: Boolean = true,
+    boldFontWeight: FontWeight = FontWeight.Bold,
     latexColorArgb: Int = 0,
     onClickCitation: (String) -> Unit = {},
 ) {
+    val codeFontFeatureSettings = if (enableCodeLigatures) {
+        "\"liga\", \"calt\""
+    } else {
+        "\"liga\" 0, \"calt\" 0"
+    }
     when {
         node.type == MarkdownTokenTypes.BLOCK_QUOTE -> {}
 
@@ -1033,6 +1064,8 @@ private fun AnnotatedString.Builder.appendMarkdownNodeContent(
                         density = density,
                         style = style,
                         enableLatexRendering = enableLatexRendering,
+                        enableCodeLigatures = enableCodeLigatures,
+                        boldFontWeight = boldFontWeight,
                         latexColorArgb = latexColorArgb,
                         onClickCitation = onClickCitation
                     )
@@ -1041,7 +1074,7 @@ private fun AnnotatedString.Builder.appendMarkdownNodeContent(
         }
 
         node.type == MarkdownElementTypes.STRONG -> {
-            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+            withStyle(SpanStyle(fontWeight = boldFontWeight)) {
                 node.children.trim(MarkdownTokenTypes.EMPH, 2).fastForEach {
                     appendMarkdownNodeContent(
                         node = it,
@@ -1051,6 +1084,8 @@ private fun AnnotatedString.Builder.appendMarkdownNodeContent(
                         density = density,
                         style = style,
                         enableLatexRendering = enableLatexRendering,
+                        enableCodeLigatures = enableCodeLigatures,
+                        boldFontWeight = boldFontWeight,
                         latexColorArgb = latexColorArgb,
                         onClickCitation = onClickCitation
                     )
@@ -1069,6 +1104,8 @@ private fun AnnotatedString.Builder.appendMarkdownNodeContent(
                         density = density,
                         style = style,
                         enableLatexRendering = enableLatexRendering,
+                        enableCodeLigatures = enableCodeLigatures,
+                        boldFontWeight = boldFontWeight,
                         latexColorArgb = latexColorArgb,
                         onClickCitation = onClickCitation
                     )
@@ -1149,6 +1186,7 @@ private fun AnnotatedString.Builder.appendMarkdownNodeContent(
                     fontFamily = JetbrainsMono,
                     fontSize = 0.9.em,
                     color = colorScheme.primary,
+                    fontFeatureSettings = codeFontFeatureSettings,
                 )
             ) {
                 append(' ')

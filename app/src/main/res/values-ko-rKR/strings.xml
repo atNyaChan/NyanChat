@@ -467,13 +467,8 @@
   <string name="quick_messages_page_empty_hint">오른쪽 하단의 + 버튼을 눌러 빠른 메시지를 추가하세요</string>
   <string name="quick_messages_page_empty_title">빠른 메시지 없음</string>
   <string name="quick_messages_page_untitled">제목 없음</string>
-  <string name="reasoning_auto">자동</string>
-  <string name="reasoning_heavy">높음</string>
-  <string name="reasoning_light">낮음</string>
-  <string name="reasoning_medium">중간</string>
   <string name="reasoning_picker_hint">모든 모델이 깊이 조정을 지원하는 것은 아닙니다. 모델 및 제공자 문서를 참조하세요.</string>
   <string name="reasoning_picker_title">모델 사고 깊이 조정</string>
-  <string name="reasoning_xhigh">XHigh</string>
   <string name="regenerate">다시 생성</string>
   <string name="regenerate_confirm_message">이 메시지를 다시 생성하시겠습니까?</string>
   <string name="safe_mode_assistants">도우미</string>
@@ -574,14 +569,16 @@
   <string name="setting_display_page_amoled_dark_mode_title">AMOLED 다크 모드</string>
   <string name="setting_display_page_auto_collapse_thinking_desc">사고 완료 후 자동으로 사고 내용 접기</string>
   <string name="setting_display_page_auto_collapse_thinking_title">사고 자동 접기</string>
+  <string name="setting_display_page_parse_mid_think_title">중간 생각 태그 파싱</string>
+  <string name="setting_display_page_parse_mid_think_desc">메시지 시작 부분이 아닌 &lt;think&gt; 태그를 생각 블록으로 파싱합니다</string>
   <string name="setting_display_page_auto_play_tts_desc">어시스턴트 메시지 생성 완료 후 TTS 자동 재생</string>
   <string name="setting_display_page_auto_play_tts_title">생성 후 TTS 자동 재생</string>
   <string name="setting_display_page_chat_font_family_default">기본</string>
   <string name="setting_display_page_chat_font_family_monospace">고정폭</string>
   <string name="setting_display_page_chat_font_family_serif">명조체</string>
   <string name="setting_display_page_chat_font_family_title">채팅 글꼴</string>
-  <string name="setting_display_page_chat_list_model_icon_desc">채팅 목록 메시지에 모델 아이콘을 표시할지 여부</string>
-  <string name="setting_display_page_chat_list_model_icon_title">채팅 목록 모델 아이콘</string>
+  <string name="setting_display_page_chat_list_model_icon_desc">채팅 페이지에 모델 아이콘 표시</string>
+  <string name="setting_display_page_chat_list_model_icon_title">모델 아이콘 표시</string>
   <string name="setting_display_page_code_block_auto_collapse_desc">기본적으로 코드 블록을 자동으로 접기</string>
   <string name="setting_display_page_code_block_auto_collapse_title">코드 블록 자동 접기</string>
   <string name="setting_display_page_code_block_auto_wrap_desc">코드 블록의 긴 줄을 자동으로 줄 바꿈</string>
@@ -590,7 +587,7 @@
   <string name="setting_display_page_create_new_conversation_on_start_title">앱 시작 시 새 채팅 생성</string>
   <string name="setting_display_page_enable_auto_scroll_desc">AI가 콘텐츠를 생성할 때 자동으로 아래로 스크롤합니다</string>
   <string name="setting_display_page_enable_auto_scroll_title">자동 스크롤</string>
-  <string name="setting_display_page_enable_blur_effect_desc">채팅 입력창에 블러 효과 활성화</string>
+  <string name="setting_display_page_enable_blur_effect_desc">홈 페이지 UI 요소에 투명 효과 추가</string>
   <string name="setting_display_page_enable_blur_effect_title">흐림 효과 활성화</string>
   <string name="setting_display_page_square_input_on_keyboard_title">키보드 표시 시 입력창 하단을 직각으로</string>
   <string name="setting_display_page_square_input_on_keyboard_desc">입력창이 키보드에 더 밀착되도록 합니다</string>
@@ -598,8 +595,15 @@
   <string name="setting_display_page_enable_latex_rendering_title">LaTeX 렌더링 활성화</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_desc">메시지 생성 시 진동 피드백 활성화</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_title">메시지 생성 진동 효과 활성화</string>
-  <string name="setting_display_page_font_size_preview">새벽 네 시, 해당화가 잠들지 않은 것을 보았다. 나는 자주 이렇게, 아무도 없는 밤에 홀로 깨어, 생각한다 — 지금 이 순간 누군가도 나를 생각하고 있다면, 그것으로 충분하다.</string>
   <string name="setting_display_page_font_size_title">채팅 글꼴 크기</string>
+    <string name="setting_display_page_font_preview">글꼴 미리보기</string>
+<string name="setting_display_page_font_size_preview_part1">새벽 네 시, 해당화가 잠들지 않은 것을 보았다. 나는 자주 이렇게, 아무도 없는 밤에 홀로 깨어, 생각한다 — </string>
+  <string name="setting_display_page_font_size_preview_part2">지금 이 순간 누군가도 나를 생각하고 있다면, 그것으로 충분하다.</string>
+
+  <string name="setting_display_page_default_font_weight_title">기본 글꼴 두께</string>
+  <string name="setting_display_page_default_font_weight_desc">글꼴의 두께를 설정합니다. 범위: 100 - 900, 비워 두면 기본값을 사용합니다.</string>
+  <string name="setting_display_page_bold_font_weight_title">굵은 글꼴 두께</string>
+  <string name="setting_display_page_bold_font_weight_desc">굵은 글꼴의 두께를 설정합니다. 범위: 100 - 900, 비워 두면 기본값을 사용합니다.</string>
   <string name="setting_display_page_message_jumper_right">오른쪽</string>
   <string name="setting_display_page_notification_message_generated">메시지 생성 완료 알림 활성화</string>
   <string name="setting_display_page_notification_message_generated_desc">앱이 전경에 없을 때 메시지를 생성하면 알림을 보냅니다</string>
@@ -622,7 +626,7 @@
   <string name="setting_display_page_show_message_jumper_title">메시지 점프 버튼 표시</string>
   <string name="setting_display_page_show_model_name_desc">채팅 메시지에 모델 이름을 표시할지 여부</string>
   <string name="setting_display_page_show_model_name_title">모델 이름 표시</string>
-  <string name="setting_display_page_show_thinking_content_desc">생성 중 기본적으로 사고 과정을 펼쳐서 표시할지 여부</string>
+  <string name="setting_display_page_show_thinking_content_desc">생성 중 기본적으로 사고 과정을 펼쳐서 표시</string>
   <string name="setting_display_page_show_thinking_content_title">생각 내용 표시</string>
   <string name="setting_display_page_show_token_usage_desc">토큰 수, 소요 시간, 글자 수 등을 표시합니다</string>
   <string name="setting_display_page_show_token_usage_title">토큰 수 등 통계 정보 표시</string>
@@ -719,7 +723,7 @@
   <string name="setting_page_about_desc">앱 정보</string>
   <string name="setting_page_assistant_desc">개인화된 어시스턴트(에이전트) 설정</string>
   <string name="setting_page_built_in_tools">내장 도구</string>
-  <string name="setting_page_built_in_tools_desc">모델이 지원하는 내장 도구 선택. 이러한 도구는 API에서 직접 제공되며 앱 지원이 필요하지 않습니다. 현재 이 기능은 공식 Gemini API에서만 지원됩니다.</string>
+  <string name="setting_page_built_in_tools_desc">모델 API에 내장된 도구를 활성화합니다. 일부 모델에서만 지원됩니다.</string>
   <string name="setting_page_built_in_tools_image_generation">이미지 생성</string>
   <string name="setting_page_built_in_tools_image_generation_desc">이미지 생성 기능 활성화</string>
   <string name="setting_page_built_in_tools_search">검색</string>
@@ -745,7 +749,8 @@
   <string name="setting_page_dynamic_color">동적 색상</string>
   <string name="setting_page_dynamic_color_desc">배경화면을 기반으로 앱 테마 색상을 동적으로 생성할지 여부</string>
   <string name="setting_page_mcp_desc">MCP 서버 구성</string>
-  <string name="setting_page_message_display_settings">글꼴, 수식 및 코드</string>
+  <string name="setting_page_font_settings">글꼴</string>
+  <string name="setting_page_formula_code_settings">수식 및 코드</string>
   <string name="setting_page_model_and_services">모델 서비스</string>
   <string name="setting_page_providers_desc">LLM 서비스 제공업체 구성</string>
   <string name="setting_page_request_logs">네트워크 요청 로그</string>
@@ -1200,7 +1205,7 @@
   <string name="chat_page_delete_folder">폴더 삭제</string>
   <string name="chat_page_folder_default">채팅</string>
   <string name="chat_page_folder_add">새로 만들기</string>
-  <string name="chat_page_delete_folder_confirm">폴더 "%1$s"를 삭제하시겠습니까? 내부의 대화는 삭제되지 않고 폴더에서만 제거됩니다.</string>
+  <string name="chat_page_delete_folder_confirm">폴더 “%1$s”를 삭제할까요? 내부의 대화는 삭제되지 않고 폴더에서만 제거됩니다.</string>
   <string name="chat_page_delete_folder_generating">이 폴더의 일부 대화가 아직 생성 중입니다. 삭제하기 전에 중지해 주세요.</string>
   <string name="setting_display_page_tts_read_outside_brackets_title">TTS 괄호 안 내용 읽지 않기</string>
   <string name="setting_display_page_tts_read_outside_brackets_desc">활성화하면 TTS가 괄호 안의 내용을 읽지 않습니다</string>
@@ -1237,7 +1242,10 @@
   <string name="chat_page_current_location">현재 위치</string>
   <string name="chat_page_confirm_move">채팅 이동</string>
   <string name="chat_page_confirm_move_desc">선택한 채팅 %1$d개를 “%2$s”(으)로 이동할까요?</string>
-  <string name="chat_page_confirm_single_move_desc">선택한 채팅을 “%1$s”(으)로 이동할까요?</string>
+  <string name="chat_page_confirm_single_move_desc">채팅 “%1$s”을(를) “%2$s”(으)로 이동할까요?</string>
+  <string name="chat_page_folder_move_forward">앞으로 이동</string>
+  <string name="chat_page_folder_move_backward">뒤로 이동</string>
+  <string name="chat_page_context_message_limit_current">현재 컨텍스트는 최대 %1$d개의 메시지를 유지합니다</string>
   <string name="chat_page_create_folder_in">“%1$s”에 폴더 만들기</string>
   <string name="about_page_original_github">RikkaHub GitHub</string>
   <string name="about_page_original_website">RikkaHub 웹사이트</string>
@@ -1265,6 +1273,7 @@
   <string name="setting_tts_page_temperature_description">음성의 무작위성을 조절합니다(0.0~1.0, 높을수록 표현력이 풍부함)</string>
   <string name="setting_page_more_settings">더 많은 설정</string>
   <string name="setting_page_chat_settings">대화 설정</string>
+  <string name="setting_page_interface_settings">인터페이스 설정</string>
   <string name="setting_page_system_settings">시스템 설정</string>
   <string name="assistant_page_copy_existing">기존 어시스턴트 복사</string>
   <string name="assistant_page_copy_picker_tag_count">태그 %1$d개</string>
@@ -1291,10 +1300,10 @@
   <string name="search_picker_model_description">모델 제공자에 내장된 클라우드 검색</string>
   <string name="search_picker_select_provider">검색 제공자 선택</string>
   <string name="search_picker_turn_off">검색 끄기</string>
-  <string name="reasoning_max">최대</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">요청 시 사용하는 User Agent 헤더 설정</string>
   <string name="setting_page_preferences_network_proxy">프록시</string>
   <string name="setting_page_preferences_network_proxy_desc">HTTP 및 SOCKS5 프록시 URL을 지원합니다. 비워 두면 시스템 설정을 사용합니다.</string>
+  <string name="setting_page_preferences_network_proxy_list_desc">HTTP 및 SOCKS5 프록시 URL을 지원합니다.</string>
   <string name="setting_page_preferences_network_proxy_invalid">호스트와 포트가 있는 유효한 프록시 URL을 입력하세요.</string>
 </resources>

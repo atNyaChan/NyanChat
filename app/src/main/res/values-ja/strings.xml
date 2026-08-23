@@ -467,13 +467,8 @@
   <string name="quick_messages_page_empty_hint">右下の+ボタンをタップしてクイックメッセージを追加</string>
   <string name="quick_messages_page_empty_title">クイックメッセージがありません</string>
   <string name="quick_messages_page_untitled">無題</string>
-  <string name="reasoning_auto">自動</string>
-  <string name="reasoning_heavy">高</string>
-  <string name="reasoning_light">低</string>
-  <string name="reasoning_medium">中</string>
   <string name="reasoning_picker_hint">すべてのモデルが深さ調整に対応しているわけではありません。モデルおよびプロバイダーのドキュメントを参照してください。</string>
   <string name="reasoning_picker_title">モデルの思考深度を調整</string>
-  <string name="reasoning_xhigh">XHigh</string>
   <string name="regenerate">再生成</string>
   <string name="regenerate_confirm_message">このメッセージを再生成してもよろしいですか？</string>
   <string name="safe_mode_assistants">アシスタント</string>
@@ -574,14 +569,16 @@
   <string name="setting_display_page_amoled_dark_mode_title">AMOLED ダークモード</string>
   <string name="setting_display_page_auto_collapse_thinking_desc">思考が完了したら思考内容を自動的に折りたたむ</string>
   <string name="setting_display_page_auto_collapse_thinking_title">思考を自動折りたたむ</string>
+  <string name="setting_display_page_parse_mid_think_title">途中の思考タグを解析</string>
+  <string name="setting_display_page_parse_mid_think_desc">メッセージ冒頭以外の&lt;think&gt;タグを思考ブロックとして解析します</string>
   <string name="setting_display_page_auto_play_tts_desc">アシスタントのメッセージ生成完了後にTTSを自動再生</string>
   <string name="setting_display_page_auto_play_tts_title">生成後にTTSを自動再生</string>
   <string name="setting_display_page_chat_font_family_default">デフォルト</string>
   <string name="setting_display_page_chat_font_family_monospace">等幅</string>
   <string name="setting_display_page_chat_font_family_serif">明朝体</string>
   <string name="setting_display_page_chat_font_family_title">チャットフォント</string>
-  <string name="setting_display_page_chat_list_model_icon_desc">チャットリストのメッセージにモデルアイコンを表示するかどうか</string>
-  <string name="setting_display_page_chat_list_model_icon_title">チャットリストのモデルアイコン</string>
+  <string name="setting_display_page_chat_list_model_icon_desc">チャットページにモデルアイコンを表示</string>
+  <string name="setting_display_page_chat_list_model_icon_title">モデルアイコンを表示</string>
   <string name="setting_display_page_code_block_auto_collapse_desc">デフォルトでコードブロックを自動的に折りたたむ</string>
   <string name="setting_display_page_code_block_auto_collapse_title">コードブロックの自動折りたたみ</string>
   <string name="setting_display_page_code_block_auto_wrap_desc">コードブロック内の長い行を自動的に折り返す</string>
@@ -590,7 +587,7 @@
   <string name="setting_display_page_create_new_conversation_on_start_title">起動時に新しいチャット</string>
   <string name="setting_display_page_enable_auto_scroll_desc">AIがコンテンツを生成中に自動で下までスクロールする</string>
   <string name="setting_display_page_enable_auto_scroll_title">自動スクロール</string>
-  <string name="setting_display_page_enable_blur_effect_desc">チャット入力バーにぼかし効果を有効にする</string>
+  <string name="setting_display_page_enable_blur_effect_desc">ホーム画面のUI要素に透明効果を追加</string>
   <string name="setting_display_page_enable_blur_effect_title">ぼかし効果を有効にする</string>
   <string name="setting_display_page_square_input_on_keyboard_title">キーボード表示時に入力欄の下部を直角にする</string>
   <string name="setting_display_page_square_input_on_keyboard_desc">入力欄をキーボードにより密着させます</string>
@@ -598,8 +595,15 @@
   <string name="setting_display_page_enable_latex_rendering_title">LaTeXレンダリングを有効にする</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_desc">メッセージ生成時に触覚フィードバックを有効にする</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_title">メッセージ生成時の触覚効果</string>
-  <string name="setting_display_page_font_size_preview">午前4時、海棠の花がまだ眠っていないのを見た。私はよくこうして、誰もいない夜にひとり目を覚まし、思う——もし今この瞬間、誰かが私のことを思っていてくれたなら、それだけでいい。</string>
   <string name="setting_display_page_font_size_title">チャットフォントサイズ</string>
+    <string name="setting_display_page_font_preview">フォントプレビュー</string>
+<string name="setting_display_page_font_size_preview_part1">午前4時、海棠の花がまだ眠っていないのを見た。私はよくこうして、誰もいない夜にひとり目を覚まし、思う。</string>
+  <string name="setting_display_page_font_size_preview_part2">もし今この瞬間、誰かが私のことを思っていてくれたなら、それだけでいい。</string>
+
+  <string name="setting_display_page_default_font_weight_title">デフォルトのフォントウェイト</string>
+  <string name="setting_display_page_default_font_weight_desc">フォントのウェイトを設定します。範囲：100 - 900、空欄の場合はデフォルトを使用します。</string>
+  <string name="setting_display_page_bold_font_weight_title">太字のフォントウェイト</string>
+  <string name="setting_display_page_bold_font_weight_desc">太字フォントのウェイトを設定します。範囲：100 - 900、空欄の場合はデフォルトを使用します。</string>
   <string name="setting_display_page_message_jumper_right">右</string>
   <string name="setting_display_page_notification_message_generated">メッセージ生成後に通知を有効にする</string>
   <string name="setting_display_page_notification_message_generated_desc">アプリがフォアグラウンドにない状態でメッセージを生成するときに通知を送信します</string>
@@ -622,7 +626,7 @@
   <string name="setting_display_page_show_message_jumper_title">メッセージナビゲーションボタン</string>
   <string name="setting_display_page_show_model_name_desc">チャットメッセージにモデル名を表示するかどうか</string>
   <string name="setting_display_page_show_model_name_title">モデル名を表示</string>
-  <string name="setting_display_page_show_thinking_content_desc">生成中に思考プロセスをデフォルトで展開して表示するかどうか</string>
+  <string name="setting_display_page_show_thinking_content_desc">生成中に思考プロセスをデフォルトで展開して表示する</string>
   <string name="setting_display_page_show_thinking_content_title">思考内容を表示</string>
   <string name="setting_display_page_show_token_usage_desc">トークン数、経過時間、文字数などを表示</string>
   <string name="setting_display_page_show_token_usage_title">トークン数などの統計情報を表示</string>
@@ -719,7 +723,7 @@
   <string name="setting_page_about_desc">このアプリについて</string>
   <string name="setting_page_assistant_desc">カスタムアシスタント（エージェント）を設定</string>
   <string name="setting_page_built_in_tools">組み込みツール</string>
-  <string name="setting_page_built_in_tools_desc">モデルがサポートする組み込みツールを選択します。これらのツールはAPIに直接組み込まれており、アプリのサポートは不要です。現在、この機能は公式Gemini APIでのみサポートされています。</string>
+  <string name="setting_page_built_in_tools_desc">モデル API に組み込まれたツールを有効にします。一部のモデルでのみサポートされます。</string>
   <string name="setting_page_built_in_tools_image_generation">画像生成</string>
   <string name="setting_page_built_in_tools_image_generation_desc">画像生成機能を有効にする</string>
   <string name="setting_page_built_in_tools_search">検索</string>
@@ -745,7 +749,8 @@
   <string name="setting_page_dynamic_color">ダイナミックカラー</string>
   <string name="setting_page_dynamic_color_desc">壁紙に基づいてアプリのテーマ配色を動的に生成するかどうか</string>
   <string name="setting_page_mcp_desc">MCPサーバーを設定</string>
-  <string name="setting_page_message_display_settings">フォント、数式、コード</string>
+  <string name="setting_page_font_settings">フォント</string>
+  <string name="setting_page_formula_code_settings">数式とコード</string>
   <string name="setting_page_model_and_services">モデルサービス</string>
   <string name="setting_page_providers_desc">LLM サービスプロバイダーを設定</string>
   <string name="setting_page_request_logs">ネットワークリクエストログ</string>
@@ -1200,7 +1205,7 @@
   <string name="chat_page_delete_folder">フォルダを削除</string>
   <string name="chat_page_folder_default">チャット</string>
   <string name="chat_page_folder_add">新規</string>
-  <string name="chat_page_delete_folder_confirm">フォルダ "%1$s" を削除しますか？内部の会話は削除されず、フォルダから取り除かれるだけです。</string>
+  <string name="chat_page_delete_folder_confirm">フォルダ「%1$s」を削除してもよろしいですか？内部の会話は削除されず、フォルダから取り除かれるだけです。</string>
   <string name="chat_page_delete_folder_generating">フォルダ内の一部の会話がまだ生成中です。削除する前にそれらを停止してください。</string>
   <string name="setting_display_page_tts_read_outside_brackets_title">TTS 括弧内を読み上げない</string>
   <string name="setting_display_page_tts_read_outside_brackets_desc">有効にすると、TTS は括弧内の内容を読み上げません</string>
@@ -1237,7 +1242,10 @@
   <string name="chat_page_current_location">現在の場所</string>
   <string name="chat_page_confirm_move">チャットを移動</string>
   <string name="chat_page_confirm_move_desc">選択した%1$d件のチャットを「%2$s」に移動してもよろしいですか？</string>
-  <string name="chat_page_confirm_single_move_desc">選択したチャットを「%1$s」に移動してもよろしいですか？</string>
+  <string name="chat_page_confirm_single_move_desc">チャット「%1$s」を「%2$s」に移動してもよろしいですか？</string>
+  <string name="chat_page_folder_move_forward">前に移動</string>
+  <string name="chat_page_folder_move_backward">後ろに移動</string>
+  <string name="chat_page_context_message_limit_current">現在のコンテキストは最大 %1$d 件のメッセージを保持します</string>
   <string name="chat_page_create_folder_in">「%1$s」にフォルダーを作成</string>
   <string name="about_page_original_github">RikkaHub GitHub</string>
   <string name="about_page_original_website">RikkaHub ウェブサイト</string>
@@ -1265,6 +1273,7 @@
   <string name="setting_tts_page_temperature_description">音声のランダム性を調整します（0.0～1.0、高いほど表現豊か）</string>
   <string name="setting_page_more_settings">その他の設定</string>
   <string name="setting_page_chat_settings">会話設定</string>
+  <string name="setting_page_interface_settings">インターフェース設定</string>
   <string name="setting_page_system_settings">システム設定</string>
   <string name="assistant_page_copy_existing">既存のアシスタントをコピー</string>
   <string name="assistant_page_copy_picker_tag_count">%1$d 個のタグ</string>
@@ -1291,10 +1300,10 @@
   <string name="search_picker_model_description">モデルプロバイダー内蔵のクラウド検索</string>
   <string name="search_picker_select_provider">検索プロバイダを選択</string>
   <string name="search_picker_turn_off">検索をオフにする</string>
-  <string name="reasoning_max">最大</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">リクエスト時に使用するUser Agentヘッダーを設定</string>
   <string name="setting_page_preferences_network_proxy">プロキシ</string>
   <string name="setting_page_preferences_network_proxy_desc">HTTPおよびSOCKS5プロキシURLをサポートします。空白の場合はシステム設定を使用します。</string>
+  <string name="setting_page_preferences_network_proxy_list_desc">HTTPおよびSOCKS5プロキシURLをサポートします。</string>
   <string name="setting_page_preferences_network_proxy_invalid">ホストとポートを含む有効なプロキシURLを入力してください。</string>
 </resources>

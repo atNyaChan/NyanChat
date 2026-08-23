@@ -8,6 +8,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -20,6 +21,7 @@ fun CompactNumberField(
     isError: Boolean,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    onFocusLost: () -> Unit = {},
 ) {
     TextField(
         value = value,
@@ -28,7 +30,13 @@ fun CompactNumberField(
         textStyle = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Normal),
         singleLine = true,
         isError = isError,
-        modifier = modifier.width(88.dp),
+        modifier = modifier
+            .width(88.dp)
+            .onFocusChanged { focusState ->
+                if (!focusState.isFocused) {
+                    onFocusLost()
+                }
+            },
         enabled = enabled,
         shape = CircleShape,
         colors = TextFieldDefaults.colors(

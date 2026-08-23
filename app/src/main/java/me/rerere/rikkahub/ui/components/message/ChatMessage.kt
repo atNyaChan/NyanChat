@@ -51,6 +51,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
@@ -128,7 +129,8 @@ fun ChatMessage(
     val textStyle = LocalTextStyle.current.copy(
         fontSize = LocalTextStyle.current.fontSize * settings.fontSizeRatio,
         lineHeight = LocalTextStyle.current.lineHeight * settings.fontSizeRatio,
-        fontFamily = chatFontFamily
+        fontFamily = chatFontFamily,
+        fontWeight = settings.defaultFontWeight?.let { FontWeight(it) },
     )
     var showActionsSheet by remember { mutableStateOf(false) }
     var showTranslateDialog by remember { mutableStateOf(false) }

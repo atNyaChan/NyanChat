@@ -7,19 +7,15 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -37,12 +33,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.res.stringResource
@@ -73,24 +63,18 @@ import kotlin.time.DurationUnit
 
 enum class ReasoningCardState(val expanded: Boolean) {
     Collapsed(false),
-    Preview(true),
     Expanded(true),
 }
 
 @Stable
 private class ReasoningState(
-    val scrollState: ScrollState,
     initialDuration: Duration,
 ) {
     var expandState by mutableStateOf(ReasoningCardState.Collapsed)
     var duration by mutableStateOf(initialDuration)
 
-    fun onExpandedChange(nextExpanded: Boolean, loading: Boolean) {
-        expandState = if (loading) {
-            if (nextExpanded) ReasoningCardState.Expanded else ReasoningCardState.Preview
-        } else {
-            if (nextExpanded) ReasoningCardState.Expanded else ReasoningCardState.Collapsed
-        }
+    fun onExpandedChange(nextExpanded: Boolean) {
+        expandState = if (nextExpanded) ReasoningCardState.Expanded else ReasoningCardState.Collapsed
     }
 }
 
@@ -98,11 +82,9 @@ private class ReasoningState(
 private fun rememberReasoningState(reasoning: UIMessagePart.Reasoning): Pair<ReasoningState, Boolean> {
     val settings = LocalSettings.current
     val loading = reasoning.finishedAt == null
-    val scrollState = rememberScrollState()
 
     val state = remember(reasoning.createdAt) {
         ReasoningState(
-            scrollState = scrollState,
             initialDuration = reasoning.finishedAt?.let { it - reasoning.createdAt }
                 ?: (Clock.System.now() - reasoning.createdAt)
         )
@@ -111,8 +93,7 @@ private fun rememberReasoningState(reasoning: UIMessagePart.Reasoning): Pair<Rea
     LaunchedEffect(reasoning.reasoning, loading) {
         if (loading) {
             if (!state.expandState.expanded && settings.displaySetting.showThinkingContent)
-                state.expandState = ReasoningCardState.Preview
-            scrollState.animateScrollTo(scrollState.maxValue)
+                state.expandState = ReasoningCardState.Expanded
         } else {
             if (state.expandState.expanded) {
                 state.expandState = if (settings.displaySetting.autoCloseThinking)
@@ -139,48 +120,14 @@ private fun rememberReasoningState(reasoning: UIMessagePart.Reasoning): Pair<Rea
 private fun ReasoningContent(
     reasoning: UIMessagePart.Reasoning,
     assistant: Assistant?,
-    expandState: ReasoningCardState,
-    scrollState: ScrollState,
-    fadeHeight: Float,
     loading: Boolean,
 ) {
-    val isPreview = expandState == ReasoningCardState.Preview
     val reasoningTextStyle = MaterialTheme.typography.bodySmall.copy(
         fontFamily = LocalTextStyle.current.fontFamily,
     )
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .let { contentModifier ->
-                if (isPreview) {
-                    contentModifier
-                        .graphicsLayer { alpha = 0.99f }
-                        .drawWithCache {
-                            val brush = Brush.verticalGradient(
-                                startY = 0f,
-                                endY = size.height,
-                                colorStops = arrayOf(
-                                    0.0f to Color.Transparent,
-                                    (fadeHeight / size.height) to Color.Black,
-                                    (1 - fadeHeight / size.height) to Color.Black,
-                                    1.0f to Color.Transparent
-                                )
-                            )
-                            onDrawWithContent {
-                                drawContent()
-                                drawRect(
-                                    brush = brush,
-                                    size = Size(size.width, size.height),
-                                    blendMode = BlendMode.DstIn,
-                                )
-                            }
-                        }
-                        .heightIn(max = 100.dp)
-                        .verticalScroll(scrollState)
-                } else {
-                    contentModifier
-                }
-            }
     ) {
         val reasoningContent = @Composable {
             MarkdownBlock(
@@ -188,7 +135,7 @@ private fun ReasoningContent(
                     assistant = assistant,
                     scope = AssistantAffectScope.ASSISTANT,
                     visual = true,
-                ),
+                ).trimEnd(),
                 style = reasoningTextStyle,
                 modifier = Modifier.fillMaxSize(),
             )
@@ -211,7 +158,6 @@ fun ChainOfThoughtScope.ChatMessageReasoningStep(
     model: Model?,
     assistant: Assistant?,
     messageEdited: Boolean,
-    fadeHeight: Float = 64f,
     collapsedAdaptiveWidth: Boolean = false,
 ) {
     val (state, loading) = rememberReasoningState(reasoning)
@@ -242,7 +188,7 @@ fun ChainOfThoughtScope.ChatMessageReasoningStep(
 
     ControlledChainOfThoughtStep(
         expanded = state.expandState == ReasoningCardState.Expanded,
-        onExpandedChange = { state.onExpandedChange(it, loading) },
+        onExpandedChange = { state.onExpandedChange(it) },
         icon = {
             Icon(
                 imageVector = HugeIcons.Idea01,
@@ -331,9 +277,6 @@ fun ChainOfThoughtScope.ChatMessageReasoningStep(
             ReasoningContent(
                 reasoning = reasoning,
                 assistant = assistant,
-                expandState = state.expandState,
-                scrollState = state.scrollState,
-                fadeHeight = fadeHeight,
                 loading = loading,
             )
         },

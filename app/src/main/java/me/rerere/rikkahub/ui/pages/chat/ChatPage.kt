@@ -55,6 +55,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import com.dokar.sonner.ToastType
+import dev.chrisbanes.haze.HazeInput
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.blur.HazeBlurStyle
+import dev.chrisbanes.haze.blur.hazeBlur
+import dev.chrisbanes.haze.blur.material3.Material3
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.CancellationException
@@ -84,6 +89,7 @@ import me.rerere.rikkahub.service.ChatError
 import me.rerere.rikkahub.ui.components.ai.ChatInput
 import me.rerere.rikkahub.ui.components.ai.FilesPicker
 import me.rerere.rikkahub.ui.components.ai.SearchMode
+import me.rerere.rikkahub.ui.components.ai.displayLabel
 import me.rerere.rikkahub.ui.components.ai.completion.WorkspaceCompletionProvider
 import me.rerere.rikkahub.ui.components.ai.useCropLauncher
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionCamera
@@ -158,6 +164,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
     }
 
     val inputState = vm.inputState
+    val hazeState = rememberHazeState()
     var cachedRequestBaseWordCount by remember { mutableStateOf<Int?>(null) }
     var cachedRequestToolCount by remember { mutableStateOf(0) }
     var requestWordCountJob by remember { mutableStateOf<Job?>(null) }
@@ -268,7 +275,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
                         navController = navController,
                         current = conversation,
                         vm = vm,
-                        settings = setting
+                        settings = setting,
                     )
                 }
             ) {
@@ -292,6 +299,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
                     translatingMessageIds = translatingMessageIds,
                     onDismissError = { vm.dismissError(it) },
                     onClearAllErrors = { vm.clearAllErrors() },
+                    hazeState = hazeState,
                 )
             }
         }
@@ -304,7 +312,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
                         navController = navController,
                         current = conversation,
                         vm = vm,
-                        settings = setting
+                        settings = setting,
                     )
                 }
             ) {
@@ -328,6 +336,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
                     translatingMessageIds = translatingMessageIds,
                     onDismissError = { vm.dismissError(it) },
                     onClearAllErrors = { vm.clearAllErrors() },
+                    hazeState = hazeState,
                 )
             }
             BackHandler(drawerState.isOpen) {
@@ -358,6 +367,7 @@ private fun ChatPageContent(
     translatingMessageIds: Set<Uuid>,
     onDismissError: (Uuid) -> Unit,
     onClearAllErrors: () -> Unit,
+    hazeState: HazeState,
 ) {
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
@@ -365,7 +375,6 @@ private fun ChatPageContent(
     val workspaceRepository: WorkspaceRepository = koinInject()
     val folderRepository: FolderRepository = koinInject()
     var previewMode by rememberSaveable { mutableStateOf(false) }
-    val hazeState = rememberHazeState()
     val assistant = setting.getCurrentAssistant()
     val folders by folderRepository.getFoldersOfAssistant(assistant.id)
         .collectAsStateWithLifecycle(initialValue = emptyList())
@@ -402,6 +411,7 @@ private fun ChatPageContent(
                     bigScreen = bigScreen,
                     drawerState = drawerState,
                     previewMode = previewMode,
+                    hazeState = hazeState,
                     onNewChat = {
                         navigateToChatPage(navController)
                     },
@@ -830,6 +840,7 @@ private fun TopBar(
     drawerState: DrawerState,
     bigScreen: Boolean,
     previewMode: Boolean,
+    hazeState: HazeState,
     onClickMenu: () -> Unit,
     onNewChat: () -> Unit,
     onUpdateTitle: (String) -> Unit,
@@ -840,9 +851,20 @@ private fun TopBar(
     val titleState = useEditState<String> {
         onUpdateTitle(it)
     }
+    val topBarHazeStyle = HazeBlurStyle.Material3 {
+        blurRadius(12.dp)
+    }
 
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+        modifier = if (settings.displaySetting.enableBlurEffect) {
+            Modifier.hazeBlur(
+                input = HazeInput.Sources(hazeState),
+                style = topBarHazeStyle,
+            )
+        } else {
+            Modifier
+        },
         navigationIcon = {
             if (!bigScreen) {
                 IconButton(
@@ -880,9 +902,14 @@ private fun TopBar(
                         val assistantName = assistant.name.ifBlank {
                             stringResource(R.string.assistant_page_default_assistant)
                         }
+                        val reasoningSuffix = if (assistant.reasoningLevel.isEnabled) {
+                            " · ${assistant.reasoningLevel.displayLabel()}"
+                        } else {
+                            ""
+                        }
                         Text(
                             text = listOfNotNull(assistantName, folderName, model.displayName)
-                                .joinToString(" / "),
+                                .joinToString(" / ") + reasoningSuffix,
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 1,
                             color = LocalContentColor.current.copy(0.65f),

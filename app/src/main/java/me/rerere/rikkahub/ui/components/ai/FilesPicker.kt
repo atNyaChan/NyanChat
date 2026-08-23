@@ -235,7 +235,27 @@ internal fun FilesPicker(
                 .clickable {
                     onShowCompressDialogChange(true)
                 },
-        ) { Text(stringResource(R.string.chat_page_compress_context)) }
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(stringResource(R.string.chat_page_compress_context))
+                if (assistant.contextMessageLimit > 0) {
+                    Text(
+                        text = stringResource(R.string.chat_page_context_message_limit_current, assistant.contextMessageLimit),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.clickable {
+                            onDismiss()
+                            navController.navigate(
+                                Screen.AssistantBasic(
+                                    id = assistant.id.toString(),
+                                    scrollToContextLimit = true,
+                                )
+                            )
+                        },
+                    )
+                }
+            }
+        }
 
         if (workspaces.isNotEmpty()) {
             WorkspacePickerListItem(

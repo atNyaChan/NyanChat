@@ -53,6 +53,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import me.rerere.hugeicons.HugeIcons
+import me.rerere.hugeicons.stroke.ArrowLeft01
+import me.rerere.hugeicons.stroke.ArrowRight01
 import me.rerere.hugeicons.stroke.ChartColumn
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.Folder01
@@ -66,6 +68,7 @@ import me.rerere.hugeicons.stroke.Settings03
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.datastore.Settings
+import me.rerere.rikkahub.data.datastore.getCurrentAssistant
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.data.model.Folder
@@ -258,6 +261,8 @@ fun ChatDrawerContent(
                 onCreate = { showCreateFolderDialog = true },
                 onRename = { folderToRename = it },
                 onDelete = { folderToDelete = it },
+                onMoveForward = { drawerVm.moveFolder(it.id, forward = true) },
+                onMoveBackward = { drawerVm.moveFolder(it.id, forward = false) },
             )
 
             ConversationList(
@@ -292,7 +297,14 @@ fun ChatDrawerContent(
                 AlertDialog(
                     onDismissRequest = { conversationToDelete = null },
                     title = { Text(stringResource(R.string.common_delete)) },
-                    text = { Text(stringResource(R.string.chat_page_delete_conversation_confirm, conversation.title)) },
+                    text = {
+                        Text(
+                            stringResource(
+                                R.string.chat_page_delete_conversation_confirm,
+                                conversation.title.ifBlank { stringResource(R.string.chat_page_new_message) }
+                            )
+                        )
+                    },
                     confirmButton = {
                         TextButton(onClick = {
                             conversationToDelete = null
@@ -597,12 +609,36 @@ fun ChatDrawerContent(
         conversations.refresh()
     }
 
+    val moveTargetListState = rememberLazyListState()
+    LaunchedEffect(conversationsToMove, allFolders) {
+        if (conversationsToMove.isNotEmpty() && moveCreateFolderAssistant == null && pendingMoveTarget == null) {
+            val currentAssistant = settings.getCurrentAssistant()
+            var index = 0
+            var found = false
+            for (assistant in settings.assistants) {
+                if (assistant.id == currentAssistant.id) {
+                    found = true
+                    break
+                }
+                index += 1 // 助手标题
+                index += 1 // 未分组
+                index += allFolders[assistant.id].orEmpty().size
+            }
+            if (found) {
+                moveTargetListState.scrollToItem(index)
+            }
+        }
+    }
+
     if (conversationsToMove.isNotEmpty() && moveCreateFolderAssistant == null && pendingMoveTarget == null) {
         AlertDialog(
             onDismissRequest = { conversationsToMove = emptyList() },
             title = { Text(stringResource(R.string.conversation_move_to)) },
             text = {
-                LazyColumn(modifier = Modifier.heightIn(max = 480.dp)) {
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 480.dp),
+                    state = moveTargetListState,
+                ) {
                     settings.assistants.forEach { assistant ->
                         item(key = "assistant_${assistant.id}") {
                             Row(
@@ -717,7 +753,14 @@ fun ChatDrawerContent(
                             target.label,
                         )
                     } else {
-                        stringResource(R.string.chat_page_confirm_single_move_desc, target.label)
+                        stringResource(
+                            R.string.chat_page_confirm_single_move_desc,
+                            conversationsToMove.firstOrNull()
+                                ?.title
+                                ?.ifBlank { stringResource(R.string.chat_page_new_message) }
+                                ?: stringResource(R.string.chat_page_new_message),
+                            target.label,
+                        )
                     }
                 )
             },
@@ -839,6 +882,8 @@ private fun FolderBar(
     onCreate: () -> Unit,
     onRename: (Folder) -> Unit,
     onDelete: (Folder) -> Unit,
+    onMoveForward: (Folder) -> Unit,
+    onMoveBackward: (Folder) -> Unit,
 ) {
     LazyRow(
         modifier = Modifier
@@ -857,6 +902,7 @@ private fun FolderBar(
         }
         items(folders) { folder ->
             var menuExpanded by remember { mutableStateOf(false) }
+            val folderIndex = folders.indexOf(folder)
             Box {
                 FolderChip(
                     label = folder.name,
@@ -870,6 +916,26 @@ private fun FolderBar(
                     onDismissRequest = { menuExpanded = false },
                     shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
                 ) {
+                    if (folderIndex > 0) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.chat_page_folder_move_forward)) },
+                            leadingIcon = { Icon(HugeIcons.ArrowLeft01, null) },
+                            onClick = {
+                                onMoveForward(folder)
+                                menuExpanded = false
+                            }
+                        )
+                    }
+                    if (folderIndex < folders.lastIndex) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.chat_page_folder_move_backward)) },
+                            leadingIcon = { Icon(HugeIcons.ArrowRight01, null) },
+                            onClick = {
+                                onMoveBackward(folder)
+                                menuExpanded = false
+                            }
+                        )
+                    }
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.common_rename)) },
                         leadingIcon = { Icon(HugeIcons.PencilEdit01, null) },
