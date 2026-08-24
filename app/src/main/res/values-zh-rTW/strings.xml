@@ -174,6 +174,8 @@
   <string name="backup_page_backup_now">立即備份</string>
   <string name="backup_page_backup_success">備份成功</string>
   <string name="backup_page_chat_records">聊天記錄</string>
+  <string name="backup_page_chat_records_always">聊天記錄始終包含在備份中</string>
+  <string name="backup_page_workspace">工作區</string>
   <string name="backup_page_connection_failed">連線失敗: %s</string>
   <string name="backup_page_connection_success">連線成功</string>
   <string name="backup_page_delete_failed">刪除失敗: %s</string>
@@ -570,7 +572,7 @@
   <string name="setting_display_page_auto_collapse_thinking_desc">思考完成自動折疊思考內容</string>
   <string name="setting_display_page_auto_collapse_thinking_title">自動折疊思考</string>
   <string name="setting_display_page_parse_mid_think_title">解析中途思考</string>
-  <string name="setting_display_page_parse_mid_think_desc">把非訊息開頭的&lt;think&gt;標籤解析為思考區塊</string>
+  <string name="setting_display_page_parse_mid_think_desc">把非訊息開頭的 &lt;think&gt; 標籤解析為思考區塊</string>
   <string name="setting_display_page_auto_play_tts_desc">助理訊息產生完成後自動播放語音</string>
   <string name="setting_display_page_auto_play_tts_title">產生後自動播放 TTS</string>
   <string name="setting_display_page_chat_font_family_default">預設</string>
@@ -626,8 +628,11 @@
   <string name="setting_display_page_show_message_jumper_title">消息導航按鈕</string>
   <string name="setting_display_page_show_model_name_desc">是否在聊天消息中顯示模型名稱</string>
   <string name="setting_display_page_show_model_name_title">顯示模型名稱</string>
-  <string name="setting_display_page_show_thinking_content_desc">在生成時預設展開並顯示思考過程</string>
-  <string name="setting_display_page_show_thinking_content_title">顯示思考內容</string>
+  <string name="setting_display_page_show_thinking_content_desc">控制生成回覆時預設的思考方塊展開狀態</string>
+  <string name="setting_display_page_show_thinking_content_title">生成時顯示思考</string>
+  <string name="setting_display_page_thinking_mode_collapsed">收起</string>
+  <string name="setting_display_page_thinking_mode_preview">預覽</string>
+  <string name="setting_display_page_thinking_mode_expanded">展開</string>
   <string name="setting_display_page_show_token_usage_desc">顯示 Token 數、耗時、字數等</string>
   <string name="setting_display_page_show_token_usage_title">顯示 Token 數等統計資訊</string>
   <string name="setting_display_page_show_user_avatar_desc">是否在聊天消息中顯示用戶頭像</string>
@@ -727,7 +732,7 @@
   <string name="setting_page_built_in_tools_image_generation">圖像生成</string>
   <string name="setting_page_built_in_tools_image_generation_desc">啟用圖片生成功能</string>
   <string name="setting_page_built_in_tools_search">搜尋</string>
-  <string name="setting_page_built_in_tools_search_desc">啟用 Google 搜尋整合</string>
+  <string name="setting_page_built_in_tools_search_desc">啟用網路搜尋服務</string>
   <string name="setting_page_built_in_tools_url_context">URL 上下文</string>
   <string name="setting_page_built_in_tools_url_context_desc">啟用 URL 內容處理</string>
   <string name="setting_page_chat_storage">聊天檔案</string>
@@ -1040,7 +1045,7 @@
   <string name="setting_display_page_custom_font_import">匯入自訂字型</string>
   <string name="setting_display_page_custom_font_import_failed">匯入字型失敗：%1$s</string>
   <string name="setting_display_page_custom_font_import_success">自訂字型已匯入</string>
-  <string name="setting_display_page_custom_font_not_imported">尚未匯入自訂字型。支援 .ttf 、.otf 與 .ttc 檔案。</string>
+  <string name="setting_display_page_custom_font_not_imported">尚未匯入自訂字型。支援 .ttf 與 .otf 檔案。</string>
   <string name="setting_display_page_custom_font_remove">移除自訂字型</string>
   <string name="setting_display_page_delete_font_title">刪除字型</string>
   <string name="setting_display_page_delete_font_confirm">確定刪除這個字型嗎？此操作無法復原。</string>
@@ -1294,16 +1299,10 @@
   <string name="assistant_page_context_message_limit_desc">限制發送給模型的最近訊息數量。當超出限制時，上下文會一次性修剪到大約一半，而不是每次輪次刪除一條訊息，這樣請求前綴保持穩定，提示詞緩存可以在多次輪次中繼續運作，最小為20。留空表示無限制。</string>
   <string name="assistant_page_context_message_limit_placeholder">無限制</string>
   <string name="assistant_page_context_message_limit_warning">每次截斷上下文時都會使提示詞快取失效，上限越大，截斷越少。</string>
-  <string name="search_picker_local_title">本機搜尋</string>
-  <string name="search_picker_local_description">連線至各種第三方搜尋提供者</string>
-  <string name="search_picker_model_title">模型搜尋</string>
-  <string name="search_picker_model_description">模型提供者內建的雲端搜尋</string>
-  <string name="search_picker_select_provider">選擇搜尋提供者</string>
-  <string name="search_picker_turn_off">關閉搜尋</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">設定請求時使用的 User Agent 標頭</string>
   <string name="setting_page_preferences_network_proxy">代理</string>
   <string name="setting_page_preferences_network_proxy_desc">支援 HTTP 和 SOCKS5 代理網址。留空以使用系統設定。</string>
-  <string name="setting_page_preferences_network_proxy_list_desc">支援 HTTP 和 SOCKS5 代理網址。</string>
+  <string name="setting_page_preferences_network_proxy_list_desc">設定傳送請求時使用的代理伺服器</string>
   <string name="setting_page_preferences_network_proxy_invalid">請輸入包含主機和連接埠的有效代理 URL。</string>
 </resources>

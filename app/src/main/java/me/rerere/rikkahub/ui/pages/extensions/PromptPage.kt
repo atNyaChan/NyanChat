@@ -465,13 +465,11 @@ private fun ModeInjectionEditSheet(
                 TextArea(
                     state = contentState,
                     label = stringResource(R.string.prompt_page_injection_content),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    minLines = 5,
-                    maxLines = 8,
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 1,
+                    maxLines = Int.MAX_VALUE,
                     enableImport = false,
-                    fullscreenButtonInsideField = true,
+                    enableFullscreen = false,
                 )
             }
 
@@ -1270,13 +1268,11 @@ private fun RegexInjectionEditDialog(
                 TextArea(
                     state = contentState,
                     label = stringResource(R.string.prompt_page_injection_content),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    minLines = 5,
-                    maxLines = 8,
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 1,
+                    maxLines = Int.MAX_VALUE,
                     enableImport = false,
-                    fullscreenButtonInsideField = true,
+                    enableFullscreen = false,
                 )
                 if (onDelete != null) {
                     Button(

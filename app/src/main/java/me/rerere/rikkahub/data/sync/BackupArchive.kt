@@ -23,32 +23,30 @@ internal object BackupArchive {
         context: Context,
         output: File,
         settingsJson: String,
-        includeDatabase: Boolean,
         includeFiles: Boolean,
+        includeWorkspace: Boolean,
         workspaceRepository: WorkspaceRepository,
     ) {
         TarArchiveOutputStream(FileOutputStream(output).buffered()).use { tar ->
             tar.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX)
             addBytes(tar, "settings.json", settingsJson.toByteArray())
 
-            if (includeDatabase) {
-                val database = context.getDatabasePath("rikka_hub")
-                if (database.isFile) {
-                    checkpoint(database)
-                    val compressed = File(context.cacheDir, "rikka_hub.db.zst")
-                    try {
-                        ZstdOutputStream(
-                            FileOutputStream(compressed).buffered(IO_BUFFER_SIZE),
-                            DATABASE_COMPRESSION_LEVEL,
-                        ).setWorkers(ZSTD_WORKERS).use { outputStream ->
-                            database.inputStream().buffered(IO_BUFFER_SIZE).use {
-                                it.copyTo(outputStream, IO_BUFFER_SIZE)
-                            }
+            val database = context.getDatabasePath("rikka_hub")
+            if (database.isFile) {
+                checkpoint(database)
+                val compressed = File(context.cacheDir, "rikka_hub.db.zst")
+                try {
+                    ZstdOutputStream(
+                        FileOutputStream(compressed).buffered(IO_BUFFER_SIZE),
+                        DATABASE_COMPRESSION_LEVEL,
+                    ).setWorkers(ZSTD_WORKERS).use { outputStream ->
+                        database.inputStream().buffered(IO_BUFFER_SIZE).use {
+                            it.copyTo(outputStream, IO_BUFFER_SIZE)
                         }
-                        addFile(tar, compressed, "rikka_hub.db.zst")
-                    } finally {
-                        compressed.delete()
                     }
+                    addFile(tar, compressed, "rikka_hub.db.zst")
+                } finally {
+                    compressed.delete()
                 }
             }
 
@@ -57,6 +55,9 @@ internal object BackupArchive {
                     val folder = File(context.filesDir, folderName)
                     if (folder.isDirectory) addDirectory(tar, folder, folderName)
                 }
+            }
+
+            if (includeWorkspace) {
                 addWorkspaceArchives(
                     tar = tar,
                     context = context,

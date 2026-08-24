@@ -2,6 +2,7 @@ package me.rerere.rikkahub.ui.pages.chat
 
 import android.net.Uri
 import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -66,7 +67,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import me.rerere.ai.core.MessageRole
-import me.rerere.ai.provider.BuiltInTools
 import me.rerere.ai.provider.Model
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.common.android.appTempFolder
@@ -82,6 +82,7 @@ import me.rerere.rikkahub.data.datastore.getCurrentChatModel
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.ai.transformers.DocumentAsPromptTransformer
 import me.rerere.rikkahub.data.model.Assistant
+import me.rerere.rikkahub.data.model.ContextCache
 import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.rikkahub.data.repository.FolderRepository
@@ -113,10 +114,10 @@ import java.io.File
 import kotlin.uuid.Uuid
 
 @Composable
-fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
+fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, folderId: Uuid? = null) {
     val vm: ChatVM = koinViewModel(
         parameters = {
-            parametersOf(id.toString())
+            parametersOf(id.toString(), folderId)
         }
     )
     val filesManager: FilesManager = koinInject()
@@ -200,13 +201,12 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
     val refreshRequestWordCount = {
         if (
             setting.displaySetting.showTokenUsage &&
-            !inputState.isEditing() &&
             currentChatModel != null
         ) {
             requestWordCountJob?.cancel()
             requestWordCountJob = scope.launch {
                 cachedRequestBaseWordCount = try {
-                    vm.estimateRequestContextStats().also {
+                    vm.estimateRequestContextStats(inputState.editingMessage).also {
                         cachedRequestToolCount = it.toolCount
                     }.wordCount
                 } catch (e: CancellationException) {
@@ -222,6 +222,11 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
         requestWordCountJob = null
         cachedRequestBaseWordCount = null
         cachedRequestToolCount = 0
+    }
+
+    // 编辑历史消息时只统计被编辑消息及其之前的内容，进入或退出编辑后重新按新的统计范围计算
+    LaunchedEffect(inputState.isEditing()) {
+        refreshRequestWordCount()
     }
 
     // 初始化输入状态（处理传入的 files 和 text 参数）
@@ -372,6 +377,8 @@ private fun ChatPageContent(
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
     val selectModelFirstMessage = stringResource(R.string.chat_page_select_model_first)
+    val activity = LocalContext.current as ComponentActivity
+    val drawerVm: ChatDrawerVM = koinViewModel(viewModelStoreOwner = activity)
     val workspaceRepository: WorkspaceRepository = koinInject()
     val folderRepository: FolderRepository = koinInject()
     var previewMode by rememberSaveable { mutableStateOf(false) }
@@ -413,7 +420,8 @@ private fun ChatPageContent(
                     previewMode = previewMode,
                     hazeState = hazeState,
                     onNewChat = {
-                        navigateToChatPage(navController)
+                        // 新聊天归入侧栏当前选中的文件夹（未选中时 folderId 为 null，即未归类）
+                        navigateToChatPage(navController, folderId = drawerVm.selectedFolderId.value)
                     },
                     onClickMenu = {
                         previewMode = !previewMode
@@ -783,37 +791,22 @@ private fun ChatFilesPickerSheet(
                     )
                 )
             },
-            onUpdateSearchMode = { mode ->
-                val model = setting.getCurrentChatModel()
+            onSelectSearch = { mode, serviceIndex ->
                 vm.updateSettings(
                     setting.copy(
+                        searchServiceSelected = serviceIndex ?: setting.searchServiceSelected,
                         assistants = setting.assistants.map { item ->
                             if (item.id == assistant.id) {
-                                item.copy(enableWebSearch = mode == SearchMode.LOCAL)
+                                item.copy(
+                                    enableWebSearch = mode != SearchMode.OFF,
+                                    useBuiltInSearch = mode == SearchMode.BUILT_IN,
+                                )
                             } else {
                                 item
                             }
                         },
-                        providers = if (model == null) {
-                            setting.providers
-                        } else {
-                            setting.providers.map { provider ->
-                                provider.editModel(
-                                    model.copy(
-                                        tools = if (mode == SearchMode.BUILT_IN) {
-                                            model.tools + BuiltInTools.Search
-                                        } else {
-                                            model.tools - BuiltInTools.Search
-                                        }
-                                    )
-                                )
-                            }
-                        },
                     )
                 )
-            },
-            onUpdateSearchService = { index ->
-                vm.updateSettings(setting.copy(searchServiceSelected = index))
             },
             onUpdateConversation = {
                 vm.updateConversation(it)
@@ -902,16 +895,22 @@ private fun TopBar(
                         val assistantName = assistant.name.ifBlank {
                             stringResource(R.string.assistant_page_default_assistant)
                         }
+                        val namePrefix = listOfNotNull(assistantName, folderName).joinToString(" · ")
                         val reasoningSuffix = if (assistant.reasoningLevel.isEnabled) {
                             " · ${assistant.reasoningLevel.displayLabel()}"
                         } else {
                             ""
                         }
+                        val cacheSuffix = when (assistant.contextCache) {
+                            ContextCache.OFF -> ""
+                            ContextCache.FIVE_MINUTES -> " · 5min"
+                            ContextCache.ONE_HOUR -> " · 1h"
+                        }
                         Text(
-                            text = listOfNotNull(assistantName, folderName, model.displayName)
-                                .joinToString(" / ") + reasoningSuffix,
-                            overflow = TextOverflow.Ellipsis,
+                            text = listOfNotNull(namePrefix, model.displayName)
+                                .joinToString(" / ") + reasoningSuffix + cacheSuffix,
                             maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                             color = LocalContentColor.current.copy(0.65f),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontSize = 8.sp,

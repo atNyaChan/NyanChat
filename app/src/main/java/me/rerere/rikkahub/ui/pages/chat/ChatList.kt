@@ -107,7 +107,6 @@ import kotlin.math.roundToInt
 import kotlin.uuid.Uuid
 
 private const val TAG = "ChatList"
-private const val LoadingIndicatorKey = "LoadingIndicator"
 private const val ScrollBottomKey = "ScrollBottomKey"
 
 @Composable
@@ -276,6 +275,12 @@ private fun ChatListNormal(
             .associateBy { it.id }
     }
     val lastMessageIndex = conversation.messageNodes.lastIndex
+    // 正在生成的消息：生成开始前必先创建好待补全的助手消息，它是最后一条尚未结束
+    // （finishedAt 为 null）的助手消息；用户消息 finishAt 恒为 null，需按角色排除
+    val generatingNodeIndex = conversation.messageNodes.indexOfLast { node ->
+        node.currentMessage.role == me.rerere.ai.core.MessageRole.ASSISTANT &&
+            node.currentMessage.finishedAt == null
+    }
 
     Box(
         modifier = Modifier
@@ -340,7 +345,7 @@ private fun ChatListNormal(
                             node = node,
                             model = node.currentMessage.modelId?.let(modelById::get),
                             assistant = assistant,
-                            loading = loading && index == lastMessageIndex,
+                            loading = loading && node.currentMessage.finishedAt == null,
                             onRegenerate = {
                                 onRegenerate(node.currentMessage)
                             },
@@ -375,6 +380,30 @@ private fun ChatListNormal(
                             lastMessage = index == lastMessageIndex,
                         )
                     }
+                    // 重新生成中间消息时，加载指示器紧随正在生成的消息之后展示
+                    if (loading && index == generatingNodeIndex) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                        ) {
+                            AppLoadingIndicator(
+                                modifier = Modifier.size(40.dp)
+                            )
+                            AnimatedVisibility(
+                                visible = processingStatus != null,
+                            ) {
+                                Text(
+                                    text = processingStatus ?: "",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(start = 8.dp),
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
@@ -384,29 +413,6 @@ private fun ChatListNormal(
                         customSystemPrompt = conversation.customSystemPrompt,
                         onSystemPromptChange = onConversationSystemPromptChange,
                     )
-                }
-            }
-
-            if (loading) {
-                item(LoadingIndicatorKey) {
-                    Row(
-                        modifier = Modifier.padding(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        AppLoadingIndicator(
-                            modifier = Modifier.size(40.dp)
-                        )
-                        AnimatedVisibility(
-                            visible = processingStatus != null,
-                        ) {
-                            Text(
-                                text = processingStatus ?: "",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
                 }
             }
 

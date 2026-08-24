@@ -364,6 +364,30 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                         },
                     )
                     item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_skip_crop_image_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_skip_crop_image_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.skipCropImage,
+                                onCheckedChange = {
+                                    updateDisplaySetting(displaySetting.copy(skipCropImage = it))
+                                },
+                            )
+                        },
+                    )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_parse_mid_think_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_parse_mid_think_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.parseMidThink,
+                                onCheckedChange = {
+                                    updateDisplaySetting(displaySetting.copy(parseMidThink = it))
+                                }
+                            )
+                        },
+                    )
+                    item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_notification_message_generated)) },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_notification_message_generated_desc)) },
                         trailingContent = {
@@ -387,26 +411,27 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                         },
                     )
                     item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_skip_crop_image_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_skip_crop_image_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_volume_key_scroll_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_volume_key_scroll_desc)) },
                         trailingContent = {
-                            Switch(
-                                checked = displaySetting.skipCropImage,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(skipCropImage = it))
+                            Select(
+                                options = VolumeKeyScrollMode.entries,
+                                selectedOption = volumeKeyScrollMode,
+                                onOptionSelected = { mode ->
+                                    updateDisplaySetting(
+                                        displaySetting.copy(
+                                            enableVolumeKeyScroll = mode != VolumeKeyScrollMode.OFF,
+                                            volumeKeyScrollRatio = mode.ratio
+                                                ?: displaySetting.volumeKeyScrollRatio,
+                                        )
+                                    )
                                 },
-                            )
-                        },
-                    )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_parse_mid_think_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_parse_mid_think_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.parseMidThink,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(parseMidThink = it))
-                                }
+                                optionToString = { mode ->
+                                    mode.ratio?.let { ratio ->
+                                        "${(ratio * 100).toInt()}%"
+                                    } ?: stringResource(R.string.common_off)
+                                },
+                                fitToOptions = true,
                             )
                         },
                     )
@@ -454,31 +479,6 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                                         pasteLongTextThresholdInput.toIntOrNull()?.takeIf { it > 0 } == null,
                                 )
                             }
-                        },
-                    )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_volume_key_scroll_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_volume_key_scroll_desc)) },
-                        trailingContent = {
-                            Select(
-                                options = VolumeKeyScrollMode.entries,
-                                selectedOption = volumeKeyScrollMode,
-                                onOptionSelected = { mode ->
-                                    updateDisplaySetting(
-                                        displaySetting.copy(
-                                            enableVolumeKeyScroll = mode != VolumeKeyScrollMode.OFF,
-                                            volumeKeyScrollRatio = mode.ratio
-                                                ?: displaySetting.volumeKeyScrollRatio,
-                                        )
-                                    )
-                                },
-                                optionToString = { mode ->
-                                    mode.ratio?.let { ratio ->
-                                        "${(ratio * 100).toInt()}%"
-                                    } ?: stringResource(R.string.common_off)
-                                },
-                                fitToOptions = true,
-                            )
                         },
                     )
                 }
@@ -553,26 +553,27 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                         }
                     )
                     item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_chat_list_model_icon_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_chat_list_model_icon_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.showModelIcon,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(showModelIcon = it))
-                                }
-                            )
-                        },
-                    )
-                    item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_show_thinking_content_title)) },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_show_thinking_content_desc)) },
                         trailingContent = {
-                            Switch(
-                                checked = displaySetting.showThinkingContent,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(showThinkingContent = it))
-                                }
+                            val thinkingMode = when {
+                                !displaySetting.showThinkingContent -> ThinkingDisplayMode.COLLAPSED
+                                displaySetting.showThinkingContentPreview -> ThinkingDisplayMode.PREVIEW
+                                else -> ThinkingDisplayMode.EXPANDED
+                            }
+                            Select(
+                                options = ThinkingDisplayMode.entries,
+                                selectedOption = thinkingMode,
+                                onOptionSelected = { mode ->
+                                    val newSetting = when (mode) {
+                                        ThinkingDisplayMode.COLLAPSED -> displaySetting.copy(showThinkingContent = false)
+                                        ThinkingDisplayMode.PREVIEW -> displaySetting.copy(showThinkingContent = true, showThinkingContentPreview = true)
+                                        ThinkingDisplayMode.EXPANDED -> displaySetting.copy(showThinkingContent = true, showThinkingContentPreview = false)
+                                    }
+                                    updateDisplaySetting(newSetting)
+                                },
+                                optionToString = { stringResource(it.labelRes) },
+                                fitToOptions = true,
                             )
                         },
                     )
@@ -641,13 +642,6 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                         },
                     )
                     item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_amoled_dark_mode_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_amoled_dark_mode_desc)) },
-                        trailingContent = {
-                            Switch(checked = amoledDarkMode, onCheckedChange = { amoledDarkMode = it })
-                        },
-                    )
-                    item(
                         headlineContent = {
                             Text(stringResource(R.string.setting_display_page_screen_corner_adaptation_title))
                         },
@@ -664,6 +658,13 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                                 optionToString = { stringResource(it.labelRes) },
                                 fitToSelectedOption = true,
                             )
+                        },
+                    )
+                    item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_amoled_dark_mode_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_amoled_dark_mode_desc)) },
+                        trailingContent = {
+                            Switch(checked = amoledDarkMode, onCheckedChange = { amoledDarkMode = it })
                         },
                     )
                     item(
@@ -1171,7 +1172,7 @@ private val CustomFontMimeTypesUI = arrayOf(
     "*/*",
 )
 
-private val CustomFontExtensionsUI = setOf("ttf", "otf", "ttc")
+private val CustomFontExtensionsUI = setOf("ttf", "otf")
 
 private data class ImportedChatFontUI(
     val relativePath: String,
@@ -1195,8 +1196,11 @@ private fun ChatFontFamily.toFontFamilyUI(customFontFamily: FontFamily): FontFam
 
 private fun importCustomChatFontInternal(context: Context, uri: Uri): ImportedChatFontUI {
     val displayName = FileUtils.getFileNameFromUri(context, uri)?.takeIf { it.isNotBlank() } ?: "custom_font"
-    val extension = displayName.substringAfterLast('.', "")
-        .lowercase()
+    val rawExtension = displayName.substringAfterLast('.', "").lowercase()
+    if (rawExtension == "ttc") {
+        throw IllegalArgumentException("TTC font files are not supported")
+    }
+    val extension = rawExtension
         .takeIf { it in CustomFontExtensionsUI }
         ?: "ttf"
     val fontDir = File(context.filesDir, FileFolders.FONTS).apply { mkdirs() }
@@ -1269,6 +1273,12 @@ private enum class NotificationMode(val labelRes: Int) {
     OFF(R.string.common_off),
     REALTIME(R.string.setting_notification_mode_realtime),
     AFTER_GENERATION(R.string.setting_notification_mode_after_generation),
+}
+
+private enum class ThinkingDisplayMode(val labelRes: Int) {
+    COLLAPSED(R.string.setting_display_page_thinking_mode_collapsed),
+    PREVIEW(R.string.setting_display_page_thinking_mode_preview),
+    EXPANDED(R.string.setting_display_page_thinking_mode_expanded),
 }
 
 private enum class VolumeKeyScrollMode(val ratio: Float?) {

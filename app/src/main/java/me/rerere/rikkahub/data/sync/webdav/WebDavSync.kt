@@ -155,8 +155,8 @@ class WebDavSync(
             context = context,
             output = backupFile,
             settingsJson = json.encodeToString(settingsStore.settingsFlow.value),
-            includeDatabase = config.items.contains(WebDavConfig.BackupItem.DATABASE),
             includeFiles = config.items.contains(WebDavConfig.BackupItem.FILES),
+            includeWorkspace = config.items.contains(WebDavConfig.BackupItem.WORKSPACE),
             workspaceRepository = workspaceRepository,
         )
         backupFile
@@ -178,22 +178,20 @@ class WebDavSync(
                 content = legacyCompatibleSettingsJson()
             )
 
-            // Backup database files
-            if (config.items.contains(WebDavConfig.BackupItem.DATABASE)) {
-                val dbFile = context.getDatabasePath("rikka_hub")
-                if (dbFile.exists()) {
-                    addFileToZip(zipOut, dbFile, "rikka_hub.db")
-                }
+            // Backup database files (chat records are always exported)
+            val dbFile = context.getDatabasePath("rikka_hub")
+            if (dbFile.exists()) {
+                addFileToZip(zipOut, dbFile, "rikka_hub.db")
+            }
 
-                val walFile = File(dbFile.parentFile, "rikka_hub-wal")
-                if (walFile.exists()) {
-                    addFileToZip(zipOut, walFile, "rikka_hub-wal")
-                }
+            val walFile = File(dbFile.parentFile, "rikka_hub-wal")
+            if (walFile.exists()) {
+                addFileToZip(zipOut, walFile, "rikka_hub-wal")
+            }
 
-                val shmFile = File(dbFile.parentFile, "rikka_hub-shm")
-                if (shmFile.exists()) {
-                    addFileToZip(zipOut, shmFile, "rikka_hub-shm")
-                }
+            val shmFile = File(dbFile.parentFile, "rikka_hub-shm")
+            if (shmFile.exists()) {
+                addFileToZip(zipOut, shmFile, "rikka_hub-shm")
             }
 
             // Backup app files
@@ -295,46 +293,44 @@ class WebDavSync(
                         }
 
                         "rikka_hub.db", "rikka_hub-wal", "rikka_hub-shm" -> {
-                            if (config.items.contains(WebDavConfig.BackupItem.DATABASE)) {
-                                val dbFile = when (zipEntry.name) {
-                                    "rikka_hub.db" -> context.getDatabasePath("rikka_hub")
-                                    "rikka_hub-wal" -> File(
-                                        context.getDatabasePath("rikka_hub").parentFile,
-                                        "rikka_hub-wal"
-                                    )
+                            val dbFile = when (zipEntry.name) {
+                                "rikka_hub.db" -> context.getDatabasePath("rikka_hub")
+                                "rikka_hub-wal" -> File(
+                                    context.getDatabasePath("rikka_hub").parentFile,
+                                    "rikka_hub-wal"
+                                )
 
-                                    "rikka_hub-shm" -> File(
-                                        context.getDatabasePath("rikka_hub").parentFile,
-                                        "rikka_hub-shm"
-                                    )
+                                "rikka_hub-shm" -> File(
+                                    context.getDatabasePath("rikka_hub").parentFile,
+                                    "rikka_hub-shm"
+                                )
 
-                                    else -> null
+                                else -> null
+                            }
+
+                            dbFile?.let { targetFile ->
+                                Log.i(
+                                    TAG,
+                                    "restoreFromBackupFile: Restoring ${zipEntry.name} to ${targetFile.absolutePath}"
+                                )
+                                targetFile.parentFile?.mkdirs()
+                                if (zipEntry.name == "rikka_hub.db") {
+                                    database.close()
+                                    File(targetFile.parentFile, "rikka_hub-wal").delete()
+                                    File(targetFile.parentFile, "rikka_hub-shm").delete()
                                 }
-
-                                dbFile?.let { targetFile ->
-                                    Log.i(
-                                        TAG,
-                                        "restoreFromBackupFile: Restoring ${zipEntry.name} to ${targetFile.absolutePath}"
-                                    )
-                                    targetFile.parentFile?.mkdirs()
-                                    if (zipEntry.name == "rikka_hub.db") {
-                                        database.close()
-                                        File(targetFile.parentFile, "rikka_hub-wal").delete()
-                                        File(targetFile.parentFile, "rikka_hub-shm").delete()
-                                    }
-                                    FileOutputStream(targetFile).use { outputStream ->
-                                        zipIn.copyTo(outputStream)
-                                    }
-                                    Log.i(
-                                        TAG,
-                                        "restoreFromBackupFile: Restored ${zipEntry.name} (${targetFile.length()} bytes)"
-                                    )
+                                FileOutputStream(targetFile).use { outputStream ->
+                                    zipIn.copyTo(outputStream)
                                 }
+                                Log.i(
+                                    TAG,
+                                    "restoreFromBackupFile: Restored ${zipEntry.name} (${targetFile.length()} bytes)"
+                                )
                             }
                         }
 
                         else -> {
-                            if (config.items.contains(WebDavConfig.BackupItem.FILES) &&
+                            if (config.items.contains(WebDavConfig.BackupItem.WORKSPACE) &&
                                 zipEntry.name.startsWith("workspaces/") &&
                                 zipEntry.name.endsWith(".tar.zst")
                             ) {
@@ -405,13 +401,11 @@ class WebDavSync(
             }
         }
 
-        if (config.items.contains(WebDavConfig.BackupItem.DATABASE) &&
-            config.items.contains(WebDavConfig.BackupItem.FILES)
-        ) {
+        if (config.items.contains(WebDavConfig.BackupItem.FILES)) {
             runCatching { RestoredAttachmentUrlRewriter.rewrite(context, json) }
                 .onFailure { Log.w(TAG, "Failed to rewrite restored attachment URLs", it) }
         }
-        if (isCompatibleZipRestore && config.items.contains(WebDavConfig.BackupItem.DATABASE)) {
+        if (isCompatibleZipRestore) {
             RestoredZipWorkspaceStatusResetter.resetAfterCompatibleZipRestore(context)
         }
 
@@ -504,7 +498,12 @@ internal fun makeRikkaHubCompatible(settings: JsonElement): JsonElement {
     val compatibleRoot = root - setOf("skillOrder", "workspaceOrder")
 
     val displaySetting = (compatibleRoot["displaySetting"] as? JsonObject)?.let {
-        it - setOf("enableCodeLigatures", "useChatFontGlobally", "screenCornerAdaptation")
+        it - setOf(
+            "enableCodeLigatures",
+            "useChatFontGlobally",
+            "screenCornerAdaptation",
+            "showThinkingContentPreview",
+        )
     }
     val assistants = (compatibleRoot["assistants"] as? JsonArray)?.let { array ->
         JsonArray(array.map { assistantElement ->

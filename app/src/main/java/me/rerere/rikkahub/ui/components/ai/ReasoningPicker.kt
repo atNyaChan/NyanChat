@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -108,7 +109,6 @@ fun ReasoningPicker(
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             // 标题
             Column(
@@ -126,6 +126,8 @@ fun ReasoningPicker(
                     textAlign = TextAlign.Center,
                 )
             }
+
+            Spacer(Modifier.height(6.dp))
 
             // 当前等级展示
             val previewIndex = sliderValue.roundToInt().coerceIn(0, levelCount - 1)
@@ -157,6 +159,8 @@ fun ReasoningPicker(
                     style = MaterialTheme.typography.titleLarge,
                 )
             }
+
+            Spacer(Modifier.height(16.dp))
 
             // 上方标签（下标为奇数的等级）
             Row(

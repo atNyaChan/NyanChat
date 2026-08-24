@@ -174,6 +174,8 @@
   <string name="backup_page_backup_now">Backup Now</string>
   <string name="backup_page_backup_success">Backup successful</string>
   <string name="backup_page_chat_records">Chat Records</string>
+  <string name="backup_page_chat_records_always">Chat records are always included</string>
+  <string name="backup_page_workspace">Workspace</string>
   <string name="backup_page_connection_failed">Connection failed: %s</string>
   <string name="backup_page_connection_success">Connection successful</string>
   <string name="backup_page_delete_failed">Delete failed: %s</string>
@@ -549,12 +551,6 @@
   <string name="search_page_manually_edited_selected">Manually edited messages</string>
   <string name="search_page_untitled">Untitled</string>
   <string name="search_picker_title">Search Settings</string>
-  <string name="search_picker_local_title">Local Search</string>
-  <string name="search_picker_local_description">Connect to various third-party search providers</string>
-  <string name="search_picker_model_title">Model Search</string>
-  <string name="search_picker_model_description">Cloud search built into the model provider</string>
-  <string name="search_picker_select_provider">Select search provider</string>
-  <string name="search_picker_turn_off">Turn off search</string>
   <string name="send">Send</string>
   <string name="setting_asr_configure_api_key">API Key</string>
   <string name="setting_asr_configure_dashscope_api_key_desc">DashScope API key</string>
@@ -636,7 +632,7 @@
   <string name="setting_display_page_custom_font_import">Import custom font</string>
   <string name="setting_display_page_custom_font_import_failed">Failed to import font: %1$s</string>
   <string name="setting_display_page_custom_font_import_success">Custom font imported</string>
-  <string name="setting_display_page_custom_font_not_imported">No custom font imported. Supports .ttf, .otf, and .ttc files.</string>
+  <string name="setting_display_page_custom_font_not_imported">No custom font imported. Supports .ttf and .otf files.</string>
   <string name="setting_display_page_custom_font_remove">Remove custom font</string>
   <string name="setting_display_page_delete_font_title">Delete Font</string>
   <string name="setting_display_page_delete_font_confirm">Are you sure you want to delete this font? This action cannot be undone.</string>
@@ -684,8 +680,11 @@
   <string name="setting_display_page_show_message_jumper_title">Show Message Jumper</string>
   <string name="setting_display_page_show_model_name_desc">Whether to display model names in chat messages</string>
   <string name="setting_display_page_show_model_name_title">Show Model Name</string>
-  <string name="setting_display_page_show_thinking_content_desc">Expand and show the thinking process by default during generation</string>
-  <string name="setting_display_page_show_thinking_content_title">Show Thinking Content</string>
+  <string name="setting_display_page_show_thinking_content_desc">Control the default expansion state of thinking blocks when generating replies</string>
+  <string name="setting_display_page_show_thinking_content_title">Show Thinking When Generating</string>
+  <string name="setting_display_page_thinking_mode_collapsed">Collapsed</string>
+  <string name="setting_display_page_thinking_mode_preview">Preview</string>
+  <string name="setting_display_page_thinking_mode_expanded">Expanded</string>
   <string name="setting_display_page_show_token_usage_desc">Show token count, elapsed time, word count, and more</string>
   <string name="setting_display_page_show_token_usage_title">Show Token Counts &amp; Other Statistics</string>
   <string name="setting_display_page_show_user_avatar_desc">Whether to display user avatar in chat messages</string>
@@ -790,7 +789,7 @@
   <string name="setting_page_built_in_tools_image_generation">Image Generation</string>
   <string name="setting_page_built_in_tools_image_generation_desc">Enable image generation capability</string>
   <string name="setting_page_built_in_tools_search">Search</string>
-  <string name="setting_page_built_in_tools_search_desc">Enable Google Search integration</string>
+  <string name="setting_page_built_in_tools_search_desc">Enable web search service</string>
   <string name="setting_page_built_in_tools_url_context">URL Context</string>
   <string name="setting_page_built_in_tools_url_context_desc">Enable URL content processing</string>
   <string name="setting_page_chat_storage">Chat Files</string>
@@ -815,7 +814,7 @@
   <string name="setting_page_preferences_network_user_agent_desc">Set the User-Agent header used in requests</string>
   <string name="setting_page_preferences_network_proxy">Proxy</string>
   <string name="setting_page_preferences_network_proxy_desc">Supports HTTP and SOCKS5 proxy URLs. Leave blank to use system settings.</string>
-  <string name="setting_page_preferences_network_proxy_list_desc">Supports HTTP and SOCKS5 proxy URLs.</string>
+  <string name="setting_page_preferences_network_proxy_list_desc">Set the proxy server used when sending requests</string>
   <string name="setting_page_preferences_network_proxy_invalid">Enter a valid proxy URL with a host and port.</string>
   <string name="setting_page_dynamic_color">Dynamic Color</string>
   <string name="setting_page_dynamic_color_desc">Generate the app theme colors dynamically from your wallpaper</string>

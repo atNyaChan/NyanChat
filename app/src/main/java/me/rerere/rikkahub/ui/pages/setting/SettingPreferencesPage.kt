@@ -88,6 +88,18 @@ fun SettingPreferencesPage(vm: SettingVM = koinViewModel()) {
                         },
                     )
                     item(
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_chat_list_model_icon_title)) },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_chat_list_model_icon_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = displaySetting.showModelIcon,
+                                onCheckedChange = {
+                                    updateDisplaySetting(displaySetting.copy(showModelIcon = it))
+                                },
+                            )
+                        },
+                    )
+                    item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_show_model_name_title)) },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_show_model_name_desc)) },
                         trailingContent = {

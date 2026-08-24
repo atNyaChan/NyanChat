@@ -198,7 +198,12 @@ class ChatCompletionsAPI(
                     e.printStackTrace()
                     exception = e
                 } finally {
-                    close(exception)
+                    // 非 2xx 或读不到错误正文时也要以异常结束，避免 close(null) 静默吞掉错误
+                    close(
+                        exception ?: RuntimeException(
+                            response?.let { "HTTP ${it.code} ${it.message}" } ?: "Request failed"
+                        )
+                    )
                 }
             }
 

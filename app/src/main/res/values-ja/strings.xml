@@ -174,6 +174,8 @@
   <string name="backup_page_backup_now">今すぐバックアップ</string>
   <string name="backup_page_backup_success">バックアップ成功</string>
   <string name="backup_page_chat_records">チャット履歴</string>
+  <string name="backup_page_chat_records_always">チャット履歴は常に含まれます</string>
+  <string name="backup_page_workspace">ワークスペース</string>
   <string name="backup_page_connection_failed">接続失敗: %s</string>
   <string name="backup_page_connection_success">接続成功</string>
   <string name="backup_page_delete_failed">削除失敗: %s</string>
@@ -570,7 +572,7 @@
   <string name="setting_display_page_auto_collapse_thinking_desc">思考が完了したら思考内容を自動的に折りたたむ</string>
   <string name="setting_display_page_auto_collapse_thinking_title">思考を自動折りたたむ</string>
   <string name="setting_display_page_parse_mid_think_title">途中の思考タグを解析</string>
-  <string name="setting_display_page_parse_mid_think_desc">メッセージ冒頭以外の&lt;think&gt;タグを思考ブロックとして解析します</string>
+  <string name="setting_display_page_parse_mid_think_desc">メッセージ冒頭以外の &lt;think&gt; タグを思考ブロックとして解析します</string>
   <string name="setting_display_page_auto_play_tts_desc">アシスタントのメッセージ生成完了後にTTSを自動再生</string>
   <string name="setting_display_page_auto_play_tts_title">生成後にTTSを自動再生</string>
   <string name="setting_display_page_chat_font_family_default">デフォルト</string>
@@ -626,8 +628,11 @@
   <string name="setting_display_page_show_message_jumper_title">メッセージナビゲーションボタン</string>
   <string name="setting_display_page_show_model_name_desc">チャットメッセージにモデル名を表示するかどうか</string>
   <string name="setting_display_page_show_model_name_title">モデル名を表示</string>
-  <string name="setting_display_page_show_thinking_content_desc">生成中に思考プロセスをデフォルトで展開して表示する</string>
-  <string name="setting_display_page_show_thinking_content_title">思考内容を表示</string>
+  <string name="setting_display_page_show_thinking_content_desc">返信生成時にデフォルトの思考ブロックの展開状態を制御します</string>
+  <string name="setting_display_page_show_thinking_content_title">生成時に思考を表示</string>
+  <string name="setting_display_page_thinking_mode_collapsed">折りたたむ</string>
+  <string name="setting_display_page_thinking_mode_preview">プレビュー</string>
+  <string name="setting_display_page_thinking_mode_expanded">展開する</string>
   <string name="setting_display_page_show_token_usage_desc">トークン数、経過時間、文字数などを表示</string>
   <string name="setting_display_page_show_token_usage_title">トークン数などの統計情報を表示</string>
   <string name="setting_display_page_show_user_avatar_desc">チャットメッセージにユーザーアバターを表示するかどうか</string>
@@ -727,7 +732,7 @@
   <string name="setting_page_built_in_tools_image_generation">画像生成</string>
   <string name="setting_page_built_in_tools_image_generation_desc">画像生成機能を有効にする</string>
   <string name="setting_page_built_in_tools_search">検索</string>
-  <string name="setting_page_built_in_tools_search_desc">Google検索連携を有効化</string>
+  <string name="setting_page_built_in_tools_search_desc">ウェブ検索サービスを有効化</string>
   <string name="setting_page_built_in_tools_url_context">URLコンテキスト</string>
   <string name="setting_page_built_in_tools_url_context_desc">URLコンテンツ処理を有効化</string>
   <string name="setting_page_chat_storage">チャットファイル</string>
@@ -1040,7 +1045,7 @@
   <string name="setting_display_page_custom_font_import">カスタムフォントをインポート</string>
   <string name="setting_display_page_custom_font_import_failed">フォントのインポートに失敗しました: %1$s</string>
   <string name="setting_display_page_custom_font_import_success">カスタムフォントをインポートしました</string>
-  <string name="setting_display_page_custom_font_not_imported">カスタムフォントがインポートされていません。.ttf、.otf、.ttcファイルに対応しています。</string>
+  <string name="setting_display_page_custom_font_not_imported">カスタムフォントがインポートされていません。.ttf、.otfファイルに対応しています。</string>
   <string name="setting_display_page_custom_font_remove">カスタムフォントを削除</string>
   <string name="setting_display_page_delete_font_title">フォントを削除</string>
   <string name="setting_display_page_delete_font_confirm">このフォントを削除しますか？この操作は元に戻せません。</string>
@@ -1294,16 +1299,10 @@
   <string name="assistant_page_context_message_limit_desc">モデルに送信する直近のメッセージ数の上限を設定します。上限を超えた場合、ターンごとに1件ずつ削除するのではなく、一度にコンテキストを約半分まで切り詰めます。これによりリクエストのプレフィックスが安定し、プロンプトキャッシュが多くのターンにわたって有効に働きます。最小値は20です。空欄の場合は無制限です。</string>
   <string name="assistant_page_context_message_limit_placeholder">無制限</string>
   <string name="assistant_page_context_message_limit_warning">コンテキストが切り詰められるたびにプロンプトキャッシュが無効になります。上限が大きいほど切り詰めの頻度は下がります。</string>
-  <string name="search_picker_local_title">ローカル検索</string>
-  <string name="search_picker_local_description">各種サードパーティの検索プロバイダーに接続します</string>
-  <string name="search_picker_model_title">モデル内蔵検索</string>
-  <string name="search_picker_model_description">モデルプロバイダー内蔵のクラウド検索</string>
-  <string name="search_picker_select_provider">検索プロバイダを選択</string>
-  <string name="search_picker_turn_off">検索をオフにする</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">リクエスト時に使用するUser Agentヘッダーを設定</string>
   <string name="setting_page_preferences_network_proxy">プロキシ</string>
   <string name="setting_page_preferences_network_proxy_desc">HTTPおよびSOCKS5プロキシURLをサポートします。空白の場合はシステム設定を使用します。</string>
-  <string name="setting_page_preferences_network_proxy_list_desc">HTTPおよびSOCKS5プロキシURLをサポートします。</string>
+  <string name="setting_page_preferences_network_proxy_list_desc">リクエスト送信時に使用するプロキシサーバーを設定します</string>
   <string name="setting_page_preferences_network_proxy_invalid">ホストとポートを含む有効なプロキシURLを入力してください。</string>
 </resources>

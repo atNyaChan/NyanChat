@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
@@ -274,7 +276,10 @@ fun ChainOfThoughtScope.ChatMessageToolStep(
             },
             title = { Text(stringResource(R.string.assistant_memory_delete_title)) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
                     Text(
                         stringResource(
                             R.string.assistant_memory_delete_confirm,
@@ -287,7 +292,7 @@ fun ChainOfThoughtScope.ChatMessageToolStep(
                         readOnly = true,
                         label = { Text(stringResource(R.string.assistant_memory_content_label)) },
                         modifier = Modifier.fillMaxWidth(),
-                        maxLines = 8,
+                        maxLines = Int.MAX_VALUE,
                     )
                 }
             },
@@ -483,11 +488,12 @@ private fun ChainOfThoughtScope.AskUserToolStep(
                                     OutlinedTextField(
                                         value = answers[q.id] ?: "",
                                         onValueChange = { answers[q.id] = it },
-                                        modifier = Modifier.fillMaxWidth(),
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
                                         textStyle = MaterialTheme.typography.bodySmall,
                                         singleLine = false,
                                         minLines = 1,
-                                        maxLines = 3,
+                                        maxLines = Int.MAX_VALUE,
                                     )
                                 }
                             }
@@ -569,15 +575,19 @@ private fun ToolDenyReasonDialog(
             Text(stringResource(R.string.chat_message_tool_deny_dialog_title))
         },
         text = {
-            OutlinedTextField(
-                value = reason,
-                onValueChange = { reason = it },
-                label = { Text(stringResource(R.string.chat_message_tool_deny_dialog_hint)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = false,
-                minLines = 2,
-                maxLines = 4
-            )
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+            ) {
+                OutlinedTextField(
+                    value = reason,
+                    onValueChange = { reason = it },
+                    label = { Text(stringResource(R.string.chat_message_tool_deny_dialog_hint)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = false,
+                    minLines = 2,
+                    maxLines = Int.MAX_VALUE
+                )
+            }
         },
         confirmButton = {
             TextButton(onClick = { onConfirm(reason) }) {

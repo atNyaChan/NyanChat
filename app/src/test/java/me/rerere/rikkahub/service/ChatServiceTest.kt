@@ -94,15 +94,23 @@ class ChatServiceTest {
 
     @Test
     fun `built-in search suppresses enabled external web search`() {
-        val assistant = Assistant(enableWebSearch = true)
+        val assistant = Assistant(enableWebSearch = true, useBuiltInSearch = true)
         val model = Model(tools = setOf(BuiltInTools.Search))
 
         assertFalse(shouldUseExternalWebSearch(assistant, model))
     }
 
     @Test
+    fun `built-in search falls back to external when model lacks the tool`() {
+        val assistant = Assistant(enableWebSearch = true, useBuiltInSearch = true)
+        val model = Model(tools = emptySet())
+
+        assertTrue(shouldUseExternalWebSearch(assistant, model))
+    }
+
+    @Test
     fun `built-in search remains exclusive when external web search is disabled`() {
-        val assistant = Assistant(enableWebSearch = false)
+        val assistant = Assistant(enableWebSearch = false, useBuiltInSearch = true)
         val model = Model(tools = setOf(BuiltInTools.Search))
 
         assertFalse(shouldUseExternalWebSearch(assistant, model))

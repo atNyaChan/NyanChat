@@ -77,7 +77,6 @@ fun TextArea(
     readOnly: Boolean = false,
     supportedFileTypes: Array<String> = arrayOf("text/*", "application/json"),
     enableFullscreen: Boolean = true,
-    fullscreenButtonInsideField: Boolean = false,
     enableImport: Boolean = true,
     onImportError: ((String) -> Unit)? = null
 ) {
@@ -133,7 +132,7 @@ fun TextArea(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
-                    if (enableFullscreen && !fullscreenButtonInsideField) {
+                    if (enableFullscreen) {
                         Icon(
                             imageVector = HugeIcons.Fullscreen,
                             contentDescription = stringResource(R.string.text_area_fullscreen_edit),
@@ -173,17 +172,6 @@ fun TextArea(
                 ),
                 enabled = enabled,
                 readOnly = readOnly,
-                trailingIcon = if (enableFullscreen && fullscreenButtonInsideField) {
-                    {
-                        Icon(
-                            imageVector = HugeIcons.Fullscreen,
-                            contentDescription = stringResource(R.string.text_area_fullscreen_edit),
-                            modifier = Modifier
-                                .onClick { isFullScreen = true }
-                                .size(24.dp)
-                        )
-                    }
-                } else null
             )
         }
     }

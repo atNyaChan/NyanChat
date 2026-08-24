@@ -172,7 +172,15 @@ class AssistantDetailVM(
                         if (it.id == assistant.id) {
                             checkAvatarDelete(old = it, new = assistant) // 删除旧头像
                             checkBackgroundDelete(old = it, new = assistant) // 删除旧背景
-                            assistant
+                            // 换了新模型且新模型未开启搜索工具时，关闭模型内置搜索
+                            val newModel = settings.findModelById(assistant.chatModelId)
+                            if (newModel != null && assistant.useBuiltInSearch &&
+                                BuiltInTools.Search !in newModel.tools
+                            ) {
+                                assistant.copy(useBuiltInSearch = false)
+                            } else {
+                                assistant
+                            }
                         } else {
                             it
                         }
@@ -181,39 +189,19 @@ class AssistantDetailVM(
         }
     }
 
-    fun updateSearchService(index: Int) {
+    fun selectSearchMode(assistant: Assistant, mode: SearchMode, serviceIndex: Int?) {
         viewModelScope.launch {
             settingsStore.update { settings ->
-                settings.copy(searchServiceSelected = index)
-            }
-        }
-    }
-
-    fun updateSearchMode(assistant: Assistant, mode: SearchMode) {
-        viewModelScope.launch {
-            settingsStore.update { settings ->
-                val model = settings.findModelById(assistant.chatModelId ?: settings.chatModelId)
                 settings.copy(
+                    searchServiceSelected = serviceIndex ?: settings.searchServiceSelected,
                     assistants = settings.assistants.map {
                         if (it.id == assistant.id) {
-                            it.copy(enableWebSearch = mode == SearchMode.LOCAL)
+                            it.copy(
+                                enableWebSearch = mode != SearchMode.OFF,
+                                useBuiltInSearch = mode == SearchMode.BUILT_IN,
+                            )
                         } else {
                             it
-                        }
-                    },
-                    providers = if (model == null) {
-                        settings.providers
-                    } else {
-                        settings.providers.map { provider ->
-                            provider.editModel(
-                                model.copy(
-                                    tools = if (mode == SearchMode.BUILT_IN) {
-                                        model.tools + BuiltInTools.Search
-                                    } else {
-                                        model.tools - BuiltInTools.Search
-                                    }
-                                )
-                            )
                         }
                     },
                 )

@@ -174,6 +174,8 @@
   <string name="backup_page_backup_now">지금 백업</string>
   <string name="backup_page_backup_success">백업 성공</string>
   <string name="backup_page_chat_records">채팅 기록</string>
+  <string name="backup_page_chat_records_always">채팅 기록은 항상 포함됩니다</string>
+  <string name="backup_page_workspace">작업 공간</string>
   <string name="backup_page_connection_failed">연결 실패: %s</string>
   <string name="backup_page_connection_success">연결 성공</string>
   <string name="backup_page_delete_failed">삭제 실패: %s</string>
@@ -626,8 +628,11 @@
   <string name="setting_display_page_show_message_jumper_title">메시지 점프 버튼 표시</string>
   <string name="setting_display_page_show_model_name_desc">채팅 메시지에 모델 이름을 표시할지 여부</string>
   <string name="setting_display_page_show_model_name_title">모델 이름 표시</string>
-  <string name="setting_display_page_show_thinking_content_desc">생성 중 기본적으로 사고 과정을 펼쳐서 표시</string>
-  <string name="setting_display_page_show_thinking_content_title">생각 내용 표시</string>
+  <string name="setting_display_page_show_thinking_content_desc">답변 생성 시 기본 생각 블록의 확장 상태를 제어합니다</string>
+  <string name="setting_display_page_show_thinking_content_title">생성 시 생각 표시</string>
+  <string name="setting_display_page_thinking_mode_collapsed">접기</string>
+  <string name="setting_display_page_thinking_mode_preview">미리 보기</string>
+  <string name="setting_display_page_thinking_mode_expanded">펼치기</string>
   <string name="setting_display_page_show_token_usage_desc">토큰 수, 소요 시간, 글자 수 등을 표시합니다</string>
   <string name="setting_display_page_show_token_usage_title">토큰 수 등 통계 정보 표시</string>
   <string name="setting_display_page_show_user_avatar_desc">채팅 메시지에 사용자 아바타를 표시할지 여부</string>
@@ -727,7 +732,7 @@
   <string name="setting_page_built_in_tools_image_generation">이미지 생성</string>
   <string name="setting_page_built_in_tools_image_generation_desc">이미지 생성 기능 활성화</string>
   <string name="setting_page_built_in_tools_search">검색</string>
-  <string name="setting_page_built_in_tools_search_desc">Google 검색 통합 활성화</string>
+  <string name="setting_page_built_in_tools_search_desc">웹 검색 서비스 활성화</string>
   <string name="setting_page_built_in_tools_url_context">URL 컨텍스트</string>
   <string name="setting_page_built_in_tools_url_context_desc">URL 콘텐츠 처리 활성화</string>
   <string name="setting_page_chat_storage">채팅 파일</string>
@@ -1040,7 +1045,7 @@
   <string name="setting_display_page_custom_font_import">사용자 지정 글꼴 가져오기</string>
   <string name="setting_display_page_custom_font_import_failed">폰트 가져오기 실패: %1$s</string>
   <string name="setting_display_page_custom_font_import_success">사용자 지정 글꼴이 가져와졌습니다</string>
-  <string name="setting_display_page_custom_font_not_imported">사용자 지정 글꼴이 가져와지지 않았습니다. .ttf, .otf, .ttc 파일을 지원합니다.</string>
+  <string name="setting_display_page_custom_font_not_imported">사용자 지정 글꼴이 가져와지지 않았습니다. .ttf, .otf 파일을 지원합니다.</string>
   <string name="setting_display_page_custom_font_remove">사용자 지정 글꼴 제거</string>
   <string name="setting_display_page_delete_font_title">글꼴 삭제</string>
   <string name="setting_display_page_delete_font_confirm">이 글꼴을 삭제할까요? 이 작업은 되돌릴 수 없습니다.</string>
@@ -1294,16 +1299,10 @@
   <string name="assistant_page_context_message_limit_desc">모델로 전송되는 최근 메시지 수를 제한합니다. 제한을 초과하면 한 번에 하나씩 메시지를 삭제하는 대신 컨텍스트가 한 번에 약 절반으로 줄어들어 요청 접두사가 안정적으로 유지되고 프롬프트 캐싱이 여러 턴 동안 계속 작동합니다. 최솟값은 20입니다. 비워 두면 제한이 없습니다.</string>
   <string name="assistant_page_context_message_limit_placeholder">제한 없음</string>
   <string name="assistant_page_context_message_limit_warning">컨텍스트가 정리될 때마다 프롬프트 캐시가 무효화됩니다. 제한 값이 클수록 정리 빈도가 줄어듭니다.</string>
-  <string name="search_picker_local_title">로컬 검색</string>
-  <string name="search_picker_local_description">다양한 타사 검색 제공업체에 연결합니다.</string>
-  <string name="search_picker_model_title">모델 내장 검색</string>
-  <string name="search_picker_model_description">모델 제공자에 내장된 클라우드 검색</string>
-  <string name="search_picker_select_provider">검색 제공자 선택</string>
-  <string name="search_picker_turn_off">검색 끄기</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">요청 시 사용하는 User Agent 헤더 설정</string>
   <string name="setting_page_preferences_network_proxy">프록시</string>
   <string name="setting_page_preferences_network_proxy_desc">HTTP 및 SOCKS5 프록시 URL을 지원합니다. 비워 두면 시스템 설정을 사용합니다.</string>
-  <string name="setting_page_preferences_network_proxy_list_desc">HTTP 및 SOCKS5 프록시 URL을 지원합니다.</string>
+  <string name="setting_page_preferences_network_proxy_list_desc">요청 전송 시 사용할 프록시 서버를 설정합니다</string>
   <string name="setting_page_preferences_network_proxy_invalid">호스트와 포트가 있는 유효한 프록시 URL을 입력하세요.</string>
 </resources>

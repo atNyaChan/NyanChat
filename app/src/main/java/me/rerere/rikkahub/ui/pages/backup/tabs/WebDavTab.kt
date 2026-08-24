@@ -123,33 +123,45 @@ fun WebDavTab(
                 lastBackupText = lastBackupText,
                 fileSummaryText = backupFileSummary,
                 backupItemsContent = {
-                    MultiChoiceSegmentedButtonRow(
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        WebDavConfig.BackupItem.entries.forEachIndexed { index, item ->
-                            SegmentedButton(
-                                shape = SegmentedButtonDefaults.itemShape(
-                                    index = index,
-                                    count = WebDavConfig.BackupItem.entries.size
-                                ),
-                                onCheckedChange = { checked ->
-                                    val newItems = if (checked) {
-                                        webDavConfig.items + item
-                                    } else {
-                                        webDavConfig.items - item
-                                    }
-                                    updateWebDavConfig(webDavConfig.copy(items = newItems))
-                                },
-                                checked = item in webDavConfig.items
-                            ) {
-                                Text(
-                                    when (item) {
-                                        WebDavConfig.BackupItem.DATABASE -> stringResource(R.string.backup_page_chat_records)
-                                        WebDavConfig.BackupItem.FILES -> stringResource(R.string.backup_page_files)
-                                    }
-                                )
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        MultiChoiceSegmentedButtonRow(
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            val selectableItems = listOf(
+                                WebDavConfig.BackupItem.FILES,
+                                WebDavConfig.BackupItem.WORKSPACE,
+                            )
+                            selectableItems.forEachIndexed { index, item ->
+                                SegmentedButton(
+                                    shape = SegmentedButtonDefaults.itemShape(
+                                        index = index,
+                                        count = selectableItems.size
+                                    ),
+                                    onCheckedChange = { checked ->
+                                        val newItems = if (checked) {
+                                            webDavConfig.items + item
+                                        } else {
+                                            webDavConfig.items - item
+                                        }
+                                        updateWebDavConfig(webDavConfig.copy(items = newItems))
+                                    },
+                                    checked = item in webDavConfig.items
+                                ) {
+                                    Text(
+                                        when (item) {
+                                            WebDavConfig.BackupItem.FILES -> stringResource(R.string.backup_page_files)
+                                            WebDavConfig.BackupItem.WORKSPACE -> stringResource(R.string.backup_page_workspace)
+                                            WebDavConfig.BackupItem.DATABASE -> stringResource(R.string.backup_page_chat_records)
+                                        }
+                                    )
+                                }
                             }
                         }
+                        Text(
+                            text = stringResource(R.string.backup_page_chat_records_always),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             )

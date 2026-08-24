@@ -83,8 +83,7 @@ internal fun FilesPicker(
     mcpManager: McpManager,
     onCompressContext: (additionalPrompt: String, targetTokens: Int, keepRecentMessages: Int) -> Job,
     onUpdateAssistant: (Assistant) -> Unit,
-    onUpdateSearchMode: (SearchMode) -> Unit,
-    onUpdateSearchService: (Int) -> Unit,
+    onSelectSearch: (mode: SearchMode, serviceIndex: Int?) -> Unit,
     onUpdateConversation: (Conversation) -> Unit,
     showInjectionSheet: Boolean,
     onShowInjectionSheetChange: (Boolean) -> Unit,
@@ -159,6 +158,7 @@ internal fun FilesPicker(
             trailingContent = {
                 SearchPickerIcon(
                     enableSearch = assistant.enableWebSearch,
+                    useBuiltInSearch = assistant.useBuiltInSearch,
                     settings = settings,
                     model = settings.getCurrentChatModel(),
                 )
@@ -283,9 +283,9 @@ internal fun FilesPicker(
     SearchPickerSheet(
         show = showSearchPicker,
         enableSearch = assistant.enableWebSearch,
+        useBuiltInSearch = assistant.useBuiltInSearch,
         settings = settings,
-        onUpdateSearchMode = onUpdateSearchMode,
-        onUpdateSearchService = onUpdateSearchService,
+        onSelectSearch = onSelectSearch,
         model = settings.getCurrentChatModel(),
         onDismiss = { showSearchPicker = false },
     )

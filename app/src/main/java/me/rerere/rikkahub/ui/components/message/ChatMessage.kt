@@ -208,6 +208,7 @@ fun ChatMessage(
                     onOpenActionSheet = {
                         showActionsSheet = true
                     },
+                    loading = loading,
                 )
             }
         }

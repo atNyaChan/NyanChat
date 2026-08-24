@@ -71,6 +71,7 @@ fun ColumnScope.ChatMessageActionButtons(
     onUpdate: (MessageNode) -> Unit,
     onRegenerate: () -> Unit,
     onOpenActionSheet: () -> Unit,
+    loading: Boolean = false,
 ) {
     val context = LocalContext.current
     val settings = LocalSettings.current
@@ -132,21 +133,26 @@ fun ColumnScope.ChatMessageActionButtons(
             tint = actionIconColor
         )
 
+        // 单个对话同时只允许一条消息在生成，生成期间禁用重试
+        val regenEnabled = !loading
         Icon(
             imageVector = HugeIcons.Refresh03,
             contentDescription = stringResource(R.string.regenerate),
             modifier = Modifier
                 .clip(CircleShape)
-                .clickable {
-                    if (message.role == MessageRole.USER) {
-                        showRegenerateConfirm = true
-                    } else {
-                        onRegenerate()
+                .clickable(
+                    enabled = regenEnabled,
+                    onClick = {
+                        if (message.role == MessageRole.USER) {
+                            showRegenerateConfirm = true
+                        } else {
+                            onRegenerate()
+                        }
                     }
-                }
+                )
                 .padding(8.dp)
                 .size(16.dp),
-            tint = actionIconColor
+            tint = if (regenEnabled) actionIconColor else actionIconColor.copy(alpha = 0.38f)
         )
 
         if (message.role == MessageRole.ASSISTANT) {

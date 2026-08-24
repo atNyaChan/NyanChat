@@ -40,7 +40,7 @@ class BackupVM(
 
     val webDavBackupItems = MutableStateFlow<UiState<List<WebDavBackupItem>>>(UiState.Idle)
     val s3BackupItems = MutableStateFlow<UiState<List<S3BackupItem>>>(UiState.Idle)
-    val localBackupItems = MutableStateFlow(WebDavConfig.BackupItem.entries.toList())
+    val localBackupItems = MutableStateFlow(listOf(WebDavConfig.BackupItem.FILES))
     private val activeBackupOrRestoreCount = MutableStateFlow(0)
     val isBackupOrRestoreRunning = activeBackupOrRestoreCount
         .map { it > 0 }
@@ -110,7 +110,13 @@ class BackupVM(
 
     suspend fun exportLegacyToFile(): File {
         return webDavSync.prepareLegacyBackupFile(
-            settings.value.webDavConfig.copy(items = WebDavConfig.BackupItem.entries)
+            settings.value.webDavConfig.copy(
+                items = if (localBackupItems.value.contains(WebDavConfig.BackupItem.FILES)) {
+                    listOf(WebDavConfig.BackupItem.FILES)
+                } else {
+                    emptyList()
+                }
+            )
         )
     }
 

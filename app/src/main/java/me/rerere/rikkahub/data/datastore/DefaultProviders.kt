@@ -50,6 +50,7 @@ val DEFAULT_PROVIDERS = listOf(
         baseUrl = "https://api.deepseek.com/v1",
         apiKey = "",
         builtIn = true,
+        useResponseApi = true,
         balanceOption = BalanceOption(
             enabled = true,
             apiPath = "/user/balance",

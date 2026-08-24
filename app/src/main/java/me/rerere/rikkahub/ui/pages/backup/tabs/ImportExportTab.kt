@@ -8,11 +8,13 @@ import me.rerere.hugeicons.stroke.FileImport
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MultiChoiceSegmentedButtonRow
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -216,33 +218,45 @@ fun ImportExportTab(
                 item(
                     headlineContent = { Text(stringResource(R.string.backup_page_backup_items)) },
                     supportingContent = {
-                        MultiChoiceSegmentedButtonRow(
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            WebDavConfig.BackupItem.entries.forEachIndexed { index, item ->
-                                SegmentedButton(
-                                    shape = SegmentedButtonDefaults.itemShape(
-                                        index = index,
-                                        count = WebDavConfig.BackupItem.entries.size
-                                    ),
-                                    onCheckedChange = { checked ->
-                                        val newItems = if (checked) {
-                                            selectedBackupItems + item
-                                        } else {
-                                            selectedBackupItems - item
-                                        }
-                                        vm.updateLocalBackupItems(newItems)
-                                    },
-                                    checked = item in selectedBackupItems
-                                ) {
-                                    Text(
-                                        when (item) {
-                                            WebDavConfig.BackupItem.DATABASE -> stringResource(R.string.backup_page_chat_records)
-                                            WebDavConfig.BackupItem.FILES -> stringResource(R.string.backup_page_files)
-                                        }
-                                    )
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            MultiChoiceSegmentedButtonRow(
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                val selectableItems = listOf(
+                                    WebDavConfig.BackupItem.FILES,
+                                    WebDavConfig.BackupItem.WORKSPACE,
+                                )
+                                selectableItems.forEachIndexed { index, item ->
+                                    SegmentedButton(
+                                        shape = SegmentedButtonDefaults.itemShape(
+                                            index = index,
+                                            count = selectableItems.size
+                                        ),
+                                        onCheckedChange = { checked ->
+                                            val newItems = if (checked) {
+                                                selectedBackupItems + item
+                                            } else {
+                                                selectedBackupItems - item
+                                            }
+                                            vm.updateLocalBackupItems(newItems)
+                                        },
+                                        checked = item in selectedBackupItems
+                                    ) {
+                                        Text(
+                                            when (item) {
+                                                WebDavConfig.BackupItem.FILES -> stringResource(R.string.backup_page_files)
+                                                WebDavConfig.BackupItem.WORKSPACE -> stringResource(R.string.backup_page_workspace)
+                                                WebDavConfig.BackupItem.DATABASE -> stringResource(R.string.backup_page_chat_records)
+                                            }
+                                        )
+                                    }
                                 }
                             }
+                            Text(
+                                text = stringResource(R.string.backup_page_chat_records_always),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
                     },
                 )

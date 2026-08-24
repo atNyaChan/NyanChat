@@ -312,7 +312,8 @@ fun ChatDrawerContent(
                                 vm.deleteConversation(conversation).join()
                                 conversations.refresh()
                                 if (conversation.id == current.id) {
-                                    navigateToChatPage(navController)
+                                    // 删除后新建的空会话归入侧栏当前选中的文件夹
+                                    navigateToChatPage(navController, folderId = selectedFolderId)
                                 }
                             }
                         }) { Text(stringResource(R.string.common_delete)) }
@@ -338,7 +339,8 @@ fun ChatDrawerContent(
                                 targets.map(vm::deleteConversation).forEach { it.join() }
                                 conversations.refresh()
                                 if (targets.any { it.id == current.id }) {
-                                    navigateToChatPage(navController)
+                                    // 删除后新建的空会话归入侧栏当前选中的文件夹
+                                    navigateToChatPage(navController, folderId = selectedFolderId)
                                 }
                             }
                         }) { Text(stringResource(R.string.common_delete)) }

@@ -2,7 +2,10 @@ import com.android.build.api.dsl.Packaging
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.FileInputStream
+import java.time.LocalDate
 import java.util.Properties
+
+fun buildDate(): String = LocalDate.now().toString().replace("-", "")
 
 plugins {
     alias(libs.plugins.android.application)
@@ -21,7 +24,7 @@ android {
         minSdk = 26
         targetSdk = 37
         versionCode = 1
-        versionName = "1.0.0-2.4.11"
+        versionName = "${buildDate()}+2.4.11"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

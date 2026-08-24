@@ -87,11 +87,12 @@ fun <T> ChainOfThought(
                 Box(
                     modifier = Modifier.drawBehind {
                         val x = 24.dp.toPx()
-                        val offsetPx = 18.dp.toPx()
+                        val topOffset = 18.dp.toPx()
+                        val bottomOffset = 16.dp.toPx()
                         drawLine(
                             color = lineColor,
-                            start = Offset(x, offsetPx),
-                            end = Offset(x, size.height - offsetPx),
+                            start = Offset(x, topOffset),
+                            end = Offset(x, size.height - bottomOffset),
                             strokeWidth = 1.dp.toPx()
                         )
                     }
@@ -340,7 +341,7 @@ private class ChainOfThoughtScopeImpl : ChainOfThoughtScope {
                                 Modifier
                             }
                         )
-                        .padding(start = 44.dp, end = 12.dp, top = 4.dp, bottom = 8.dp)
+                        .padding(start = 44.dp, end = 12.dp, top = 4.dp, bottom = 12.dp)
                 ) {
                     content()
                 }

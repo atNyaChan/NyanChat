@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import me.rerere.ai.provider.BuiltInTools
 import me.rerere.ai.provider.Model
 import me.rerere.ai.ui.UIMessage
 import me.rerere.ai.ui.UIMessagePart
@@ -53,6 +54,7 @@ class ChatVM(
     private val chatService: ChatService,
     private val filesManager: FilesManager,
     private val favoriteRepository: FavoriteRepository,
+    private val folderId: Uuid? = null,
 ) : ViewModel() {
     private val _conversationId: Uuid = Uuid.parse(id)
     val conversation: StateFlow<Conversation> = chatService.getConversationFlow(_conversationId)
@@ -90,7 +92,7 @@ class ChatVM(
 
         // 初始化对话
         viewModelScope.launch {
-            chatService.initializeConversation(_conversationId)
+            chatService.initializeConversation(_conversationId, folderId)
         }
 
         // 记住对话ID, 方便下次启动恢复
@@ -153,7 +155,10 @@ class ChatVM(
                     assistants = settings.assistants.map {
                         if (it.id == assistant.id) {
                             it.copy(
-                                chatModelId = model.id
+                                chatModelId = model.id,
+                                // 新模型不支持内置搜索时回退到本地搜索
+                                useBuiltInSearch = it.useBuiltInSearch &&
+                                    BuiltInTools.Search in model.tools,
                             )
                         } else {
                             it
@@ -174,8 +179,8 @@ class ChatVM(
         chatService.sendMessage(_conversationId, content, answer)
     }
 
-    suspend fun estimateRequestContextStats(): RequestContextStats {
-        return chatService.estimateRequestContextStats(_conversationId)
+    suspend fun estimateRequestContextStats(editingMessageId: Uuid? = null): RequestContextStats {
+        return chatService.estimateRequestContextStats(_conversationId, editingMessageId)
     }
 
     fun handleMessageEdit(parts: List<UIMessagePart>, messageId: Uuid) {

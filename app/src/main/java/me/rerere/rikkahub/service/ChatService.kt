@@ -42,6 +42,7 @@ import me.rerere.ai.provider.Model
 import me.rerere.ai.provider.ModelAbility
 import me.rerere.ai.provider.ProviderManager
 import me.rerere.ai.provider.TextGenerationParams
+import me.rerere.ai.provider.chatRequestBuiltInTools
 import me.rerere.ai.ui.ToolApprovalState
 import me.rerere.ai.ui.UIMessage
 import me.rerere.ai.ui.UIMessagePart
@@ -115,7 +116,8 @@ internal fun backgroundTextGenerationParams(
 )
 
 internal fun shouldUseExternalWebSearch(assistant: Assistant, model: Model): Boolean {
-    return assistant.enableWebSearch && BuiltInTools.Search !in model.tools
+    val builtInSearchActive = assistant.useBuiltInSearch && BuiltInTools.Search in model.tools
+    return assistant.enableWebSearch && !builtInSearchActive
 }
 
 data class ChatError(
@@ -327,7 +329,7 @@ class ChatService(
 
     // ---- 初始化对话 ----
 
-    suspend fun initializeConversation(conversationId: Uuid) {
+    suspend fun initializeConversation(conversationId: Uuid, folderId: Uuid? = null) {
         getOrCreateSession(conversationId) // 确保 session 存在
         val conversation = conversationRepo.getConversationById(conversationId)
         if (conversation != null) {
@@ -340,8 +342,9 @@ class ChatService(
             val newConversation = Conversation.ofId(
                 id = conversationId,
                 assistantId = assistant.id,
-                newConversation = true
-            ).updateCurrentMessages(assistant.presetMessages)
+                newConversation = true,
+            ).copy(folderId = folderId)
+                .updateCurrentMessages(assistant.presetMessages)
             updateConversation(conversationId, newConversation)
         }
     }
@@ -407,7 +410,10 @@ class ChatService(
         }
     }
 
-    suspend fun estimateRequestContextStats(conversationId: Uuid): RequestContextStats {
+    suspend fun estimateRequestContextStats(
+        conversationId: Uuid,
+        editingMessageId: Uuid? = null,
+    ): RequestContextStats {
         val conversation = getConversationFlow(conversationId).value
         val settings = settingsStore.settingsFlow.first()
         val assistant = settings.getAssistantById(conversation.assistantId)
@@ -419,11 +425,24 @@ class ChatService(
         } else {
             memoryRepository.getMemoriesOfAssistant(assistant.id.toString())
         }
+        // 编辑历史消息时只统计被编辑消息之前的内容：被编辑消息自身的新内容由输入框草稿计入，
+        // 被编辑消息之后的消息不计入
+        val currentMessages = conversation.currentMessages
+        val messages = if (editingMessageId != null) {
+            val editedIndex = currentMessages.indexOfFirst { it.id == editingMessageId }
+            if (editedIndex > 0) currentMessages.subList(0, editedIndex) else emptyList()
+        } else {
+            currentMessages
+        }
         val tools = buildRequestTools(settings, assistant, model, conversation)
+        // 内置工具只计入实际会传给模型的部分（受“模型内置搜索”开关与提供商支持情况限制）
+        val builtInToolCount = model.findProvider(settings.providers)
+            ?.let { chatRequestBuiltInTools(model, it, assistant.useBuiltInSearch).size }
+            ?: 0
         val wordCount = generationHandler.prepareRequestMessages(
             settings = settings,
             model = model,
-            messages = conversation.currentMessages,
+            messages = messages,
             inputTransformers = buildList {
                 addAll(inputTransformers)
                 add(templateTransformer)
@@ -446,7 +465,7 @@ class ChatService(
         }
         return RequestContextStats(
             wordCount = wordCount,
-            toolCount = tools.size + if (assistant.enableMemory) 1 else 0,
+            toolCount = tools.size + builtInToolCount + if (assistant.enableMemory) 1 else 0,
         )
     }
 

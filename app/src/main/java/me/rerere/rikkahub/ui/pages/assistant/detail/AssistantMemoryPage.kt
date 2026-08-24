@@ -130,15 +130,19 @@ private fun AssistantMemoryContent(
                 )
             },
             text = {
-                OutlinedTextField(
-                    value = memory.content,
-                    onValueChange = {
-                        update(memory.copy(content = it))
-                    },
-                    minLines = 1,
-                    maxLines = 8,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                ) {
+                    OutlinedTextField(
+                        value = memory.content,
+                        onValueChange = {
+                            update(memory.copy(content = it))
+                        },
+                        minLines = 1,
+                        maxLines = Int.MAX_VALUE,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             },
             confirmButton = {
                 TextButton(
@@ -288,7 +292,10 @@ private fun AssistantMemoryContent(
         },
         onDismiss = { pendingDeleteMemory = null },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
                 Text(
                     stringResource(
                         R.string.assistant_memory_delete_confirm,
@@ -301,7 +308,7 @@ private fun AssistantMemoryContent(
                     readOnly = true,
                     label = { Text(stringResource(R.string.assistant_memory_content_label)) },
                     modifier = Modifier.fillMaxWidth(),
-                    maxLines = 8,
+                    maxLines = Int.MAX_VALUE,
                 )
             }
         }

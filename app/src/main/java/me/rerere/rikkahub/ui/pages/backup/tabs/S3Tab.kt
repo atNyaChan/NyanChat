@@ -124,33 +124,45 @@ fun S3Tab(
                 lastBackupText = lastBackupText,
                 fileSummaryText = backupFileSummary,
                 backupItemsContent = {
-                    MultiChoiceSegmentedButtonRow(
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        S3Config.BackupItem.entries.forEachIndexed { index, item ->
-                            SegmentedButton(
-                                shape = SegmentedButtonDefaults.itemShape(
-                                    index = index,
-                                    count = S3Config.BackupItem.entries.size
-                                ),
-                                onCheckedChange = { checked ->
-                                    val newItems = if (checked) {
-                                        s3Config.items + item
-                                    } else {
-                                        s3Config.items - item
-                                    }
-                                    updateS3Config(s3Config.copy(items = newItems))
-                                },
-                                checked = item in s3Config.items
-                            ) {
-                                Text(
-                                    when (item) {
-                                        S3Config.BackupItem.DATABASE -> stringResource(R.string.backup_page_chat_records)
-                                        S3Config.BackupItem.FILES -> stringResource(R.string.backup_page_files)
-                                    }
-                                )
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        MultiChoiceSegmentedButtonRow(
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            val selectableItems = listOf(
+                                S3Config.BackupItem.FILES,
+                                S3Config.BackupItem.WORKSPACE,
+                            )
+                            selectableItems.forEachIndexed { index, item ->
+                                SegmentedButton(
+                                    shape = SegmentedButtonDefaults.itemShape(
+                                        index = index,
+                                        count = selectableItems.size
+                                    ),
+                                    onCheckedChange = { checked ->
+                                        val newItems = if (checked) {
+                                            s3Config.items + item
+                                        } else {
+                                            s3Config.items - item
+                                        }
+                                        updateS3Config(s3Config.copy(items = newItems))
+                                    },
+                                    checked = item in s3Config.items
+                                ) {
+                                    Text(
+                                        when (item) {
+                                            S3Config.BackupItem.FILES -> stringResource(R.string.backup_page_files)
+                                            S3Config.BackupItem.WORKSPACE -> stringResource(R.string.backup_page_workspace)
+                                            S3Config.BackupItem.DATABASE -> stringResource(R.string.backup_page_chat_records)
+                                        }
+                                    )
+                                }
                             }
                         }
+                        Text(
+                            text = stringResource(R.string.backup_page_chat_records_always),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             )

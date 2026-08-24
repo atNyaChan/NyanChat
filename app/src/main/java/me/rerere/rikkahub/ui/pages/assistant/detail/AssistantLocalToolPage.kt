@@ -90,8 +90,7 @@ fun AssistantLocalToolPage(id: String) {
             settings = settings,
             workspaces = workspaces,
             onUpdate = { vm.update(it) },
-            onUpdateSearchMode = { mode -> vm.updateSearchMode(assistant, mode) },
-            onUpdateSearchService = { vm.updateSearchService(it) },
+            onSelectSearch = { mode, serviceIndex -> vm.selectSearchMode(assistant, mode, serviceIndex) },
         )
     }
 }
@@ -103,8 +102,7 @@ private fun AssistantLocalToolContent(
     settings: Settings,
     workspaces: List<WorkspaceEntity>,
     onUpdate: (Assistant) -> Unit,
-    onUpdateSearchMode: (SearchMode) -> Unit,
-    onUpdateSearchService: (Int) -> Unit,
+    onSelectSearch: (mode: SearchMode, serviceIndex: Int?) -> Unit,
 ) {
     val context = LocalContext.current
     val toaster = LocalToaster.current
@@ -292,6 +290,7 @@ private fun AssistantLocalToolContent(
                 trailingContent = {
                     SearchPickerIcon(
                         enableSearch = assistant.enableWebSearch,
+                        useBuiltInSearch = assistant.useBuiltInSearch,
                         settings = settings,
                         model = settings.findModelById(assistant.chatModelId ?: settings.chatModelId),
                     )
@@ -351,9 +350,9 @@ private fun AssistantLocalToolContent(
     SearchPickerSheet(
         show = showSearchPicker,
         enableSearch = assistant.enableWebSearch,
+        useBuiltInSearch = assistant.useBuiltInSearch,
         settings = settings,
-        onUpdateSearchMode = onUpdateSearchMode,
-        onUpdateSearchService = onUpdateSearchService,
+        onSelectSearch = onSelectSearch,
         model = settings.findModelById(assistant.chatModelId ?: settings.chatModelId),
         onDismiss = { showSearchPicker = false },
     )

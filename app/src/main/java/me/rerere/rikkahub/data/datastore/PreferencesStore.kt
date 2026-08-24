@@ -20,6 +20,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.rerere.ai.core.MessageRole
 import me.rerere.ai.core.ReasoningLevel
+import me.rerere.ai.provider.BuiltInTools
 import me.rerere.ai.provider.Model
 import me.rerere.ai.provider.ProviderSetting
 import me.rerere.rikkahub.AppScope
@@ -425,10 +426,16 @@ class SettingsStore(
 
     suspend fun updateAssistantModel(assistantId: Uuid, modelId: Uuid) {
         update { settings ->
+            val newModel = settings.findModelById(modelId)
             settings.copy(
                 assistants = settings.assistants.map { assistant ->
                     if (assistant.id == assistantId) {
-                        assistant.copy(chatModelId = modelId)
+                        assistant.copy(
+                            chatModelId = modelId,
+                            // 新模型不支持内置搜索时回退到本地搜索
+                            useBuiltInSearch = assistant.useBuiltInSearch &&
+                                newModel?.tools?.contains(BuiltInTools.Search) == true,
+                        )
                     } else {
                         assistant
                     }
@@ -611,6 +618,7 @@ data class DisplaySetting(
     val showDateTimeInMessage: Boolean = false,
     val showTokenUsage: Boolean = true,
     val showThinkingContent: Boolean = true,
+    val showThinkingContentPreview: Boolean = true,
     val autoCloseThinking: Boolean = true,
     val parseMidThink: Boolean = true,
     val showMessageJumper: Boolean = false,
@@ -630,7 +638,7 @@ data class DisplaySetting(
     val pasteLongTextAsFile: Boolean = false,
     val pasteLongTextThreshold: Int = 1000,
     val sendOnEnter: Boolean = false,
-    val enableAutoScroll: Boolean = false,
+    val enableAutoScroll: Boolean = true,
     val enableLatexRendering: Boolean = true,
     val enableBlurEffect: Boolean = false,
     val squareChatInputBottomWhenKeyboardVisible: Boolean = true,
@@ -660,6 +668,7 @@ data class WebDavConfig(
     enum class BackupItem {
         DATABASE,
         FILES,
+        WORKSPACE,
     }
 }
 

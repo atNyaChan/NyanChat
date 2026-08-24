@@ -20,6 +20,7 @@ import me.rerere.ai.core.ReasoningLevel
 import me.rerere.ai.core.Tool
 import me.rerere.ai.provider.CustomBody
 import me.rerere.ai.provider.Model
+import me.rerere.ai.provider.BuiltInTools
 import me.rerere.ai.provider.Provider
 import me.rerere.ai.provider.ProviderManager
 import me.rerere.ai.provider.ProviderSetting
@@ -426,8 +427,14 @@ class GenerationHandler(
         )
 
         var messages: List<UIMessage> = messages
+        // 未启用“模型内置搜索”时移除模型的内置搜索工具，避免请求仍携带内置搜索
+        val requestModel = if (assistant.useBuiltInSearch) {
+            model
+        } else {
+            model.copy(tools = model.tools - BuiltInTools.Search)
+        }
         val params = TextGenerationParams(
-            model = model,
+            model = requestModel,
             temperature = assistant.temperature,
             topP = assistant.topP,
             maxTokens = assistant.maxTokens,

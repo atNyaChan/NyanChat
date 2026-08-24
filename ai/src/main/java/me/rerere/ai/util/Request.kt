@@ -37,7 +37,7 @@ fun Request.Builder.configureReferHeaders(url: String): Request.Builder {
 fun ResponseBody.stringSafe(): String? {
     return when (this) {
         is RealResponseBody -> string()
-        else -> null
+        else -> runCatching { string() }.getOrNull()
     }
 }
 

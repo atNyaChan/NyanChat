@@ -127,8 +127,8 @@ class S3Sync(
             context = context,
             output = backupFile,
             settingsJson = json.encodeToString(settingsStore.settingsFlow.value),
-            includeDatabase = config.items.contains(S3Config.BackupItem.DATABASE),
             includeFiles = config.items.contains(S3Config.BackupItem.FILES),
+            includeWorkspace = config.items.contains(S3Config.BackupItem.WORKSPACE),
             workspaceRepository = workspaceRepository,
         )
         backupFile
@@ -262,46 +262,44 @@ class S3Sync(
                         }
 
                         "rikka_hub.db", "rikka_hub-wal", "rikka_hub-shm" -> {
-                            if (config.items.contains(S3Config.BackupItem.DATABASE)) {
-                                val dbFile = when (zipEntry.name) {
-                                    "rikka_hub.db" -> context.getDatabasePath("rikka_hub")
-                                    "rikka_hub-wal" -> File(
-                                        context.getDatabasePath("rikka_hub").parentFile,
-                                        "rikka_hub-wal"
-                                    )
+                            val dbFile = when (zipEntry.name) {
+                                "rikka_hub.db" -> context.getDatabasePath("rikka_hub")
+                                "rikka_hub-wal" -> File(
+                                    context.getDatabasePath("rikka_hub").parentFile,
+                                    "rikka_hub-wal"
+                                )
 
-                                    "rikka_hub-shm" -> File(
-                                        context.getDatabasePath("rikka_hub").parentFile,
-                                        "rikka_hub-shm"
-                                    )
+                                "rikka_hub-shm" -> File(
+                                    context.getDatabasePath("rikka_hub").parentFile,
+                                    "rikka_hub-shm"
+                                )
 
-                                    else -> null
+                                else -> null
+                            }
+
+                            dbFile?.let { targetFile ->
+                                Log.i(
+                                    TAG,
+                                    "restoreFromBackupFile: Restoring ${zipEntry.name} to ${targetFile.absolutePath}"
+                                )
+                                targetFile.parentFile?.mkdirs()
+                                if (zipEntry.name == "rikka_hub.db") {
+                                    database.close()
+                                    File(targetFile.parentFile, "rikka_hub-wal").delete()
+                                    File(targetFile.parentFile, "rikka_hub-shm").delete()
                                 }
-
-                                dbFile?.let { targetFile ->
-                                    Log.i(
-                                        TAG,
-                                        "restoreFromBackupFile: Restoring ${zipEntry.name} to ${targetFile.absolutePath}"
-                                    )
-                                    targetFile.parentFile?.mkdirs()
-                                    if (zipEntry.name == "rikka_hub.db") {
-                                        database.close()
-                                        File(targetFile.parentFile, "rikka_hub-wal").delete()
-                                        File(targetFile.parentFile, "rikka_hub-shm").delete()
-                                    }
-                                    FileOutputStream(targetFile).use { outputStream ->
-                                        zipIn.copyTo(outputStream)
-                                    }
-                                    Log.i(
-                                        TAG,
-                                        "restoreFromBackupFile: Restored ${zipEntry.name} (${targetFile.length()} bytes)"
-                                    )
+                                FileOutputStream(targetFile).use { outputStream ->
+                                    zipIn.copyTo(outputStream)
                                 }
+                                Log.i(
+                                    TAG,
+                                    "restoreFromBackupFile: Restored ${zipEntry.name} (${targetFile.length()} bytes)"
+                                )
                             }
                         }
 
                         else -> {
-                            if (config.items.contains(S3Config.BackupItem.FILES) &&
+                            if (config.items.contains(S3Config.BackupItem.WORKSPACE) &&
                                 zipEntry.name.startsWith("workspaces/") &&
                                 zipEntry.name.endsWith(".tar.zst")
                             ) {
@@ -372,13 +370,11 @@ class S3Sync(
             }
         }
 
-        if (config.items.contains(S3Config.BackupItem.DATABASE) &&
-            config.items.contains(S3Config.BackupItem.FILES)
-        ) {
+        if (config.items.contains(S3Config.BackupItem.FILES)) {
             runCatching { RestoredAttachmentUrlRewriter.rewrite(context, json) }
                 .onFailure { Log.w(TAG, "Failed to rewrite restored attachment URLs", it) }
         }
-        if (isCompatibleZipRestore && config.items.contains(S3Config.BackupItem.DATABASE)) {
+        if (isCompatibleZipRestore) {
             RestoredZipWorkspaceStatusResetter.resetAfterCompatibleZipRestore(context)
         }
 
