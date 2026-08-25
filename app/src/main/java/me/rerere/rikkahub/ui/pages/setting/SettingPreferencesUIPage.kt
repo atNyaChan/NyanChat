@@ -503,17 +503,17 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                     )
                     item(
                         headlineContent = {
-                            Text(stringResource(R.string.setting_display_page_square_input_on_keyboard_title))
+                            Text(stringResource(R.string.setting_display_page_collapse_input_toolbar_title))
                         },
                         supportingContent = {
-                            Text(stringResource(R.string.setting_display_page_square_input_on_keyboard_desc))
+                            Text(stringResource(R.string.setting_display_page_collapse_input_toolbar_desc))
                         },
                         trailingContent = {
                             Switch(
-                                checked = displaySetting.squareChatInputBottomWhenKeyboardVisible,
+                                checked = displaySetting.collapseChatInputToolbarWhenKeyboardVisible,
                                 onCheckedChange = {
                                     updateDisplaySetting(
-                                        displaySetting.copy(squareChatInputBottomWhenKeyboardVisible = it)
+                                        displaySetting.copy(collapseChatInputToolbarWhenKeyboardVisible = it)
                                     )
                                 },
                             )

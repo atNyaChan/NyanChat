@@ -591,8 +591,8 @@
   <string name="setting_display_page_enable_auto_scroll_title">自動滾動</string>
   <string name="setting_display_page_enable_blur_effect_desc">為主頁的 UI 元素加上透明效果</string>
   <string name="setting_display_page_enable_blur_effect_title">啟用模糊效果</string>
-  <string name="setting_display_page_square_input_on_keyboard_title">鍵盤彈出時輸入框底部改為直角</string>
-  <string name="setting_display_page_square_input_on_keyboard_desc">讓輸入框更貼近鍵盤</string>
+  <string name="setting_display_page_collapse_input_toolbar_title">鍵盤彈出時收起輸入框工具列</string>
+  <string name="setting_display_page_collapse_input_toolbar_desc">展開鍵盤時收起輸入框的工具列</string>
   <string name="setting_display_page_enable_latex_rendering_desc">使用 LaTeX 語法呈現數學表達式與公式</string>
   <string name="setting_display_page_enable_latex_rendering_title">啟用 LaTeX 渲染</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_desc">訊息生成時啟用觸覺回饋效果</string>
@@ -701,6 +701,8 @@
   <string name="setting_provider_page_test_non_streaming">非串流</string>
   <string name="setting_provider_page_test_streaming">串流</string>
   <string name="setting_provider_page_test_tool_call">工具調用</string>
+  <string name="setting_provider_page_test_tool_called">已調用：%1$s  參數：%2$s</string>
+  <string name="setting_provider_page_test_tool_not_called">工具未被呼叫，回應：%s</string>
   <string name="share_model_title">分享你的 LLM 模型</string>
   <string name="setting_mcp_page_tools">工具</string>
   <string name="setting_mcp_page_tools_unavailable_message">添加 MCP Server 時無法查看工具列表，請添加完後再來查看</string>
@@ -1125,6 +1127,10 @@
   <string name="workspace_terminal_not_installed">請先安裝 Rootfs</string>
   <string name="workspace_terminal_loading">正在載入工作區…</string>
   <string name="workspace_terminal_exited">終端已退出</string>
+  <string name="workspace_terminal_tab">終端 %1$d</string>
+  <string name="workspace_terminal_new_tab">新增終端分頁</string>
+  <string name="workspace_terminal_close_tab">關閉終端 %1$d</string>
+  <string name="workspace_terminal_no_tabs">沒有開啟的終端分頁</string>
   <string name="extensions_page_workspace_desc">管理可由 Agent 存取的本地工作目錄</string>
   <string name="workspace_select">選擇工作區</string>
   <string name="workspace_no_binding">無綁定</string>

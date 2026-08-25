@@ -591,8 +591,8 @@
   <string name="setting_display_page_enable_auto_scroll_title">自動スクロール</string>
   <string name="setting_display_page_enable_blur_effect_desc">ホーム画面のUI要素に透明効果を追加</string>
   <string name="setting_display_page_enable_blur_effect_title">ぼかし効果を有効にする</string>
-  <string name="setting_display_page_square_input_on_keyboard_title">キーボード表示時に入力欄の下部を直角にする</string>
-  <string name="setting_display_page_square_input_on_keyboard_desc">入力欄をキーボードにより密着させます</string>
+  <string name="setting_display_page_collapse_input_toolbar_title">キーボード表示時に入力欄のツールバーを折りたたむ</string>
+  <string name="setting_display_page_collapse_input_toolbar_desc">キーボードを開いたときに入力欄のツールバーを折りたたむ</string>
   <string name="setting_display_page_enable_latex_rendering_desc">LaTeX構文を使用して数式や数値表現をレンダリングする</string>
   <string name="setting_display_page_enable_latex_rendering_title">LaTeXレンダリングを有効にする</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_desc">メッセージ生成時に触覚フィードバックを有効にする</string>
@@ -701,6 +701,8 @@
   <string name="setting_provider_page_test_non_streaming">非ストリーミング</string>
   <string name="setting_provider_page_test_streaming">ストリーミング</string>
   <string name="setting_provider_page_test_tool_call">ツール呼び出し</string>
+  <string name="setting_provider_page_test_tool_called">呼び出し: %1$s  引数: %2$s</string>
+  <string name="setting_provider_page_test_tool_not_called">ツールが呼び出されませんでした。応答: %s</string>
   <string name="share_model_title">LLM モデルを共有</string>
   <string name="setting_mcp_page_tools">ツール</string>
   <string name="setting_mcp_page_tools_unavailable_message">MCPサーバー追加時にはツールリストを表示できません。追加完了後に再度確認してください</string>
@@ -1125,6 +1127,10 @@
   <string name="workspace_terminal_not_installed">最初にRootfsをインストールしてください。</string>
   <string name="workspace_terminal_loading">ワークスペース読み込み中…</string>
   <string name="workspace_terminal_exited">ターミナル終了</string>
+  <string name="workspace_terminal_tab">ターミナル %1$d</string>
+  <string name="workspace_terminal_new_tab">新しいターミナルタブ</string>
+  <string name="workspace_terminal_close_tab">ターミナル %1$d を閉じる</string>
+  <string name="workspace_terminal_no_tabs">開いているターミナルタブはありません</string>
   <string name="extensions_page_workspace_desc">エージェントがアクセス可能なローカルの作業ディレクトリを管理します</string>
   <string name="workspace_select">ワークスペースを選択</string>
   <string name="workspace_no_binding">バインドなし</string>

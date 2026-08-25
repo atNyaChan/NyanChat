@@ -591,8 +591,8 @@
   <string name="setting_display_page_enable_auto_scroll_title">자동 스크롤</string>
   <string name="setting_display_page_enable_blur_effect_desc">홈 페이지 UI 요소에 투명 효과 추가</string>
   <string name="setting_display_page_enable_blur_effect_title">흐림 효과 활성화</string>
-  <string name="setting_display_page_square_input_on_keyboard_title">키보드 표시 시 입력창 하단을 직각으로</string>
-  <string name="setting_display_page_square_input_on_keyboard_desc">입력창이 키보드에 더 밀착되도록 합니다</string>
+  <string name="setting_display_page_collapse_input_toolbar_title">키보드 표시 시 입력창 도구 모음 접기</string>
+  <string name="setting_display_page_collapse_input_toolbar_desc">키보드가 열리면 입력창 도구 모음을 접습니다</string>
   <string name="setting_display_page_enable_latex_rendering_desc">LaTeX 구문을 사용해 수식과 공식을 렌더링합니다</string>
   <string name="setting_display_page_enable_latex_rendering_title">LaTeX 렌더링 활성화</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_desc">메시지 생성 시 진동 피드백 활성화</string>
@@ -701,6 +701,8 @@
   <string name="setting_provider_page_test_non_streaming">비스트리밍</string>
   <string name="setting_provider_page_test_streaming">스트리밍</string>
   <string name="setting_provider_page_test_tool_call">도구 호출</string>
+  <string name="setting_provider_page_test_tool_called">호출: %1$s  인수: %2$s</string>
+  <string name="setting_provider_page_test_tool_not_called">도구가 호출되지 않음, 응답: %s</string>
   <string name="share_model_title">LLM 모델 공유</string>
   <string name="setting_mcp_page_tools">도구</string>
   <string name="setting_mcp_page_tools_unavailable_message">MCP 서버 추가 시 도구 목록 확인 불가. 추가 후 다시 확인하세요</string>
@@ -1125,6 +1127,10 @@
   <string name="workspace_terminal_not_installed">먼저 Rootfs를 설치해 주세요.</string>
   <string name="workspace_terminal_loading">워크스페이스 불러오는 중…</string>
   <string name="workspace_terminal_exited">터미널 종료됨</string>
+  <string name="workspace_terminal_tab">터미널 %1$d</string>
+  <string name="workspace_terminal_new_tab">새 터미널 탭</string>
+  <string name="workspace_terminal_close_tab">터미널 %1$d 닫기</string>
+  <string name="workspace_terminal_no_tabs">열린 터미널 탭이 없음</string>
   <string name="extensions_page_workspace_desc">Agent가 접근할 수 있는 로컬 작업 디렉토리를 관리합니다.</string>
   <string name="workspace_select">워크스페이스 선택</string>
   <string name="workspace_no_binding">바인딩 없음</string>

@@ -591,8 +591,8 @@
   <string name="setting_display_page_enable_auto_scroll_title">Автопрокрутка</string>
   <string name="setting_display_page_enable_blur_effect_desc">Добавить эффект прозрачности элементам главного экрана</string>
   <string name="setting_display_page_enable_blur_effect_title">Включить эффект размытия</string>
-  <string name="setting_display_page_square_input_on_keyboard_title">Прямые нижние углы поля ввода при открытой клавиатуре</string>
-  <string name="setting_display_page_square_input_on_keyboard_desc">Позволяет полю ввода плотнее прилегать к клавиатуре</string>
+  <string name="setting_display_page_collapse_input_toolbar_title">Сворачивать панель ввода при открытой клавиатуре</string>
+  <string name="setting_display_page_collapse_input_toolbar_desc">Сворачивать панель ввода при открытии клавиатуры</string>
   <string name="setting_display_page_enable_latex_rendering_desc">Отображать математические выражения и формулы с использованием синтаксиса LaTeX</string>
   <string name="setting_display_page_enable_latex_rendering_title">Включить рендеринг LaTeX</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_desc">Включить виброотклик при генерации сообщений</string>
@@ -701,6 +701,8 @@
   <string name="setting_provider_page_test_non_streaming">Без потока</string>
   <string name="setting_provider_page_test_streaming">Потоковый режим</string>
   <string name="setting_provider_page_test_tool_call">Вызов инструмента</string>
+  <string name="setting_provider_page_test_tool_called">Вызвано: %1$s  Аргументы: %2$s</string>
+  <string name="setting_provider_page_test_tool_not_called">Инструмент не вызван, ответ: %s</string>
   <string name="share_model_title">Поделиться моделью LLM</string>
   <string name="setting_mcp_page_tools">Инструменты</string>
   <string name="setting_mcp_page_tools_unavailable_message">Невозможно просмотреть список инструментов при добавлении MCP-сервера, пожалуйста, проверьте после добавления</string>
@@ -1125,6 +1127,10 @@
   <string name="workspace_terminal_not_installed">Пожалуйста, сначала установите Rootfs</string>
   <string name="workspace_terminal_loading">Загрузка рабочего пространства…</string>
   <string name="workspace_terminal_exited">Терминал завершен</string>
+  <string name="workspace_terminal_tab">Терминал %1$d</string>
+  <string name="workspace_terminal_new_tab">Новая вкладка терминала</string>
+  <string name="workspace_terminal_close_tab">Закрыть терминал %1$d</string>
+  <string name="workspace_terminal_no_tabs">Нет открытых вкладок терминала</string>
   <string name="extensions_page_workspace_desc">Управление локальными рабочими каталогами, доступными для Agent</string>
   <string name="workspace_select">Выберите рабочее пространство</string>
   <string name="workspace_no_binding">Нет привязки</string>

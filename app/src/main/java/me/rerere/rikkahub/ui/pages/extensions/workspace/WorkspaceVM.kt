@@ -17,6 +17,7 @@ import me.rerere.workspace.RootfsInstallProgress
 class WorkspaceVM(
     private val repository: WorkspaceRepository,
     private val settingsStore: SettingsStore,
+    private val terminalSessionManager: WorkspaceTerminalSessionManager,
 ) : ViewModel() {
     val workspaces = repository.listFlow()
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())

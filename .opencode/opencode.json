@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "agent": {
+    "build": {
+      "permission": {
+		"*": "allow",
+        "bash": {
+          "*": "allow",
+          "git commit *": "ask",
+          "git push *": "ask"
+        }
+      }
+    }
+  }
+}

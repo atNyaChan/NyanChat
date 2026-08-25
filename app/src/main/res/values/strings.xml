@@ -643,8 +643,8 @@
   <string name="setting_display_page_enable_auto_scroll_title">Auto Scroll</string>
   <string name="setting_display_page_enable_blur_effect_desc">Add transparency effects to home page UI elements</string>
   <string name="setting_display_page_enable_blur_effect_title">Enable Blur Effect</string>
-  <string name="setting_display_page_square_input_on_keyboard_title">Square Input Bottom Corners When Keyboard Opens</string>
-  <string name="setting_display_page_square_input_on_keyboard_desc">Let the input box fit more closely against the keyboard</string>
+  <string name="setting_display_page_collapse_input_toolbar_title">Collapse Input Toolbar</string>
+  <string name="setting_display_page_collapse_input_toolbar_desc">Collapse the input toolbar when the keyboard opens</string>
   <string name="setting_display_page_enable_latex_rendering_desc">Render mathematical expressions and formulas using LaTeX syntax</string>
   <string name="setting_display_page_enable_latex_rendering_title">Enable LaTeX Rendering</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_desc">Enable haptic feedback when messages are being generated</string>
@@ -755,6 +755,8 @@
   <string name="setting_provider_page_test_non_streaming">Non-streaming</string>
   <string name="setting_provider_page_test_streaming">Streaming</string>
   <string name="setting_provider_page_test_tool_call">Tool call</string>
+  <string name="setting_provider_page_test_tool_called">Called: %1$s  Args: %2$s</string>
+  <string name="setting_provider_page_test_tool_not_called">Tool not called, response: %s</string>
   <string name="share_model_title">Share your LLM model</string>
   <string name="setting_mcp_page_tools">Tools</string>
   <string name="setting_mcp_page_tools_unavailable_message">Cannot view tool list when adding MCP Server, please check back after adding</string>
@@ -1184,6 +1186,10 @@
   <string name="workspace_terminal_not_installed">Please install Rootfs first</string>
   <string name="workspace_terminal_loading">Loading workspace…</string>
   <string name="workspace_terminal_exited">Terminal exited</string>
+  <string name="workspace_terminal_tab">Terminal %1$d</string>
+  <string name="workspace_terminal_new_tab">New terminal tab</string>
+  <string name="workspace_terminal_close_tab">Close terminal %1$d</string>
+  <string name="workspace_terminal_no_tabs">No open terminal tabs</string>
   <string name="extensions_page_workspace_desc">Manage local working directories accessible by Agent</string>
   <string name="workspace_select">Select Workspace</string>
   <string name="workspace_no_binding">No binding</string>

@@ -641,7 +641,7 @@ data class DisplaySetting(
     val enableAutoScroll: Boolean = true,
     val enableLatexRendering: Boolean = true,
     val enableBlurEffect: Boolean = false,
-    val squareChatInputBottomWhenKeyboardVisible: Boolean = true,
+    val collapseChatInputToolbarWhenKeyboardVisible: Boolean = true,
     val chatFontFamily: ChatFontFamily = ChatFontFamily.DEFAULT,
     val chatCustomFontPath: String = "",
     val chatCustomFontName: String = "",
