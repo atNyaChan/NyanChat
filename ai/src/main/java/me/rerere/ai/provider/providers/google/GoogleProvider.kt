@@ -599,7 +599,7 @@ class GoogleProvider(private val client: OkHttpClient, context: Context? = null)
             val isToolResult = parts.any { "functionResponse" in it.jsonObject }
             index.takeUnless { isToolResult }
         }
-        val historyIndex = realUserIndices.getOrNull(realUserIndices.lastIndex - 1) ?: return this
+        val historyIndex = realUserIndices.lastOrNull() ?: return this
         return JsonArray(mapIndexed { index, content ->
             if (index != historyIndex) return@mapIndexed content
             val contentObject = content.jsonObject

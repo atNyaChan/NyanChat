@@ -494,7 +494,7 @@ class ChatCompletionsAPI(
             }
             index.takeUnless { isToolResult }
         }
-        val historyIndex = userIndices.getOrNull(userIndices.lastIndex - 1)
+        val historyIndex = userIndices.lastOrNull()
         return JsonArray(mapIndexed { index, message ->
             if (index == systemIndex || index == historyIndex) {
                 message.jsonObject.withCacheControlOnLastContent(cacheControl, textType)

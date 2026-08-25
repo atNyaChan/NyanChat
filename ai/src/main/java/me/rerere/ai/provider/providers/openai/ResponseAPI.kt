@@ -332,7 +332,7 @@ class ResponseAPI(
             val itemObject = item.jsonObject
             if (itemObject["role"]?.jsonPrimitive?.contentOrNull == "user") index else null
         }
-        val historyIndex = userIndices.getOrNull(userIndices.lastIndex - 1)
+        val historyIndex = userIndices.lastOrNull()
         val cachedItems = mapIndexed { index, item ->
             if (index == historyIndex) {
                 item.jsonObject.withCacheControlOnLastContent(cacheControl)

@@ -560,7 +560,7 @@ class ClaudeProvider(private val client: OkHttpClient, context: Context? = null)
     }
 
     /**
-     * 在倒数第二条非 tool_result 的 user message 的最后一个 content block 上插入 cache_control
+     * 在最后一条非 tool_result 的 user message 的最后一个 content block 上插入 cache_control
      */
     private fun insertMessagesCacheControl(
         messages: JsonArray,
@@ -578,9 +578,9 @@ class ClaudeProvider(private val client: OkHttpClient, context: Context? = null)
             } else null
         }
 
-        // 取倒数第二条
-        val targetIndex = if (realUserIndices.size >= 2) {
-            realUserIndices[realUserIndices.size - 2]
+        // 取最后一条
+        val targetIndex = if (realUserIndices.isNotEmpty()) {
+            realUserIndices.last()
         } else return messages
 
         // 在目标 message 的最后一个 content block 上添加 cache_control
