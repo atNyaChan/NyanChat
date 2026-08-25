@@ -1,7 +1,6 @@
 package me.rerere.rikkahub.ui.components.ai
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,15 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.ui.draw.clip
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearWavyProgressIndicator
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -51,6 +47,7 @@ import me.rerere.rikkahub.data.ai.mcp.McpManager
 import me.rerere.rikkahub.data.ai.mcp.McpServerConfig
 import me.rerere.rikkahub.data.ai.mcp.McpStatus
 import me.rerere.rikkahub.data.model.Assistant
+import me.rerere.rikkahub.ui.components.ui.CardGroupScope
 import me.rerere.rikkahub.ui.components.ui.Tag
 import me.rerere.rikkahub.ui.components.ui.TagType
 import me.rerere.rikkahub.ui.components.ui.ToggleSurface
@@ -160,23 +157,18 @@ fun McpPickerButton(
     }
 }
 
-@Composable
-fun McpPickerListItem(
+fun CardGroupScope.mcpItem(
     assistant: Assistant,
     servers: List<McpServerConfig>,
     mcpManager: McpManager,
     modifier: Modifier = Modifier,
-    onUpdateAssistant: (Assistant) -> Unit
+    onClick: () -> Unit,
 ) {
-    var showMcpPicker by remember { mutableStateOf(false) }
-    val status by mcpManager.syncingStatus.collectAsStateWithLifecycle()
-    val loading = status.values.any { it == McpStatus.Connecting }
-    val enabledServers = servers.fastFilter {
-        it.commonOptions.enable && assistant.mcpServers.contains(it.id)
-    }
-
-    ListItem(
+    item(
+        modifier = modifier,
         leadingContent = {
+            val status by mcpManager.syncingStatus.collectAsStateWithLifecycle()
+            val loading = status.values.any { it == McpStatus.Connecting }
             if (loading) {
                 CircularProgressIndicator(modifier = Modifier.size(24.dp))
             } else {
@@ -187,6 +179,9 @@ fun McpPickerListItem(
             }
         },
         trailingContent = {
+            val enabledServers = servers.fastFilter {
+                it.commonOptions.enable && assistant.mcpServers.contains(it.id)
+            }
             if (enabledServers.isNotEmpty()) {
                 Text(
                     text = enabledServers.size.toString(),
@@ -195,29 +190,12 @@ fun McpPickerListItem(
                 )
             }
         },
-        colors = ListItemDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
-        ),
-        modifier = modifier
-            .clip(MaterialTheme.shapes.large)
-            .clickable {
-                showMcpPicker = true
-            },
+        onClick = onClick,
     ) { Text(stringResource(R.string.mcp_picker_title)) }
-
-    if (showMcpPicker) {
-        McpPickerSheet(
-            assistant = assistant,
-            servers = servers,
-            loading = loading,
-            onUpdateAssistant = onUpdateAssistant,
-            onDismiss = { showMcpPicker = false },
-        )
-    }
 }
 
 @Composable
-private fun McpPickerSheet(
+internal fun McpPickerSheet(
     assistant: Assistant,
     servers: List<McpServerConfig>,
     loading: Boolean,

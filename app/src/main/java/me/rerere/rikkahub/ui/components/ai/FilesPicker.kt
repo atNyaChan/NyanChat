@@ -1,30 +1,20 @@
 package me.rerere.rikkahub.ui.components.ai
 
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ProvideTextStyle
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
@@ -36,17 +26,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.ai.provider.ProviderSetting
 import me.rerere.hugeicons.HugeIcons
+import me.rerere.hugeicons.stroke.ArrowRight01
 import me.rerere.hugeicons.stroke.Camera01
 import me.rerere.hugeicons.stroke.Codesandbox
 import me.rerere.hugeicons.stroke.ComputerTerminal01
@@ -60,6 +48,7 @@ import me.rerere.hugeicons.stroke.Video01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.ai.mcp.McpManager
+import me.rerere.rikkahub.data.ai.mcp.McpStatus
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.getCurrentChatModel
 import me.rerere.rikkahub.data.datastore.findProvider
@@ -68,6 +57,9 @@ import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.rikkahub.ui.components.ui.ExtensionSelector
+import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CardGroupRow
+import me.rerere.rikkahub.ui.components.ui.CardGroupScope
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.hooks.ChatInputState
@@ -102,181 +94,181 @@ internal fun FilesPicker(
     val workspaceRepository: WorkspaceRepository = koinInject()
     val workspaces by workspaceRepository.listFlow().collectAsState(initial = emptyList())
     var showSearchPicker by remember { mutableStateOf(false) }
+    var showMcpPicker by remember { mutableStateOf(false) }
+    var showWorkspaceSheet by remember { mutableStateOf(false) }
+    var showCwdSheet by remember { mutableStateOf(false) }
+    val boundWorkspace = remember(workspaces, assistant.workspaceId) {
+        workspaces.find { it.id == assistant.workspaceId?.toString() }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        FlowRow(
-            modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.CenterHorizontally),
-            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.Start),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            TakePicButton(onLaunchCamera = onTakePic)
-
-            ImagePickButton(onClick = onPickImage)
-
-            if (provider != null && provider is ProviderSetting.Google) {
-                VideoPickButton(onClick = onPickVideo)
-
-                AudioPickButton(onClick = onPickAudio)
-            }
-
-            FilePickButton(onClick = onPickFile)
-        }
-
-        HorizontalDivider(
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        if (settings.mcpServers.isNotEmpty()) {
-            McpPickerListItem(
-                assistant = assistant,
-                servers = settings.mcpServers,
-                mcpManager = mcpManager,
-                onUpdateAssistant = onUpdateAssistant,
+        CardGroupRow {
+            photoButtonItems(
+                provider = provider,
+                onTakePic = onTakePic,
+                onPickImage = onPickImage,
+                onPickVideo = onPickVideo,
+                onPickAudio = onPickAudio,
+                onPickFile = onPickFile,
             )
         }
 
-        ListItem(
-            trailingContent = {
-                ContextCachePicker(
-                    value = assistant.contextCache,
-                    onValueChange = { onUpdateAssistant(assistant.copy(contextCache = it)) },
+        CardGroup {
+            if (settings.mcpServers.isNotEmpty()) {
+                mcpItem(
+                    assistant = assistant,
+                    servers = settings.mcpServers,
+                    mcpManager = mcpManager,
+                    onClick = { showMcpPicker = true },
                 )
-            },
-            colors = ListItemDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer
-            ),
-            modifier = Modifier.clip(MaterialTheme.shapes.large),
-        ) {
-            Text(stringResource(R.string.assistant_page_context_cache))
-        }
-
-        ListItem(
-            trailingContent = {
-                SearchPickerIcon(
-                    enableSearch = assistant.enableWebSearch,
-                    useBuiltInSearch = assistant.useBuiltInSearch,
-                    settings = settings,
-                    model = settings.getCurrentChatModel(),
-                )
-            },
-            colors = ListItemDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer
-            ),
-            modifier = Modifier
-                .clip(MaterialTheme.shapes.large)
-                .clickable { showSearchPicker = true },
-        ) {
-            Text(stringResource(R.string.search_ability_search))
-        }
-
-        // Extensions (Quick Messages + Prompt Injections + Skills)
-        val modeAndLorebookCount =
-            if (assistant.allowConversationPromptInjection) {
-                conversation.modeInjectionIds.size + conversation.lorebookIds.size
-            } else {
-                assistant.modeInjectionIds.size + assistant.lorebookIds.size
             }
-        val activeCount =
-            assistant.quickMessageIds.size +
-                modeAndLorebookCount +
-                assistant.enabledSkills.size
-        ListItem(
-            leadingContent = {
-                Icon(
-                    imageVector = HugeIcons.Package,
-                    contentDescription = stringResource(R.string.assistant_page_tab_extensions),
-                )
-            },
-            trailingContent = {
-                if (activeCount > 0) {
-                    Text(
-                        text = activeCount.toString(),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-            },
-            colors = ListItemDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer
-            ),
-            modifier = Modifier
-                .clip(MaterialTheme.shapes.large)
-                .clickable {
-                    onShowInjectionSheetChange(true)
-                },
-        ) { Text(stringResource(R.string.assistant_page_tab_extensions)) }
 
-        // Compress History Button
-        ListItem(
-            leadingContent = {
-                Icon(
-                    imageVector = HugeIcons.Package01,
-                    contentDescription = stringResource(R.string.chat_page_compress_context),
-                )
-            },
-            trailingContent = {
-                if (conversation.messageNodes.isNotEmpty()) {
-                    Text(
-                        text = stringResource(R.string.chat_page_message_count, conversation.messageNodes.size),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+            item(
+                trailingContent = {
+                    ContextCachePicker(
+                        value = assistant.contextCache,
+                        onValueChange = { onUpdateAssistant(assistant.copy(contextCache = it)) },
                     )
-                }
-            },
-            colors = ListItemDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer
-            ),
-            modifier = Modifier
-                .clip(MaterialTheme.shapes.large)
-                .clickable {
-                    onShowCompressDialogChange(true)
                 },
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(stringResource(R.string.chat_page_compress_context))
-                if (assistant.contextMessageLimit > 0) {
-                    Text(
-                        text = stringResource(R.string.chat_page_context_message_limit_current, assistant.contextMessageLimit),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.clickable {
-                            onDismiss()
-                            navController.navigate(
-                                Screen.AssistantBasic(
-                                    id = assistant.id.toString(),
-                                    scrollToContextLimit = true,
-                                )
+            ) {
+                Text(stringResource(R.string.assistant_page_context_cache))
+            }
+
+            item(
+                trailingContent = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        SearchPickerIcon(
+                            enableSearch = assistant.enableWebSearch,
+                            useBuiltInSearch = assistant.useBuiltInSearch,
+                            settings = settings,
+                            model = settings.getCurrentChatModel(),
+                        )
+                        Icon(
+                            imageVector = HugeIcons.ArrowRight01,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                },
+                onClick = { showSearchPicker = true },
+            ) {
+                Text(stringResource(R.string.search_ability_search))
+            }
+
+            // Extensions (Quick Messages + Prompt Injections + Skills)
+            val modeAndLorebookCount =
+                if (assistant.allowConversationPromptInjection) {
+                    conversation.modeInjectionIds.size + conversation.lorebookIds.size
+                } else {
+                    assistant.modeInjectionIds.size + assistant.lorebookIds.size
+                }
+            val activeCount =
+                assistant.quickMessageIds.size +
+                    modeAndLorebookCount +
+                    assistant.enabledSkills.size
+            item(
+                leadingContent = {
+                    Icon(
+                        imageVector = HugeIcons.Package,
+                        contentDescription = stringResource(R.string.assistant_page_tab_extensions),
+                    )
+                },
+                trailingContent = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        if (activeCount > 0) {
+                            Text(
+                                text = activeCount.toString(),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
                             )
-                        },
+                        }
+                        Icon(
+                            imageVector = HugeIcons.ArrowRight01,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                },
+                onClick = { onShowInjectionSheetChange(true) },
+            ) { Text(stringResource(R.string.assistant_page_tab_extensions)) }
+
+            // Compress History Button
+            item(
+                leadingContent = {
+                    Icon(
+                        imageVector = HugeIcons.Package01,
+                        contentDescription = stringResource(R.string.chat_page_compress_context),
                     )
+                },
+                trailingContent = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        if (conversation.messageNodes.isNotEmpty()) {
+                            Text(
+                                text = stringResource(R.string.chat_page_message_count, conversation.messageNodes.size),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Icon(
+                            imageVector = HugeIcons.ArrowRight01,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                },
+                onClick = { onShowCompressDialogChange(true) },
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(stringResource(R.string.chat_page_compress_context))
+                    if (assistant.contextMessageLimit > 0) {
+                        Text(
+                            text = stringResource(R.string.chat_page_context_message_limit_current, assistant.contextMessageLimit),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.clickable {
+                                onDismiss()
+                                navController.navigate(
+                                    Screen.AssistantBasic(
+                                        id = assistant.id.toString(),
+                                        scrollToContextLimit = true,
+                                    )
+                                )
+                            },
+                        )
+                    }
                 }
             }
-        }
 
-        if (workspaces.isNotEmpty()) {
-            WorkspacePickerListItem(
-                assistant = assistant,
-                conversation = conversation,
-                workspaces = workspaces,
-                onUpdateAssistant = onUpdateAssistant,
-                onUpdateConversation = onUpdateConversation,
-                onNavigateToDetail = { id ->
-                    onDismiss()
-                    navController.navigate(Screen.WorkspaceDetail(id))
-                },
-                onNavigateToTerminal = { id ->
-                    onDismiss()
-                    navController.navigate(Screen.WorkspaceTerminal(id))
-                },
-                onNavigateToManage = {
-                    onDismiss()
-                    navController.navigate(Screen.Workspaces)
-                },
-            )
+            if (workspaces.isNotEmpty()) {
+                workspaceItems(
+                    assistant = assistant,
+                    conversation = conversation,
+                    boundWorkspace = boundWorkspace,
+                    onClickWorkspace = { showWorkspaceSheet = true },
+                    onClickCwd = { showCwdSheet = true },
+                    onNavigateToDetail = { id ->
+                        onDismiss()
+                        navController.navigate(Screen.WorkspaceDetail(id))
+                    },
+                    onNavigateToTerminal = { id ->
+                        onDismiss()
+                        navController.navigate(Screen.WorkspaceTerminal(id))
+                    },
+                )
+            }
         }
     }
 
@@ -289,6 +281,54 @@ internal fun FilesPicker(
         model = settings.getCurrentChatModel(),
         onDismiss = { showSearchPicker = false },
     )
+
+    // MCP Picker Bottom Sheet
+    if (showMcpPicker) {
+        val syncingStatus by mcpManager.syncingStatus.collectAsStateWithLifecycle()
+        McpPickerSheet(
+            assistant = assistant,
+            servers = settings.mcpServers,
+            loading = syncingStatus.values.any { it == McpStatus.Connecting },
+            onUpdateAssistant = onUpdateAssistant,
+            onDismiss = { showMcpPicker = false },
+        )
+    }
+
+    // Workspace Select Sheet
+    if (showWorkspaceSheet) {
+        WorkspaceSelectSheet(
+            assistant = assistant,
+            workspaces = workspaces,
+            onSelect = { workspaceId ->
+                val newId = workspaceId?.let { Uuid.parse(it) }
+                if (newId != assistant.workspaceId) {
+                    onUpdateAssistant(assistant.copy(workspaceId = newId))
+                    if (conversation.workspaceCwd != null) {
+                        onUpdateConversation(conversation.copy(workspaceCwd = null))
+                    }
+                }
+                showWorkspaceSheet = false
+            },
+            onManage = {
+                showWorkspaceSheet = false
+                onDismiss()
+                navController.navigate(Screen.Workspaces)
+            },
+            onDismiss = { showWorkspaceSheet = false },
+        )
+    }
+
+    // Workspace CWD Sheet
+    if (showCwdSheet && boundWorkspace != null) {
+        WorkspaceCwdPickerSheet(
+            workspaceId = boundWorkspace.id,
+            currentCwd = conversation.workspaceCwd,
+            onSelectCwd = { newCwd ->
+                onUpdateConversation(conversation.copy(workspaceCwd = newCwd))
+            },
+            onDismiss = { showCwdSheet = false },
+        )
+    }
 
     // Injection Bottom Sheet
     if (showInjectionSheet) {
@@ -307,31 +347,22 @@ internal fun FilesPicker(
     if (showCompressDialog) {
         CompressContextDialog(onDismiss = {
             onShowCompressDialogChange(false)
-            onDismiss()
         }, onConfirm = { additionalPrompt, targetTokens, keepRecentMessages ->
             onCompressContext(additionalPrompt, targetTokens, keepRecentMessages)
         })
     }
 }
 
-@Composable
-private fun WorkspacePickerListItem(
+private fun CardGroupScope.workspaceItems(
     assistant: Assistant,
     conversation: Conversation,
-    workspaces: List<WorkspaceEntity>,
-    onUpdateAssistant: (Assistant) -> Unit,
-    onUpdateConversation: (Conversation) -> Unit,
+    boundWorkspace: WorkspaceEntity?,
+    onClickWorkspace: () -> Unit,
+    onClickCwd: () -> Unit,
     onNavigateToDetail: (String) -> Unit,
     onNavigateToTerminal: (String) -> Unit,
-    onNavigateToManage: () -> Unit,
 ) {
-    var showWorkspaceSheet by remember { mutableStateOf(false) }
-    var showCwdSheet by remember { mutableStateOf(false) }
-    val boundWorkspace = remember(workspaces, assistant.workspaceId) {
-        workspaces.find { it.id == assistant.workspaceId?.toString() }
-    }
-
-    ListItem(
+    item(
         leadingContent = {
             Icon(
                 imageVector = HugeIcons.Codesandbox,
@@ -346,8 +377,11 @@ private fun WorkspacePickerListItem(
             )
         },
         trailingContent = {
-            if (boundWorkspace != null) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                if (boundWorkspace != null) {
                     if (boundWorkspace.shellStatus == WorkspaceShellStatus.READY.name) {
                         IconButton(onClick = { onNavigateToTerminal(boundWorkspace.id) }) {
                             Icon(
@@ -363,20 +397,20 @@ private fun WorkspacePickerListItem(
                         )
                     }
                 }
+                Icon(
+                    imageVector = HugeIcons.ArrowRight01,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         },
-        colors = ListItemDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
-        ),
-        modifier = Modifier
-            .clip(MaterialTheme.shapes.large)
-            .clickable { showWorkspaceSheet = true },
+        onClick = onClickWorkspace,
     ) {
         Text(stringResource(R.string.assistant_page_workspace))
     }
 
     if (boundWorkspace != null) {
-        ListItem(
+        item(
             trailingContent = {
                 Text(
                     text = conversation.workspaceCwd ?: "/workspace",
@@ -385,48 +419,10 @@ private fun WorkspacePickerListItem(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             },
-            colors = ListItemDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer
-            ),
-            modifier = Modifier
-                .clip(MaterialTheme.shapes.large)
-                .clickable { showCwdSheet = true },
+            onClick = onClickCwd,
         ) {
             Text(stringResource(R.string.workspace_cwd_current))
         }
-    }
-
-    if (showWorkspaceSheet) {
-        WorkspaceSelectSheet(
-            assistant = assistant,
-            workspaces = workspaces,
-            onSelect = { workspaceId ->
-                val newId = workspaceId?.let { Uuid.parse(it) }
-                if (newId != assistant.workspaceId) {
-                    onUpdateAssistant(assistant.copy(workspaceId = newId))
-                    if (conversation.workspaceCwd != null) {
-                        onUpdateConversation(conversation.copy(workspaceCwd = null))
-                    }
-                }
-                showWorkspaceSheet = false
-            },
-            onManage = {
-                showWorkspaceSheet = false
-                onNavigateToManage()
-            },
-            onDismiss = { showWorkspaceSheet = false },
-        )
-    }
-
-    if (showCwdSheet && boundWorkspace != null) {
-        WorkspaceCwdPickerSheet(
-            workspaceId = boundWorkspace.id,
-            currentCwd = conversation.workspaceCwd,
-            onSelectCwd = { newCwd ->
-                onUpdateConversation(conversation.copy(workspaceCwd = newCwd))
-            },
-            onDismiss = { showCwdSheet = false },
-        )
     }
 }
 
@@ -482,58 +478,45 @@ private fun InjectionQuickConfigSheet(
     }
 }
 
-@Composable
-private fun ImagePickButton(onClick: () -> Unit = {}) {
-    BigIconTextButton(icon = {
-        Icon(HugeIcons.Image02, null)
-    }, text = {
-        Text(stringResource(R.string.photo))
-    }) {
-        onClick()
+private fun CardGroupScope.photoButtonItems(
+    provider: ProviderSetting?,
+    onTakePic: () -> Unit,
+    onPickImage: () -> Unit,
+    onPickVideo: () -> Unit,
+    onPickAudio: () -> Unit,
+    onPickFile: () -> Unit,
+) {
+    item(onClick = onTakePic) {
+        BigIconTextButton(
+            icon = { Icon(HugeIcons.Camera01, null) },
+            text = { Text(stringResource(R.string.take_picture)) },
+        )
     }
-}
-
-@Composable
-fun TakePicButton(onLaunchCamera: () -> Unit = {}) {
-    BigIconTextButton(icon = {
-        Icon(HugeIcons.Camera01, null)
-    }, text = {
-        Text(stringResource(R.string.take_picture))
-    }) {
-        onLaunchCamera()
+    item(onClick = onPickImage) {
+        BigIconTextButton(
+            icon = { Icon(HugeIcons.Image02, null) },
+            text = { Text(stringResource(R.string.photo)) },
+        )
     }
-}
-
-@Composable
-fun VideoPickButton(onClick: () -> Unit = {}) {
-    BigIconTextButton(icon = {
-        Icon(HugeIcons.Video01, null)
-    }, text = {
-        Text(stringResource(R.string.video))
-    }) {
-        onClick()
+    if (provider != null && provider is ProviderSetting.Google) {
+        item(onClick = onPickVideo) {
+            BigIconTextButton(
+                icon = { Icon(HugeIcons.Video01, null) },
+                text = { Text(stringResource(R.string.video)) },
+            )
+        }
+        item(onClick = onPickAudio) {
+            BigIconTextButton(
+                icon = { Icon(HugeIcons.MusicNote03, null) },
+                text = { Text(stringResource(R.string.audio)) },
+            )
+        }
     }
-}
-
-@Composable
-fun AudioPickButton(onClick: () -> Unit = {}) {
-    BigIconTextButton(icon = {
-        Icon(HugeIcons.MusicNote03, null)
-    }, text = {
-        Text(stringResource(R.string.audio))
-    }) {
-        onClick()
-    }
-}
-
-@Composable
-fun FilePickButton(onClick: () -> Unit = {}) {
-    BigIconTextButton(icon = {
-        Icon(HugeIcons.Files02, null)
-    }, text = {
-        Text(stringResource(R.string.upload_file))
-    }) {
-        onClick()
+    item(onClick = onPickFile) {
+        BigIconTextButton(
+            icon = { Icon(HugeIcons.Files02, null) },
+            text = { Text(stringResource(R.string.file)) },
+        )
     }
 }
 
@@ -542,30 +525,14 @@ private fun BigIconTextButton(
     modifier: Modifier = Modifier,
     icon: @Composable () -> Unit,
     text: @Composable () -> Unit,
-    onClick: () -> Unit,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
-            .clickable(
-                interactionSource = interactionSource, indication = LocalIndication.current, onClick = onClick
-            )
-            .semantics {
-                role = Role.Button
-            }
+            .padding(horizontal = 8.dp, vertical = 10.dp)
             .wrapContentWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceContainer, shape = RoundedCornerShape(8.dp)
-        ) {
-            Box(
-                modifier = Modifier.padding(horizontal = 32.dp, vertical = 16.dp)
-            ) {
-                icon()
-            }
-        }
+        verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        icon()
         ProvideTextStyle(MaterialTheme.typography.bodySmall) {
             text()
         }
@@ -575,13 +542,26 @@ private fun BigIconTextButton(
 @Preview(showBackground = true)
 @Composable
 private fun BigIconTextButtonPreview() {
-    Row(
-        modifier = Modifier.padding(16.dp)
+    CardGroupRow(
+        modifier = Modifier.padding(16.dp),
     ) {
-        BigIconTextButton(icon = {
-            Icon(HugeIcons.Image02, null)
-        }, text = {
-            Text(stringResource(R.string.photo))
-        }) {}
+        item(onClick = {}) {
+            BigIconTextButton(
+                icon = { Icon(HugeIcons.Image02, null) },
+                text = { Text(stringResource(R.string.photo)) },
+            )
+        }
+        item(onClick = {}) {
+            BigIconTextButton(
+                icon = { Icon(HugeIcons.Camera01, null) },
+                text = { Text(stringResource(R.string.take_picture)) },
+            )
+        }
+        item(onClick = {}) {
+            BigIconTextButton(
+                icon = { Icon(HugeIcons.Files02, null) },
+                text = { Text(stringResource(R.string.file)) },
+            )
+        }
     }
 }

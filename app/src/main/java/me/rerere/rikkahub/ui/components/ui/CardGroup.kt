@@ -2,13 +2,18 @@ package me.rerere.rikkahub.ui.components.ui
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -259,6 +264,101 @@ fun CardGroup(
             )
             if (index != count - 1) {
                 Spacer(modifier = Modifier.height(CardGroupItemSpacing))
+            }
+        }
+    }
+}
+
+@Composable
+fun CardGroupRow(
+    modifier: Modifier = Modifier,
+    continueFromPrevious: Boolean = false,
+    continueToNext: Boolean = false,
+    content: CardGroupScope.() -> Unit,
+) {
+    val scope = CardGroupScopeImpl()
+    scope.content()
+    val screenCornerRadii = if (LocalScreenCornerAdaptationEnabled.current) {
+        LocalScreenEdgeCornerRadii.current?.inset(
+            horizontalInset = CardGroupScreenInset,
+            bottomInset = CardGroupScreenInset,
+        )
+    } else {
+        null
+    }
+    val fallbackCorner = LocalScreenCornerFallbackRadius.current
+
+    val count = scope.items.size
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min),
+        horizontalArrangement = Arrangement.spacedBy(CardGroupItemSpacing),
+    ) {
+        scope.items.fastForEachIndexed { index, item ->
+            val isFirst = index == 0
+            val isLast = index == count - 1
+
+            val interactionSource = remember { MutableInteractionSource() }
+            val isPressed by interactionSource.collectIsPressedAsState()
+
+            val topStartCorner by animateDpAsState(
+                targetValue = if (isPressed || (isFirst && !continueFromPrevious)) {
+                    screenCornerRadii?.start ?: fallbackCorner
+                } else {
+                    CardGroupInnerCorner
+                },
+                animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+            )
+            val topEndCorner by animateDpAsState(
+                targetValue = if (isPressed || (isLast && !continueToNext)) {
+                    screenCornerRadii?.end ?: fallbackCorner
+                } else {
+                    CardGroupInnerCorner
+                },
+                animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+            )
+            val bottomStartCorner by animateDpAsState(
+                targetValue = if (isPressed || (isFirst && !continueFromPrevious)) {
+                    screenCornerRadii?.start ?: fallbackCorner
+                } else {
+                    CardGroupInnerCorner
+                },
+                animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+            )
+            val bottomEndCorner by animateDpAsState(
+                targetValue = if (isPressed || (isLast && !continueToNext)) {
+                    screenCornerRadii?.end ?: fallbackCorner
+                } else {
+                    CardGroupInnerCorner
+                },
+                animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+            )
+            val itemShape = RoundedCornerShape(
+                topStart = topStartCorner,
+                topEnd = topEndCorner,
+                bottomStart = bottomStartCorner,
+                bottomEnd = bottomEndCorner,
+            )
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .clip(itemShape)
+                    .background((item.colors ?: CustomColors.listItemColors).containerColor)
+                    .then(
+                        if (item.onClick != null) {
+                            Modifier.clickable(
+                                interactionSource = interactionSource,
+                                indication = LocalIndication.current,
+                                onClick = item.onClick,
+                            )
+                        } else Modifier
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                item.headlineContent()
             }
         }
     }

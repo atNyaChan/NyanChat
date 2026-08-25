@@ -104,6 +104,7 @@ fun ChatMessage(
     node: MessageNode,
     modifier: Modifier = Modifier,
     loading: Boolean = false,
+    generating: Boolean = false,
     model: Model? = null,
     assistant: Assistant? = null,
     lastMessage: Boolean = false,
@@ -187,7 +188,7 @@ fun ChatMessage(
         }
 
         val showActions = if (lastMessage) {
-            message.role == MessageRole.USER || !loading
+            message.role == MessageRole.USER || message.role == MessageRole.ASSISTANT || !loading
         } else {
             message.parts.isEmptyUIMessage().not()
         }
@@ -208,7 +209,7 @@ fun ChatMessage(
                     onOpenActionSheet = {
                         showActionsSheet = true
                     },
-                    loading = loading,
+                    generating = generating,
                 )
             }
         }

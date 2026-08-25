@@ -134,7 +134,7 @@
   <string name="assistant_page_select_background">배경 이미지 선택</string>
   <string name="assistant_page_select_from_gallery">갤러리에서 선택</string>
   <string name="assistant_page_stream_output">스트리밍 출력</string>
-  <string name="assistant_page_stream_output_desc">메시지 스트리밍 출력 활성화 여부</string>
+  <string name="assistant_page_stream_output_desc">메시지 스트리밍 출력 활성화</string>
   <string name="assistant_page_system_prompt">시스템 프롬프트</string>
   <string name="assistant_page_tab_basic">기본 설정</string>
   <string name="assistant_page_tab_extensions">확장 프로그램</string>
@@ -585,11 +585,11 @@
   <string name="setting_display_page_code_block_auto_collapse_title">코드 블록 자동 접기</string>
   <string name="setting_display_page_code_block_auto_wrap_desc">코드 블록의 긴 줄을 자동으로 줄 바꿈</string>
   <string name="setting_display_page_code_block_auto_wrap_title">코드 블록 자동 줄 바꿈</string>
-  <string name="setting_display_page_create_new_conversation_on_start_desc">앱 시작 시 새 대화 생성</string>
+  <string name="setting_display_page_create_new_conversation_on_start_desc">앱 시작 시 새 대화를 생성하고 엽니다</string>
   <string name="setting_display_page_create_new_conversation_on_start_title">앱 시작 시 새 채팅 생성</string>
-  <string name="setting_display_page_enable_auto_scroll_desc">AI가 콘텐츠를 생성할 때 자동으로 아래로 스크롤합니다</string>
+  <string name="setting_display_page_enable_auto_scroll_desc">AI가 답변을 생성할 때 자동으로 아래로 스크롤합니다</string>
   <string name="setting_display_page_enable_auto_scroll_title">자동 스크롤</string>
-  <string name="setting_display_page_enable_blur_effect_desc">홈 페이지 UI 요소에 투명 효과 추가</string>
+  <string name="setting_display_page_enable_blur_effect_desc">홈 페이지 UI 요소에 반투명 유리 효과 추가</string>
   <string name="setting_display_page_enable_blur_effect_title">흐림 효과 활성화</string>
   <string name="setting_display_page_collapse_input_toolbar_title">키보드 표시 시 입력창 도구 모음 접기</string>
   <string name="setting_display_page_collapse_input_toolbar_desc">키보드가 열리면 입력창 도구 모음을 접습니다</string>
@@ -615,7 +615,7 @@
   <string name="setting_display_page_paste_long_text_as_file_title">긴 텍스트를 파일로 붙여넣기</string>
   <string name="setting_display_page_send_on_enter_desc">Enter 키를 누르면 줄 바꿈 대신 메시지를 전송합니다</string>
   <string name="setting_display_page_send_on_enter_title">Enter 키로 전송</string>
-  <string name="setting_display_page_show_assistant_bubble_desc">어시스턴트 메시지에 말풍선 배경 표시 여부</string>
+  <string name="setting_display_page_show_assistant_bubble_desc">어시스턴트 메시지에 말풍선 배경 표시</string>
   <string name="setting_display_page_show_assistant_bubble_title">어시스턴트 메시지 버블 표시</string>
   <string name="setting_display_page_show_datetime_in_message_desc">메시지가 생성된 날짜와 시간을 표시합니다</string>
   <string name="setting_display_page_show_datetime_in_message_title">메시지 시간 표시</string>
@@ -626,7 +626,7 @@
   <string name="setting_display_page_message_jumper_left">왼쪽</string>
   <string name="setting_display_page_show_message_jumper_desc">채팅 목록을 스크롤할 때 빠른 이동 버튼 표시</string>
   <string name="setting_display_page_show_message_jumper_title">메시지 점프 버튼 표시</string>
-  <string name="setting_display_page_show_model_name_desc">채팅 메시지에 모델 이름을 표시할지 여부</string>
+  <string name="setting_display_page_show_model_name_desc">채팅 페이지에 모델 이름을 표시</string>
   <string name="setting_display_page_show_model_name_title">모델 이름 표시</string>
   <string name="setting_display_page_show_thinking_content_desc">답변 생성 시 기본 생각 블록의 확장 상태를 제어합니다</string>
   <string name="setting_display_page_show_thinking_content_title">생성 시 생각 표시</string>
@@ -635,7 +635,7 @@
   <string name="setting_display_page_thinking_mode_expanded">펼치기</string>
   <string name="setting_display_page_show_token_usage_desc">토큰 수, 소요 시간, 글자 수 등을 표시합니다</string>
   <string name="setting_display_page_show_token_usage_title">토큰 수 등 통계 정보 표시</string>
-  <string name="setting_display_page_show_user_avatar_desc">채팅 메시지에 사용자 아바타를 표시할지 여부</string>
+  <string name="setting_display_page_show_user_avatar_desc">채팅 메시지에 사용자 아바타를 표시</string>
   <string name="setting_display_page_show_user_avatar_title">사용자 아바타 표시</string>
   <string name="setting_display_page_skip_crop_image_desc">이미지를 가져오거나 사진을 찍은 후 자르기 화면 건너뛰기</string>
   <string name="setting_display_page_skip_crop_image_title">이미지 편집 건너뛰기</string>
@@ -673,7 +673,7 @@
   <string name="setting_mcp_page_custom_headers_desc">MCP 서버 요청에 대한 사용자 정의 HTTP 헤더 추가</string>
   <string name="setting_mcp_page_delete_header">헤더 삭제</string>
   <string name="setting_mcp_page_enable">활성화</string>
-  <string name="setting_mcp_page_enable_desc">이 MCP 서버를 활성화할지 여부</string>
+  <string name="setting_mcp_page_enable_desc">이 MCP 서버를 활성화</string>
   <string name="setting_mcp_page_header_name">헤더 이름</string>
   <string name="setting_mcp_page_header_name_placeholder">예: Authorization</string>
   <string name="setting_mcp_page_header_value">헤더 값</string>
@@ -728,7 +728,7 @@
   <string name="setting_model_page_translate_model_desc">번역 기능에 사용되는 모델</string>
   <string name="setting_model_page_translate_prompt_vars">변수: 원문: {source_text}, 대상 언어: {target_lang}</string>
   <string name="setting_page_about_desc">앱 정보</string>
-  <string name="setting_page_assistant_desc">개인화된 어시스턴트(에이전트) 설정</string>
+  <string name="setting_page_assistant_desc">사용자 지정 어시스턴트(에이전트) 설정</string>
   <string name="setting_page_built_in_tools">내장 도구</string>
   <string name="setting_page_built_in_tools_desc">모델 API에 내장된 도구를 활성화합니다. 일부 모델에서만 지원됩니다.</string>
   <string name="setting_page_built_in_tools_image_generation">이미지 생성</string>
@@ -754,7 +754,7 @@
   <string name="setting_page_mode_injection_desc">자동 삽입 메시지 섹션 관리</string>
   <string name="setting_page_lorebook_desc">가져온 로어북 관리</string>
   <string name="setting_page_dynamic_color">동적 색상</string>
-  <string name="setting_page_dynamic_color_desc">배경화면을 기반으로 앱 테마 색상을 동적으로 생성할지 여부</string>
+  <string name="setting_page_dynamic_color_desc">배경화면을 기반으로 앱 테마 색상을 동적으로 생성</string>
   <string name="setting_page_mcp_desc">MCP 서버 구성</string>
   <string name="setting_page_font_settings">글꼴</string>
   <string name="setting_page_formula_code_settings">수식 및 코드</string>
@@ -774,7 +774,7 @@
   <string name="setting_page_search_common_title">일반 검색 설정</string>
   <string name="setting_page_search_config">설정</string>
   <string name="setting_page_search_result_size">결과 크기</string>
-  <string name="setting_page_search_service_desc">검색 서비스 설정</string>
+  <string name="setting_page_search_service_desc">검색 서비스 제공자 구성</string>
   <string name="setting_page_search_test">검색 테스트</string>
   <string name="setting_page_search_test_query_hint">테스트 쿼리 입력…</string>
   <string name="setting_page_search_test_run">테스트 실행</string>
@@ -796,7 +796,7 @@
   <string name="setting_page_tts_service_desc">텍스트-음성 및 음성 인식 제공업체 구성</string>
   <string name="setting_page_tts_settings">TTS 설정</string>
   <string name="setting_page_web_server">웹 서버</string>
-  <string name="setting_page_web_server_desc">웹을 통해 NyanChat에 접근할 수 있도록 허용</string>
+  <string name="setting_page_web_server_desc">웹을 통해 NyanChat 접근</string>
   <string name="setting_page_web_server_error">오류</string>
   <string name="setting_page_web_server_localhost_only">localhost만</string>
   <string name="setting_page_web_server_localhost_only_desc">localhost(127.0.0.1)에서만 수신, LAN 및 mDNS 접근 비활성화</string>
@@ -1032,7 +1032,7 @@
   <string name="translator_page_translate">번역</string>
   <string name="tts">TTS</string>
   <string name="unpin_chat">채팅 고정 해제</string>
-  <string name="upload_file">파일 업로드</string>
+  <string name="file">파일</string>
   <string name="use_web_search">웹 검색 사용</string>
   <string name="user_default_name">사용자</string>
   <string name="video">동영상</string>
@@ -1235,11 +1235,15 @@
   <string name="chat_page_delete_selected_confirm">선택한 채팅 %1$d개를 삭제할까요?</string>
   <string name="chat_page_delete_message_confirm">이 메시지를 삭제할까요?</string>
   <string name="log_page_empty">요청 로그 없음</string>
+  <string name="log_page_filter">필터</string>
+  <string name="log_page_filter_all">전체</string>
+  <string name="log_page_filter_llm_only">LLM 호출만</string>
+  <string name="log_page_filter_non_llm_only">비LLM 호출</string>
   <string name="backup_page_import_failed_detail">가져오기 실패: %1$s</string>
   <string name="backup_page_export_failed_detail">내보내기 실패: %1$s</string>
   <string name="backup_page_rikkahub_format">RikkaHub 유사 형식</string>
   <string name="backup_page_tar_desc">앱 데이터를 TAR 파일로 내보내기(RikkaHub와 호환되지 않음)</string>
-  <string name="backup_page_legacy_export">레거시 형식 내보내기(RikkaHub 호환)</string>
+  <string name="backup_page_legacy_export">레거시 형식 내보내기(RikkaHub 2.4.x 호환)</string>
   <string name="backup_page_delete_remote_title">%1$s 백업 파일 삭제</string>
   <string name="backup_page_delete_remote_desc">이 백업 파일을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.</string>
   <string name="backup_page_legacy_export_desc">이 Fork에서 추가한 비호환 설정 제거; 작업 공간 환경은 포함되지 않음</string>

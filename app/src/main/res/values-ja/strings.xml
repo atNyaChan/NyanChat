@@ -134,7 +134,7 @@
   <string name="assistant_page_select_background">背景画像を選択</string>
   <string name="assistant_page_select_from_gallery">ギャラリーから選択</string>
   <string name="assistant_page_stream_output">ストリーミング出力</string>
-  <string name="assistant_page_stream_output_desc">メッセージをストリーミング出力するかどうか</string>
+  <string name="assistant_page_stream_output_desc">メッセージをストリーミング出力する</string>
   <string name="assistant_page_system_prompt">システムプロンプト</string>
   <string name="assistant_page_tab_basic">基本設定</string>
   <string name="assistant_page_tab_extensions">拡張機能</string>
@@ -585,11 +585,11 @@
   <string name="setting_display_page_code_block_auto_collapse_title">コードブロックの自動折りたたみ</string>
   <string name="setting_display_page_code_block_auto_wrap_desc">コードブロック内の長い行を自動的に折り返す</string>
   <string name="setting_display_page_code_block_auto_wrap_title">コードブロックの自動折り返し</string>
-  <string name="setting_display_page_create_new_conversation_on_start_desc">アプリ起動時に新しい会話を自動作成する</string>
+  <string name="setting_display_page_create_new_conversation_on_start_desc">アプリ起動時に新しい会話を作成して開く</string>
   <string name="setting_display_page_create_new_conversation_on_start_title">起動時に新しいチャット</string>
-  <string name="setting_display_page_enable_auto_scroll_desc">AIがコンテンツを生成中に自動で下までスクロールする</string>
+  <string name="setting_display_page_enable_auto_scroll_desc">AIが返信を生成するとき自動で下までスクロールする</string>
   <string name="setting_display_page_enable_auto_scroll_title">自動スクロール</string>
-  <string name="setting_display_page_enable_blur_effect_desc">ホーム画面のUI要素に透明効果を追加</string>
+  <string name="setting_display_page_enable_blur_effect_desc">ホーム画面のUI要素に半透明のすりガラス風効果を追加</string>
   <string name="setting_display_page_enable_blur_effect_title">ぼかし効果を有効にする</string>
   <string name="setting_display_page_collapse_input_toolbar_title">キーボード表示時に入力欄のツールバーを折りたたむ</string>
   <string name="setting_display_page_collapse_input_toolbar_desc">キーボードを開いたときに入力欄のツールバーを折りたたむ</string>
@@ -615,7 +615,7 @@
   <string name="setting_display_page_paste_long_text_as_file_title">長いテキストをファイルとして貼り付け</string>
   <string name="setting_display_page_send_on_enter_desc">Enterキーでメッセージを送信し、改行しない</string>
   <string name="setting_display_page_send_on_enter_title">Enterキーで送信</string>
-  <string name="setting_display_page_show_assistant_bubble_desc">アシスタントメッセージのバブル背景を表示するかどうか</string>
+  <string name="setting_display_page_show_assistant_bubble_desc">アシスタントメッセージのバブル背景を表示する</string>
   <string name="setting_display_page_show_assistant_bubble_title">アシスタントメッセージバブルを表示</string>
   <string name="setting_display_page_show_datetime_in_message_desc">メッセージ作成時の日付と時刻を表示します</string>
   <string name="setting_display_page_show_datetime_in_message_title">メッセージ時刻を表示</string>
@@ -626,7 +626,7 @@
   <string name="setting_display_page_message_jumper_left">左</string>
   <string name="setting_display_page_show_message_jumper_desc">チャットリストをスクロールするときにクイックジャンプボタンを表示</string>
   <string name="setting_display_page_show_message_jumper_title">メッセージナビゲーションボタン</string>
-  <string name="setting_display_page_show_model_name_desc">チャットメッセージにモデル名を表示するかどうか</string>
+  <string name="setting_display_page_show_model_name_desc">チャットページにモデル名を表示する</string>
   <string name="setting_display_page_show_model_name_title">モデル名を表示</string>
   <string name="setting_display_page_show_thinking_content_desc">返信生成時にデフォルトの思考ブロックの展開状態を制御します</string>
   <string name="setting_display_page_show_thinking_content_title">生成時に思考を表示</string>
@@ -635,7 +635,7 @@
   <string name="setting_display_page_thinking_mode_expanded">展開する</string>
   <string name="setting_display_page_show_token_usage_desc">トークン数、経過時間、文字数などを表示</string>
   <string name="setting_display_page_show_token_usage_title">トークン数などの統計情報を表示</string>
-  <string name="setting_display_page_show_user_avatar_desc">チャットメッセージにユーザーアバターを表示するかどうか</string>
+  <string name="setting_display_page_show_user_avatar_desc">チャットメッセージにユーザーアバターを表示する</string>
   <string name="setting_display_page_show_user_avatar_title">ユーザーアバターを表示</string>
   <string name="setting_display_page_skip_crop_image_desc">画像をインポートするか写真を撮影した後、クロップ画面をスキップ</string>
   <string name="setting_display_page_skip_crop_image_title">画像編集をスキップ</string>
@@ -673,7 +673,7 @@
   <string name="setting_mcp_page_custom_headers_desc">MCPサーバーリクエストにカスタムHTTPヘッダーを追加</string>
   <string name="setting_mcp_page_delete_header">ヘッダーを削除</string>
   <string name="setting_mcp_page_enable">有効</string>
-  <string name="setting_mcp_page_enable_desc">このMCPサーバーを有効にするかどうか</string>
+  <string name="setting_mcp_page_enable_desc">このMCPサーバーを有効にする</string>
   <string name="setting_mcp_page_header_name">ヘッダー名</string>
   <string name="setting_mcp_page_header_name_placeholder">例：Authorization</string>
   <string name="setting_mcp_page_header_value">ヘッダー値</string>
@@ -728,7 +728,7 @@
   <string name="setting_model_page_translate_model_desc">翻訳機能に使用されるモデル</string>
   <string name="setting_model_page_translate_prompt_vars">変数: 原文テキスト: {source_text}, 対象言語: {target_lang}</string>
   <string name="setting_page_about_desc">このアプリについて</string>
-  <string name="setting_page_assistant_desc">カスタムアシスタント（エージェント）を設定</string>
+  <string name="setting_page_assistant_desc">カスタムアシスタント（エージェント）の設定</string>
   <string name="setting_page_built_in_tools">組み込みツール</string>
   <string name="setting_page_built_in_tools_desc">モデル API に組み込まれたツールを有効にします。一部のモデルでのみサポートされます。</string>
   <string name="setting_page_built_in_tools_image_generation">画像生成</string>
@@ -754,7 +754,7 @@
   <string name="setting_page_mode_injection_desc">自動挿入されるメッセージセクションを管理</string>
   <string name="setting_page_lorebook_desc">インポートしたロアブックを管理</string>
   <string name="setting_page_dynamic_color">ダイナミックカラー</string>
-  <string name="setting_page_dynamic_color_desc">壁紙に基づいてアプリのテーマ配色を動的に生成するかどうか</string>
+  <string name="setting_page_dynamic_color_desc">壁紙に基づいてアプリのテーマ配色を動的に生成する</string>
   <string name="setting_page_mcp_desc">MCPサーバーを設定</string>
   <string name="setting_page_font_settings">フォント</string>
   <string name="setting_page_formula_code_settings">数式とコード</string>
@@ -774,7 +774,7 @@
   <string name="setting_page_search_common_title">一般検索設定</string>
   <string name="setting_page_search_config">設定</string>
   <string name="setting_page_search_result_size">結果数</string>
-  <string name="setting_page_search_service_desc">検索サービスを設定</string>
+  <string name="setting_page_search_service_desc">検索サービスのプロバイダーを設定</string>
   <string name="setting_page_search_test">検索テスト</string>
   <string name="setting_page_search_test_query_hint">テストクエリを入力…</string>
   <string name="setting_page_search_test_run">テスト実行</string>
@@ -796,7 +796,7 @@
   <string name="setting_page_tts_service_desc">音声合成と音声認識のプロバイダーを設定</string>
   <string name="setting_page_tts_settings">TTS設定</string>
   <string name="setting_page_web_server">Webサーバー</string>
-  <string name="setting_page_web_server_desc">Web経由でNyanChatにアクセスできるようにする</string>
+  <string name="setting_page_web_server_desc">Web経由でNyanChatにアクセス</string>
   <string name="setting_page_web_server_error">エラー</string>
   <string name="setting_page_web_server_localhost_only">localhostのみ</string>
   <string name="setting_page_web_server_localhost_only_desc">localhost (127.0.0.1) のみでリッスンし、LANおよびmDNSアクセスを無効化</string>
@@ -1032,7 +1032,7 @@
   <string name="translator_page_translate">翻訳</string>
   <string name="tts">音声</string>
   <string name="unpin_chat">チャットのピン留めを解除</string>
-  <string name="upload_file">ファイルをアップロード</string>
+  <string name="file">ファイル</string>
   <string name="use_web_search">ウェブ検索を</string>
   <string name="user_default_name">ユーザー</string>
   <string name="video">動画</string>
@@ -1235,11 +1235,15 @@
   <string name="chat_page_delete_selected_confirm">選択した%1$d件のチャットを削除しますか？</string>
   <string name="chat_page_delete_message_confirm">このメッセージを削除しますか？</string>
   <string name="log_page_empty">リクエストログはありません</string>
+  <string name="log_page_filter">フィルター</string>
+  <string name="log_page_filter_all">すべて</string>
+  <string name="log_page_filter_llm_only">LLM呼び出しのみ</string>
+  <string name="log_page_filter_non_llm_only">LLM以外の呼び出し</string>
   <string name="backup_page_import_failed_detail">インポート失敗：%1$s</string>
   <string name="backup_page_export_failed_detail">エクスポート失敗：%1$s</string>
   <string name="backup_page_rikkahub_format">RikkaHub類似形式</string>
   <string name="backup_page_tar_desc">アプリデータをTARファイルにエクスポート（RikkaHub非対応）</string>
-  <string name="backup_page_legacy_export">旧形式でエクスポート（RikkaHub対応）</string>
+  <string name="backup_page_legacy_export">旧形式でエクスポート（RikkaHub 2.4.x 対応）</string>
   <string name="backup_page_delete_remote_title">%1$s バックアップファイルを削除</string>
   <string name="backup_page_delete_remote_desc">このバックアップファイルを削除しますか？この操作は元に戻せません。</string>
   <string name="backup_page_legacy_export_desc">この Fork で追加された非互換設定を削除；ワークスペース環境は含まれません</string>

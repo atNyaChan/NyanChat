@@ -585,11 +585,11 @@
   <string name="setting_display_page_code_block_auto_collapse_title">Автосворачивание блоков кода</string>
   <string name="setting_display_page_code_block_auto_wrap_desc">Автоматически переносить длинные строки в блоках кода</string>
   <string name="setting_display_page_code_block_auto_wrap_title">Автоперенос блоков кода</string>
-  <string name="setting_display_page_create_new_conversation_on_start_desc">Создавать новый диалог при запуске приложения</string>
+  <string name="setting_display_page_create_new_conversation_on_start_desc">Создавать и открывать новый диалог при запуске приложения</string>
   <string name="setting_display_page_create_new_conversation_on_start_title">Новый чат при запуске</string>
-  <string name="setting_display_page_enable_auto_scroll_desc">Автоматически прокручивать вниз при генерации контента ИИ</string>
+  <string name="setting_display_page_enable_auto_scroll_desc">Автоматически прокручивать вниз при генерации ответа ИИ</string>
   <string name="setting_display_page_enable_auto_scroll_title">Автопрокрутка</string>
-  <string name="setting_display_page_enable_blur_effect_desc">Добавить эффект прозрачности элементам главного экрана</string>
+  <string name="setting_display_page_enable_blur_effect_desc">Добавить полупрозрачный эффект матового стекла элементам главного экрана</string>
   <string name="setting_display_page_enable_blur_effect_title">Включить эффект размытия</string>
   <string name="setting_display_page_collapse_input_toolbar_title">Сворачивать панель ввода при открытой клавиатуре</string>
   <string name="setting_display_page_collapse_input_toolbar_desc">Сворачивать панель ввода при открытии клавиатуры</string>
@@ -626,7 +626,7 @@
   <string name="setting_display_page_message_jumper_left">Слева</string>
   <string name="setting_display_page_show_message_jumper_desc">Показывать кнопки быстрого перехода при прокрутке списка чатов</string>
   <string name="setting_display_page_show_message_jumper_title">Показывать переходчик к сообщению</string>
-  <string name="setting_display_page_show_model_name_desc">Отображать ли названия моделей в сообщениях чата</string>
+  <string name="setting_display_page_show_model_name_desc">Отображать названия моделей на странице чата</string>
   <string name="setting_display_page_show_model_name_title">Показывать название модели</string>
   <string name="setting_display_page_show_thinking_content_desc">Управляет состоянием развертывания блоков мышления по умолчанию при создании ответа</string>
   <string name="setting_display_page_show_thinking_content_title">Показывать мышление при генерации</string>
@@ -673,7 +673,7 @@
   <string name="setting_mcp_page_custom_headers_desc">Добавьте пользовательские заголовки HTTP для запросов к серверу MCP</string>
   <string name="setting_mcp_page_delete_header">Удалить заголовок</string>
   <string name="setting_mcp_page_enable">Включить</string>
-  <string name="setting_mcp_page_enable_desc">Включить ли этот MCP-сервер</string>
+  <string name="setting_mcp_page_enable_desc">Включить этот MCP-сервер</string>
   <string name="setting_mcp_page_header_name">Имя заголовка</string>
   <string name="setting_mcp_page_header_name_placeholder">например: Авторизация</string>
   <string name="setting_mcp_page_header_value">Значение заголовка</string>
@@ -728,7 +728,7 @@
   <string name="setting_model_page_translate_model_desc">Модель, используемая для функций перевода</string>
   <string name="setting_model_page_translate_prompt_vars">Переменные: Исходный текст: {source_text}, Целевой язык: {target_lang}</string>
   <string name="setting_page_about_desc">Об этом приложении</string>
-  <string name="setting_page_assistant_desc">Настроить персонализированных ассистентов (агентов)</string>
+  <string name="setting_page_assistant_desc">Настройка пользовательских ассистентов (агентов)</string>
   <string name="setting_page_built_in_tools">Встроенные инструменты</string>
   <string name="setting_page_built_in_tools_desc">Включить инструменты, встроенные в API модели. Поддерживается только некоторыми моделями.</string>
   <string name="setting_page_built_in_tools_image_generation">Генерация изображений</string>
@@ -774,7 +774,7 @@
   <string name="setting_page_search_common_title">Общие настройки поиска</string>
   <string name="setting_page_search_config">Конфигурация</string>
   <string name="setting_page_search_result_size">Размер результата</string>
-  <string name="setting_page_search_service_desc">Настроить службу поиска</string>
+  <string name="setting_page_search_service_desc">Настроить поставщиков поисковых служб</string>
   <string name="setting_page_search_test">Тест поиска</string>
   <string name="setting_page_search_test_query_hint">Введите тестовый запрос…</string>
   <string name="setting_page_search_test_run">Запустить тест</string>
@@ -796,7 +796,7 @@
   <string name="setting_page_tts_service_desc">Настроить поставщиков службы преобразования текста в речь</string>
   <string name="setting_page_tts_settings">Настройки TTS</string>
   <string name="setting_page_web_server">Веб-сервер</string>
-  <string name="setting_page_web_server_desc">Разрешить доступ к NyanChat через веб</string>
+  <string name="setting_page_web_server_desc">Доступ к NyanChat через веб</string>
   <string name="setting_page_web_server_error">Ошибка</string>
   <string name="setting_page_web_server_localhost_only">Только localhost</string>
   <string name="setting_page_web_server_localhost_only_desc">Принимать запросы только на localhost (127.0.0.1), отключить доступ по LAN и mDNS</string>
@@ -1032,7 +1032,7 @@
   <string name="translator_page_translate">Перевести</string>
   <string name="tts">TTS</string>
   <string name="unpin_chat">Открепить чат</string>
-  <string name="upload_file">Загрузить файл</string>
+  <string name="file">Файл</string>
   <string name="use_web_search">Веб-поиск</string>
   <string name="user_default_name">Пользователь</string>
   <string name="video">Видео</string>
@@ -1235,11 +1235,15 @@
   <string name="chat_page_delete_selected_confirm">Удалить выбранные чаты (%1$d)?</string>
   <string name="chat_page_delete_message_confirm">Удалить это сообщение?</string>
   <string name="log_page_empty">Нет журналов запросов</string>
+  <string name="log_page_filter">Фильтр</string>
+  <string name="log_page_filter_all">Все</string>
+  <string name="log_page_filter_llm_only">Только LLM-вызовы</string>
+  <string name="log_page_filter_non_llm_only">Не-LLM вызовы</string>
   <string name="backup_page_import_failed_detail">Ошибка импорта: %1$s</string>
   <string name="backup_page_export_failed_detail">Ошибка экспорта: %1$s</string>
   <string name="backup_page_rikkahub_format">Формат, подобный RikkaHub</string>
   <string name="backup_page_tar_desc">Экспорт данных приложения в TAR (несовместимо с RikkaHub)</string>
-  <string name="backup_page_legacy_export">Экспорт в старом формате (совместимо с RikkaHub)</string>
+  <string name="backup_page_legacy_export">Экспорт в старом формате (совместимо с RikkaHub 2.4.x)</string>
   <string name="backup_page_delete_remote_title">Удалить файл резервной копии %1$s</string>
   <string name="backup_page_delete_remote_desc">Удалить этот файл резервной копии? Это действие нельзя отменить.</string>
   <string name="backup_page_legacy_export_desc">Удалить несовместимые настройки, добавленные в этом форке; окружения рабочих пространств не включены</string>

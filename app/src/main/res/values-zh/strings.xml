@@ -134,7 +134,7 @@
   <string name="assistant_page_select_background">选择背景图片</string>
   <string name="assistant_page_select_from_gallery">从相册选择</string>
   <string name="assistant_page_stream_output">流式输出</string>
-  <string name="assistant_page_stream_output_desc">是否启用消息的流式输出</string>
+  <string name="assistant_page_stream_output_desc">启用消息的流式输出</string>
   <string name="assistant_page_system_prompt">系统提示词</string>
   <string name="assistant_page_tab_basic">基础设定</string>
   <string name="assistant_page_tab_extensions">扩展管理</string>
@@ -229,7 +229,7 @@
   <string name="backup_page_webdav_backup">WebDAV 备份</string>
   <string name="backup_page_webdav_backup_files">WebDAV 备份文件列表</string>
   <string name="backup_page_webdav_server_address">WebDAV 服务器地址</string>
-  <string name="built_in_search_description">是否启用模型内置的搜索功能</string>
+  <string name="built_in_search_description">启用模型内置的搜索功能</string>
   <string name="built_in_search_title">模型内置搜索</string>
   <string name="calculating">计算中...</string>
   <string name="cancel_edit">取消编辑</string>
@@ -621,7 +621,7 @@
   <string name="setting_display_page_code_block_auto_collapse_title">代码块自动折叠</string>
   <string name="setting_display_page_code_block_auto_wrap_desc">自动换行代码块中的长行</string>
   <string name="setting_display_page_code_block_auto_wrap_title">代码块自动换行</string>
-  <string name="setting_display_page_create_new_conversation_on_start_desc">当应用启动时，自动创建一个新的对话</string>
+  <string name="setting_display_page_create_new_conversation_on_start_desc">在应用启动时创建并打开新对话</string>
   <string name="setting_display_page_create_new_conversation_on_start_title">启动时新建对话</string>
   <string name="setting_display_page_custom_font_import">导入自定义字体</string>
   <string name="setting_display_page_custom_font_import_failed">导入字体失败：%1$s</string>
@@ -633,9 +633,9 @@
   <string name="setting_display_page_custom_font_title">自定义字体</string>
   <string name="setting_display_page_use_chat_font_globally_desc">让 NyanChat 的 UI 也使用自定义字体（不只聊天）</string>
   <string name="setting_display_page_use_chat_font_globally_title">全局使用自定义字体</string>
-  <string name="setting_display_page_enable_auto_scroll_desc">AI 生成内容时自动滚动到底部</string>
+  <string name="setting_display_page_enable_auto_scroll_desc">AI 生成回复时自动滚动到底部</string>
   <string name="setting_display_page_enable_auto_scroll_title">自动滚动</string>
-  <string name="setting_display_page_enable_blur_effect_desc">为主页的 UI 元素加上透明效果</string>
+  <string name="setting_display_page_enable_blur_effect_desc">为主页的 UI 元素加上半透明毛玻璃效果</string>
   <string name="setting_display_page_enable_blur_effect_title">启用模糊效果</string>
   <string name="setting_display_page_collapse_input_toolbar_title">收起输入框工具栏</string>
   <string name="setting_display_page_collapse_input_toolbar_desc">展开键盘时收起输入框的工具栏</string>
@@ -661,7 +661,7 @@
   <string name="setting_display_page_paste_long_text_as_file_title">粘贴长文本为文件</string>
   <string name="setting_display_page_send_on_enter_desc">按 Enter 发送消息而非换行</string>
   <string name="setting_display_page_send_on_enter_title">按 Enter 发送</string>
-  <string name="setting_display_page_show_assistant_bubble_desc">是否为助手消息显示气泡背景</string>
+  <string name="setting_display_page_show_assistant_bubble_desc">为助手消息显示气泡背景</string>
   <string name="setting_display_page_show_assistant_bubble_title">显示助手消息气泡</string>
   <string name="setting_display_page_show_datetime_in_message_desc">显示创建消息时的日期和时间</string>
   <string name="setting_display_page_show_datetime_in_message_title">显示消息的时间</string>
@@ -672,7 +672,7 @@
   <string name="setting_display_page_message_jumper_left">左</string>
   <string name="setting_display_page_show_message_jumper_desc">在滚动聊天列表时显示快速跳转按钮</string>
   <string name="setting_display_page_show_message_jumper_title">消息导航按钮</string>
-  <string name="setting_display_page_show_model_name_desc">是否在聊天消息中显示模型名称</string>
+  <string name="setting_display_page_show_model_name_desc">在聊天页面显示模型名称</string>
   <string name="setting_display_page_show_model_name_title">显示模型名称</string>
   <string name="setting_display_page_show_thinking_content_desc">控制生成回复时默认的思考块展开状态</string>
   <string name="setting_display_page_show_thinking_content_title">生成时显示思考</string>
@@ -681,7 +681,7 @@
   <string name="setting_display_page_thinking_mode_expanded">展开</string>
   <string name="setting_display_page_show_token_usage_desc">显示 Token 数、耗时、字数等</string>
   <string name="setting_display_page_show_token_usage_title">显示 Token 数等统计信息</string>
-  <string name="setting_display_page_show_user_avatar_desc">是否在聊天消息中显示用户头像</string>
+  <string name="setting_display_page_show_user_avatar_desc">在聊天消息中显示用户头像</string>
   <string name="setting_display_page_show_user_avatar_title">显示用户头像</string>
   <string name="setting_display_page_skip_crop_image_desc">导入图片或拍照后跳过裁剪界面</string>
   <string name="setting_display_page_skip_crop_image_title">跳过图片编辑</string>
@@ -721,7 +721,7 @@
   <string name="setting_mcp_page_custom_headers_desc">为 MCP 服务器请求添加自定义 HTTP 头</string>
   <string name="setting_mcp_page_delete_header">删除请求头</string>
   <string name="setting_mcp_page_enable">启用</string>
-  <string name="setting_mcp_page_enable_desc">是否启用此 MCP 服务器</string>
+  <string name="setting_mcp_page_enable_desc">启用此 MCP 服务器</string>
   <string name="setting_mcp_page_header_name">请求头名称</string>
   <string name="setting_mcp_page_header_name_placeholder">例如：Authorization</string>
   <string name="setting_mcp_page_header_value">请求头值</string>
@@ -776,7 +776,7 @@
   <string name="setting_model_page_translate_model_desc">用于翻译功能</string>
   <string name="setting_model_page_translate_prompt_vars">变量: 原始文本: {source_text}, 目标语言: {target_lang}</string>
   <string name="setting_page_about_desc">关于本 APP</string>
-  <string name="setting_page_assistant_desc">设置个性化助手 (智能体)</string>
+  <string name="setting_page_assistant_desc">自定义助手（智能体）设置</string>
   <string name="setting_page_built_in_tools">内置工具</string>
   <string name="setting_page_built_in_tools_desc">启用模型 API 内置的工具，仅支持部分模型。</string>
   <string name="setting_page_built_in_tools_image_generation">图像生成</string>
@@ -802,7 +802,7 @@
   <string name="setting_page_mode_injection_desc">管理自动注入消息的段落</string>
   <string name="setting_page_lorebook_desc">管理导入的世界书</string>
   <string name="setting_page_dynamic_color">动态颜色</string>
-  <string name="setting_page_dynamic_color_desc">是否基于壁纸动态生成 App 主题配色</string>
+  <string name="setting_page_dynamic_color_desc">基于壁纸动态生成 App 主题配色</string>
   <string name="setting_page_mcp_desc">配置 MCP 服务器</string>
   <string name="setting_page_font_settings">字体</string>
   <string name="setting_page_formula_code_settings">公式和代码</string>
@@ -822,7 +822,7 @@
   <string name="setting_page_search_common_title">通用搜索设置</string>
   <string name="setting_page_search_config">配置</string>
   <string name="setting_page_search_result_size">结果数量</string>
-  <string name="setting_page_search_service_desc">设置搜索服务</string>
+  <string name="setting_page_search_service_desc">配置搜索服务提供商</string>
   <string name="setting_page_search_test">测试搜索</string>
   <string name="setting_page_search_test_query_hint">输入测试查询…</string>
   <string name="setting_page_search_test_run">运行测试</string>
@@ -844,7 +844,7 @@
   <string name="setting_page_tts_service_desc">配置语音合成与语音识别服务提供商</string>
   <string name="setting_page_tts_settings">TTS 设置</string>
   <string name="setting_page_web_server">Web 服务器</string>
-  <string name="setting_page_web_server_desc">允许你通过网页访问 NyanChat</string>
+  <string name="setting_page_web_server_desc">通过网页访问 NyanChat</string>
   <string name="setting_page_web_server_error">错误</string>
   <string name="setting_page_web_server_localhost_only">仅本地主机</string>
   <string name="setting_page_web_server_localhost_only_desc">仅监听 localhost (127.0.0.1)，禁用 LAN 和 mDNS 访问</string>
@@ -897,7 +897,7 @@
   <string name="setting_provider_page_disabled">禁用</string>
   <string name="setting_provider_page_edit_model">编辑模型</string>
   <string name="setting_provider_page_embedding_model">嵌入</string>
-  <string name="setting_provider_page_enable">是否启用</string>
+  <string name="setting_provider_page_enable">启用</string>
   <string name="setting_provider_page_enabled">启用</string>
   <string name="setting_provider_page_filter_example">例如：GPT-3.5</string>
   <string name="setting_provider_page_filter_placeholder">输入模型名称筛选</string>
@@ -1090,7 +1090,7 @@
   <string name="translator_page_translate">翻译</string>
   <string name="tts">语音</string>
   <string name="unpin_chat">取消置顶聊天</string>
-  <string name="upload_file">上传文件</string>
+  <string name="file">文件</string>
   <string name="use_web_search">网络搜索</string>
   <string name="user_default_name">用户</string>
   <string name="video">视频</string>
@@ -1257,11 +1257,15 @@
   <string name="chat_page_delete_selected_confirm">确定删除选中的 %1$d 个聊天吗？</string>
   <string name="chat_page_delete_message_confirm">确定删除这条消息吗？</string>
   <string name="log_page_empty">暂无请求记录</string>
+  <string name="log_page_filter">筛选</string>
+  <string name="log_page_filter_all">全部</string>
+  <string name="log_page_filter_llm_only">仅 LLM 调用</string>
+  <string name="log_page_filter_non_llm_only">非 LLM 调用</string>
   <string name="backup_page_import_failed_detail">导入失败：%1$s</string>
   <string name="backup_page_export_failed_detail">导出失败：%1$s</string>
   <string name="backup_page_rikkahub_format">类 RikkaHub 格式</string>
   <string name="backup_page_tar_desc">导出 App 数据为 TAR 文件（不兼容 RikkaHub）</string>
-  <string name="backup_page_legacy_export">导出旧版格式（兼容 RikkaHub）</string>
+  <string name="backup_page_legacy_export">导出旧版格式（兼容 RikkaHub 2.4.x）</string>
   <string name="backup_page_delete_remote_title">删除 %1$s 备份文件</string>
   <string name="backup_page_delete_remote_desc">确定删除这个备份文件吗？此操作无法撤销。</string>
   <string name="backup_page_legacy_export_desc">移除本 Fork 新增的不兼容设置字段；不包含工作区环境</string>

@@ -158,7 +158,7 @@ private fun SearchPicker(
                 .fillMaxWidth()
                 .heightIn(max = 400.dp)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             settings.searchServices.forEachIndexed { index, service ->
                 SearchPickerOptionRow(

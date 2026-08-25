@@ -9,8 +9,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imeAnimationTarget
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
@@ -171,6 +173,13 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
     var cachedRequestBaseWordCount by remember { mutableStateOf<Int?>(null) }
     var cachedRequestToolCount by remember { mutableStateOf(0) }
     var requestWordCountJob by remember { mutableStateOf<Job?>(null) }
+    // Unlike isImeVisible, the target changes as soon as the IME animation starts.
+    val imeTargetVisible = WindowInsets.imeAnimationTarget.getBottom(density) > 0
+    val collapseToolbar = imeTargetVisible &&
+        setting.displaySetting.collapseChatInputToolbarWhenKeyboardVisible
+    // 开启了“收起输入框工具栏”时，输入框为空或工具栏收起时不做上下文词数/工具数统计
+    val skipRequestStats = setting.displaySetting.collapseChatInputToolbarWhenKeyboardVisible &&
+        (inputState.isEmpty() || collapseToolbar)
     val inputContents = inputState.getContents()
     val currentInputWordCount = inputContents.sumOf { part ->
         (part as? UIMessagePart.Text)?.text?.wordCount() ?: 0
@@ -203,7 +212,8 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
     val refreshRequestWordCount = {
         if (
             setting.displaySetting.showTokenUsage &&
-            currentChatModel != null
+            currentChatModel != null &&
+            !skipRequestStats
         ) {
             requestWordCountJob?.cancel()
             requestWordCountJob = scope.launch {
@@ -229,6 +239,15 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
     // 编辑历史消息时只统计被编辑消息及其之前的内容，进入或退出编辑后重新按新的统计范围计算
     LaunchedEffect(inputState.isEditing()) {
         refreshRequestWordCount()
+    }
+
+    // 输入为空或工具栏收起（需要统计时会跳过）时清空缓存；恢复后再重新统计
+    LaunchedEffect(skipRequestStats) {
+        if (skipRequestStats) {
+            invalidateRequestWordCount()
+        } else {
+            refreshRequestWordCount()
+        }
     }
 
     // 初始化输入状态（处理传入的 files 和 text 参数）

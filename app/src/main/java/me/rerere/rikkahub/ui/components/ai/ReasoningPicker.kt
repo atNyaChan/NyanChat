@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -172,6 +173,7 @@ fun ReasoningPicker(
                         Text(
                             text = level.label(),
                             style = MaterialTheme.typography.labelMedium,
+                            fontWeight = if (index == previewIndex) FontWeight.Bold else FontWeight.Normal,
                             color = if (index == previewIndex) {
                                 MaterialTheme.colorScheme.primary
                             } else {
@@ -195,7 +197,9 @@ fun ReasoningPicker(
                 },
                 valueRange = 0f..(levelCount - 1).toFloat(),
                 steps = levelCount - 2,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(32.dp),
                 thumb = {
                     Box(
                         modifier = Modifier
@@ -231,6 +235,7 @@ fun ReasoningPicker(
                         Text(
                             text = level.label(),
                             style = MaterialTheme.typography.labelMedium,
+                            fontWeight = if (index == previewIndex) FontWeight.Bold else FontWeight.Normal,
                             color = if (index == previewIndex) {
                                 MaterialTheme.colorScheme.primary
                             } else {

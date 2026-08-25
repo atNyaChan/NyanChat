@@ -5,6 +5,7 @@ import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.Copy01
 import me.rerere.hugeicons.stroke.ArrowDown01
 import me.rerere.hugeicons.stroke.ArrowRight01
+import me.rerere.hugeicons.stroke.FilterHorizontal
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -20,6 +21,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -71,11 +75,25 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+private enum class LogFilter { ALL, LLM_ONLY, NON_LLM_ONLY }
+
+private fun isLlmRequest(log: LogEntry.RequestLog): Boolean =
+    log.method.equals("POST", ignoreCase = true) && isLlmGenerationUrl(log.url)
+
 @Composable
 fun LogPage() {
     var logs by remember { mutableStateOf(Logging.getRequestLogs()) }
+    var filter by remember { mutableStateOf(LogFilter.ALL) }
+    var filterMenuExpanded by remember { mutableStateOf(false) }
     var showClearConfirm by remember { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val visibleLogs = remember(logs, filter) {
+        when (filter) {
+            LogFilter.ALL -> logs
+            LogFilter.LLM_ONLY -> logs.filter(::isLlmRequest)
+            LogFilter.NON_LLM_ONLY -> logs.filterNot(::isLlmRequest)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -83,6 +101,52 @@ fun LogPage() {
                 title = { Text(stringResource(R.string.setting_page_request_logs)) },
                 navigationIcon = { BackButton() },
                 actions = {
+                    Box {
+                        IconButton(
+                            onClick = { filterMenuExpanded = true }
+                        ) {
+                            Icon(
+                                HugeIcons.FilterHorizontal,
+                                contentDescription = stringResource(R.string.log_page_filter),
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = filterMenuExpanded,
+                            onDismissRequest = { filterMenuExpanded = false },
+                            shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.log_page_filter_all)) },
+                                leadingIcon = {
+                                    RadioButton(selected = filter == LogFilter.ALL, onClick = null)
+                                },
+                                onClick = {
+                                    filter = LogFilter.ALL
+                                    filterMenuExpanded = false
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.log_page_filter_llm_only)) },
+                                leadingIcon = {
+                                    RadioButton(selected = filter == LogFilter.LLM_ONLY, onClick = null)
+                                },
+                                onClick = {
+                                    filter = LogFilter.LLM_ONLY
+                                    filterMenuExpanded = false
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.log_page_filter_non_llm_only)) },
+                                leadingIcon = {
+                                    RadioButton(selected = filter == LogFilter.NON_LLM_ONLY, onClick = null)
+                                },
+                                onClick = {
+                                    filter = LogFilter.NON_LLM_ONLY
+                                    filterMenuExpanded = false
+                                },
+                            )
+                        }
+                    }
                     IconButton(
                         onClick = { showClearConfirm = true }
                     ) {
@@ -97,7 +161,7 @@ fun LogPage() {
         containerColor = CustomColors.topBarColors.containerColor,
     ) { contentPadding ->
         UnifiedLogList(
-            logs = logs,
+            logs = visibleLogs,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)

@@ -28,15 +28,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -184,9 +185,8 @@ fun ColumnScope.ConversationList(
                 is ConversationListItem.Item -> {
                     ConversationItem(
                         conversation = item.conversation,
-                        selected = if (selectedConversations.isEmpty()) {
-                            item.conversation.id == current.id
-                        } else item.conversation.id in selectedConversations,
+                        highlighted = selectedConversations.isEmpty() && item.conversation.id == current.id,
+                        multiSelected = selectedConversations.isNotEmpty() && item.conversation.id in selectedConversations,
                         multiSelecting = selectedConversations.isNotEmpty(),
                         loading = item.conversation.id in conversationJobs,
                         onClick = { conversation ->
@@ -266,7 +266,8 @@ private fun PinnedHeader(
 @Composable
 private fun ConversationItem(
     conversation: Conversation,
-    selected: Boolean,
+    highlighted: Boolean,
+    multiSelected: Boolean,
     multiSelecting: Boolean,
     loading: Boolean,
     modifier: Modifier = Modifier,
@@ -278,10 +279,10 @@ private fun ConversationItem(
     onClick: (Conversation) -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val backgroundColor = if (selected) {
-        MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp)
-    } else {
-        Color.Transparent
+    val backgroundColor = when {
+        multiSelected -> MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp)
+        highlighted -> MaterialTheme.colorScheme.secondaryContainer
+        else -> Color.Transparent
     }
     var showDropdownMenu by remember {
         mutableStateOf(false)
@@ -289,7 +290,7 @@ private fun ConversationItem(
     var menuOffsetX by remember { mutableStateOf(0f) }
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(50f))
+            .clip(CircleShape)
             .combinedClickable(
                 interactionSource = interactionSource,
                 indication = LocalIndication.current,
@@ -307,12 +308,18 @@ private fun ConversationItem(
             }
             .background(backgroundColor),
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        val contentColor = if (highlighted && !multiSelected) {
+            MaterialTheme.colorScheme.onSecondaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurface
+        }
+        CompositionLocalProvider(LocalContentColor provides contentColor) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
             Text(
                 text = conversation.title.ifBlank { stringResource(id = R.string.chat_page_new_message) },
                 maxLines = 1,
@@ -408,6 +415,7 @@ private fun ConversationItem(
                         Icon(HugeIcons.Delete01, null)
                     }
                 )
+            }
             }
         }
     }
