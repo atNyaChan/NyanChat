@@ -1377,5 +1377,13 @@
   <string name="error_skill_save_failed_name">Save failed: %1$s</string>
   <string name="error_skill_rename_forbidden">Skill name must not be changed (the name field must be “%1$s”)</string>
 
+  <string name="workspace_terminal_close_confirm_title">Close terminal %1$d?</string>
+  <string name="workspace_terminal_close_confirm_message">Closing this tab will terminate any process still running in it.</string>
+  <string name="workspace_terminal_close">Close</string>
+  <string name="chat_generation_network_retrying">%1$s. Retrying (%2$d/%3$d)…</string>
+  <string name="chat_generation_network_unknown_host">Unable to resolve server address</string>
+  <string name="chat_generation_network_timeout">Connection timed out</string>
+  <string name="chat_generation_network_unreachable">Unable to connect to server</string>
+  <string name="chat_generation_network_disconnected">Network connection lost</string>
 </resources>
 

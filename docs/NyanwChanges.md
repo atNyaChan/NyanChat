@@ -427,7 +427,7 @@
 - 应用图标改为由黑白猫脸原图描摹出的矢量资源，同时复用为 Android 主题单色图标、通知图标、默认用户及助手头像、Web 界面 Logo 和聊天图片导出水印。README 使用带柔和投影的白色圆形底板 SVG 版本，使圆形边界在浅色和深色背景下均自然可见，并移除原有 PNG 及兔子图标资源。
 - Release 构建改用 `local.properties` 配置的仓库根目录 `.signing` 发布证书，不再使用 Android Debug 证书；发布身份为 `NyanChat Release`。
 - 应用自身的显示名称统一改为 `NyanChat`，包括 Android 应用名、Web 服务、导出图片水印及对外客户端标识，独立的 `RikkaHub` 搜索服务保留原名。
-- 应用包名改为 `moe.nyanw.nyanchat`，版本字符串自动取构建日期与上游版本号拼接为 `{yyyyMMdd}+{上游版本}`（如 `20260825+2.4.12`）。
+- 应用包名改为 `moe.nyanw.nyanchat`，版本字符串自动取构建日期与上游版本号拼接为 `{yyyyMMdd}+{上游版本}`（如 `20260827+2.4.13`）。
 - 完整移除应用内的自动更新以及捐赠功能，以及启动次数达到阈值后自动弹出的捐赠提醒。
 - “关于”分组只保留“关于”项，并删除右侧的 QQ 和 Discord 链接。
 - “关于”页第二个分组依次包含该 Fork GitHub 链接、该 Fork 的 License 文件链接、RikkaHub GitHub、RikkaHub 官网。

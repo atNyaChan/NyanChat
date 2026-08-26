@@ -323,8 +323,7 @@ class ChatService(
     }
 
     fun getProcessingStatusFlow(conversationId: Uuid): StateFlow<String?> {
-        val session = sessions[conversationId] ?: return MutableStateFlow(null)
-        return session.processingStatus
+        return getOrCreateSession(conversationId).processingStatus
     }
 
     fun getConversationJobs(): Flow<Map<Uuid, Job?>> {
@@ -337,6 +336,30 @@ class ChatService(
                     s.generationJob.map { job -> s.id to job }
                 }) { pairs ->
                     pairs.filter { it.second != null }.toMap()
+                }
+            }
+        }
+    }
+
+    private fun launchGenerationJob(
+        conversationId: Uuid,
+        keepAliveInBackground: Boolean = true,
+        block: suspend () -> Unit,
+    ): Job {
+        if (!keepAliveInBackground) return appScope.launch { block() }
+
+        val generationId = Uuid.random()
+        val foregroundStarted = ChatGenerationForegroundService.acquire(
+            context = context,
+            generationId = generationId,
+            conversationId = conversationId,
+        )
+        return appScope.launch {
+            try {
+                block()
+            } finally {
+                if (foregroundStarted) {
+                    ChatGenerationForegroundService.release(context, generationId)
                 }
             }
         }
@@ -373,7 +396,10 @@ class ChatService(
         val previousJob = session.getJob()
         previousJob?.cancel()
 
-        val job = appScope.launch {
+        val job = launchGenerationJob(
+            conversationId = conversationId,
+            keepAliveInBackground = answer,
+        ) {
             try {
                 runCatching { previousJob?.join() }
                 finishInterruptedPendingTools(conversationId)
@@ -553,7 +579,10 @@ class ChatService(
         val session = getOrCreateSession(conversationId)
         session.getJob()?.cancel()
 
-        val job = appScope.launch {
+        val job = launchGenerationJob(
+            conversationId = conversationId,
+            keepAliveInBackground = message.role == MessageRole.USER || regenerateAssistantMsg,
+        ) {
             try {
                 val conversation = session.state.value
 
@@ -569,7 +598,7 @@ class ChatService(
                 } else {
                     if (regenerateAssistantMsg) {
                         val node = conversation.getMessageNodeByMessage(message)
-                            ?: return@launch
+                            ?: return@launchGenerationJob
                         val nodeIndex = conversation.messageNodes.indexOf(node)
                         val pendingResponse = UIMessage.assistant("")
                         val pendingNode = node.copy(
@@ -615,7 +644,16 @@ class ChatService(
         val session = getOrCreateSession(conversationId)
         session.getJob()?.cancel()
 
-        val job = appScope.launch {
+        val hasOtherPendingTools = session.state.value.messageNodes.any { node ->
+            node.currentMessage.parts.any { part ->
+                part is UIMessagePart.Tool && part.isPending && part.toolCallId != toolCallId
+            }
+        }
+
+        val job = launchGenerationJob(
+            conversationId = conversationId,
+            keepAliveInBackground = !hasOtherPendingTools,
+        ) {
             try {
                 val conversation = session.state.value
                 val newApprovalState = when {

@@ -1375,4 +1375,12 @@
   <string name="error_skill_path_missing_description">%1$s 格式错误：缺少 description 字段</string>
   <string name="error_skill_save_failed_name">保存失败：%1$s</string>
   <string name="error_skill_rename_forbidden">不允许修改技能名称（name 字段必须为 “%1$s”）</string>
+  <string name="workspace_terminal_close_confirm_title">关闭终端 %1$d？</string>
+  <string name="workspace_terminal_close_confirm_message">关闭此标签页将终止其中仍在运行的任何进程。</string>
+  <string name="workspace_terminal_close">关闭</string>
+  <string name="chat_generation_network_retrying">%1$s，正在重试（%2$d/%3$d）…</string>
+  <string name="chat_generation_network_unknown_host">无法解析服务器地址</string>
+  <string name="chat_generation_network_timeout">连接超时</string>
+  <string name="chat_generation_network_unreachable">无法连接到服务器</string>
+  <string name="chat_generation_network_disconnected">网络连接已断开</string>
 </resources>

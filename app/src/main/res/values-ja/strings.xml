@@ -1375,4 +1375,12 @@
   <string name="error_skill_path_missing_description">%1$s の形式エラー: description フィールドがありません</string>
   <string name="error_skill_save_failed_name">保存に失敗しました: %1$s</string>
   <string name="error_skill_rename_forbidden">スキル名は変更できません（name フィールドは “%1$s” である必要があります）</string>
+  <string name="workspace_terminal_close_confirm_title">ターミナル %1$d を閉じますか？</string>
+  <string name="workspace_terminal_close_confirm_message">このタブを閉じると、実行中のプロセスは終了します。</string>
+  <string name="workspace_terminal_close">閉じる</string>
+  <string name="chat_generation_network_retrying">%1$s。再試行中（%2$d/%3$d）…</string>
+  <string name="chat_generation_network_unknown_host">サーバーアドレスを解決できません</string>
+  <string name="chat_generation_network_timeout">接続がタイムアウトしました</string>
+  <string name="chat_generation_network_unreachable">サーバーに接続できません</string>
+  <string name="chat_generation_network_disconnected">ネットワーク接続が切断されました</string>
 </resources>
