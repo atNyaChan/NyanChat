@@ -6,7 +6,6 @@ import me.rerere.hugeicons.stroke.File02
 import me.rerere.hugeicons.stroke.Github
 import me.rerere.hugeicons.stroke.SmartPhone01
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -131,10 +130,8 @@ fun SettingAboutPage() {
                         modifier = Modifier.padding(horizontal = 8.dp),
                     ) {
                         item(
-                            modifier = Modifier.combinedClickable(
-                                onClick = {},
-                                onLongClick = { navController.navigate(Screen.Debug) },
-                            ),
+                            onClick = {},
+                            onLongClick = { navController.navigate(Screen.Debug) },
                             leadingContent = { Icon(HugeIcons.Code, null) },
                             supportingContent = {
                                 Text("${BuildConfig.VERSION_NAME} / ${BuildConfig.VERSION_CODE}")

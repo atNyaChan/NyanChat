@@ -42,6 +42,7 @@ class McpManager(
     private val appScope: AppScope,
     private val filesManager: FilesManager,
     appEventBus: AppEventBus,
+    private val context: Context,
 ) {
     private val okHttpClient = OkHttpClient.Builder()
         .connectTimeout(20, TimeUnit.SECONDS)
@@ -69,7 +70,7 @@ class McpManager(
         settingsStore = settingsStore,
         appScope = appScope,
         appEventBus = appEventBus,
-        oauthClient = McpOAuthClient(okHttpClient),
+        oauthClient = McpOAuthClient(context, okHttpClient),
         updateStatus = statusStore::update,
     )
     private val sessionRegistry = McpSessionRegistry(
@@ -78,6 +79,7 @@ class McpManager(
         httpClient = httpClient,
         oauthCoordinator = oauthCoordinator,
         statusStore = statusStore,
+        context = context,
     )
 
     init {

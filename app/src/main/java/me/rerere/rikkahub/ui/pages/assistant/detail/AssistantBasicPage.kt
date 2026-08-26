@@ -412,7 +412,7 @@ internal fun AssistantBasicContent(
                     Text(
                         text = buildAnnotatedString {
                             append(stringResource(R.string.assistant_page_temperature_warning).trimEnd('。', '.'))
-                            append("。范围是 0 - 2，留空表示使用默认值。")
+                            append(stringResource(R.string.assistant_page_temperature_range_hint))
                         }
                     )
                 },
@@ -438,7 +438,7 @@ internal fun AssistantBasicContent(
                                 onUpdate(assistant.copy(temperature = value))
                             }
                         },
-                    placeholder = { Text("使用默认值") },
+                    placeholder = { Text(stringResource(R.string.assistant_page_use_default)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
                 )
@@ -452,7 +452,7 @@ internal fun AssistantBasicContent(
                     Text(
                         text = buildAnnotatedString {
                             append(stringResource(R.string.assistant_page_top_p_warning).trimEnd('。', '.'))
-                            append("。范围是 0 - 1，留空表示使用默认值。")
+                            append(stringResource(R.string.assistant_page_top_p_range_hint))
                         }
                     )
                 },
@@ -478,7 +478,7 @@ internal fun AssistantBasicContent(
                                 onUpdate(assistant.copy(topP = value))
                             }
                         },
-                    placeholder = { Text("使用默认值") },
+                    placeholder = { Text(stringResource(R.string.assistant_page_use_default)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
                 )

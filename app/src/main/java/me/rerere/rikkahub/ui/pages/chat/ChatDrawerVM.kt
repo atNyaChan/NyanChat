@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.SettingsStore
+import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.data.model.Folder
 import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.rikkahub.data.repository.FolderRepository
@@ -36,7 +37,7 @@ import kotlin.uuid.Uuid
 class ChatDrawerVM(
     private val context: Application,
     private val settingsStore: SettingsStore,
-    conversationRepo: ConversationRepository,
+    private val conversationRepo: ConversationRepository,
     private val folderRepo: FolderRepository,
     private val chatService: ChatService,
     private val savedStateHandle: SavedStateHandle,
@@ -67,6 +68,17 @@ class ChatDrawerVM(
             }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+
+    // 当前助手 + 当前文件夹筛选下的会话总数（用于多选时的“已选 / 总数”展示）
+    val conversationCount: StateFlow<Int> = combine(assistantIdFlow, _selectedFolderId) { assistantId, folderId ->
+        if (folderId == null) {
+            conversationRepo.countUnfiledOfAssistant(assistantId)
+        } else {
+            conversationRepo.countOfFolder(folderId)
+        }
+    }
+        .flatMapLatest { it }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     val conversations: Flow<PagingData<ConversationListItem>> =
         combine(assistantIdFlow, _selectedFolderId) { assistantId, folderId ->
@@ -154,6 +166,30 @@ class ChatDrawerVM(
 
     fun selectFolder(folderId: Uuid?) {
         _selectedFolderId.value = folderId
+    }
+
+    /**
+     * 分页拉取当前视图（按助手 + 当前文件夹筛选）下的全部会话，用于“全选”。
+     */
+    suspend fun loadAllConversationsForSelection(): List<Conversation> {
+        val assistantId = assistantIdFlow.first()
+        val folderId = _selectedFolderId.value
+        val result = mutableListOf<Conversation>()
+        var offset = 0
+        val pageSize = 64
+        while (true) {
+            val page = if (folderId == null) {
+                conversationRepo.getUnfiledConversationsOfAssistantPage(assistantId, offset, pageSize)
+            } else {
+                conversationRepo.getConversationsOfFolderPage(folderId, offset, pageSize)
+            }
+            if (page.items.isEmpty()) break
+            result += page.items
+            val next = page.nextOffset ?: break
+            if (next <= offset) break
+            offset = next
+        }
+        return result
     }
 
     fun selectFolderAfterAssistantChange(assistantId: Uuid, folderId: Uuid?) {

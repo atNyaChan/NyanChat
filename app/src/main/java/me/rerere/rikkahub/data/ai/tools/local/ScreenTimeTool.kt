@@ -82,7 +82,7 @@ internal fun buildScreenTimeTool(context: Context, eventBus: AppEventBus): Tool 
         val rawInput = it.toString()
         fun respond(payload: JsonObject): List<UIMessagePart> {
             Logging.logPermission(
-                type = "获取使用时间",
+                type = "Get screen usage time",
                 toolName = "get_screen_time",
                 rawData = rawInput,
                 resultData = payload.toString(),

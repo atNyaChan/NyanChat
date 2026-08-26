@@ -372,7 +372,7 @@ private fun AddSkillDialog(
                     onValueChange = { content = it },
                     placeholder = {
                         Text(
-                            "---\nname: my-skill\ndescription: \"...\"\n---\n\n指令内容...",
+                            "---\nname: my-skill\ndescription: \"...\"\n---\n\nWrite your skill instructions here...",
                             fontFamily = FontFamily.Monospace,
                         )
                     },

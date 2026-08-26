@@ -1,5 +1,6 @@
 package me.rerere.rikkahub.data.repository
 
+import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -7,6 +8,7 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
+import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.db.dao.WorkspaceDAO
 import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
@@ -29,6 +31,7 @@ class WorkspaceRepository(
     private val manager: WorkspaceManager,
     private val rootfsInstaller: RootfsInstaller,
     private val settingsStore: SettingsStore,
+    private val context: Context,
 ) {
     fun listFlow(): Flow<List<WorkspaceEntity>> = dao.listFlow()
 
@@ -232,7 +235,7 @@ class WorkspaceRepository(
             WorkspaceStorageArea.LINUX -> {
                 val size = manager.fileSize(workspace.root, path, area)
                 require(size <= MAX_PREVIEW_BYTES) {
-                    "文件过大, 无法预览 (${size} bytes)"
+                    context.getString(R.string.workspace_file_preview_too_large, size)
                 }
                 ByteArrayOutputStream().use { out ->
                     manager.exportFile(workspace.root, path, area, out)

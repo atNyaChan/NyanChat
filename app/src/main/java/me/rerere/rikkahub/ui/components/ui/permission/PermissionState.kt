@@ -206,7 +206,7 @@ class PermissionState internal constructor(
     private fun launchPermissionRequest(permissionInfos: List<PermissionInfo>) {
         val permissionsToRequest = permissionInfos.map { it.permission }.toTypedArray()
         Logging.logPermission(
-            type = "请求系统权限",
+            type = "Request system permission",
             toolName = "android_permission",
             rawData = permissionsToRequest.joinToString(
                 prefix = "[",

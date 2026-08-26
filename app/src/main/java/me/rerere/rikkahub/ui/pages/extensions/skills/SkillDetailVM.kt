@@ -1,5 +1,6 @@
 package me.rerere.rikkahub.ui.pages.extensions.skills
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -7,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.files.SkillFrontmatterParser
 import me.rerere.rikkahub.data.files.SkillManager
 import java.io.File
@@ -27,6 +29,7 @@ sealed class SkillFileNode {
 
 class SkillDetailVM(
     private val skillManager: SkillManager,
+    private val context: Context,
 ) : ViewModel() {
 
     private val _tree = MutableStateFlow<List<SkillFileNode>>(emptyList())
@@ -68,13 +71,13 @@ class SkillDetailVM(
             if (relativePath == "SKILL.md") {
                 val name = SkillFrontmatterParser.parse(content)["name"]
                 if (name != skillName) {
-                    withContext(Dispatchers.Main) { onResult("不允许修改技能名称（name 字段必须为 \"$skillName\"）") }
+                    withContext(Dispatchers.Main) { onResult(context.getString(R.string.error_skill_rename_forbidden, skillName)) }
                     return@launch
                 }
             }
             val success = skillManager.saveSkillFile(skillName, relativePath, content)
             loadFiles()
-            withContext(Dispatchers.Main) { onResult(if (success) null else "保存失败") }
+            withContext(Dispatchers.Main) { onResult(if (success) null else context.getString(R.string.common_error_save_failed)) }
         }
     }
 

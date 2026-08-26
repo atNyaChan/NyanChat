@@ -125,6 +125,7 @@ fun ChatDrawerContent(
         initialFirstVisibleItemIndex = drawerVm.scrollIndex,
         initialFirstVisibleItemScrollOffset = drawerVm.scrollOffset,
     )
+    val conversationCount by drawerVm.conversationCount.collectAsStateWithLifecycle()
 
     LaunchedEffect(conversationListState) {
         snapshotFlow {
@@ -270,6 +271,7 @@ fun ChatDrawerContent(
                 conversations = conversations,
                 conversationJobs = conversationJobs.keys,
                 listState = conversationListState,
+                totalConversations = conversationCount,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
@@ -291,6 +293,7 @@ fun ChatDrawerContent(
                     moveStartedFromMultiSelect = fromMultiSelect
                 },
                 onDeleteSelected = { conversationsToDelete = it },
+                onLoadAllConversations = { drawerVm.loadAllConversationsForSelection() },
             )
 
             conversationToDelete?.let { conversation ->

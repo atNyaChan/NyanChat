@@ -114,7 +114,7 @@ internal fun buildLocationTool(context: Context): Tool = Tool(
             }
         }
         Logging.logPermission(
-            type = "获取位置信息",
+            type = "Get location",
             toolName = "get_location",
             rawData = arguments.toString(),
             resultData = result.toString(),

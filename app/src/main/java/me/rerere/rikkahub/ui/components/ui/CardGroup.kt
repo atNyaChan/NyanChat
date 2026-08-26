@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -52,6 +53,7 @@ private val CardGroupInnerCorner = 4.dp
 
 private data class CardGroupItem(
     val onClick: (() -> Unit)?,
+    val onLongClick: (() -> Unit)?,
     val modifier: Modifier,
     val overlineContent: (@Composable () -> Unit)?,
     val headlineContent: @Composable () -> Unit,
@@ -68,6 +70,7 @@ private annotation class CardGroupDsl
 interface CardGroupScope {
     fun item(
         onClick: (() -> Unit)? = null,
+        onLongClick: (() -> Unit)? = null,
         modifier: Modifier = Modifier,
         overlineContent: (@Composable () -> Unit)? = null,
         supportingContent: (@Composable () -> Unit)? = null,
@@ -91,6 +94,7 @@ private class CardGroupScopeImpl : CardGroupScope {
 
     override fun item(
         onClick: (() -> Unit)?,
+        onLongClick: (() -> Unit)?,
         modifier: Modifier,
         overlineContent: (@Composable () -> Unit)?,
         supportingContent: (@Composable () -> Unit)?,
@@ -102,6 +106,7 @@ private class CardGroupScopeImpl : CardGroupScope {
         items.add(
             CardGroupItem(
                 onClick = onClick,
+                onLongClick = onLongClick,
                 modifier = modifier,
                 overlineContent = overlineContent,
                 headlineContent = headlineContent,
@@ -197,11 +202,12 @@ private fun CardGroupListItem(
             .fillMaxWidth()
             .clip(itemShape)
             .then(
-                if (item.onClick != null) {
-                    Modifier.clickable(
+                if (item.onClick != null || item.onLongClick != null) {
+                    Modifier.combinedClickable(
                         interactionSource = interactionSource,
                         indication = LocalIndication.current,
-                        onClick = item.onClick,
+                        onClick = item.onClick ?: {},
+                        onLongClick = item.onLongClick,
                     )
                 } else Modifier
             ),
@@ -228,14 +234,15 @@ fun CardGroup(
     title: (@Composable () -> Unit)? = null,
     continueFromPrevious: Boolean = false,
     continueToNext: Boolean = false,
+    cornerInset: Dp = CardGroupScreenInset,
     content: CardGroupScope.() -> Unit,
 ) {
     val scope = CardGroupScopeImpl()
     scope.content()
     val screenCornerRadii = if (LocalScreenCornerAdaptationEnabled.current) {
         LocalScreenEdgeCornerRadii.current?.inset(
-            horizontalInset = CardGroupScreenInset,
-            bottomInset = CardGroupScreenInset,
+            horizontalInset = cornerInset,
+            bottomInset = cornerInset,
         )
     } else {
         null
@@ -274,14 +281,15 @@ fun CardGroupRow(
     modifier: Modifier = Modifier,
     continueFromPrevious: Boolean = false,
     continueToNext: Boolean = false,
+    cornerInset: Dp = CardGroupScreenInset,
     content: CardGroupScope.() -> Unit,
 ) {
     val scope = CardGroupScopeImpl()
     scope.content()
     val screenCornerRadii = if (LocalScreenCornerAdaptationEnabled.current) {
         LocalScreenEdgeCornerRadii.current?.inset(
-            horizontalInset = CardGroupScreenInset,
-            bottomInset = CardGroupScreenInset,
+            horizontalInset = cornerInset,
+            bottomInset = cornerInset,
         )
     } else {
         null
@@ -388,15 +396,15 @@ private fun CardGroupPreview() {
                 title = { Text("About") },
             ) {
                 item(
-                    headlineContent = { Text("第一项") },
+                    headlineContent = { Text("First item") },
                 )
                 item(
-                    headlineContent = { Text("第二项") },
-                    supportingContent = { Text("支持文本") },
+                    headlineContent = { Text("Second item") },
+                    supportingContent = { Text("Supporting text") },
                 )
                 item(
                     onClick = {},
-                    headlineContent = { Text("第三项") },
+                    headlineContent = { Text("Third item") },
                     trailingContent = { Text("→") },
                 )
             }

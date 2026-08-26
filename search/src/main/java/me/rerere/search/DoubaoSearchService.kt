@@ -4,6 +4,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
@@ -13,6 +14,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import me.rerere.ai.core.InputSchema
+import me.rerere.search.R
 import me.rerere.search.SearchResult.SearchResultItem
 import me.rerere.search.SearchService.Companion.httpClient
 import me.rerere.search.SearchService.Companion.json
@@ -30,7 +32,7 @@ object DoubaoSearchService : SearchService<SearchServiceOptions.DoubaoOptions> {
         TextButton(onClick = {
             uriHandler.openUri("https://console.volcengine.com/search-infinity/api-key")
         }) {
-            Text("豆包搜索 API Key")
+            Text(stringResource(R.string.doubao_desc))
         }
     }
 

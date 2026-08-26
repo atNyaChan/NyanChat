@@ -24,11 +24,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dokar.sonner.ToastType
 import kotlinx.coroutines.launch
+import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.context.LocalToaster
@@ -51,6 +54,7 @@ fun WorkspaceFileEditorPage(
     val repository = koinInject<WorkspaceRepository>()
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     val editable = area == WorkspaceStorageArea.FILES
     val fileName = path.substringAfterLast('/').ifBlank { path }
 
@@ -68,7 +72,7 @@ fun WorkspaceFileEditorPage(
             textState.setTextAndPlaceCursorAtEnd(content)
             loading = false
         }.onFailure {
-            loadError = it.message ?: "读取文件失败"
+            loadError = it.message ?: context.getString(R.string.workspace_file_editor_read_failed)
             loading = false
         }
     }
@@ -99,16 +103,16 @@ fun WorkspaceFileEditorPage(
                                             overwrite = true,
                                         )
                                     }.onSuccess {
-                                        toaster.show("已保存", type = ToastType.Success)
+                                        toaster.show(context.getString(R.string.workspace_file_editor_saved), type = ToastType.Success)
                                     }.onFailure {
-                                        toaster.show(it.message ?: "保存失败", type = ToastType.Error)
+                                        toaster.show(it.message ?: context.getString(R.string.workspace_file_editor_save_failed), type = ToastType.Error)
                                     }
                                     saving = false
                                 }
                             },
                             enabled = !saving,
                         ) {
-                            Text("Save")
+                            Text(stringResource(R.string.workspace_file_editor_save))
                         }
                     }
                 },

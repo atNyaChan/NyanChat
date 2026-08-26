@@ -1,5 +1,6 @@
 package me.rerere.rikkahub.data.ai.mcp
 
+import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -23,6 +24,7 @@ import java.security.SecureRandom
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.io.encoding.Base64
+import me.rerere.rikkahub.R
 
 private const val TAG = "McpOAuthClient"
 
@@ -40,6 +42,7 @@ private const val TAG = "McpOAuthClient"
  * 最终仅通过 transport 的 requestBuilder 注入 `Authorization: Bearer` 请求头。
  */
 class McpOAuthClient(
+    private val context: Context,
     private val httpClient: OkHttpClient,
 ) {
     private val json = Json {
@@ -115,7 +118,7 @@ class McpOAuthClient(
                     return@withContext meta
                 }
             }
-            error("无法发现受保护资源元数据 (protected resource metadata)")
+            error(context.getString(R.string.error_mcp_discover_resource_metadata))
         }
 
     /**
@@ -131,7 +134,7 @@ class McpOAuthClient(
                     return@withContext meta
                 }
             }
-            error("无法发现授权服务器元数据 (authorization server metadata): $issuer")
+            error(context.getString(R.string.error_mcp_discover_as_metadata, issuer))
         }
 
     /** 动态客户端注册 (RFC 7591)，返回 client_id (公共客户端通常无 secret)。 */
@@ -185,7 +188,7 @@ class McpOAuthClient(
         resource: String,
     ): String {
         val base = authorizationEndpoint.toHttpUrlOrNull()
-            ?: error("非法的授权端点: $authorizationEndpoint")
+            ?: error(context.getString(R.string.error_mcp_invalid_authorization_endpoint, authorizationEndpoint))
         return base.newBuilder()
             .addQueryParameter("response_type", "code")
             .addQueryParameter("client_id", clientId)

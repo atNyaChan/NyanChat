@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MultiChoiceSegmentedButtonRow
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -39,6 +38,7 @@ import me.rerere.rikkahub.ui.components.ui.StickyHeader
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.pages.backup.BackupVM
 import me.rerere.rikkahub.ui.pages.backup.components.BackupDialog
+import me.rerere.rikkahub.ui.pages.backup.components.BackupItemsDescriptionText
 import me.rerere.rikkahub.ui.pages.backup.components.RestoreWarningDialog
 import java.io.File
 import java.io.FileInputStream
@@ -252,11 +252,7 @@ fun ImportExportTab(
                                     }
                                 }
                             }
-                            Text(
-                                text = stringResource(R.string.backup_page_chat_records_always),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
+                            BackupItemsDescriptionText()
                         }
                     },
                 )

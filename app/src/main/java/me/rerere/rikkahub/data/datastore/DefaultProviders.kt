@@ -1,10 +1,11 @@
 package me.rerere.rikkahub.data.datastore
 
+import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import me.rerere.ai.provider.BalanceOption
-import me.rerere.ai.provider.Modality
-import me.rerere.ai.provider.Model
-import me.rerere.ai.provider.ModelAbility
 import me.rerere.ai.provider.ProviderSetting
+import me.rerere.rikkahub.R
 import kotlin.uuid.Uuid
 
 val DEFAULT_AUTO_MODEL_ID = Uuid.parse("b7055fb4-39f9-4042-a88a-0d80ed76cf08")
@@ -34,7 +35,7 @@ val DEFAULT_PROVIDERS = listOf(
     ),
     ProviderSetting.OpenAI(
         id = Uuid.parse("56a94d29-c88b-41c5-8e09-38a7612d6cf8"),
-        name = "硅基流动",
+        name = "SiliconFlow",
         baseUrl = "https://api.siliconflow.cn/v1",
         apiKey = "",
         builtIn = true,
@@ -59,7 +60,7 @@ val DEFAULT_PROVIDERS = listOf(
     ),
     ProviderSetting.OpenAI(
         id = Uuid.parse("d6c4d8c6-3f62-4ca9-a6f3-7ade6b15ecc3"),
-        name = "月之暗面",
+        name = "Moonshot AI",
         baseUrl = "https://api.moonshot.cn/v1",
         apiKey = "",
         enabled = true,
@@ -97,7 +98,7 @@ val DEFAULT_PROVIDERS = listOf(
     ),
     ProviderSetting.OpenAI(
         id = Uuid.parse("f76cae46-069a-4334-ab8e-224e4979e58c"),
-        name = "阿里云百炼",
+        name = "Alibaba Cloud Bailian",
         baseUrl = "https://dashscope.aliyuncs.com/compatible-mode/v1",
         apiKey = "",
         enabled = false,
@@ -105,7 +106,7 @@ val DEFAULT_PROVIDERS = listOf(
     ),
     ProviderSetting.OpenAI(
         id = Uuid.parse("3dfd6f9b-f9d9-417f-80c1-ff8d77184191"),
-        name = "火山引擎",
+        name = "Volcengine",
         baseUrl = "https://ark.cn-beijing.volces.com/api/v3",
         apiKey = "",
         enabled = false,
@@ -113,7 +114,7 @@ val DEFAULT_PROVIDERS = listOf(
     ),
     ProviderSetting.OpenAI(
         id = Uuid.parse("3bc40dc1-b11a-46fa-863b-6306971223be"),
-        name = "智谱AI开放平台",
+        name = "Zhipu AI",
         baseUrl = "https://open.bigmodel.cn/api/paas/v4",
         apiKey = "",
         enabled = false,
@@ -153,3 +154,19 @@ val DEFAULT_PROVIDERS = listOf(
         builtIn = true,
     ),
 )
+
+@StringRes
+fun builtInProviderDisplayNameRes(id: Uuid): Int? = when (id) {
+    Uuid.parse("56a94d29-c88b-41c5-8e09-38a7612d6cf8") -> R.string.default_provider_siliconflow
+    Uuid.parse("d6c4d8c6-3f62-4ca9-a6f3-7ade6b15ecc3") -> R.string.default_provider_moonshot
+    Uuid.parse("f76cae46-069a-4334-ab8e-224e4979e58c") -> R.string.default_provider_alibaba_bailian
+    Uuid.parse("3dfd6f9b-f9d9-417f-80c1-ff8d77184191") -> R.string.default_provider_volcengine
+    Uuid.parse("3bc40dc1-b11a-46fa-863b-6306971223be") -> R.string.default_provider_zhipu
+    else -> null
+}
+
+@Composable
+fun ProviderSetting.localizedDisplayName(): String {
+    val res = builtInProviderDisplayNameRes(id)
+    return if (res != null) stringResource(res) else name
+}

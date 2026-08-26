@@ -26,6 +26,7 @@ internal fun AssistantListItemContent(
     displayName: String,
     modifier: Modifier = Modifier,
     avatarModifier: Modifier = Modifier,
+    avatarOnClick: (() -> Unit)? = null,
     supportingContent: (@Composable () -> Unit)? = null,
     trailingContent: (@Composable RowScope.() -> Unit)? = null,
 ) {
@@ -42,6 +43,7 @@ internal fun AssistantListItemContent(
             value = assistant.avatar,
             invertDefaultAvatarInDarkMode = true,
             modifier = avatarModifier.size(40.dp),
+            onClick = avatarOnClick,
         )
         Column(
             modifier = Modifier.weight(1f),

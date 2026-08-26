@@ -147,16 +147,7 @@ fun UIAvatar(
     }
 
     Box(modifier = modifier.then(Modifier.size(32.dp))) {
-        Surface(
-            shape = rememberAvatarShape(loading),
-            modifier = Modifier.fillMaxSize(),
-            onClick = {
-                onClick?.invoke()
-                if (onUpdate != null) showPickOption = true
-            },
-            tonalElevation = 4.dp,
-            color = MaterialTheme.colorScheme.secondaryContainer,
-        ) {
+        val avatarContent: @Composable () -> Unit = {
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.fillMaxSize()
@@ -204,6 +195,29 @@ fun UIAvatar(
                     }
                 }
             }
+        }
+        // No click/update handler: render a plain (non-clickable) surface so touches
+        // fall through to the parent, and the parent's press ripple covers the whole card.
+        if (onClick != null || onUpdate != null) {
+            Surface(
+                shape = rememberAvatarShape(loading),
+                modifier = Modifier.fillMaxSize(),
+                onClick = {
+                    onClick?.invoke()
+                    if (onUpdate != null) showPickOption = true
+                },
+                tonalElevation = 4.dp,
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                content = avatarContent,
+            )
+        } else {
+            Surface(
+                shape = rememberAvatarShape(loading),
+                modifier = Modifier.fillMaxSize(),
+                tonalElevation = 4.dp,
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                content = avatarContent,
+            )
         }
 
         // Show edit icon when editable

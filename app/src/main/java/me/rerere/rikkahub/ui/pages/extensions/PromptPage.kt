@@ -4,6 +4,7 @@ import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.ArrowDown01
 import me.rerere.hugeicons.stroke.FileImport
 import me.rerere.hugeicons.stroke.Add01
+import me.rerere.hugeicons.stroke.Share01
 import me.rerere.hugeicons.stroke.Share03
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.Cancel01
@@ -67,6 +68,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -385,19 +387,22 @@ private fun ModeInjectionEditSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.9f)
-                .padding(16.dp),
+                .fillMaxHeight(0.9f),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
                 text = stringResource(R.string.prompt_page_edit_mode_injection),
                 style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
             )
 
             Column(
                 modifier = Modifier
                     .weight(1f)
+                    .padding(horizontal = 16.dp)
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -474,7 +479,9 @@ private fun ModeInjectionEditSheet(
             }
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -831,45 +838,56 @@ private fun LorebookEditSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.95f)
-                .padding(16.dp),
+                .fillMaxHeight(0.95f),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
                 text = stringResource(R.string.prompt_page_edit_lorebook),
                 style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
             )
 
             Column(
                 modifier = Modifier
                     .weight(1f)
+                    .padding(horizontal = 16.dp)
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                OutlinedTextField(
-                    value = book.name,
-                    onValueChange = { onEdit(book.copy(name = it)) },
-                    label = { Text(stringResource(R.string.prompt_page_name)) },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                CardGroup {
+                    item(
+                        supportingContent = {
+                            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                OutlinedTextField(
+                                    value = book.name,
+                                    onValueChange = { onEdit(book.copy(name = it)) },
+                                    label = { Text(stringResource(R.string.prompt_page_name)) },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                OutlinedTextField(
+                                    value = book.description,
+                                    onValueChange = { onEdit(book.copy(description = it)) },
+                                    label = { Text(stringResource(R.string.prompt_page_description)) },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        },
+                        headlineContent = {},
+                    )
 
-                OutlinedTextField(
-                    value = book.description,
-                    onValueChange = { onEdit(book.copy(description = it)) },
-                    label = { Text(stringResource(R.string.prompt_page_description)) },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                FormItem(
-                    label = { Text(stringResource(R.string.prompt_page_enabled)) },
-                    tail = {
-                        Switch(
-                            checked = book.enabled,
-                            onCheckedChange = { onEdit(book.copy(enabled = it)) }
-                        )
-                    }
-                )
+                    FormItem(
+                        label = { Text(stringResource(R.string.prompt_page_enabled)) },
+                        tail = {
+                            Switch(
+                                checked = book.enabled,
+                                onCheckedChange = { onEdit(book.copy(enabled = it)) }
+                            )
+                        }
+                    )
+                }
 
                 // 条目列表
                 Row(
@@ -918,17 +936,19 @@ private fun LorebookEditSheet(
             }
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(onClick = { showExportDialog = true }) {
-                    Icon(HugeIcons.Share03, stringResource(R.string.common_export))
-                }
                 if (onDelete != null) {
                     IconButton(onClick = { showDeleteConfirm = true }) {
                         Icon(HugeIcons.Delete01, stringResource(R.string.common_delete))
                     }
+                }
+                IconButton(onClick = { showExportDialog = true }) {
+                    Icon(HugeIcons.Share01, stringResource(R.string.common_export))
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 TextButton(onClick = onDismiss) {
@@ -1086,20 +1106,23 @@ private fun RegexInjectionEditDialog(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.95f)
-                .padding(16.dp),
+                .fillMaxHeight(0.95f),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(
                 text = stringResource(R.string.prompt_page_edit_entry),
                 style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
             )
 
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
                     .verticalScroll(rememberScrollState())
                     .imePadding(),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -1294,7 +1317,9 @@ private fun RegexInjectionEditDialog(
 
             val canSave = entry.keywords.isNotEmpty() || entry.constantActive
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                 verticalAlignment = Alignment.CenterVertically,
             ) {

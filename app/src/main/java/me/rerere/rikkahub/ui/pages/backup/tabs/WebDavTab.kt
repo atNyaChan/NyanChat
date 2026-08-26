@@ -61,6 +61,7 @@ import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.pages.backup.BackupVM
+import me.rerere.rikkahub.ui.pages.backup.components.BackupItemsDescriptionText
 import me.rerere.rikkahub.ui.pages.backup.components.RestoreWarningDialog
 import me.rerere.rikkahub.utils.UiState
 import me.rerere.rikkahub.utils.fileSizeToString
@@ -157,11 +158,7 @@ fun WebDavTab(
                                 }
                             }
                         }
-                        Text(
-                            text = stringResource(R.string.backup_page_chat_records_always),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                        BackupItemsDescriptionText()
                     }
                 }
             )

@@ -265,7 +265,7 @@ private fun DataTablePreview() {
                 listOf(
                     { Text("Fall 2024") },
                     { Text("Fair", style = MaterialTheme.typography.bodyMedium) },
-                    { MarkdownBlock("这行更高会把整行拉齐! 这是一个很长的文本用来测试换行功能!  \n>haha") },
+                    { MarkdownBlock("This row is taller and will align the whole row! This is a long text used to test line wrapping!  \n>haha") },
                 ),
             )
 

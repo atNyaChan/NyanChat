@@ -282,8 +282,12 @@ class ConversationRepository(
         return conversationDAO.existsById(uuid.toString())
     }
 
-    suspend fun countConversations(): Int {
-        return conversationDAO.countAll()
+    fun countUnfiledOfAssistant(assistantId: Uuid): Flow<Int> {
+        return conversationDAO.countUnfiledOfAssistant(assistantId.toString())
+    }
+
+    fun countOfFolder(folderId: Uuid): Flow<Int> {
+        return conversationDAO.countOfFolder(folderId.toString())
     }
 
     suspend fun insertConversation(conversation: Conversation) {

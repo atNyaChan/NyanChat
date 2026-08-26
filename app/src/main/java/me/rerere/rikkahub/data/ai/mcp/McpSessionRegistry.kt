@@ -1,5 +1,6 @@
 package me.rerere.rikkahub.data.ai.mcp
 
+import android.content.Context
 import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.request.HttpRequestBuilder
@@ -36,6 +37,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
 import me.rerere.ai.core.InputSchema
 import me.rerere.rikkahub.AppScope
+import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration.Companion.seconds
@@ -99,6 +101,7 @@ internal class McpSessionRegistry(
     private val httpClient: HttpClient,
     private val oauthCoordinator: McpOAuthCoordinator,
     private val statusStore: McpStatusStore,
+    private val context: Context,
 ) {
     private val sessions = ConcurrentHashMap<Uuid, McpSession>()
 
@@ -365,7 +368,7 @@ internal class McpSessionRegistry(
                     session.client = null
                     session.connectedConfig = null
                     failedClient?.let { closeClient(it, session.config.commonOptions.name) }
-                    statusStore.update(configId, McpStatus.Error("连接断开，已达最大重连次数"))
+                    statusStore.update(configId, McpStatus.Error(context.getString(R.string.error_mcp_reconnect_limit)))
                     return@withLock
                 }
 

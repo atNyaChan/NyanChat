@@ -35,13 +35,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
+import kotlinx.coroutines.launch
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.ui.theme.extendColors
@@ -84,6 +85,7 @@ fun ColumnScope.ConversationList(
     conversations: LazyPagingItems<ConversationListItem>,
     conversationJobs: Collection<Uuid>,
     listState: LazyListState,
+    totalConversations: Int,
     modifier: Modifier = Modifier,
     onClick: (Conversation) -> Unit = {},
     onDelete: (Conversation) -> Unit = {},
@@ -91,9 +93,11 @@ fun ColumnScope.ConversationList(
     onPin: (Conversation) -> Unit = {},
     onMove: (List<Conversation>, Boolean) -> Unit = { _, _ -> },
     onDeleteSelected: (List<Conversation>) -> Unit = {},
+    onLoadAllConversations: suspend () -> List<Conversation> = { emptyList() },
 ) {
     var hasScrolledToCurrent by remember { mutableStateOf(false) }
     var selectedConversations by remember { mutableStateOf<Map<Uuid, Conversation>>(emptyMap()) }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(current.id, conversations.itemCount, hasScrolledToCurrent) {
         if (hasScrolledToCurrent) return@LaunchedEffect
@@ -116,11 +120,21 @@ fun ColumnScope.ConversationList(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    stringResource(R.string.conversation_selected_count, selectedConversations.size),
+                    "${selectedConversations.size} / $totalConversations",
                     modifier = Modifier.weight(1f),
                 )
                 IconButton(onClick = { selectedConversations = emptyMap() }) {
                     Icon(HugeIcons.Cancel01, contentDescription = stringResource(R.string.conversation_cancel_selection))
+                }
+                IconButton(
+                    onClick = {
+                        scope.launch {
+                            selectedConversations = onLoadAllConversations().associateBy { it.id }
+                        }
+                    },
+                    enabled = !(totalConversations > 0 && selectedConversations.size == totalConversations),
+                ) {
+                    Icon(HugeIcons.CheckList, contentDescription = stringResource(R.string.conversation_select_all))
                 }
                 IconButton(onClick = {
                     onMove(selectedConversations.values.toList(), true)
@@ -279,10 +293,10 @@ private fun ConversationItem(
     onClick: (Conversation) -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val backgroundColor = when {
-        multiSelected -> MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp)
-        highlighted -> MaterialTheme.colorScheme.secondaryContainer
-        else -> Color.Transparent
+    val backgroundColor = if (multiSelected || highlighted) {
+        MaterialTheme.colorScheme.secondaryContainer
+    } else {
+        Color.Transparent
     }
     var showDropdownMenu by remember {
         mutableStateOf(false)
@@ -308,7 +322,7 @@ private fun ConversationItem(
             }
             .background(backgroundColor),
     ) {
-        val contentColor = if (highlighted && !multiSelected) {
+        val contentColor = if (multiSelected || highlighted) {
             MaterialTheme.colorScheme.onSecondaryContainer
         } else {
             MaterialTheme.colorScheme.onSurface

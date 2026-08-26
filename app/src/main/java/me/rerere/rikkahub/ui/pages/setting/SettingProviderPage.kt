@@ -61,14 +61,13 @@ import io.github.g00fy2.quickie.QRResult
 import io.github.g00fy2.quickie.ScanQRCode
 import me.rerere.ai.provider.ProviderSetting
 import me.rerere.rikkahub.R
-import me.rerere.rikkahub.Screen
+import me.rerere.rikkahub.data.datastore.localizedDisplayName
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.Tag
 import me.rerere.rikkahub.ui.components.ui.TagType
 import me.rerere.rikkahub.ui.components.ui.decodeProviderSetting
-import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.hooks.useEditState
 import me.rerere.rikkahub.ui.pages.setting.components.ProviderConfigure
@@ -83,7 +82,6 @@ import kotlin.uuid.Uuid
 @Composable
 fun SettingProviderPage(vm: SettingVM = koinViewModel()) {
     val settings by vm.settings.collectAsStateWithLifecycle()
-    val navController = LocalNavController.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val filteredProviders = settings.providers
     val lazyListState = rememberLazyListState()
@@ -100,6 +98,7 @@ fun SettingProviderPage(vm: SettingVM = koinViewModel()) {
         }
         vm.updateSettings(settings.copy(providers = newProviders))
     }
+    val detailEditState = useEditState<ProviderSetting> {}
 
     Scaffold(
         topBar = {
@@ -168,12 +167,21 @@ fun SettingProviderPage(vm: SettingVM = koinViewModel()) {
                                 ),
                             provider = provider,
                             onClick = {
-                                navController.navigate(Screen.SettingProviderDetail(providerId = provider.id.toString()))
+                                detailEditState.open(provider)
                             }
                         )
                     }
                 }
             }
+        }
+    }
+
+    if (detailEditState.isEditing) {
+        detailEditState.currentState?.let { provider ->
+            SettingProviderDetailSheet(
+                id = provider.id,
+                onDismiss = { detailEditState.dismiss() },
+            )
         }
     }
 }
@@ -465,7 +473,7 @@ private fun ProviderItem(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(
-                    text = provider.name,
+                    text = provider.localizedDisplayName(),
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis

@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -45,9 +47,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,6 +75,7 @@ import me.rerere.tts.provider.TTSProviderSetting
 import org.koin.androidx.compose.koinViewModel
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @Composable
@@ -80,7 +83,8 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
     val settings by vm.settings.collectAsStateWithLifecycle()
     var editingTTSProvider by remember { mutableStateOf<TTSProviderSetting?>(null) }
     var editingASRProvider by remember { mutableStateOf<ASRProviderSetting?>(null) }
-    var selectedPage by remember { mutableIntStateOf(0) }
+    val pagerState = rememberPagerState { 2 }
+    val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
@@ -89,7 +93,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                 title = {
                     Text(
                         text = stringResource(
-                            if (selectedPage == 0) R.string.speech_tab_tts else R.string.speech_tab_asr
+                            if (pagerState.currentPage == 0) R.string.speech_tab_tts else R.string.speech_tab_asr
                         )
                     )
                 },
@@ -97,7 +101,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                     BackButton()
                 },
                 actions = {
-                    if (selectedPage == 0) {
+                    if (pagerState.currentPage == 0) {
                         AddTTSProviderButton {
                             vm.updateSettings(
                                 settings.copy(
@@ -121,18 +125,16 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
             )
         },
         bottomBar = {
-            NavigationBar(
-                containerColor = CustomColors.cardColorsOnSurfaceContainer.containerColor
-            ) {
+            NavigationBar {
                 NavigationBarItem(
-                    selected = selectedPage == 0,
-                    onClick = { selectedPage = 0 },
+                    selected = pagerState.currentPage == 0,
+                    onClick = { scope.launch { pagerState.animateScrollToPage(0) } },
                     icon = { Icon(HugeIcons.VolumeHigh, contentDescription = null) },
                     label = { Text(stringResource(R.string.speech_tab_tts)) }
                 )
                 NavigationBarItem(
-                    selected = selectedPage == 1,
-                    onClick = { selectedPage = 1 },
+                    selected = pagerState.currentPage == 1,
+                    onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
                     icon = { Icon(HugeIcons.Mic01, contentDescription = null) },
                     label = { Text(stringResource(R.string.speech_tab_asr)) }
                 )
@@ -141,29 +143,36 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = CustomColors.topBarColors.containerColor,
     ) { innerPadding ->
-        when (selectedPage) {
-            0 -> Column(modifier = Modifier.padding(innerPadding)) {
-                TTSPlaybackSpeedSetting(
-                    speed = settings.defaultTTSPlaybackSpeed,
-                    onSpeedChange = {
-                        vm.updateSettings(settings.copy(defaultTTSPlaybackSpeed = it))
-                    },
-                    modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 8.dp),
-                )
-                TTSProviderList(
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+        ) { page ->
+            when (page) {
+                0 -> Column(modifier = Modifier.fillMaxSize()) {
+                    TTSPlaybackSpeedSetting(
+                        speed = settings.defaultTTSPlaybackSpeed,
+                        onSpeedChange = {
+                            vm.updateSettings(settings.copy(defaultTTSPlaybackSpeed = it))
+                        },
+                        modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 8.dp),
+                    )
+                    TTSProviderList(
+                        settings = settings,
+                        onUpdateSettings = vm::updateSettings,
+                        onEdit = { editingTTSProvider = it },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+
+                1 -> ASRProviderList(
                     settings = settings,
                     onUpdateSettings = vm::updateSettings,
-                    onEdit = { editingTTSProvider = it },
-                    modifier = Modifier.weight(1f),
+                    onEdit = { editingASRProvider = it },
+                    modifier = Modifier.fillMaxSize()
                 )
             }
-
-            1 -> ASRProviderList(
-                settings = settings,
-                onUpdateSettings = vm::updateSettings,
-                onEdit = { editingASRProvider = it },
-                modifier = Modifier.padding(innerPadding)
-            )
         }
     }
 

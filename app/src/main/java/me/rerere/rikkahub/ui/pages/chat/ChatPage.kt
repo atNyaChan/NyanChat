@@ -22,18 +22,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -409,7 +406,7 @@ private fun ChatPageContent(
     val folderName = remember(conversation.folderId, folders) {
         folders.firstOrNull { it.id == conversation.folderId }?.name
     }
-    var showFilesSheet by remember { mutableStateOf(false) }
+    var filesExpanded by remember { mutableStateOf(false) }
 
     val completionProviders = remember(assistant.workspaceId, conversation.workspaceCwd, workspaceRepository) {
         assistant.workspaceId?.let { workspaceId ->
@@ -520,9 +517,27 @@ private fun ChatPageContent(
                             )
                         )
                     },
-                    onMoreClick = {
-                        onRequestWordCountInvalidate()
-                        showFilesSheet = true
+                    filesExpanded = filesExpanded,
+                    onFilesExpandedChange = { expanded ->
+                        if (expanded) {
+                            onRequestWordCountInvalidate()
+                        } else {
+                            onRequestWordCountRefresh()
+                        }
+                        filesExpanded = expanded
+                    },
+                    filesPanel = {
+                        ChatFilesPanel(
+                            inputState = inputState,
+                            setting = setting,
+                            conversation = conversation,
+                            assistant = assistant,
+                            vm = vm,
+                            onCollapse = {
+                                filesExpanded = false
+                                onRequestWordCountRefresh()
+                            },
+                        )
                     },
                 )
             },
@@ -609,31 +624,17 @@ private fun ChatPageContent(
                 },
             )
         }
-
-        if (showFilesSheet) {
-            ChatFilesPickerSheet(
-                inputState = inputState,
-                setting = setting,
-                conversation = conversation,
-                assistant = assistant,
-                vm = vm,
-                onDismiss = {
-                    showFilesSheet = false
-                    onRequestWordCountRefresh()
-                },
-            )
-        }
     }
 }
 
 @Composable
-private fun ChatFilesPickerSheet(
+private fun ChatFilesPanel(
     inputState: ChatInputState,
     setting: Settings,
     conversation: Conversation,
     assistant: Assistant,
     vm: ChatVM,
-    onDismiss: () -> Unit,
+    onCollapse: () -> Unit,
 ) {
     val context = LocalContext.current
     val toaster = LocalToaster.current
@@ -644,7 +645,7 @@ private fun ChatFilesPickerSheet(
     fun dismissAll() {
         showInjectionSheet = false
         showCompressDialog = false
-        onDismiss()
+        onCollapse()
     }
 
     val cameraPermission = rememberPermissionState(PermissionCamera)
@@ -784,67 +785,58 @@ private fun ChatFilesPickerSheet(
             }
         }
 
-    val filesSheetState = rememberBottomSheetState(
-        initialValue = SheetValue.Hidden,
-        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
-    )
-    ModalBottomSheet(
-        sheetState = filesSheetState,
-        onDismissRequest = { dismissAll() },
-    ) {
-        FilesPicker(
-            conversation = conversation,
-            state = inputState,
-            assistant = assistant,
-            mcpManager = vm.mcpManager,
-            onCompressContext = { additionalPrompt, targetTokens, keepRecentMessages ->
-                vm.handleCompressContext(additionalPrompt, targetTokens, keepRecentMessages)
-            },
-            onUpdateAssistant = {
-                vm.updateSettings(
-                    setting.copy(
-                        assistants = setting.assistants.map { assistant ->
-                            if (assistant.id == it.id) {
-                                it
-                            } else {
-                                assistant
-                            }
+    FilesPicker(
+        conversation = conversation,
+        state = inputState,
+        assistant = assistant,
+        mcpManager = vm.mcpManager,
+        onCompressContext = { additionalPrompt, targetTokens, keepRecentMessages ->
+            vm.handleCompressContext(additionalPrompt, targetTokens, keepRecentMessages)
+        },
+        onUpdateAssistant = {
+            vm.updateSettings(
+                setting.copy(
+                    assistants = setting.assistants.map { assistant ->
+                        if (assistant.id == it.id) {
+                            it
+                        } else {
+                            assistant
                         }
-                    )
+                    }
                 )
-            },
-            onSelectSearch = { mode, serviceIndex ->
-                vm.updateSettings(
-                    setting.copy(
-                        searchServiceSelected = serviceIndex ?: setting.searchServiceSelected,
-                        assistants = setting.assistants.map { item ->
-                            if (item.id == assistant.id) {
-                                item.copy(
-                                    enableWebSearch = mode != SearchMode.OFF,
-                                    useBuiltInSearch = mode == SearchMode.BUILT_IN,
-                                )
-                            } else {
-                                item
-                            }
-                        },
-                    )
+            )
+        },
+        onSelectSearch = { mode, serviceIndex ->
+            vm.updateSettings(
+                setting.copy(
+                    searchServiceSelected = serviceIndex ?: setting.searchServiceSelected,
+                    assistants = setting.assistants.map { item ->
+                        if (item.id == assistant.id) {
+                            item.copy(
+                                enableWebSearch = mode != SearchMode.OFF,
+                                useBuiltInSearch = mode == SearchMode.BUILT_IN,
+                            )
+                        } else {
+                            item
+                        }
+                    },
                 )
-            },
-            onUpdateConversation = {
-                vm.updateConversation(it)
-            },
-            showInjectionSheet = showInjectionSheet,
-            onShowInjectionSheetChange = { showInjectionSheet = it },
-            showCompressDialog = showCompressDialog,
-            onShowCompressDialogChange = { showCompressDialog = it },
-            onDismiss = { dismissAll() },
-            onTakePic = onLaunchCamera,
-            onPickImage = { imagePickerLauncher.launch("image/*") },
-            onPickVideo = { videoPickerLauncher.launch("video/*") },
-            onPickAudio = { audioPickerLauncher.launch("audio/*") },
-            onPickFile = { filePickerLauncher.launch(arrayOf("*/*")) },
-        )
-    }
+            )
+        },
+        onUpdateConversation = {
+            vm.updateConversation(it)
+        },
+        showInjectionSheet = showInjectionSheet,
+        onShowInjectionSheetChange = { showInjectionSheet = it },
+        showCompressDialog = showCompressDialog,
+        onShowCompressDialogChange = { showCompressDialog = it },
+        onDismiss = { dismissAll() },
+        onTakePic = onLaunchCamera,
+        onPickImage = { imagePickerLauncher.launch("image/*") },
+        onPickVideo = { videoPickerLauncher.launch("video/*") },
+        onPickAudio = { audioPickerLauncher.launch("audio/*") },
+        onPickFile = { filePickerLauncher.launch(arrayOf("*/*")) },
+    )
 }
 
 @Composable

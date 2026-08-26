@@ -17,6 +17,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import me.rerere.rikkahub.AppScope
+import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.event.AppEvent
 import me.rerere.rikkahub.data.event.AppEventBus
@@ -132,16 +133,16 @@ internal class McpOAuthCoordinator(
 
     private suspend fun authorize(config: McpServerConfig, context: Context) = withContext(Dispatchers.IO) {
         val serverUrl = config.serverUrl
-        require(serverUrl.isNotBlank()) { "Server URL 为空，无法授权" }
+        require(serverUrl.isNotBlank()) { context.getString(R.string.error_mcp_server_url_blank) }
 
         val protectedResource = oauthClient.discoverProtectedResource(serverUrl)
         val issuer = protectedResource.authorizationServers.firstOrNull()
-            ?: error("受保护资源未声明授权服务器")
+            ?: error(context.getString(R.string.error_mcp_no_authorization_server))
         val metadata = oauthClient.discoverAuthorizationServer(issuer)
         val authorizationEndpoint = metadata.authorizationEndpoint
-            ?: error("授权服务器缺少 authorization_endpoint")
+            ?: error(context.getString(R.string.error_mcp_missing_authorization_endpoint))
         val tokenEndpoint = metadata.tokenEndpoint
-            ?: error("授权服务器缺少 token_endpoint")
+            ?: error(context.getString(R.string.error_mcp_missing_token_endpoint))
         val scope = config.commonOptions.oauth?.scope
             ?: protectedResource.scopesSupported?.joinToString(" ")
             ?: metadata.scopesSupported?.joinToString(" ")
@@ -151,7 +152,7 @@ internal class McpOAuthCoordinator(
         var clientSecret = existing?.clientSecret
         if (clientId.isNullOrBlank()) {
             val registrationEndpoint = metadata.registrationEndpoint
-                ?: error("授权服务器不支持动态注册，且未预配置 client_id")
+                ?: error(context.getString(R.string.error_mcp_no_dynamic_registration))
             val registration = oauthClient.registerClient(
                 registrationEndpoint = registrationEndpoint,
                 clientName = config.commonOptions.name,
@@ -188,9 +189,9 @@ internal class McpOAuthCoordinator(
             resource = resource,
         )
         val callback = awaitCallbackAndLaunchBrowser(context, authorizationUrl, state)
-            ?: error("OAuth 授权超时")
-        callback.error?.let { error("授权失败: $it") }
-        val code = callback.code ?: error("授权失败: 未返回授权码")
+            ?: error(context.getString(R.string.error_mcp_oauth_timeout))
+        callback.error?.let { error(context.getString(R.string.error_mcp_auth_failed, it)) }
+        val code = callback.code ?: error(context.getString(R.string.error_mcp_auth_no_code))
 
         val token = oauthClient.exchangeCode(
             tokenEndpoint = tokenEndpoint,

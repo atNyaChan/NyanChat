@@ -90,6 +90,12 @@ interface ConversationDAO {
     @Query("SELECT COUNT(*) FROM conversationentity")
     suspend fun countAll(): Int
 
+    @Query("SELECT COUNT(*) FROM conversationentity WHERE assistant_id = :assistantId AND folder_id = ''")
+    fun countUnfiledOfAssistant(assistantId: String): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM conversationentity WHERE folder_id = :folderId")
+    fun countOfFolder(folderId: String): Flow<Int>
+
     @Query(
         "SELECT strftime('%Y-%m-%d', create_at/1000, 'unixepoch', 'localtime') AS day, " +
             "COUNT(*) AS count " +

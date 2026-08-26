@@ -925,9 +925,11 @@ private fun FishAudioTTSConfiguration(
     }
 
     // Model (下拉选择框 + 文本输入框，完全同 ElevenLabs 格式)
+    val recommended = stringResource(R.string.setting_tts_page_model_recommended)
+    val free = stringResource(R.string.setting_tts_page_model_free)
     val models = listOf(
-        "s2.1-pro" to "S2.1-Pro (推荐)",
-        "s2.1-pro-free" to "S2.1-Pro Free (免费)",
+        "s2.1-pro" to "S2.1-Pro ($recommended)",
+        "s2.1-pro-free" to "S2.1-Pro Free ($free)",
         "s2-pro" to "S2-Pro",
         "s1" to "S1"
     )

@@ -42,6 +42,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -97,6 +98,7 @@ import me.rerere.hugeicons.stroke.ArrowUp02
 import me.rerere.hugeicons.stroke.Cancel01
 import me.rerere.hugeicons.stroke.File02
 import me.rerere.hugeicons.stroke.Fullscreen
+import me.rerere.hugeicons.stroke.MinusSign
 import me.rerere.hugeicons.stroke.Tools
 import me.rerere.hugeicons.stroke.Upload02
 import me.rerere.hugeicons.stroke.Zap
@@ -141,7 +143,9 @@ fun ChatInput(
     completionProviders: List<ChatCompletionProvider> = emptyList(),
     onUpdateChatModel: (Model) -> Unit,
     onUpdateAssistant: (Assistant) -> Unit,
-    onMoreClick: () -> Unit,
+    filesExpanded: Boolean,
+    onFilesExpandedChange: (Boolean) -> Unit,
+    filesPanel: @Composable () -> Unit,
     onCancelClick: () -> Unit,
     onSendClick: () -> Unit,
     onLongSendClick: () -> Unit,
@@ -275,7 +279,10 @@ fun ChatInput(
                         state = state,
                         completionProviders = completionProviders,
                         onFocusChanged = { focused ->
-                            if (focused) onRequestWordCountRefresh()
+                            if (focused) {
+                                if (filesExpanded) onFilesExpandedChange(false)
+                                onRequestWordCountRefresh()
+                            }
                         },
                         onSendMessage = { sendMessage() },
                         trailingContent = {
@@ -381,10 +388,17 @@ fun ChatInput(
                         }
 
                         ActionIconButton(
-                            onClick = onMoreClick
+                            onClick = {
+                                if (filesExpanded) {
+                                    onFilesExpandedChange(false)
+                                } else {
+                                    focusManager.clearFocus(force = true)
+                                    onFilesExpandedChange(true)
+                                }
+                            }
                         ) {
                             Icon(
-                                imageVector = HugeIcons.Add01,
+                                imageVector = if (filesExpanded) HugeIcons.MinusSign else HugeIcons.Add01,
                                 contentDescription = stringResource(R.string.more_options)
                             )
                         }
@@ -427,6 +441,18 @@ fun ChatInput(
                             )
                         }
                     }
+                    }
+
+                    AnimatedVisibility(
+                        visible = filesExpanded,
+                        enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
+                        exit = shrinkVertically() + fadeOut(),
+                    ) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                        )
+                        filesPanel()
                     }
                 }
             }

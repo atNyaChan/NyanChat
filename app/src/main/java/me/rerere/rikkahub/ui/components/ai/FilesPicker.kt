@@ -104,9 +104,12 @@ internal fun FilesPicker(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(start = 8.dp, end = 8.dp, top = 16.dp, bottom = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        CardGroupRow {
+        CardGroupRow(
+            cornerInset = 24.dp,
+        ) {
             photoButtonItems(
                 provider = provider,
                 onTakePic = onTakePic,
@@ -117,7 +120,7 @@ internal fun FilesPicker(
             )
         }
 
-        CardGroup {
+        CardGroup(cornerInset = 24.dp) {
             if (settings.mcpServers.isNotEmpty()) {
                 mcpItem(
                     assistant = assistant,

@@ -47,7 +47,7 @@ internal fun buildClipboardTool(context: Context): Tool = Tool(
     execute = {
         val params = it.jsonObject
         val action = params["action"]?.jsonPrimitive?.contentOrNull ?: error("action is required")
-        val type = if (action == "read") "读取剪贴板" else "写入剪贴板"
+        val type = if (action == "read") "Read clipboard" else "Write clipboard"
         val payload = when (action) {
             "read" -> {
                 buildJsonObject {

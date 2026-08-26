@@ -366,7 +366,7 @@ private fun McpServerItem(
                         Tag(type = TagType.SUCCESS) {
                             when (item) {
                                 is McpServerConfig.SseTransportServer -> Text("SSE")
-                                is McpServerConfig.StreamableHTTPServer -> Text("Streamable HTTP")
+                                is McpServerConfig.StreamableHTTPServer -> Text("HTTP")
                             }
                         }
                     }
@@ -545,9 +545,6 @@ private fun McpCommonOptionsConfigure(
             label = {
                 Text(stringResource(R.string.setting_mcp_page_enable))
             },
-            description = {
-                Text(stringResource(R.string.setting_mcp_page_enable_desc))
-            },
             tail = {
                 Switch(
                     checked = config.commonOptions.enable,
@@ -568,39 +565,35 @@ private fun McpCommonOptionsConfigure(
             },
         )
 
-        FormItem(
-            label = {
-                Text(stringResource(R.string.setting_mcp_page_name))
-            },
-            description = {
-                Text(stringResource(R.string.setting_mcp_page_name_desc))
-            }
-        ) {
-            val nameInvalid = !isValidMcpName(config.commonOptions.name)
-            OutlinedTextField(
-                value = config.commonOptions.name,
-                onValueChange = { name ->
-                    update(
-                        when (config) {
-                            is McpServerConfig.SseTransportServer -> config.copy(
-                                commonOptions = config.commonOptions.copy(name = name)
-                            )
+        item(
+            headlineContent = {},
+            supportingContent = {
+                val nameInvalid = !isValidMcpName(config.commonOptions.name)
+                OutlinedTextField(
+                    value = config.commonOptions.name,
+                    onValueChange = { name ->
+                        update(
+                            when (config) {
+                                is McpServerConfig.SseTransportServer -> config.copy(
+                                    commonOptions = config.commonOptions.copy(name = name)
+                                )
 
-                            is McpServerConfig.StreamableHTTPServer -> config.copy(
-                                commonOptions = config.commonOptions.copy(name = name)
-                            )
-                        }
-                    )
-                },
-                label = { Text(stringResource(R.string.setting_mcp_page_name)) },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text(stringResource(R.string.setting_mcp_page_name_placeholder)) },
-                isError = nameInvalid,
-                supportingText = if (nameInvalid) {
-                    { Text(stringResource(R.string.setting_mcp_page_name_invalid)) }
-                } else null
-            )
-        }
+                                is McpServerConfig.StreamableHTTPServer -> config.copy(
+                                    commonOptions = config.commonOptions.copy(name = name)
+                                )
+                            }
+                        )
+                    },
+                    label = { Text(stringResource(R.string.setting_mcp_page_name)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text(stringResource(R.string.setting_mcp_page_name_placeholder)) },
+                    isError = nameInvalid,
+                    supportingText = if (nameInvalid) {
+                        { Text(stringResource(R.string.setting_mcp_page_name_invalid)) }
+                    } else null
+                )
+            },
+        )
 
         FormItem(
             label = {
@@ -611,7 +604,7 @@ private fun McpCommonOptionsConfigure(
             }
         ) {
             val transportTypes = listOf(
-                "Streamable HTTP",
+                "HTTP",
                 "SSE"
             )
             val currentTypeIndex = when (config) {
@@ -659,44 +652,35 @@ private fun McpCommonOptionsConfigure(
             }
         }
 
-        FormItem(
-            label = {
-                Text(stringResource(R.string.setting_mcp_page_server_url))
-            },
-            description = {
-                Text(
-                    when (config) {
-                        is McpServerConfig.SseTransportServer -> stringResource(R.string.setting_mcp_page_sse_url_desc)
-                        is McpServerConfig.StreamableHTTPServer -> stringResource(R.string.setting_mcp_page_streamable_http_url_desc)
+        item(
+            headlineContent = {},
+            supportingContent = {
+                OutlinedTextField(
+                    value = when (config) {
+                        is McpServerConfig.SseTransportServer -> config.url
+                        is McpServerConfig.StreamableHTTPServer -> config.url
+                    },
+                    onValueChange = { url ->
+                        update(
+                            when (config) {
+                                is McpServerConfig.SseTransportServer -> config.copy(url = url)
+                                is McpServerConfig.StreamableHTTPServer -> config.copy(url = url)
+                            }
+                        )
+                    },
+                    label = { Text(stringResource(R.string.setting_mcp_page_url_label)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = {
+                        Text(
+                            when (config) {
+                                is McpServerConfig.SseTransportServer -> stringResource(R.string.setting_mcp_page_sse_url_placeholder)
+                                is McpServerConfig.StreamableHTTPServer -> stringResource(R.string.setting_mcp_page_streamable_http_url_placeholder)
+                            }
+                        )
                     }
                 )
-            }
-        ) {
-            OutlinedTextField(
-                value = when (config) {
-                    is McpServerConfig.SseTransportServer -> config.url
-                    is McpServerConfig.StreamableHTTPServer -> config.url
-                },
-                onValueChange = { url ->
-                    update(
-                        when (config) {
-                            is McpServerConfig.SseTransportServer -> config.copy(url = url)
-                            is McpServerConfig.StreamableHTTPServer -> config.copy(url = url)
-                        }
-                    )
-                },
-                label = { Text(stringResource(R.string.setting_mcp_page_url_label)) },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = {
-                    Text(
-                        when (config) {
-                            is McpServerConfig.SseTransportServer -> stringResource(R.string.setting_mcp_page_sse_url_placeholder)
-                            is McpServerConfig.StreamableHTTPServer -> stringResource(R.string.setting_mcp_page_streamable_http_url_placeholder)
-                        }
-                    )
-                }
-            )
-        }
+            },
+        )
 
         FormItem(
             label = {
@@ -963,7 +947,7 @@ private fun McpToolCard(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     Text(
-                        text = "启用",
+                        text = stringResource(R.string.setting_mcp_page_enable),
                         style = MaterialTheme.typography.labelSmall,
                     )
                     Switch(

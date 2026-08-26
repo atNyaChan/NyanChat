@@ -109,7 +109,7 @@ import me.rerere.rikkahub.ui.pages.setting.SettingFilesPage
 import me.rerere.rikkahub.ui.pages.setting.SettingMcpPage
 import me.rerere.rikkahub.ui.pages.setting.SettingModelPage
 import me.rerere.rikkahub.ui.pages.setting.SettingPage
-import me.rerere.rikkahub.ui.pages.setting.SettingProviderDetailPage
+import me.rerere.rikkahub.ui.pages.setting.SettingProviderDetailSheet
 import me.rerere.rikkahub.ui.pages.setting.SettingProviderPage
 import me.rerere.rikkahub.ui.pages.setting.SettingSearchDetailPage
 import me.rerere.rikkahub.ui.pages.setting.SettingSearchCommonPage
@@ -440,9 +440,11 @@ class RouteActivity : AppCompatActivity() {
 
                             entry<Screen.SettingProviderDetail> { key ->
                                 val id = Uuid.parse(key.providerId)
-                                SettingProviderDetailPage(
+                                val nav = LocalNavController.current
+                                SettingProviderDetailSheet(
                                     id = id,
                                     initialModelId = key.modelId?.let { Uuid.parse(it) },
+                                    onDismiss = { nav.popBackStack() },
                                 )
                             }
 
@@ -547,7 +549,7 @@ class RouteActivity : AppCompatActivity() {
                     )
                     if (BuildConfig.DEBUG) {
                         Text(
-                            text = "[开发模式]",
+                            text = stringResource(R.string.dev_mode_badge),
                             modifier = Modifier
                                 .align(Alignment.TopCenter)
                                 .padding(top = 4.dp),

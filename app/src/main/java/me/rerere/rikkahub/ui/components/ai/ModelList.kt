@@ -78,6 +78,7 @@ import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.datastore.findModelById
 import me.rerere.rikkahub.data.datastore.findProvider
+import me.rerere.rikkahub.data.datastore.localizedDisplayName
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.SearchFieldShape
@@ -644,7 +645,7 @@ private fun ColumnScope.ModelList(
                         }
                     },
                     label = {
-                        Text(provider.name)
+                        Text(provider.localizedDisplayName())
                     },
                     leadingIcon = {
                         AutoAIIcon(name = provider.name, modifier = Modifier.size(16.dp))

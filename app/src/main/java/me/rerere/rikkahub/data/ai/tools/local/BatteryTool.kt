@@ -26,7 +26,7 @@ internal fun buildBatteryTool(context: Context): Tool = Tool(
             put("unit", "percent")
         }.toString()
         Logging.logPermission(
-            type = "读取电池电量",
+            type = "Read battery level",
             toolName = "battery_level",
             rawData = "{}",
             resultData = result,

@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.NavigationDrawerItem
@@ -37,7 +36,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import me.rerere.hugeicons.HugeIcons
-import me.rerere.hugeicons.stroke.Edit03
 import me.rerere.hugeicons.stroke.LookTop
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.Screen
@@ -143,7 +141,7 @@ private fun AssistantPickerSheet(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = stringResource(R.string.assistant_page_title),
+                text = stringResource(R.string.assistant_picker_title),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
@@ -216,15 +214,6 @@ private fun AssistantItem(
     AssistantListItemContent(
         assistant = assistant,
         displayName = assistant.name.ifEmpty { defaultAssistantName },
-        trailingContent = {
-            IconButton(
-                onClick = onEdit,
-            ) {
-                Icon(
-                    imageVector = HugeIcons.Edit03,
-                    contentDescription = null
-                )
-            }
-        },
+        avatarOnClick = onEdit,
     )
 }

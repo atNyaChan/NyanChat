@@ -33,7 +33,8 @@ fun ProviderBalanceText(
     providerSetting: ProviderSetting,
     modifier: Modifier = Modifier,
     style: TextStyle = LocalTextStyle.current,
-    color: Color = Color.Unspecified
+    color: Color = Color.Unspecified,
+    refreshKey: Int = 0,
 ) {
     if (!providerSetting.balanceOption.enabled || providerSetting !is ProviderSetting.OpenAI) {
         // Balance option is disabled or provider is not OpenAI type
@@ -42,24 +43,33 @@ fun ProviderBalanceText(
 
     val providerManager = koinInject<ProviderManager>()
 
-    val value = produceState(initialValue = "~", key1 = providerSetting.id, key2 = providerSetting.balanceOption) {
-        // Check cache first
-        val cachedBalance = cache.getIfPresent("${providerSetting.id},${providerSetting.balanceOption.hashCode()}")
-        if (cachedBalance != null) {
-            value = cachedBalance
-        } else {
-            // Fetch balance from API
-            runCatching {
-                val balance = providerManager.getProviderByType(providerSetting).getBalance(providerSetting)
-                // Cache the result
-                cache.put("${providerSetting.id},${providerSetting.balanceOption.hashCode()}", balance)
-                value = balance
-            }.onFailure {
-                // Handle error
-                val errorMsg = "Error: ${it.message}"
-                // Don't cache error messages
-                value = errorMsg
+    val value = produceState(
+        initialValue = "~",
+        key1 = providerSetting.id,
+        key2 = providerSetting.balanceOption,
+        key3 = refreshKey,
+    ) {
+        val cacheKey = "${providerSetting.id},${providerSetting.balanceOption.hashCode()}"
+        // Skip the cache when a refresh is requested (refreshKey > 0)
+        if (refreshKey == 0) {
+            // Check cache first
+            val cachedBalance = cache.getIfPresent(cacheKey)
+            if (cachedBalance != null) {
+                value = cachedBalance
+                return@produceState
             }
+        }
+        // Fetch balance from API
+        runCatching {
+            val balance = providerManager.getProviderByType(providerSetting).getBalance(providerSetting)
+            // Cache the result
+            cache.put(cacheKey, balance)
+            value = balance
+        }.onFailure {
+            // Handle error
+            val errorMsg = "Error: ${it.message}"
+            // Don't cache error messages
+            value = errorMsg
         }
     }
 

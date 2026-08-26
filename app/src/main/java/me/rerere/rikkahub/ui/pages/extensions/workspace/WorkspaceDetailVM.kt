@@ -1,5 +1,6 @@
 package me.rerere.rikkahub.ui.pages.extensions.workspace
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
@@ -10,6 +11,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
+import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.workspace.RootfsInstallProgress
@@ -21,6 +23,7 @@ class WorkspaceDetailVM(
     private val id: String,
     private val repository: WorkspaceRepository,
     private val terminalSessionManager: WorkspaceTerminalSessionManager,
+    private val context: Context,
 ) : ViewModel() {
     private val _state = MutableStateFlow(WorkspaceDetailState())
     val state = _state.asStateFlow()
@@ -85,7 +88,7 @@ class WorkspaceDetailVM(
                     it.copy(
                         entries = emptyList(),
                         loading = false,
-                        error = error.message ?: "加载工作区文件失败",
+                        error = error.message ?: context.getString(R.string.workspace_detail_load_files_failed),
                     )
                 }
             }
@@ -104,7 +107,7 @@ class WorkspaceDetailVM(
             }.onSuccess {
                 refresh()
             }.onFailure { error ->
-                _state.update { it.copy(error = error.message ?: "删除失败") }
+                _state.update { it.copy(error = error.message ?: context.getString(R.string.workspace_detail_delete_failed)) }
             }
         }
     }
@@ -140,7 +143,7 @@ class WorkspaceDetailVM(
             }.onSuccess {
                 refresh()
             }.onFailure { error ->
-                _state.update { it.copy(error = error.message ?: "导入文件失败") }
+                _state.update { it.copy(error = error.message ?: context.getString(R.string.workspace_detail_import_failed)) }
             }
         }
     }
@@ -157,7 +160,7 @@ class WorkspaceDetailVM(
             }.onSuccess {
                 refresh()
             }.onFailure { error ->
-                _state.update { it.copy(error = error.message ?: "新建文件夹失败") }
+                _state.update { it.copy(error = error.message ?: context.getString(R.string.workspace_detail_create_folder_failed)) }
             }
         }
     }
@@ -172,7 +175,7 @@ class WorkspaceDetailVM(
                     outputStream = outputStream,
                 )
             }.onFailure { error ->
-                _state.update { it.copy(error = error.message ?: "导出文件失败") }
+                _state.update { it.copy(error = error.message ?: context.getString(R.string.workspace_detail_export_file_failed)) }
             }
         }
     }
@@ -210,7 +213,7 @@ class WorkspaceDetailVM(
                 }
                 file
             }.onSuccess(onReady).onFailure { error ->
-                _state.update { it.copy(error = error.message ?: "导出文件失败") }
+                _state.update { it.copy(error = error.message ?: context.getString(R.string.workspace_detail_export_file_failed)) }
             }
         }
     }
@@ -238,7 +241,7 @@ class WorkspaceDetailVM(
             } catch (e: CancellationException) {
                 throw e
             } catch (error: Throwable) {
-                _installError.value = error.message ?: "Rootfs 安装失败"
+                _installError.value = error.message ?: context.getString(R.string.workspace_detail_rootfs_install_failed)
             } finally {
                 _installProgress.value = null
             }
@@ -260,7 +263,7 @@ class WorkspaceDetailVM(
             } catch (e: CancellationException) {
                 throw e
             } catch (error: Throwable) {
-                _installError.value = error.message ?: "Rootfs 安装失败"
+                _installError.value = error.message ?: context.getString(R.string.workspace_detail_rootfs_install_failed)
             } finally {
                 _installProgress.value = null
             }

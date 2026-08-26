@@ -77,8 +77,20 @@ import java.util.Locale
 
 private enum class LogFilter { ALL, LLM_ONLY, NON_LLM_ONLY }
 
-private fun isLlmRequest(log: LogEntry.RequestLog): Boolean =
-    log.method.equals("POST", ignoreCase = true) && isLlmGenerationUrl(log.url)
+private fun isLlmRequest(log: LogEntry.RequestLog): Boolean {
+    if (!log.method.equals("POST", ignoreCase = true)) return false
+    val path = log.url.substringBefore('?').trimEnd('/').lowercase()
+    return path.endsWith("/chat/completions") ||
+        path.endsWith("/completions") ||
+        path.endsWith("/responses") ||
+        path.endsWith("/messages") ||
+        path.endsWith("/api/chat") ||
+        path.endsWith("/api/generate") ||
+        path.endsWith(":generatecontent") ||
+        path.endsWith(":streamgeneratecontent") ||
+        path.endsWith("/chat") ||
+        path.endsWith("/generate")
+}
 
 @Composable
 fun LogPage() {
@@ -237,6 +249,14 @@ private fun UnifiedLogList(
 @Composable
 private fun RequestLogCard(log: LogEntry.RequestLog, onClick: () -> Unit) {
     val dateFormat = remember { SimpleDateFormat("HH:mm:ss", Locale.getDefault()) }
+    val statusCodeColor = if (log.responseCode == null || log.responseCode in 200..299) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.error
+    }
+    val requestModel = remember(log.requestBody) {
+        log.requestBody?.let(::extractRequestModel)
+    }
 
     OutlinedItemCard(
         onClick = onClick,
@@ -274,13 +294,22 @@ private fun RequestLogCard(log: LogEntry.RequestLog, onClick: () -> Unit) {
             ) {
                 log.responseCode?.let { code ->
                     Text(
-                        text = "Status: $code",
+                        text = buildAnnotatedString {
+                            withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurfaceVariant)) {
+                                append("Status:")
+                            }
+                            append(" ")
+                            withStyle(
+                                SpanStyle(
+                                    color = statusCodeColor,
+                                    fontFamily = JetbrainsMono,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                            ) {
+                                append(code.toString())
+                            }
+                        },
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (code in 200..299) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.error
-                        }
                     )
                 }
                 log.durationMs?.let { duration ->
@@ -304,6 +333,27 @@ private fun RequestLogCard(log: LogEntry.RequestLog, onClick: () -> Unit) {
                     color = MaterialTheme.colorScheme.error
                 )
             }
+
+            if (isLlmRequest(log) && requestModel != null) {
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurfaceVariant)) {
+                            append("Model:")
+                        }
+                        append(" ")
+                        withStyle(
+                            SpanStyle(
+                                color = MaterialTheme.colorScheme.primary,
+                                fontFamily = JetbrainsMono,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        ) {
+                            append(requestModel)
+                        }
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            }
         }
     }
 }
@@ -319,7 +369,7 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
     )
     val responseSections = remember(log.url, log.method, log.responseBody, labels) {
         log.responseBody
-            ?.takeIf { log.method.equals("POST", ignoreCase = true) && isLlmGenerationUrl(log.url) }
+            ?.takeIf { isLlmRequest(log) }
             ?.let { extractResponseSections(it, labels) }
             .orEmpty()
     }
@@ -402,7 +452,20 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
                     initiallyExpanded = true,
                 ) {
                     requestModel?.let { model ->
-                        Text("模型：$model")
+                        Text(
+                            text = buildAnnotatedString {
+                                append(stringResource(R.string.log_page_model))
+                                withStyle(
+                                    SpanStyle(
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontFamily = JetbrainsMono,
+                                        fontWeight = FontWeight.Bold,
+                                    )
+                                ) {
+                                    append(model)
+                                }
+                            }
+                        )
                     }
                     responseSections.forEach { section ->
                         if (section.kind == LlmContentKind.TOOL) {
@@ -549,20 +612,6 @@ private fun LogSection(
 
 private fun headersText(headers: Map<String, String>): String =
     headers.entries.joinToString("\n") { (name, value) -> "$name: $value" }
-
-private fun isLlmGenerationUrl(url: String): Boolean {
-    val path = url.substringBefore('?').trimEnd('/').lowercase()
-    return path.endsWith("/chat/completions") ||
-        path.endsWith("/completions") ||
-        path.endsWith("/responses") ||
-        path.endsWith("/messages") ||
-        path.endsWith("/api/chat") ||
-        path.endsWith("/api/generate") ||
-        path.endsWith(":generatecontent") ||
-        path.endsWith(":streamgeneratecontent") ||
-        path.endsWith("/chat") ||
-        path.endsWith("/generate")
-}
 
 private fun extractResponseSections(body: String, labels: LlmLabels): List<LlmContentSection> {
     val payloads = body.lineSequence()
@@ -721,10 +770,26 @@ private class LlmTextBuilder(private val labels: LlmLabels) {
         if (value.isEmpty()) return
         val last = sections.lastOrNull()
         if (last?.kind == kind) {
-            sections[sections.lastIndex] = last.copy(content = last.content + value)
+            sections[sections.lastIndex] = last.copy(content = mergeChunks(last.content, value))
         } else {
             sections += LlmContentSection(label = label, content = value, kind = kind)
         }
+    }
+
+    /**
+     * 合并同一 section 的新分块。
+     * 部分供应商或代理/中继会把同一段思考/文本内容以多种方式重复下发：
+     * - 累积式分块（每个分块都包含到目前为止的完整内容）
+     * - 快照事件 + 增量 delta 事件重复
+     * - 结束阶段重发完整内容
+     * 直接拼接会导致日志中思考内容变成两段一样的内容，这里只保留不重叠的新增部分。
+     */
+    private fun mergeChunks(existing: String, incoming: String): String {
+        if (incoming.isEmpty()) return existing
+        if (existing.isEmpty()) return incoming
+        if (incoming.startsWith(existing)) return incoming
+        if (existing.contains(incoming)) return existing
+        return existing + incoming
     }
 
     fun build(): List<LlmContentSection> {
