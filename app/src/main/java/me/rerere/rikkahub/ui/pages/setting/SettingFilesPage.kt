@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.horizontalScroll
@@ -32,17 +33,22 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -78,10 +84,12 @@ import me.rerere.rikkahub.utils.fileSizeToString
 import me.rerere.rikkahub.utils.navigateToChatPage
 import org.koin.compose.koinInject
 import java.io.File
+import java.util.concurrent.TimeUnit
 import kotlin.uuid.Uuid
 
 private const val UNUSED_ATTACHMENTS = "unused_attachments"
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingFilesPage(
     filesManager: FilesManager = koinInject(),
@@ -100,7 +108,8 @@ fun SettingFilesPage(
 
     var selectedFolder by remember { mutableStateOf(FileFolders.UPLOAD) }
     var pendingDelete by remember { mutableStateOf<ManagedFileEntity?>(null) }
-    var showCleanDialog by remember { mutableStateOf(false) }
+    var showCleanSheet by remember { mutableStateOf(false) }
+    var selectedCleanRange by remember { mutableStateOf(CleanRange.DAYS_30) }
     var showRebuildDialog by remember { mutableStateOf(false) }
     var loadedFiles by remember { mutableStateOf<List<ManagedFileWithReference>?>(null) }
     var isRebuilding by remember { mutableStateOf(false) }
@@ -220,38 +229,45 @@ fun SettingFilesPage(
         )
     }
 
-    if (showCleanDialog) {
-        AlertDialog(
-            onDismissRequest = { showCleanDialog = false },
-            title = { Text(stringResource(R.string.setting_files_page_clean_title)) },
-            text = { Text(stringResource(R.string.setting_files_page_clean_confirmation)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showCleanDialog = false
-                        scope.launch {
-                            val deletionResults = files.associate {
-                                it.file.id to filesManager.delete(it.file.id, deleteFromDisk = true)
-                            }
-                            val deletedIds = deletionResults.filterValues { it }.keys
-                            val ok = deletionResults.values.all { it }
-                            loadedFiles = loadedFiles?.filterNot { it.file.id in deletedIds }
-                            toaster.show(
-                                if (ok) cleanedToast else cleanFailedToast,
-                                type = if (ok) ToastType.Success else ToastType.Error,
-                            )
-                        }
-                    }
-                ) {
-                    Text(stringResource(R.string.setting_files_page_clean_action))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showCleanDialog = false }) {
-                    Text(stringResource(R.string.common_cancel))
-                }
-            }
+    if (showCleanSheet) {
+        val sheetState = rememberBottomSheetState(
+            initialValue = SheetValue.Hidden,
+            enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
         )
+        ModalBottomSheet(
+            onDismissRequest = { showCleanSheet = false },
+            sheetState = sheetState,
+        ) {
+            CleanFilesSheet(
+                selectedRange = selectedCleanRange,
+                onRangeSelected = { selectedCleanRange = it },
+                onClean = {
+                    showCleanSheet = false
+                    scope.launch {
+                        val ok = if (selectedFolder == UNUSED_ATTACHMENTS) {
+                            val cutoff = selectedCleanRange.days?.let { days ->
+                                System.currentTimeMillis() - TimeUnit.DAYS.toMillis(days.toLong())
+                            }
+                            files
+                                .filter { file -> cutoff == null || file.file.createdAt < cutoff }
+                                .all { filesManager.delete(it.file.id, deleteFromDisk = true) }
+                        } else {
+                            selectedCleanRange.days?.let { days ->
+                                filesManager.deleteOlderThan(
+                                    folder = selectedFolder,
+                                    cutoffMillis = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(days.toLong()),
+                                )
+                            } ?: filesManager.deleteAll(selectedFolder)
+                        }
+                        loadedFiles = filesManager.listWithReferences(folder = FileFolders.UPLOAD)
+                        toaster.show(
+                            if (ok) cleanedToast else cleanFailedToast,
+                            type = if (ok) ToastType.Success else ToastType.Error,
+                        )
+                    }
+                },
+            )
+        }
     }
 
     Scaffold(
@@ -270,7 +286,7 @@ fun SettingFilesPage(
                         )
                     }
                     IconButton(
-                        onClick = { showCleanDialog = true },
+                        onClick = { showCleanSheet = true },
                         enabled = files.isNotEmpty(),
                     ) {
                         Icon(
@@ -349,6 +365,70 @@ fun SettingFilesPage(
                     }
                 }
             }
+        }
+    }
+}
+
+private enum class CleanRange(val days: Int?) {
+    DAYS_7(7),
+    DAYS_14(14),
+    DAYS_30(30),
+    ALL(null),
+}
+
+@Composable
+private fun CleanFilesSheet(
+    selectedRange: CleanRange,
+    onRangeSelected: (CleanRange) -> Unit,
+    onClean: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(horizontal = 24.dp)
+            .padding(bottom = 16.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.setting_files_page_clean_title),
+            style = MaterialTheme.typography.headlineSmall,
+        )
+        Text(
+            text = stringResource(R.string.setting_files_page_clean_range_description),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 8.dp, bottom = 12.dp),
+        )
+
+        CleanRange.entries.forEach { range ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onRangeSelected(range) }
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                RadioButton(
+                    selected = selectedRange == range,
+                    onClick = { onRangeSelected(range) },
+                )
+                Text(
+                    text = range.days?.let {
+                        stringResource(R.string.setting_files_page_clean_older_than_days, it)
+                    } ?: stringResource(R.string.setting_files_page_clean_all),
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(start = 8.dp),
+                )
+            }
+        }
+
+        TextButton(
+            onClick = onClean,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+        ) {
+            Text(stringResource(R.string.setting_files_page_clean_action))
         }
     }
 }

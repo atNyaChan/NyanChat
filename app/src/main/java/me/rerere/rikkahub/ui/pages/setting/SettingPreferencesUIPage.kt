@@ -97,6 +97,7 @@ import okhttp3.Request
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import java.io.File
+import kotlin.math.roundToInt
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -548,7 +549,7 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                                     steps = 8,
                                     modifier = Modifier.weight(1f)
                                 )
-                                Text(text = "${(displaySetting.bubbleOpacity * 100).toInt()}%")
+                                Text(text = "${(displaySetting.bubbleOpacity * 100).roundToInt()}%")
                             }
                         }
                     )

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -28,12 +27,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import me.rerere.ai.core.ReasoningLevel
 import me.rerere.ai.provider.Model
 import me.rerere.ai.provider.ModelType
 import me.rerere.ai.provider.ProviderSetting
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.ArrowRight01
-import me.rerere.hugeicons.stroke.Cancel01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.ui.components.ai.ModelListSheet
@@ -75,8 +74,10 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = contentPadding + PaddingValues(
-            horizontal = 16.dp,
-            vertical = 8.dp,
+            start = 16.dp,
+            top = 8.dp,
+            end = 16.dp,
+            bottom = 16.dp,
         ),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -96,22 +97,19 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
                 modelId = settings.fastModelId,
                 providers = settings.providers,
                 onSelect = { vm.updateSettings(settings.copy(fastModelId = it.id)) },
+                reasoningLevel = settings.fastModelReasoningLevel,
+                onUpdateReasoningLevel = {
+                    vm.updateSettings(settings.copy(fastModelReasoningLevel = it))
+                },
             )
         }
         item {
-            ModelSettingItem(
-                title = stringResource(R.string.setting_model_page_title_model),
-                description = stringResource(R.string.setting_model_page_title_model_desc),
-                modelId = settings.titleModelId,
-                providers = settings.providers,
-                onSelect = { vm.updateSettings(settings.copy(titleModelId = it.id)) },
-                onClear = { vm.updateSettings(settings.copy(titleModelId = null)) },
-                promptType = PromptType.TITLE,
-                onEditPrompt = { editingPrompt = it },
-            )
+            CardGroup {
+                promptSettingItem(PromptType.TITLE) { editingPrompt = PromptType.TITLE }
+            }
         }
         item {
-            SuggestionModelSettingItem(
+            SuggestionSettingItem(
                 settings = settings,
                 vm = vm,
                 onEditPrompt = { editingPrompt = it },
@@ -120,7 +118,6 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
         item {
             ModelSettingItem(
                 title = stringResource(R.string.setting_model_page_translate_model),
-                description = stringResource(R.string.setting_model_page_translate_model_desc),
                 modelId = settings.translateModeId,
                 providers = settings.providers,
                 onSelect = { vm.updateSettings(settings.copy(translateModeId = it.id)) },
@@ -148,7 +145,6 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
         item {
             ModelSettingItem(
                 title = stringResource(R.string.setting_model_page_ocr_model),
-                description = stringResource(R.string.setting_model_page_ocr_model_desc),
                 modelId = settings.ocrModelId,
                 providers = settings.providers,
                 onSelect = { vm.updateSettings(settings.copy(ocrModelId = it.id)) },
@@ -159,7 +155,6 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
         item {
             ModelSettingItem(
                 title = stringResource(R.string.setting_model_page_compress_model),
-                description = stringResource(R.string.setting_model_page_compress_model_desc),
                 modelId = settings.compressModelId,
                 providers = settings.providers,
                 onSelect = { vm.updateSettings(settings.copy(compressModelId = it.id)) },
@@ -180,87 +175,36 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
 }
 
 @Composable
-private fun SuggestionModelSettingItem(
+private fun SuggestionSettingItem(
     settings: Settings,
     vm: SettingVM,
     onEditPrompt: (PromptType) -> Unit,
 ) {
-    val title = stringResource(R.string.setting_model_page_suggestion_model)
-    val state = rememberModelListState(
-        modelId = settings.suggestionModelId,
-        providers = settings.providers,
-        type = ModelType.CHAT,
-    )
-
-    Column {
-        CardGroup {
-            item(
-                headlineContent = { Text(stringResource(R.string.setting_model_page_enable_suggestion)) },
-                trailingContent = {
-                    Switch(
-                        checked = settings.enableSuggestion,
-                        onCheckedChange = {
-                            vm.updateSettings(settings.copy(enableSuggestion = it))
-                        }
-                    )
-                },
-            )
-            if (settings.enableSuggestion) {
-                item(
-                    onClick = { state.open() },
-                    headlineContent = { Text(title) },
-                    trailingContent = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        ) {
-                            Text(
-                                text = state.currentModel?.displayName
-                                    ?: stringResource(R.string.model_list_select_model),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                            if (state.currentModel != null) {
-                                IconButton(
-                                    onClick = { vm.updateSettings(settings.copy(suggestionModelId = null)) },
-                                    modifier = Modifier.size(20.dp),
-                                ) {
-                                    Icon(HugeIcons.Cancel01, contentDescription = null, modifier = Modifier.size(14.dp))
-                                }
-                            } else {
-                                Icon(
-                                    HugeIcons.ArrowRight01,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp),
-                                )
-                            }
-                        }
-                    },
+    CardGroup {
+        item(
+            headlineContent = { Text(stringResource(R.string.setting_model_page_enable_suggestion)) },
+            trailingContent = {
+                Switch(
+                    checked = settings.enableSuggestion,
+                    onCheckedChange = {
+                        vm.updateSettings(settings.copy(enableSuggestion = it))
+                    }
                 )
-            }
-            promptSettingItem(PromptType.SUGGESTION) { onEditPrompt(PromptType.SUGGESTION) }
-        }
-        Text(
-            text = stringResource(R.string.setting_model_page_suggestion_model_desc),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+            },
         )
+        promptSettingItem(PromptType.SUGGESTION) { onEditPrompt(PromptType.SUGGESTION) }
     }
-
-    ModelListSheet(state = state, onSelect = { vm.updateSettings(settings.copy(suggestionModelId = it.id)) })
 }
 
 @Composable
 private fun ModelSettingItem(
     title: String,
-    description: String,
+    description: String? = null,
     modelId: Uuid?,
     providers: List<ProviderSetting>,
     onSelect: (Model) -> Unit,
-    onClear: (() -> Unit)? = null,
+    reasoningLevel: ReasoningLevel? = null,
+    onUpdateReasoningLevel: ((ReasoningLevel) -> Unit)? = null,
     promptType: PromptType? = null,
     onEditPrompt: (PromptType) -> Unit = {},
     beforePrompt: CardGroupScope.() -> Unit = {},
@@ -289,31 +233,38 @@ private fun ModelSettingItem(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
-                        if (onClear != null && state.currentModel != null) {
-                            IconButton(onClick = onClear, modifier = Modifier.size(20.dp)) {
-                                Icon(HugeIcons.Cancel01, contentDescription = null, modifier = Modifier.size(14.dp))
-                            }
-                        } else {
-                            Icon(
-                                HugeIcons.ArrowRight01,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                            )
-                        }
+                        Icon(
+                            HugeIcons.ArrowRight01,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                        )
                     }
                 },
             )
+            if (reasoningLevel != null && onUpdateReasoningLevel != null) {
+                item(
+                    headlineContent = { Text(stringResource(R.string.assistant_page_thinking_budget)) },
+                    trailingContent = {
+                        ReasoningButton(
+                            reasoningLevel = reasoningLevel,
+                            onUpdateReasoningLevel = onUpdateReasoningLevel,
+                        )
+                    },
+                )
+            }
             beforePrompt()
             if (promptType != null) {
                 promptSettingItem(promptType) { onEditPrompt(promptType) }
             }
         }
-        Text(
-            text = description,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
-        )
+        if (description != null) {
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+            )
+        }
     }
 
     ModelListSheet(state = state, onSelect = onSelect)
