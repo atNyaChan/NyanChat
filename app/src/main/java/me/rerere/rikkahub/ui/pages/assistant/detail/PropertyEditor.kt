@@ -45,7 +45,7 @@ private val jsonLenient = Json {
 @Composable
 fun CustomHeaders(headers: List<CustomHeader>, onUpdate: (List<CustomHeader>) -> Unit) {
     var pendingDeleteIndex by remember { mutableStateOf<Int?>(null) }
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         headers.forEachIndexed { index, header ->
             var headerName by remember(header.name) { mutableStateOf(header.name) }
             var headerValue by remember(header.value) { mutableStateOf(header.value) }
@@ -139,7 +139,7 @@ fun CustomHeaders(headers: List<CustomHeader>, onUpdate: (List<CustomHeader>) ->
 fun CustomBodies(customBodies: List<CustomBody>, onUpdate: (List<CustomBody>) -> Unit) {
     val context = LocalContext.current
     var pendingDeleteIndex by remember { mutableStateOf<Int?>(null) }
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         customBodies.forEachIndexed { index, body ->
             var bodyKey by remember(body.key) { mutableStateOf(body.key) }
             var bodyValueString by remember(body.value) {
@@ -187,10 +187,8 @@ fun CustomBodies(customBodies: List<CustomBody>, onUpdate: (List<CustomBody>) ->
                                 label = { Text(stringResource(R.string.assistant_page_body_value)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 isError = jsonParseError != null,
-                                supportingText = {
-                                    if (jsonParseError != null) {
-                                        Text(jsonParseError!!)
-                                    }
+                                supportingText = jsonParseError?.let { error ->
+                                    { Text(error) }
                                 },
                                 minLines = 3,
                                 maxLines = 5,

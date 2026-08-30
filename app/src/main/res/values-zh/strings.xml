@@ -61,7 +61,7 @@
   <string name="assistant_page_preset_message_singular">预设聊天消息</string>
   <string name="assistant_page_regex_singular">正则表达式</string>
   <string name="assistant_page_context_cache">上下文缓存</string>
-  <string name="assistant_page_context_cache_desc">适配 Claude / GPT-5.6，其它模型也可以看情况开启</string>
+  <string name="assistant_page_context_cache_desc">仅支持部分模型（例如 Claude）</string>
   <string name="assistant_page_default_assistant">默认助手</string>
   <string name="assistant_page_delete_body">删除 Body</string>
   <string name="assistant_page_delete_dialog_text">确定要删除这个助手吗？此操作无法撤销。</string>
@@ -325,6 +325,7 @@
   <string name="error_title_send_message">消息发送失败</string>
   <string name="error_title_tool_approval">工具调用处理失败</string>
   <string name="error_title_tool_unavailable">工具不可用</string>
+  <string name="error_mcp_invalid_server_name">无效的MCP服务器名称（仅允许字母数字字符）：%1$s</string>
   <string name="error_title_translate_message">消息翻译失败</string>
   <string name="expand_translation">展开翻译</string>
   <string name="export_image_warning">以上内容由人工智能生成，可能包含不准确信息。</string>
@@ -418,6 +419,10 @@
   <string name="permission_microphone_desc">需要麦克风权限以进行语音识别</string>
   <string name="permission_notification">通知</string>
   <string name="permission_notification_desc">发送通知</string>
+  <string name="permission_calendar_read">读取日历</string>
+  <string name="permission_calendar_read_desc">读取日历事件，以回答您与日程相关的问题</string>
+  <string name="permission_calendar_write">写入日历</string>
+  <string name="permission_calendar_write_desc">代表您创建日历事件</string>
   <string name="permission_permanently_denied">已永久拒绝</string>
   <string name="permission_required">必需</string>
   <string name="photo">照片</string>
@@ -492,6 +497,7 @@
   <string name="safe_mode_current_assistant">当前助手：%s</string>
   <string name="safe_mode_default_assistant">默认助手</string>
   <string name="safe_mode_description">应用上次启动时崩溃了。您可以切换到其他助手来解决此问题。</string>
+  <string name="safe_mode_enter_app">进入应用</string>
   <string name="safe_mode_switch_assistant">切换助手</string>
   <string name="safe_mode_title">安全模式</string>
   <string name="search_ability_scrape">抓取</string>
@@ -759,12 +765,15 @@
   <string name="setting_model_page_chat_model">聊天模型</string>
   <string name="setting_model_page_chat_model_desc">全局默认的聊天模型</string>
   <string name="setting_model_page_compress_model">压缩模型</string>
+  <string name="setting_model_page_fast_model">快速模型</string>
+  <string name="setting_model_page_fast_model_desc">用于快速或后台任务的模型，当未设置时也用作标题和建议模型的后备</string>
   <string name="setting_model_page_compress_model_desc">用于压缩对话历史</string>
   <string name="setting_model_page_compress_prompt_vars">变量：{content}、{target_tokens}、{additional_context}</string>
   <string name="setting_model_page_ocr_model">OCR 模型</string>
   <string name="setting_model_page_ocr_model_desc">用于图像光学字符识别</string>
   <string name="setting_model_page_ocr_prompt_vars">变量：图像数据：{images}</string>
   <string name="setting_model_page_reset_to_default">重置为默认</string>
+  <string name="setting_model_page_enable_suggestion">聊天建议</string>
   <string name="setting_model_page_suggestion_model">聊天建议模型</string>
   <string name="setting_model_page_suggestion_model_desc">用于生成聊天建议。未设置时使用快速模型</string>
   <string name="setting_model_page_suggestion_prompt_vars">变量: 对话内容: {content}, 语言: {locale}</string>
@@ -800,6 +809,14 @@
   <string name="setting_page_default_model_desc">设置各个功能的默认模型</string>
   <string name="setting_page_mode_injection_desc">管理自动注入消息的段落</string>
   <string name="setting_page_lorebook_desc">管理导入的世界书</string>
+  <string name="setting_page_preferences">通用设置</string>
+  <string name="setting_page_preferences_desc">界面、主题、聊天交互等常规设置</string>
+  <string name="setting_page_preferences_network_user_agent">User-Agent</string>
+  <string name="setting_page_preferences_network_user_agent_desc">设置请求时使用的 User Agent 头</string>
+  <string name="setting_page_preferences_network_proxy">代理</string>
+  <string name="setting_page_preferences_network_proxy_desc">支持 HTTP 和 SOCKS5 代理 URL。留空以使用系统设置。</string>
+  <string name="setting_page_preferences_network_proxy_list_desc">设置发送请求时使用的代理服务器</string>
+  <string name="setting_page_preferences_network_proxy_invalid">请输入包含主机和端口的有效代理 URL。</string>
   <string name="setting_page_dynamic_color">动态颜色</string>
   <string name="setting_page_dynamic_color_desc">基于壁纸动态生成 App 主题配色</string>
   <string name="setting_page_mcp_desc">配置 MCP 服务器</string>
@@ -838,6 +855,9 @@
   <string name="setting_theme_page_secondary_color">辅色</string>
   <string name="setting_theme_page_tertiary_color">第三色</string>
   <string name="setting_theme_page_preview">预览</string>
+  <string name="setting_theme_page_import_theme">导入</string>
+  <string name="setting_theme_page_export_success">主题 JSON 已复制到剪贴板</string>
+  <string name="setting_theme_page_import_success">主题导入成功</string>
   <string name="setting_theme_page_dynamic_color_hint">关闭动态颜色后才能修改主题</string>
   <string name="setting_page_tts_service">语音合成与语音识别</string>
   <string name="setting_page_tts_service_desc">配置语音合成与语音识别服务提供商</string>
@@ -1094,13 +1114,8 @@
   <string name="video">视频</string>
   <string name="web_search_disabled">已禁用网页搜索</string>
   <string name="web_search_enabled">已启用网页搜索</string>
-  <string name="setting_theme_page_import_theme">导入</string>
-  <string name="setting_theme_page_export_success">主题 JSON 已复制到剪贴板</string>
-  <string name="setting_theme_page_import_success">主题导入成功</string>
   <string name="setting_theme_page_delete_theme_title">删除主题</string>
   <string name="setting_theme_page_delete_theme_message">确定要删除此主题吗？</string>
-  <string name="setting_page_preferences">通用设置</string>
-  <string name="setting_page_preferences_desc">界面、主题、聊天交互等常规设置</string>
   <string name="skills_page_import_from_file">从文件导入</string>
   <string name="skills_page_add_manually">手动添加</string>
   <string name="setting_model_page_prompt_translation">翻译提示词</string>
@@ -1110,9 +1125,6 @@
   <string name="setting_model_page_prompt_compress">上下文压缩提示词</string>
   <string name="setting_display_page_bubble_opacity_title">气泡不透明度</string>
   <string name="setting_provider_page_include_history_reasoning">回传历史思考过程</string>
-  <string name="setting_model_page_fast_model">快速模型</string>
-  <string name="setting_model_page_fast_model_desc">用于快速或后台任务的模型，当未设置时也用作标题和建议模型的后备</string>
-  <string name="setting_model_page_enable_suggestion">聊天建议</string>
   <string name="assistant_page_gradient_background">渐变背景</string>
   <string name="assistant_page_gradient_background_desc">在聊天页面使用动态渐变背景</string>
   <string name="assistant_page_workspace">工作区</string>
@@ -1166,7 +1178,7 @@
   <string name="workspace_detail_extracting">提取 %1$d 个项目%2$s</string>
   <string name="workspace_detail_install_complete">安装完成</string>
   <string name="workspace_detail_export_success">工作区导出成功</string>
-  <string name="workspace_detail_export_file_failed">工作区导出失败：%1$s</string>
+  <string name="workspace_detail_export_failed">Workspace export failed: %1$s</string>
   <string name="workspace_terminal_title">终端</string>
   <string name="workspace_terminal_title_with_name">%s · 终端</string>
   <string name="workspace_terminal_not_installed">请先安装 Rootfs</string>
@@ -1216,7 +1228,6 @@
   <string name="tool_ui_file">文件</string>
   <string name="workspace_page_name_duplicate">名称已存在</string>
   <string name="setting_mcp_page_name_invalid">名称只能包含英文字母和数字</string>
-  <string name="error_mcp_invalid_server_name">无效的MCP服务器名称（仅允许字母数字字符）：%1$s</string>
   <string name="chat_message_tool_recent_chats">查看最近的对话</string>
   <string name="chat_message_tool_conversation_search">搜索历史：%1$s</string>
   <string name="assistant_page_local_tools_screen_time_title">屏幕时间</string>
@@ -1224,10 +1235,6 @@
   <string name="assistant_page_local_tools_screen_time_permission_required">请在设置中授予“使用情况访问权限”以使用屏幕使用时间</string>
   <string name="chat_message_tool_screen_time">读取屏幕时间</string>
   <string name="tool_ui_screen_time_total">总屏幕时间</string>
-  <string name="permission_calendar_read">读取日历</string>
-  <string name="permission_calendar_read_desc">读取日历事件，以回答您与日程相关的问题</string>
-  <string name="permission_calendar_write">写入日历</string>
-  <string name="permission_calendar_write_desc">代表您创建日历事件</string>
   <string name="assistant_page_local_tools_calendar_title">日历</string>
   <string name="assistant_page_local_tools_calendar_desc">让 AI 查询和创建日历事件</string>
   <string name="chat_message_tool_calendar_query">查询日历事件</string>
@@ -1259,6 +1266,14 @@
   <string name="log_page_filter_all">全部</string>
   <string name="log_page_filter_llm_only">仅 LLM 调用</string>
   <string name="log_page_filter_non_llm_only">非 LLM 调用</string>
+  <string name="log_page_intercept_title">【调试】实时显示发送的请求</string>
+  <string name="log_page_intercept_desc">在发送网络请求前弹出确认弹窗</string>
+  <string name="log_page_intercept_off">关闭</string>
+  <string name="log_page_intercept_llm_only">仅 LLM 请求</string>
+  <string name="log_page_intercept_all">全部</string>
+  <string name="request_intercept_dialog_title">【调试】即将发送的网络请求：</string>
+  <string name="request_intercept_cancel">取消发送</string>
+  <string name="request_intercept_confirm">确认发送</string>
   <string name="backup_page_import_failed_detail">导入失败：%1$s</string>
   <string name="backup_page_export_failed_detail">导出失败：%1$s</string>
   <string name="backup_page_rikkahub_format">类 RikkaHub 格式</string>
@@ -1287,7 +1302,6 @@
   <string name="chat_page_select_model_first">请先选择模型</string>
   <string name="chat_page_stop_generation_before_delete">请先停止生成再删除消息</string>
   <string name="log_page_stream_interrupted">流式响应已中断</string>
-  <string name="safe_mode_enter_app">进入应用</string>
   <string name="setting_page_more_settings">更多设置</string>
   <string name="setting_page_chat_settings">对话设置</string>
   <string name="setting_page_interface_settings">界面设置</string>
@@ -1307,12 +1321,6 @@
   <string name="assistant_page_context_message_limit_desc">限制发送给模型的最近消息数量。超出限制时，上下文会一次性缩减至约一半，而非每轮丢弃一条消息，从而保持请求前缀稳定，并使提示词缓存在多轮对话中持续生效，最小为20。留空表示无限制。</string>
   <string name="assistant_page_context_message_limit_placeholder">无限制</string>
   <string name="assistant_page_context_message_limit_warning">会在每次截断上下文时使提示词缓存失效，上限越大，截断越少。</string>
-  <string name="setting_page_preferences_network_user_agent">User-Agent</string>
-  <string name="setting_page_preferences_network_user_agent_desc">设置请求时使用的 User Agent 头</string>
-  <string name="setting_page_preferences_network_proxy">代理</string>
-  <string name="setting_page_preferences_network_proxy_desc">支持 HTTP 和 SOCKS5 代理 URL。留空以使用系统设置。</string>
-  <string name="setting_page_preferences_network_proxy_list_desc">设置发送请求时使用的代理服务器</string>
-  <string name="setting_page_preferences_network_proxy_invalid">请输入包含主机和端口的有效代理 URL。</string>
   <string name="workspace_file_editor_save">保存</string>
   <string name="workspace_file_editor_saved">已保存</string>
   <string name="workspace_file_editor_save_failed">保存文件失败</string>
@@ -1321,6 +1329,7 @@
   <string name="workspace_detail_load_files_failed">加载工作区文件失败</string>
   <string name="workspace_detail_delete_failed">删除失败</string>
   <string name="workspace_detail_import_failed">导入文件失败</string>
+  <string name="workspace_detail_export_file_failed">工作区导出失败：%1$s</string>
   <string name="workspace_detail_create_folder_failed">新建文件夹失败</string>
   <string name="image_saving">正在保存</string>
   <string name="image_saved">已保存图片</string>
@@ -1375,6 +1384,7 @@
   <string name="error_skill_path_missing_description">%1$s 格式错误：缺少 description 字段</string>
   <string name="error_skill_save_failed_name">保存失败：%1$s</string>
   <string name="error_skill_rename_forbidden">不允许修改技能名称（name 字段必须为 “%1$s”）</string>
+
   <string name="workspace_terminal_close_confirm_title">关闭终端 %1$d？</string>
   <string name="workspace_terminal_close_confirm_message">关闭此标签页将终止其中仍在运行的任何进程。</string>
   <string name="workspace_terminal_close">关闭</string>
@@ -1384,3 +1394,4 @@
   <string name="chat_generation_network_unreachable">无法连接到服务器</string>
   <string name="chat_generation_network_disconnected">网络连接已断开</string>
 </resources>
+

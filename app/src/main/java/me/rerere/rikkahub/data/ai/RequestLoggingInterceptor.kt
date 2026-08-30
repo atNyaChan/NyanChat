@@ -15,6 +15,7 @@ import org.brotli.dec.BrotliInputStream
 import java.io.ByteArrayInputStream
 import java.util.zip.GZIPInputStream
 import java.util.zip.InflaterInputStream
+import kotlin.uuid.Uuid
 
 class RequestLoggingInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
@@ -31,8 +32,23 @@ class RequestLoggingInterceptor : Interceptor {
         }.getOrElse { "<${errorSummary(it)}>" }
 
         val response: Response
+        val logId: Uuid
         try {
             response = chain.proceed(request)
+            // 收到回复（响应头/状态码）后立即记一行日志，流式读取完成后再原地补上响应正文。
+            // 这样每次重试的请求及其回复都会实时出现在日志中，而不是等流读完/全部重试完才出现。
+            logId = Logging.logRequest(
+                LogEntry.RequestLog(
+                    tag = "HTTP",
+                    url = request.url.toString(),
+                    method = request.method,
+                    requestHeaders = requestHeaders,
+                    requestBody = requestBody,
+                    responseCode = response.code,
+                    responseHeaders = response.headers.toMap(),
+                    durationMs = System.currentTimeMillis() - startTime,
+                )
+            )
         } catch (e: Exception) {
             Logging.logRequest(
                 LogEntry.RequestLog(
@@ -64,33 +80,22 @@ class RequestLoggingInterceptor : Interceptor {
                     StreamInterruptedException()
                 else -> null
             }
-            logCompleted(request.url.toString(), request.method, requestHeaders, requestBody, response, responseHeaders,
-                startTime, responseBody, effectiveError)
+            updateCompleted(logId, responseBody, effectiveError, startTime)
         }).build()
     }
 
-    private fun logCompleted(
-        url: String,
-        method: String,
-        requestHeaders: Map<String, String>,
-        requestBody: String?,
-        response: Response,
-        responseHeaders: Map<String, String>,
-        startTime: Long,
+    private fun updateCompleted(
+        logId: Uuid,
         responseBody: String?,
         error: Throwable?,
-    ) = Logging.logRequest(LogEntry.RequestLog(
-        tag = "HTTP",
-        url = url,
-        method = method,
-        requestHeaders = requestHeaders,
-        requestBody = requestBody,
-        responseCode = response.code,
-        responseHeaders = responseHeaders,
-        responseBody = responseBody,
-        durationMs = System.currentTimeMillis() - startTime,
-        error = error?.let(::errorSummary),
-    ))
+        startTime: Long,
+    ) = Logging.updateRequest(logId) { existing ->
+        existing.copy(
+            responseBody = responseBody,
+            durationMs = System.currentTimeMillis() - startTime,
+            error = error?.let(::errorSummary),
+        )
+    }
 
     private fun errorSummary(error: Throwable): String =
         (error.message ?: error::class.simpleName ?: "Request failed").lineSequence().first().trim()

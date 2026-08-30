@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -342,10 +343,11 @@ fun ChatInput(
                         }
 
                         requestWordCount?.takeIf {
-                            imeTargetVisible || inputWordCount > 0 || displayedAttachmentCount > 0
+                            filesExpanded || imeTargetVisible || inputWordCount > 0 || displayedAttachmentCount > 0
                         }?.let { count ->
                             Column(
                                 horizontalAlignment = Alignment.End,
+                                modifier = Modifier.padding(end = 4.dp),
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
@@ -402,6 +404,8 @@ fun ChatInput(
                                 contentDescription = stringResource(R.string.more_options)
                             )
                         }
+
+                        Spacer(modifier = Modifier.width(6.dp))
 
                         if (asrState.isAvailable || asrState.isRecording) {
                             AsrButton(

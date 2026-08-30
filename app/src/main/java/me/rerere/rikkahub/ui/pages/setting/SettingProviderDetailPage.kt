@@ -36,14 +36,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.MultiChoiceSegmentedButtonRow
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.SegmentedButton
@@ -532,7 +530,7 @@ fun SettingProviderDetailSheet(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxSize(),
+                        .fillMaxHeight(0.95f),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     Text(
@@ -1034,7 +1032,7 @@ private fun ModelPickerSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxSize()
+                .fillMaxHeight(0.95f)
                 .padding(8.dp)
                 .imePadding(),
             verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -1082,20 +1080,23 @@ private fun ModelPickerSheet(
                 contentPadding = PaddingValues(8.dp),
             ) {
                 items(filteredModels) {
-                    Card {
+                    OutlinedItemCard {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(
-                                8.dp
-                            ),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(8.dp),
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
                         ) {
-                            AutoAIIcon(
-                                it.modelId,
-                                Modifier.size(32.dp)
-                            )
+                            Surface(
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                shape = MaterialTheme.shapes.small,
+                            ) {
+                                AutoAIIcon(
+                                    it.modelId,
+                                    Modifier.size(36.dp)
+                                )
+                            }
                             Column(
                                 verticalArrangement = Arrangement.spacedBy(
                                     4.dp
@@ -2144,13 +2145,17 @@ private fun ProviderOverrideSettings(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         if (providerOverride != null) {
-            OutlinedCard(
-                modifier = Modifier.fillMaxWidth()
+            OutlinedItemCard(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = {
+                    editingProvider = providerOverride
+                    showProviderConfig = true
+                },
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(start = 16.dp, top = 8.dp, end = 0.dp, bottom = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Row(
@@ -2166,14 +2171,6 @@ private fun ProviderOverrideSettings(
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.weight(1f)
                         )
-                        IconButton(
-                            onClick = {
-                                editingProvider = providerOverride
-                                showProviderConfig = true
-                            }
-                        ) {
-                            Icon(HugeIcons.Tools, contentDescription = "Edit override")
-                        }
                         IconButton(
                             onClick = {
                                 onUpdateProviderOverride(null)

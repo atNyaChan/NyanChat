@@ -316,6 +316,7 @@ private fun MiMoTTSConfiguration(
             onOptionSelected = { voice ->
                 onValueChange(setting.copy(voice = voice))
             },
+            readOnly = true,
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text("mimo_default") }
         )

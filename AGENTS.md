@@ -20,6 +20,43 @@ Built with Jetpack Compose, Kotlin, and follows Material Design 3 principles.
 - 修改完成后需要扫描仓库里是否有不需要的代码或者 locale string。如果有，那么把它们删掉。
 - Agent 不得自行运行 Gradle、Android Studio、`pnpm` 或其他编译、构建、测试、Lint 命令。完成修改和静态检查后，应将编译与运行验证留给用户手动执行。
 
+## Upstream Sync Policy (IMPORTANT)
+
+This repo is a **hard fork** (~20k+ lines diverged). We record upstream
+merges in git history, but NEVER let git auto-merge file contents.
+
+### Absolute rules
+- The ONLY allowed merge command is:
+  `git merge -s ours upstream/main --no-commit --no-ff`
+  (`-s ours` keeps our tree untouched; it only records ancestry.)
+- NEVER use default `git merge`, `git rebase`, `git cherry-pick`, `git pull`.
+- NEVER resolve conflict markers (`<<<<<<<`). With `-s ours` they cannot appear; if you see any, abort immediately and stop.
+- NEVER copy upstream files wholesale over ours.
+
+### Workflow: one sync = one merge commit
+1. List unported commits: `git log --oneline HEAD..upstream/main`
+2. Start the merge (this changes NO files — verify `git diff HEAD` is empty):
+   `git merge -s ours upstream/main --no-commit --no-ff`
+3. Now port EACH upstream commit's changes, oldest first:
+   a. `git show <hash>` — read the diff AND the commit message. Understand the *intent*, not just the text.
+   b. Hand-edit OUR files to re-implement the change. Our code may be renamed, moved, or rewritten — locate by behavior, not by path. Adapt the change to our architecture.
+   If you are unsure how to adapt the change — e.g. the relevant code has diverged too much, or the upstream change conflicts with a deliberate design choice in this fork — STOP and ask the user. Do not guess.
+4. Commit ONCE. Message format:
+
+   merge(upstream): sync to <newest-hash>
+
+   ported:
+   - <hash> <subject>
+   - <hash> <subject>
+   skipped:
+   - <hash> <subject>
+
+5. Verify `git log HEAD..upstream/main` is now empty.
+
+### Do not commit partway through
+The entire sync lands as ONE merge commit. If the range is too large
+to port safely in one session, STOP and ask the user before starting.
+
 ## Module Structure
 
 - **app**: Main application module with UI, ViewModels, and core logic

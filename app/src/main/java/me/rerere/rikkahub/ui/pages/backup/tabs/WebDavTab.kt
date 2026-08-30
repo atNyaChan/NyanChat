@@ -165,19 +165,19 @@ fun WebDavTab(
 
             CardGroup {
                 item(
-                    headlineContent = { Text(stringResource(R.string.backup_page_webdav_server_address)) },
                     supportingContent = {
                         OutlinedTextField(
                             modifier = Modifier.fillMaxWidth(),
                             value = webDavConfig.url,
                             onValueChange = { updateWebDavConfig(webDavConfig.copy(url = it.trim())) },
+                            label = { Text(stringResource(R.string.backup_page_webdav_server_address)) },
                             placeholder = { Text("https://example.com/dav") },
                             singleLine = true
                         )
                     },
+                    headlineContent = {},
                 )
                 item(
-                    headlineContent = { Text(stringResource(R.string.backup_page_username)) },
                     supportingContent = {
                         OutlinedTextField(
                             modifier = Modifier.fillMaxWidth(),
@@ -189,18 +189,20 @@ fun WebDavTab(
                                     )
                                 )
                             },
+                            label = { Text(stringResource(R.string.backup_page_username)) },
                             singleLine = true
                         )
                     },
+                    headlineContent = {},
                 )
                 item(
-                    headlineContent = { Text(stringResource(R.string.backup_page_password)) },
                     supportingContent = {
                         var passwordVisible by remember { mutableStateOf(false) }
                         OutlinedTextField(
                             modifier = Modifier.fillMaxWidth(),
                             value = webDavConfig.password,
                             onValueChange = { updateWebDavConfig(webDavConfig.copy(password = it.trim())) },
+                            label = { Text(stringResource(R.string.backup_page_password)) },
                             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                             trailingIcon = {
                                 val image = if (passwordVisible) {
@@ -215,17 +217,19 @@ fun WebDavTab(
                             singleLine = true
                         )
                     },
+                    headlineContent = {},
                 )
                 item(
-                    headlineContent = { Text(stringResource(R.string.backup_page_path)) },
                     supportingContent = {
                         OutlinedTextField(
                             modifier = Modifier.fillMaxWidth(),
                             value = webDavConfig.path,
                             onValueChange = { updateWebDavConfig(webDavConfig.copy(path = it.trim())) },
+                            label = { Text(stringResource(R.string.backup_page_path)) },
                             singleLine = true
                         )
                     },
+                    headlineContent = {},
                 )
             }
         }

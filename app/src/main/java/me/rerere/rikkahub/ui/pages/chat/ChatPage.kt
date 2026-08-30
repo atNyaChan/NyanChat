@@ -307,7 +307,6 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
                     requestWordCount = requestWordCount,
                     requestToolCount = cachedRequestToolCount,
                     onRequestWordCountRefresh = refreshRequestWordCount,
-                    onRequestWordCountInvalidate = invalidateRequestWordCount,
                     loadingJob = loadingJob,
                     processingStatus = processingStatus,
                     setting = setting,
@@ -344,7 +343,6 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
                     requestWordCount = requestWordCount,
                     requestToolCount = cachedRequestToolCount,
                     onRequestWordCountRefresh = refreshRequestWordCount,
-                    onRequestWordCountInvalidate = invalidateRequestWordCount,
                     loadingJob = loadingJob,
                     processingStatus = processingStatus,
                     setting = setting,
@@ -375,7 +373,6 @@ private fun ChatPageContent(
     requestWordCount: Int?,
     requestToolCount: Int,
     onRequestWordCountRefresh: () -> Unit,
-    onRequestWordCountInvalidate: () -> Unit,
     loadingJob: Job?,
     processingStatus: String? = null,
     setting: Settings,
@@ -519,11 +516,7 @@ private fun ChatPageContent(
                     },
                     filesExpanded = filesExpanded,
                     onFilesExpandedChange = { expanded ->
-                        if (expanded) {
-                            onRequestWordCountInvalidate()
-                        } else {
-                            onRequestWordCountRefresh()
-                        }
+                        onRequestWordCountRefresh()
                         filesExpanded = expanded
                     },
                     filesPanel = {
@@ -533,6 +526,7 @@ private fun ChatPageContent(
                             conversation = conversation,
                             assistant = assistant,
                             vm = vm,
+                            onRequestStatsRefresh = onRequestWordCountRefresh,
                             onCollapse = {
                                 filesExpanded = false
                                 onRequestWordCountRefresh()
@@ -634,6 +628,7 @@ private fun ChatFilesPanel(
     conversation: Conversation,
     assistant: Assistant,
     vm: ChatVM,
+    onRequestStatsRefresh: () -> Unit,
     onCollapse: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -791,7 +786,9 @@ private fun ChatFilesPanel(
         assistant = assistant,
         mcpManager = vm.mcpManager,
         onCompressContext = { additionalPrompt, targetTokens, keepRecentMessages ->
-            vm.handleCompressContext(additionalPrompt, targetTokens, keepRecentMessages)
+            vm.handleCompressContext(additionalPrompt, targetTokens, keepRecentMessages).also {
+                onRequestStatsRefresh()
+            }
         },
         onUpdateAssistant = {
             vm.updateSettings(
@@ -805,6 +802,7 @@ private fun ChatFilesPanel(
                     }
                 )
             )
+            onRequestStatsRefresh()
         },
         onSelectSearch = { mode, serviceIndex ->
             vm.updateSettings(
@@ -822,9 +820,11 @@ private fun ChatFilesPanel(
                     },
                 )
             )
+            onRequestStatsRefresh()
         },
         onUpdateConversation = {
             vm.updateConversation(it)
+            onRequestStatsRefresh()
         },
         showInjectionSheet = showInjectionSheet,
         onShowInjectionSheetChange = { showInjectionSheet = it },

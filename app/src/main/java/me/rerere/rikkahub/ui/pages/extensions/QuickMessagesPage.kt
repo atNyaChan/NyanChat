@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,7 +14,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -21,6 +23,7 @@ import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -40,7 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Add01
 import me.rerere.hugeicons.stroke.Delete01
-import me.rerere.hugeicons.stroke.Share03
+import me.rerere.hugeicons.stroke.Share01
 import me.rerere.hugeicons.stroke.Zap
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.export.QuickMessageSerializer
@@ -252,62 +255,80 @@ private fun EditQuickMessageDialog(
     var showExportDialog by remember { mutableStateOf(false) }
     val exporter = initialQuickMessage?.let { rememberExporter(it, QuickMessageSerializer) }
 
-    AlertDialog(
+    BasicAlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
+    ) {
+        Surface(
+            shape = AlertDialogDefaults.shape,
+            color = AlertDialogDefaults.containerColor,
+            tonalElevation = AlertDialogDefaults.TonalElevation,
+        ) {
             Column(
-                modifier = Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.padding(24.dp),
             ) {
-                OutlinedTextField(
-                    value = quickMessageTitle,
-                    onValueChange = { quickMessageTitle = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.assistant_page_quick_message_title)) },
-                    singleLine = true,
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
                 )
-                OutlinedTextField(
-                    value = quickMessageContent,
-                    onValueChange = { quickMessageContent = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.assistant_page_quick_message_content)) },
-                    minLines = 4,
-                    maxLines = Int.MAX_VALUE,
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onConfirm(quickMessageTitle.trim(), quickMessageContent.trim()) },
-                enabled = quickMessageTitle.isNotBlank() && quickMessageContent.isNotBlank(),
-            ) {
-                Text(stringResource(R.string.common_save))
-            }
-        },
-        dismissButton = {
-            Row {
-                if (onDelete != null) {
-                    TextButton(onClick = { showExportDialog = true }) {
-                        Icon(
-                            imageVector = HugeIcons.Share03,
-                            contentDescription = stringResource(R.string.common_export),
-                        )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    OutlinedTextField(
+                        value = quickMessageTitle,
+                        onValueChange = { quickMessageTitle = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text(stringResource(R.string.assistant_page_quick_message_title)) },
+                        singleLine = true,
+                    )
+                    OutlinedTextField(
+                        value = quickMessageContent,
+                        onValueChange = { quickMessageContent = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text(stringResource(R.string.assistant_page_quick_message_content)) },
+                        minLines = 4,
+                        maxLines = Int.MAX_VALUE,
+                    )
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 24.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (onDelete != null) {
+                        IconButton(onClick = onDelete) {
+                            Icon(
+                                HugeIcons.Delete01,
+                                contentDescription = stringResource(R.string.common_delete),
+                            )
+                        }
+                        IconButton(onClick = { showExportDialog = true }, modifier = Modifier.padding(start = 12.dp)) {
+                            Icon(
+                                imageVector = HugeIcons.Share01,
+                                contentDescription = stringResource(R.string.common_export),
+                            )
+                        }
                     }
-                    IconButton(onClick = onDelete) {
-                        Icon(
-                            HugeIcons.Delete01,
-                            contentDescription = stringResource(R.string.common_delete),
-                            tint = MaterialTheme.colorScheme.error,
-                        )
+                    Spacer(modifier = Modifier.weight(1f))
+                    TextButton(onClick = onDismiss) {
+                        Text(stringResource(R.string.common_cancel))
+                    }
+                    TextButton(
+                        onClick = { onConfirm(quickMessageTitle.trim(), quickMessageContent.trim()) },
+                        enabled = quickMessageTitle.isNotBlank() && quickMessageContent.isNotBlank(),
+                    ) {
+                        Text(stringResource(R.string.common_save))
                     }
                 }
-                TextButton(onClick = onDismiss) {
-                    Text(stringResource(R.string.common_cancel))
-                }
             }
-        },
-    )
+        }
+    }
 
     if (showExportDialog && exporter != null) {
         ExportDialog(exporter = exporter, onDismiss = { showExportDialog = false })

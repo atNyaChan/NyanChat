@@ -100,6 +100,7 @@ import me.rerere.workspace.WorkspaceStorageArea
 import me.rerere.rikkahub.ui.pages.favorite.FavoritePage
 import me.rerere.rikkahub.ui.pages.imggen.ImageGenPage
 import me.rerere.rikkahub.ui.pages.log.LogPage
+import me.rerere.rikkahub.ui.pages.log.RequestInterceptionDialog
 import me.rerere.rikkahub.ui.pages.search.SearchPage
 import me.rerere.rikkahub.ui.pages.setting.SettingAboutPage
 import me.rerere.rikkahub.ui.pages.setting.SettingPreferencesPage
@@ -241,6 +242,9 @@ class RouteActivity : AppCompatActivity() {
         var authorizationRequest by remember {
             mutableStateOf<AppEvent.LocalToolAuthorization?>(null)
         }
+        var interceptionRequest by remember {
+            mutableStateOf<AppEvent.RequestInterception?>(null)
+        }
         LaunchedEffect(tts) {
             eventBus.events.collect { event ->
                 when (event) {
@@ -250,6 +254,11 @@ class RouteActivity : AppCompatActivity() {
                         authorizationRequest = event
                         event.decision.await()
                         authorizationRequest = null
+                    }
+                    is AppEvent.RequestInterception -> {
+                        interceptionRequest = event
+                        event.decision.await()
+                        interceptionRequest = null
                     }
                     is AppEvent.McpOAuthCallback -> Unit // 由 McpManager 消费
                     is AppEvent.ChatGenerationUpdate -> Unit // 由 ChatNotificationManager 消费
@@ -280,6 +289,17 @@ class RouteActivity : AppCompatActivity() {
                     ) {
                         Text(stringResource(R.string.common_cancel))
                     }
+                },
+            )
+        }
+        interceptionRequest?.let { request ->
+            RequestInterceptionDialog(
+                request = request,
+                onCancel = {
+                    if (!request.decision.isCompleted) request.decision.complete(false)
+                },
+                onConfirm = {
+                    if (!request.decision.isCompleted) request.decision.complete(true)
                 },
             )
         }

@@ -12,6 +12,15 @@ sealed class AppEvent {
         val decision: CompletableDeferred<Boolean>,
     ) : AppEvent()
 
+    /** 拦截请求日志【调试用】：请求发出前等待用户确认。decision 为 true 表示确认发送。 */
+    data class RequestInterception(
+        val url: String,
+        val method: String,
+        val headers: Map<String, String>,
+        val body: String?,
+        val decision: CompletableDeferred<Boolean>,
+    ) : AppEvent()
+
     /** MCP OAuth 授权完成后经 deep link 回传的结果。 */
     data class McpOAuthCallback(
         val state: String?,

@@ -59,8 +59,22 @@ object Logging {
         addLog(LogEntry.TextLog(tag = tag, message = message))
     }
 
-    fun logRequest(entry: LogEntry.RequestLog) {
+    fun logRequest(entry: LogEntry.RequestLog): Uuid {
         addLog(entry)
+        return entry.id
+    }
+
+    /**
+     * 按 id 就地更新一条已记录的请求日志（例如流式 body 读取完成后补上响应正文与耗时）。
+     * 若该 id 已被淘汰（超出最大条数）则静默忽略。
+     */
+    fun updateRequest(id: Uuid, transform: (LogEntry.RequestLog) -> LogEntry.RequestLog) {
+        synchronized(recentLogs) {
+            val index = recentLogs.indexOfFirst { it is LogEntry.RequestLog && it.id == id }
+            if (index >= 0) {
+                recentLogs[index] = transform(recentLogs[index] as LogEntry.RequestLog)
+            }
+        }
     }
 
     fun logPermission(

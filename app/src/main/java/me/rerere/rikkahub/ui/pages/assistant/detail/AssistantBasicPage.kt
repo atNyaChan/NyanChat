@@ -183,12 +183,9 @@ internal fun AssistantBasicContent(
             continueToNext = !assistant.useGradientBackground,
         ) {
             FormItem(
-                label = {
-                    Text(stringResource(R.string.assistant_page_name))
-                },
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-
-                ) {
+                label = {},
+            ) {
                 OutlinedTextField(
                     value = assistant.name,
                     onValueChange = {
@@ -198,11 +195,10 @@ internal fun AssistantBasicContent(
                             )
                         )
                     },
+                    label = { Text(stringResource(R.string.assistant_page_name)) },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
-
-
             FormItem(
                 label = {
                     Text(stringResource(R.string.assistant_page_tags))

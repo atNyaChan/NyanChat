@@ -56,6 +56,7 @@ import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
  * @param state The TextFieldState to manage the text input
  * @param modifier Modifier for the component
  * @param label The header label text
+ * @param labelInField Whether to render the label inside the text field instead of as a header row
  * @param placeholder Placeholder text for the input field
  * @param minLines Minimum number of lines to display
  * @param maxLines Maximum number of lines to display
@@ -70,6 +71,7 @@ fun TextArea(
     state: TextFieldState,
     modifier: Modifier = Modifier,
     label: String = "",
+    labelInField: Boolean = false,
     placeholder: String = "",
     minLines: Int = 5,
     maxLines: Int = 10,
@@ -116,17 +118,19 @@ fun TextArea(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         // Header with label, fullscreen and import button
-        if (label.isNotEmpty()) {
+        if (!labelInField && label.isNotEmpty() || enableFullscreen || enableImport) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelLarge
-                )
+                if (!labelInField) {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
                     verticalAlignment = Alignment.CenterVertically,
@@ -157,23 +161,26 @@ fun TextArea(
                     }
                 }
             }
-
-            // Multi-line text input
-            OutlinedTextField(
-                state = state,
-                modifier = Modifier
-                    .fillMaxWidth(),
-                placeholder = if (placeholder.isNotEmpty()) {
-                    { Text(placeholder) }
-                } else null,
-                lineLimits = TextFieldLineLimits.MultiLine(
-                    minHeightInLines = minLines,
-                    maxHeightInLines = maxLines
-                ),
-                enabled = enabled,
-                readOnly = readOnly,
-            )
         }
+
+        // Multi-line text input
+        OutlinedTextField(
+            state = state,
+            modifier = Modifier
+                .fillMaxWidth(),
+            label = if (labelInField && label.isNotEmpty()) {
+                { Text(label) }
+            } else null,
+            placeholder = if (placeholder.isNotEmpty()) {
+                { Text(placeholder) }
+            } else null,
+            lineLimits = TextFieldLineLimits.MultiLine(
+                minHeightInLines = minLines,
+                maxHeightInLines = maxLines
+            ),
+            enabled = enabled,
+            readOnly = readOnly,
+        )
     }
 
     // Fullscreen editor dialog

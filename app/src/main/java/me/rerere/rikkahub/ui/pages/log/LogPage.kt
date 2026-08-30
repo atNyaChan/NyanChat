@@ -38,6 +38,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,13 +55,19 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.rerere.common.android.LogEntry
 import me.rerere.common.android.Logging
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.data.ai.RequestInterceptController
+import me.rerere.rikkahub.data.ai.RequestInterceptMode
+import me.rerere.rikkahub.data.ai.isLlmRequest
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.JsonTree
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
+import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.utils.JsonInstantPretty
@@ -77,21 +84,6 @@ import java.util.Locale
 
 private enum class LogFilter { ALL, LLM_ONLY, NON_LLM_ONLY }
 
-private fun isLlmRequest(log: LogEntry.RequestLog): Boolean {
-    if (!log.method.equals("POST", ignoreCase = true)) return false
-    val path = log.url.substringBefore('?').trimEnd('/').lowercase()
-    return path.endsWith("/chat/completions") ||
-        path.endsWith("/completions") ||
-        path.endsWith("/responses") ||
-        path.endsWith("/messages") ||
-        path.endsWith("/api/chat") ||
-        path.endsWith("/api/generate") ||
-        path.endsWith(":generatecontent") ||
-        path.endsWith(":streamgeneratecontent") ||
-        path.endsWith("/chat") ||
-        path.endsWith("/generate")
-}
-
 @Composable
 fun LogPage() {
     var logs by remember { mutableStateOf(Logging.getRequestLogs()) }
@@ -99,6 +91,14 @@ fun LogPage() {
     var filterMenuExpanded by remember { mutableStateOf(false) }
     var showClearConfirm by remember { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            logs = Logging.getRequestLogs()
+            delay(500)
+        }
+    }
+
     val visibleLogs = remember(logs, filter) {
         when (filter) {
             LogFilter.ALL -> logs
@@ -172,12 +172,19 @@ fun LogPage() {
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = CustomColors.topBarColors.containerColor,
     ) { contentPadding ->
-        UnifiedLogList(
-            logs = visibleLogs,
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
-        )
+        ) {
+            InterceptRequestCard(
+                modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp)
+            )
+            UnifiedLogList(
+                logs = visibleLogs,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
     }
     if (showClearConfirm) {
         AlertDialog(
@@ -196,6 +203,38 @@ fun LogPage() {
                 androidx.compose.material3.TextButton(onClick = { showClearConfirm = false }) {
                     Text(stringResource(R.string.common_cancel))
                 }
+            },
+        )
+    }
+}
+
+@Composable
+private fun InterceptRequestCard(modifier: Modifier = Modifier) {
+    val interceptMode = RequestInterceptController.mode
+    CardGroup(modifier = modifier) {
+        item(
+            headlineContent = {
+                Text(stringResource(R.string.log_page_intercept_title))
+            },
+            supportingContent = {
+                Text(stringResource(R.string.log_page_intercept_desc))
+            },
+            trailingContent = {
+                Select(
+                    options = RequestInterceptMode.entries,
+                    selectedOption = interceptMode,
+                    onOptionSelected = { RequestInterceptController.mode = it },
+                    optionToString = {
+                        stringResource(
+                            when (it) {
+                                RequestInterceptMode.OFF -> R.string.log_page_intercept_off
+                                RequestInterceptMode.LLM_ONLY -> R.string.log_page_intercept_llm_only
+                                RequestInterceptMode.ALL -> R.string.log_page_intercept_all
+                            }
+                        )
+                    },
+                    fitToOptions = true,
+                )
             },
         )
     }
@@ -289,6 +328,27 @@ private fun RequestLogCard(log: LogEntry.RequestLog, onClick: () -> Unit) {
                 maxLines = 2
             )
 
+            if (isLlmRequest(log) && requestModel != null) {
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurfaceVariant)) {
+                            append("Model:")
+                        }
+                        append(" ")
+                        withStyle(
+                            SpanStyle(
+                                color = MaterialTheme.colorScheme.primary,
+                                fontFamily = JetbrainsMono,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        ) {
+                            append(requestModel)
+                        }
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            }
+
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -331,27 +391,6 @@ private fun RequestLogCard(log: LogEntry.RequestLog, onClick: () -> Unit) {
                     text = "Error: $displayError",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.error
-                )
-            }
-
-            if (isLlmRequest(log) && requestModel != null) {
-                Text(
-                    text = buildAnnotatedString {
-                        withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurfaceVariant)) {
-                            append("Model:")
-                        }
-                        append(" ")
-                        withStyle(
-                            SpanStyle(
-                                color = MaterialTheme.colorScheme.primary,
-                                fontFamily = JetbrainsMono,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        ) {
-                            append(requestModel)
-                        }
-                    },
-                    style = MaterialTheme.typography.labelSmall,
                 )
             }
         }
@@ -610,7 +649,7 @@ private fun LogSection(
     }
 }
 
-private fun headersText(headers: Map<String, String>): String =
+internal fun headersText(headers: Map<String, String>): String =
     headers.entries.joinToString("\n") { (name, value) -> "$name: $value" }
 
 private fun extractResponseSections(body: String, labels: LlmLabels): List<LlmContentSection> {
@@ -946,7 +985,7 @@ private fun parseToolJson(content: String): JsonElement? {
     }
 }
 
-private fun parseResponseJson(body: String): JsonElement? {
+internal fun parseResponseJson(body: String): JsonElement? {
     runCatching { JsonInstantPretty.parseToJsonElement(body) }.getOrNull()?.let { return it }
     val events = body.lineSequence()
         .map { it.trim() }
@@ -959,7 +998,7 @@ private fun parseResponseJson(body: String): JsonElement? {
 }
 
 @Composable
-private fun DetailSection(label: String, value: String) {
+internal fun DetailSection(label: String, value: String) {
     val keyColor = MaterialTheme.colorScheme.primary
     val colonColor = MaterialTheme.colorScheme.tertiary
     val valueColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -976,7 +1015,7 @@ private fun DetailSection(label: String, value: String) {
 }
 
 @Composable
-private fun HighlightedHeaders(headers: Map<String, String>) {
+internal fun HighlightedHeaders(headers: Map<String, String>) {
     HighlightedKeyValues(headers)
 }
 

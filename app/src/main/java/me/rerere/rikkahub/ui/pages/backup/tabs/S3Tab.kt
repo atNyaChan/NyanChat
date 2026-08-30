@@ -166,36 +166,38 @@ fun S3Tab(
 
             CardGroup {
                 item(
-                    headlineContent = { Text(stringResource(R.string.backup_page_s3_endpoint)) },
                     supportingContent = {
                         OutlinedTextField(
                             modifier = Modifier.fillMaxWidth(),
                             value = s3Config.endpoint,
                             onValueChange = { updateS3Config(s3Config.copy(endpoint = it.trim())) },
+                            label = { Text(stringResource(R.string.backup_page_s3_endpoint)) },
                             placeholder = { Text("https://s3.amazonaws.com") },
                             singleLine = true
                         )
                     },
+                    headlineContent = {},
                 )
                 item(
-                    headlineContent = { Text(stringResource(R.string.backup_page_s3_access_key_id)) },
                     supportingContent = {
                         OutlinedTextField(
                             modifier = Modifier.fillMaxWidth(),
                             value = s3Config.accessKeyId,
                             onValueChange = { updateS3Config(s3Config.copy(accessKeyId = it.trim())) },
+                            label = { Text(stringResource(R.string.backup_page_s3_access_key_id)) },
                             singleLine = true
                         )
                     },
+                    headlineContent = {},
                 )
                 item(
-                    headlineContent = { Text(stringResource(R.string.backup_page_s3_secret_access_key)) },
                     supportingContent = {
                         var passwordVisible by remember { mutableStateOf(false) }
                         OutlinedTextField(
                             modifier = Modifier.fillMaxWidth(),
                             value = s3Config.secretAccessKey,
                             onValueChange = { updateS3Config(s3Config.copy(secretAccessKey = it.trim())) },
+                            label = { Text(stringResource(R.string.backup_page_s3_secret_access_key)) },
                             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                             trailingIcon = {
                                 val image = if (passwordVisible) {
@@ -210,21 +212,22 @@ fun S3Tab(
                             singleLine = true
                         )
                     },
+                    headlineContent = {},
                 )
                 item(
-                    headlineContent = { Text(stringResource(R.string.backup_page_s3_bucket)) },
                     supportingContent = {
                         OutlinedTextField(
                             modifier = Modifier.fillMaxWidth(),
                             value = s3Config.bucket,
                             onValueChange = { updateS3Config(s3Config.copy(bucket = it.trim())) },
+                            label = { Text(stringResource(R.string.backup_page_s3_bucket)) },
                             placeholder = { Text("my-bucket") },
                             singleLine = true
                         )
                     },
+                    headlineContent = {},
                 )
                 item(
-                    headlineContent = { Text(stringResource(R.string.backup_page_s3_path_style)) },
                     supportingContent = { Text(stringResource(R.string.backup_page_s3_path_style_desc)) },
                     trailingContent = {
                         Switch(
@@ -232,18 +235,20 @@ fun S3Tab(
                             onCheckedChange = { updateS3Config(s3Config.copy(pathStyle = it)) },
                         )
                     },
+                    headlineContent = { Text(stringResource(R.string.backup_page_s3_path_style)) },
                 )
                 item(
-                    headlineContent = { Text(stringResource(R.string.backup_page_s3_region)) },
                     supportingContent = {
                         OutlinedTextField(
                             modifier = Modifier.fillMaxWidth(),
                             value = s3Config.region,
                             onValueChange = { updateS3Config(s3Config.copy(region = it.trim())) },
+                            label = { Text(stringResource(R.string.backup_page_s3_region)) },
                             placeholder = { Text("auto") },
                             singleLine = true
                         )
                     },
+                    headlineContent = {},
                 )
             }
         }

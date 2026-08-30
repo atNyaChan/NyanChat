@@ -107,7 +107,7 @@ fun RikkahubTheme(
         LocalScreenCornerAdaptationEnabled provides
             (settings.displaySetting.screenCornerAdaptation == ScreenCornerAdaptation.ALL),
         LocalScreenCornerFallbackRadius provides
-            if (settings.displaySetting.screenCornerAdaptation == ScreenCornerAdaptation.SQUARE) 4.dp else 20.dp,
+            if (settings.displaySetting.screenCornerAdaptation == ScreenCornerAdaptation.SQUARE) 4.dp else 24.dp,
         LocalOverscrollFactory provides null
     ) {
         MaterialExpressiveTheme(

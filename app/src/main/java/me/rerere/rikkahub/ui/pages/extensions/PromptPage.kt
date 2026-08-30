@@ -5,7 +5,6 @@ import me.rerere.hugeicons.stroke.ArrowDown01
 import me.rerere.hugeicons.stroke.FileImport
 import me.rerere.hugeicons.stroke.Add01
 import me.rerere.hugeicons.stroke.Share01
-import me.rerere.hugeicons.stroke.Share03
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.Cancel01
 import androidx.compose.animation.AnimatedVisibility
@@ -387,7 +386,7 @@ private fun ModeInjectionEditSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.9f),
+                .fillMaxHeight(0.95f),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
@@ -406,76 +405,111 @@ private fun ModeInjectionEditSheet(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                OutlinedTextField(
-                    value = injection.name,
-                    onValueChange = { onEdit(injection.copy(name = it)) },
-                    label = { Text(stringResource(R.string.prompt_page_name)) },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                CardGroup(modifier = Modifier.fillMaxWidth()) {
+                    item(
+                        supportingContent = {
+                            OutlinedTextField(
+                                value = injection.name,
+                                onValueChange = { onEdit(injection.copy(name = it)) },
+                                label = { Text(stringResource(R.string.prompt_page_name)) },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        },
+                        headlineContent = {},
+                    )
 
-                FormItem(
-                    label = { Text(stringResource(R.string.prompt_page_enabled)) },
-                    tail = {
-                        Switch(
-                            checked = injection.enabled,
-                            onCheckedChange = { onEdit(injection.copy(enabled = it)) }
+                    FormItem(
+                        label = { Text(stringResource(R.string.prompt_page_enabled)) },
+                        tail = {
+                            Switch(
+                                checked = injection.enabled,
+                                onCheckedChange = { onEdit(injection.copy(enabled = it)) }
+                            )
+                        }
+                    )
+
+                    item(
+                        supportingContent = {
+                            OutlinedTextField(
+                                value = injection.priority.toString(),
+                                onValueChange = {
+                                    it.toIntOrNull()?.let { p -> onEdit(injection.copy(priority = p)) }
+                                },
+                                label = { Text(stringResource(R.string.prompt_page_priority_label)) },
+                                modifier = Modifier.fillMaxWidth(),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                            )
+                        },
+                        headlineContent = {},
+                    )
+
+                    item(
+                        supportingContent = {
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text(
+                                    stringResource(R.string.prompt_page_injection_position),
+                                    style = MaterialTheme.typography.titleSmall
+                                )
+                                InjectionPositionSelector(
+                                    position = injection.position,
+                                    onSelect = { onEdit(injection.copy(position = it)) }
+                                )
+                            }
+                        },
+                        headlineContent = {},
+                    )
+
+                    if (injection.position == InjectionPosition.AT_DEPTH) {
+                        item(
+                            supportingContent = {
+                                OutlinedTextField(
+                                    value = injection.injectDepth.toString(),
+                                    onValueChange = {
+                                        it.toIntOrNull()?.let { d -> onEdit(injection.copy(injectDepth = d)) }
+                                    },
+                                    label = { Text(stringResource(R.string.prompt_page_inject_depth)) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                                )
+                            },
+                            headlineContent = {},
                         )
                     }
-                )
 
-                OutlinedTextField(
-                    value = injection.priority.toString(),
-                    onValueChange = {
-                        it.toIntOrNull()?.let { p -> onEdit(injection.copy(priority = p)) }
-                    },
-                    label = { Text(stringResource(R.string.prompt_page_priority_label)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                )
+                    if (injection.position.usesStandaloneMessage()) {
+                        item(
+                            supportingContent = {
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text(
+                                        stringResource(R.string.prompt_page_injection_role),
+                                        style = MaterialTheme.typography.titleSmall
+                                    )
+                                    InjectionRoleSelector(
+                                        role = injection.role,
+                                        onSelect = { onEdit(injection.copy(role = it)) }
+                                    )
+                                }
+                            },
+                            headlineContent = {},
+                        )
+                    }
 
-                Text(
-                    stringResource(R.string.prompt_page_injection_position),
-                    style = MaterialTheme.typography.titleSmall
-                )
-                InjectionPositionSelector(
-                    position = injection.position,
-                    onSelect = { onEdit(injection.copy(position = it)) }
-                )
-
-                AnimatedVisibility(visible = injection.position == InjectionPosition.AT_DEPTH) {
-                    OutlinedTextField(
-                        value = injection.injectDepth.toString(),
-                        onValueChange = {
-                            it.toIntOrNull()?.let { d -> onEdit(injection.copy(injectDepth = d)) }
+                    item(
+                        supportingContent = {
+                            TextArea(
+                                state = contentState,
+                                label = stringResource(R.string.prompt_page_injection_content),
+                                labelInField = true,
+                                modifier = Modifier.fillMaxWidth(),
+                                minLines = 1,
+                                maxLines = Int.MAX_VALUE,
+                                enableImport = false,
+                                enableFullscreen = false,
+                            )
                         },
-                        label = { Text(stringResource(R.string.prompt_page_inject_depth)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        headlineContent = {},
                     )
                 }
-
-                AnimatedVisibility(visible = injection.position.usesStandaloneMessage()) {
-                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        Text(
-                            stringResource(R.string.prompt_page_injection_role),
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                        InjectionRoleSelector(
-                            role = injection.role,
-                            onSelect = { onEdit(injection.copy(role = it)) }
-                        )
-                    }
-                }
-
-                TextArea(
-                    state = contentState,
-                    label = stringResource(R.string.prompt_page_injection_content),
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 1,
-                    maxLines = Int.MAX_VALUE,
-                    enableImport = false,
-                    enableFullscreen = false,
-                )
             }
 
             Row(
@@ -485,13 +519,13 @@ private fun ModeInjectionEditSheet(
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(onClick = { showExportDialog = true }) {
-                    Icon(HugeIcons.Share03, stringResource(R.string.common_export))
-                }
                 if (onDelete != null) {
                     IconButton(onClick = { showDeleteConfirm = true }) {
                         Icon(HugeIcons.Delete01, stringResource(R.string.common_delete))
                     }
+                }
+                IconButton(onClick = { showExportDialog = true }) {
+                    Icon(HugeIcons.Share01, stringResource(R.string.common_export))
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 TextButton(onClick = onDismiss) {
@@ -1127,112 +1161,139 @@ private fun RegexInjectionEditDialog(
                     .imePadding(),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                OutlinedTextField(
-                    value = entry.name,
-                    onValueChange = { onEdit(entry.copy(name = it)) },
-                    label = { Text(stringResource(R.string.prompt_page_name)) },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                FormItem(
-                    label = { Text(stringResource(R.string.prompt_page_enabled)) },
-                    tail = {
-                        Switch(
-                            checked = entry.enabled,
-                            onCheckedChange = { onEdit(entry.copy(enabled = it)) }
-                        )
-                    }
-                )
-
-                OutlinedTextField(
-                    value = entry.priority.toString(),
-                    onValueChange = {
-                        it.toIntOrNull()?.let { p -> onEdit(entry.copy(priority = p)) }
-                    },
-                    label = { Text(stringResource(R.string.prompt_page_priority_label)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                )
-
-                Text(
-                    stringResource(R.string.prompt_page_injection_position),
-                    style = MaterialTheme.typography.titleSmall
-                )
-                InjectionPositionSelector(
-                    position = entry.position,
-                    onSelect = { onEdit(entry.copy(position = it)) }
-                )
-
-                AnimatedVisibility(visible = entry.position == InjectionPosition.AT_DEPTH) {
-                    OutlinedTextField(
-                        value = entry.injectDepth.toString(),
-                        onValueChange = {
-                            it.toIntOrNull()?.let { d -> onEdit(entry.copy(injectDepth = d)) }
+                CardGroup(modifier = Modifier.fillMaxWidth()) {
+                    item(
+                        supportingContent = {
+                            OutlinedTextField(
+                                value = entry.name,
+                                onValueChange = { onEdit(entry.copy(name = it)) },
+                                label = { Text(stringResource(R.string.prompt_page_name)) },
+                                modifier = Modifier.fillMaxWidth()
+                            )
                         },
-                        label = { Text(stringResource(R.string.prompt_page_inject_depth)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        headlineContent = {},
                     )
-                }
 
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(
-                        stringResource(R.string.prompt_page_keywords_label),
-                        style = MaterialTheme.typography.titleSmall,
-                    )
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        entry.keywords.forEach { keyword ->
-                            InputChip(
-                                selected = false,
-                                onClick = {},
-                                label = { Text(keyword) },
-                                trailingIcon = {
-                                    IconButton(
-                                        onClick = {
-                                            onEdit(entry.copy(keywords = entry.keywords - keyword))
-                                        },
-                                        modifier = Modifier.size(16.dp),
-                                    ) {
-                                        Icon(HugeIcons.Cancel01, null, modifier = Modifier.size(12.dp))
-                                    }
-                                }
+                    FormItem(
+                        label = { Text(stringResource(R.string.prompt_page_enabled)) },
+                        tail = {
+                            Switch(
+                                checked = entry.enabled,
+                                onCheckedChange = { onEdit(entry.copy(enabled = it)) }
                             )
                         }
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        OutlinedTextField(
-                            value = newKeyword,
-                            onValueChange = { newKeyword = it },
-                            label = { Text(stringResource(R.string.prompt_page_new_keyword)) },
-                            modifier = Modifier.weight(1f),
-                            singleLine = true,
-                        )
-                        IconButton(
-                            onClick = {
-                                if (newKeyword.isNotBlank()) {
-                                    onEdit(entry.copy(keywords = entry.keywords + newKeyword.trim()))
-                                    newKeyword = ""
-                                }
-                            }
-                        ) {
-                            Icon(HugeIcons.Add01, stringResource(R.string.common_add))
-                        }
-                    }
-                    Text(
-                        text = stringResource(R.string.prompt_page_new_keyword_hint),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                }
 
-                CardGroup {
+                    item(
+                        supportingContent = {
+                            OutlinedTextField(
+                                value = entry.priority.toString(),
+                                onValueChange = {
+                                    it.toIntOrNull()?.let { p -> onEdit(entry.copy(priority = p)) }
+                                },
+                                label = { Text(stringResource(R.string.prompt_page_priority_label)) },
+                                modifier = Modifier.fillMaxWidth(),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                            )
+                        },
+                        headlineContent = {},
+                    )
+
+                    item(
+                        supportingContent = {
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text(
+                                    stringResource(R.string.prompt_page_injection_position),
+                                    style = MaterialTheme.typography.titleSmall
+                                )
+                                InjectionPositionSelector(
+                                    position = entry.position,
+                                    onSelect = { onEdit(entry.copy(position = it)) }
+                                )
+                            }
+                        },
+                        headlineContent = {},
+                    )
+
+                    if (entry.position == InjectionPosition.AT_DEPTH) {
+                        item(
+                            supportingContent = {
+                                OutlinedTextField(
+                                    value = entry.injectDepth.toString(),
+                                    onValueChange = {
+                                        it.toIntOrNull()?.let { d -> onEdit(entry.copy(injectDepth = d)) }
+                                    },
+                                    label = { Text(stringResource(R.string.prompt_page_inject_depth)) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                                )
+                            },
+                            headlineContent = {},
+                        )
+                    }
+
+                    item(
+                        supportingContent = {
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(
+                                    stringResource(R.string.prompt_page_keywords_label),
+                                    style = MaterialTheme.typography.titleSmall,
+                                )
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                                ) {
+                                    entry.keywords.forEach { keyword ->
+                                        InputChip(
+                                            selected = false,
+                                            onClick = {},
+                                            label = { Text(keyword) },
+                                            trailingIcon = {
+                                                IconButton(
+                                                    onClick = {
+                                                        onEdit(entry.copy(keywords = entry.keywords - keyword))
+                                                    },
+                                                    modifier = Modifier.size(16.dp),
+                                                ) {
+                                                    Icon(HugeIcons.Cancel01, null, modifier = Modifier.size(12.dp))
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    OutlinedTextField(
+                                        value = newKeyword,
+                                        onValueChange = { newKeyword = it },
+                                        label = { Text(stringResource(R.string.prompt_page_new_keyword)) },
+                                        modifier = Modifier.weight(1f),
+                                        singleLine = true,
+                                    )
+                                    IconButton(
+                                        onClick = {
+                                            if (newKeyword.isNotBlank()) {
+                                                onEdit(entry.copy(keywords = entry.keywords + newKeyword.trim()))
+                                                newKeyword = ""
+                                            }
+                                        }
+                                    ) {
+                                        Icon(HugeIcons.Add01, stringResource(R.string.common_add))
+                                    }
+                                }
+                                Text(
+                                    text = stringResource(R.string.prompt_page_new_keyword_hint),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        },
+                        headlineContent = {},
+                    )
+
                     FormItem(
                         label = { Text(stringResource(R.string.prompt_page_use_regex)) },
                         tail = {
@@ -1263,40 +1324,57 @@ private fun RegexInjectionEditDialog(
                             )
                         }
                     )
-                }
 
-                OutlinedTextField(
-                    value = entry.scanDepth.toString(),
-                    onValueChange = {
-                        it.toIntOrNull()?.let { d -> onEdit(entry.copy(scanDepth = d)) }
-                    },
-                    label = { Text(stringResource(R.string.prompt_page_scan_depth)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                )
+                    item(
+                        supportingContent = {
+                            OutlinedTextField(
+                                value = entry.scanDepth.toString(),
+                                onValueChange = {
+                                    it.toIntOrNull()?.let { d -> onEdit(entry.copy(scanDepth = d)) }
+                                },
+                                label = { Text(stringResource(R.string.prompt_page_scan_depth)) },
+                                modifier = Modifier.fillMaxWidth(),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                            )
+                        },
+                        headlineContent = {},
+                    )
 
-                AnimatedVisibility(visible = entry.position.usesStandaloneMessage()) {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(
-                            stringResource(R.string.prompt_page_injection_role),
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                        InjectionRoleSelector(
-                            role = entry.role,
-                            onSelect = { onEdit(entry.copy(role = it)) }
+                    if (entry.position.usesStandaloneMessage()) {
+                        item(
+                            supportingContent = {
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text(
+                                        stringResource(R.string.prompt_page_injection_role),
+                                        style = MaterialTheme.typography.titleSmall
+                                    )
+                                    InjectionRoleSelector(
+                                        role = entry.role,
+                                        onSelect = { onEdit(entry.copy(role = it)) }
+                                    )
+                                }
+                            },
+                            headlineContent = {},
                         )
                     }
+
+                    item(
+                        supportingContent = {
+                            TextArea(
+                                state = contentState,
+                                label = stringResource(R.string.prompt_page_injection_content),
+                                labelInField = true,
+                                modifier = Modifier.fillMaxWidth(),
+                                minLines = 1,
+                                maxLines = Int.MAX_VALUE,
+                                enableImport = false,
+                                enableFullscreen = false,
+                            )
+                        },
+                        headlineContent = {},
+                    )
                 }
 
-                TextArea(
-                    state = contentState,
-                    label = stringResource(R.string.prompt_page_injection_content),
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 1,
-                    maxLines = Int.MAX_VALUE,
-                    enableImport = false,
-                    enableFullscreen = false,
-                )
                 if (onDelete != null) {
                     Button(
                         onClick = { showDeleteConfirm = true },

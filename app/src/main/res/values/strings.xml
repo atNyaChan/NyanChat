@@ -61,7 +61,7 @@
   <string name="assistant_page_preset_message_singular">Preset Chat Message</string>
   <string name="assistant_page_regex_singular">Regular Expression</string>
   <string name="assistant_page_context_cache">Context Cache</string>
-  <string name="assistant_page_context_cache_desc">Optimized for Claude and GPT-5.6; enable for other models when appropriate</string>
+  <string name="assistant_page_context_cache_desc">Supported by only some models (e.g., Claude)</string>
   <string name="assistant_page_default_assistant">Default Assistant</string>
   <string name="assistant_page_delete_body">Delete Body</string>
   <string name="assistant_page_delete_dialog_text">Are you sure you want to delete this assistant? This action cannot be undone.</string>
@@ -1266,6 +1266,14 @@
   <string name="log_page_filter_all">All</string>
   <string name="log_page_filter_llm_only">LLM calls only</string>
   <string name="log_page_filter_non_llm_only">Non-LLM calls</string>
+  <string name="log_page_intercept_title">[Debug] Show outgoing requests in real time</string>
+  <string name="log_page_intercept_desc">Show a confirmation dialog before sending network requests</string>
+  <string name="log_page_intercept_off">Off</string>
+  <string name="log_page_intercept_llm_only">LLM requests only</string>
+  <string name="log_page_intercept_all">All</string>
+  <string name="request_intercept_dialog_title">[Debug] Outgoing network request:</string>
+  <string name="request_intercept_cancel">Cancel</string>
+  <string name="request_intercept_confirm">Send</string>
   <string name="backup_page_import_failed_detail">Import failed: %1$s</string>
   <string name="backup_page_export_failed_detail">Export failed: %1$s</string>
   <string name="backup_page_rikkahub_format">RikkaHub-like format</string>

@@ -104,8 +104,8 @@ internal fun FilesPicker(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 8.dp, end = 8.dp, top = 16.dp, bottom = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(start = 8.dp, end = 8.dp, top = 20.dp, bottom = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         CardGroupRow(
             cornerInset = 24.dp,
@@ -254,8 +254,10 @@ internal fun FilesPicker(
                     }
                 }
             }
+        }
 
-            if (workspaces.isNotEmpty()) {
+        if (workspaces.isNotEmpty()) {
+            CardGroup(cornerInset = 24.dp) {
                 workspaceItems(
                     assistant = assistant,
                     conversation = conversation,
