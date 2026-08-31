@@ -109,7 +109,6 @@
   <string name="assistant_page_max_tokens_desc">生成されるトークンの最大数。空白にすると制限なし。</string>
   <string name="assistant_page_max_tokens_no_limit">制限なし</string>
   <string name="assistant_page_memory">記憶</string>
-  <string name="assistant_page_memory_count">記憶: %d</string>
   <string name="assistant_page_memory_desc">記憶を有効にすると、モデルは会話中にあなたの情報を積極的に記録し、後続の会話で使用しようとします。この機能が正常に動作するには、モデルがツール呼び出しをサポートしている必要があります</string>
   <string name="assistant_page_message_template">チャットコンテンツテンプレート</string>
   <string name="assistant_page_message_template_desc">チャットメッセージがLLMに送信される前のコンテンツ形式を制御します。通常は変更する必要がありません</string>
@@ -233,7 +232,6 @@
   <string name="backup_page_webdav_backup">WebDAVバックアップ</string>
   <string name="backup_page_webdav_backup_files">WebDavバックアップファイル一覧</string>
   <string name="backup_page_webdav_server_address">WebDAV サーバーアドレス</string>
-  <string name="built_in_search_description">モデルの組み込み検索機能を有効にする</string>
   <string name="built_in_search_title">組み込み検索</string>
   <string name="calculating">計算中...</string>
   <string name="cancel_edit">編集をキャンセル</string>
@@ -245,8 +243,6 @@
   <string name="chat_message_tool_approve">承認</string>
   <string name="chat_message_tool_ask_questions">%d 件の質問</string>
   <string name="chat_message_tool_call_generic">ツール %1$s を呼び出しました</string>
-  <string name="chat_message_tool_call_label">ツール %1$s を呼び出しました</string>
-  <string name="chat_message_tool_call_result">呼び出し結果</string>
   <string name="chat_message_tool_call_title">ツール呼び出し</string>
   <string name="chat_message_tool_clipboard_read">クリップボードを読み取り</string>
   <string name="chat_message_tool_clipboard_write">クリップボードに書き込み</string>
@@ -382,7 +378,6 @@
   <string name="language_traditional_chinese">🇨🇳 繁體中文</string>
   <string name="mcp_picker_syncing">MCPサーバーを同期中...</string>
   <string name="mcp_picker_title">MCPサーバー</string>
-  <string name="menu">メニュー</string>
   <string name="menu_page_afternoon_greeting">こんにちは\uD83D\uDC4B</string>
   <string name="menu_page_evening_greeting">こんばんは\uD83D\uDC4B</string>
   <string name="menu_page_morning_greeting">おはようございます\uD83D\uDC4B</string>
@@ -441,7 +436,6 @@
   <string name="prompt_page_constant_active_desc">キーワード一致なしでトリガー</string>
   <string name="prompt_page_description">説明</string>
   <string name="prompt_page_disabled">無効</string>
-  <string name="prompt_page_edit">編集</string>
   <string name="prompt_page_edit_entry">エントリを編集</string>
   <string name="prompt_page_edit_lorebook">ロアブックを編集</string>
   <string name="prompt_page_edit_mode_injection">編集モードインジェクション</string>
@@ -705,6 +699,9 @@
   <string name="setting_display_page_screen_corner_adaptation_input_only">入力欄のみ</string>
   <string name="setting_display_page_screen_corner_adaptation_all">すべて</string>
   <string name="setting_display_page_screen_corner_adaptation_square">直角</string>
+  <string name="setting_display_page_screen_corner_adaptation_cannot_read">、現在画面の角丸を読み取れません。</string>
+  <string name="setting_display_page_screen_corner_adaptation_value_read">、現在読み取った値は %1$s dp</string>
+  <string name="setting_display_page_screen_corner_adaptation_small_value">、24dp 未満のため画面の角丸に合わせられません</string>
   <string name="setting_display_page_volume_key_scroll_desc">音量キーでページを送る際のスクロール量を設定します。電子ペーパーに適しています</string>
   <string name="setting_display_page_volume_key_scroll_title">音量キーでページスクロール</string>
   <string name="setting_files_page_clean_action">クリーンアップ</string>
@@ -997,7 +994,6 @@
   <string name="setting_tts_page_model_description">使用するTTSモデル</string>
   <string name="setting_tts_page_model_placeholder_gemini">gemini-2.5-flash-preview-tts</string>
   <string name="setting_tts_page_model_placeholder_openai">gpt-4o-mini-tts</string>
-  <string name="setting_tts_page_more_options_content_description">その他のオプション</string>
   <string name="setting_tts_page_name">名前</string>
   <string name="setting_tts_page_name_description">このTTSプロバイダーのカスタム名</string>
   <string name="setting_tts_page_name_placeholder">プロバイダー名を入力</string>
@@ -1008,7 +1004,6 @@
   <string name="setting_tts_page_provider_system">システムTTS</string>
   <string name="setting_tts_page_provider_type">プロバイダーの種類</string>
   <string name="setting_tts_page_provider_type_description">TTSプロバイダーの種類を選択</string>
-  <string name="setting_tts_page_selected">選択済み</string>
   <string name="setting_tts_page_similarity_boost">類似性向上</string>
   <string name="setting_tts_page_similarity_boost_description">元の声との一致度を制御（0.0 - 1.0）</string>
   <string name="setting_tts_page_speech_rate">音声速度</string>
@@ -1050,7 +1045,6 @@
   <string name="skills_page_import_failed">インポートに失敗しました: %s</string>
   <string name="skills_page_import_success">スキルをインポートしました: %s</string>
   <string name="skills_page_import_from_github">GitHubからインポート</string>
-  <string name="skills_page_more_actions">その他のアクション</string>
   <string name="skills_page_name_error">名前フィールドが見つかりません。フロントマター形式を確認してください</string>
   <string name="skills_page_paste_hint">SKILL.mdファイルの内容全体を貼り付けてください</string>
   <string name="skills_page_repo_url_hint">/tree/branchまたはサブディレクトリパスをサポート</string>
@@ -1109,8 +1103,6 @@
   <string name="use_web_search">ウェブ検索を</string>
   <string name="user_default_name">ユーザー</string>
   <string name="video">動画</string>
-  <string name="web_search_disabled">ウェブ検索が無効になりました</string>
-  <string name="web_search_enabled">ウェブ検索が有効になりました</string>
   <string name="setting_theme_page_delete_theme_title">テーマを削除</string>
   <string name="setting_theme_page_delete_theme_message">このテーマを削除してもよろしいですか？</string>
   <string name="skills_page_import_from_file">ファイルからインポート</string>
@@ -1365,7 +1357,6 @@
   <string name="error_mcp_auth_no_code">認可に失敗しました: 認可コードが返されませんでした</string>
   <string name="error_mcp_discover_resource_metadata">保護リソースのメタデータを発見できません (protected resource metadata)</string>
   <string name="error_mcp_discover_as_metadata">認可サーバーのメタデータを発見できません (authorization server metadata): %1$s</string>
-  <string name="error_mcp_invalid_authorization_endpoint">無効な認可エンドポイント: %1$s</string>
   <string name="error_skill_cannot_read_file">ファイルを読み取れません</string>
   <string name="error_skill_invalid_github_url">無効な GitHub リポジトリのリンクです</string>
   <string name="error_skill_read_github_dir">GitHub ディレクトリの読み取りに失敗しました</string>

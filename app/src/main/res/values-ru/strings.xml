@@ -109,7 +109,6 @@
   <string name="assistant_page_max_tokens_desc">Максимальное количество генерируемых токенов. Оставьте пустым, чтобы не ограничивать.</string>
   <string name="assistant_page_max_tokens_no_limit">Без ограничений</string>
   <string name="assistant_page_memory">Память</string>
-  <string name="assistant_page_memory_count">Память: %d</string>
   <string name="assistant_page_memory_desc">Когда память включена, модель будет стараться активно записывать вашу информацию во время разговоров и использовать её в последующих беседах. Для работы этой функции модель должна поддерживать вызовы инструментов</string>
   <string name="assistant_page_message_template">Шаблон содержимого сообщения</string>
   <string name="assistant_page_message_template_desc">Управляет форматом содержимого сообщений чата перед отправкой в LLM, обычно изменять не требуется</string>
@@ -233,7 +232,6 @@
   <string name="backup_page_webdav_backup">Резервное копирование WebDAV</string>
   <string name="backup_page_webdav_backup_files">Файлы резервного копирования WebDAV</string>
   <string name="backup_page_webdav_server_address">Адрес сервера WebDAV</string>
-  <string name="built_in_search_description">Включить встроенную функцию поиска модели</string>
   <string name="built_in_search_title">Встроенный поиск</string>
   <string name="calculating">Вычисление...</string>
   <string name="cancel_edit">Отменить редактирование</string>
@@ -245,8 +243,6 @@
   <string name="chat_message_tool_approve">Одобрить</string>
   <string name="chat_message_tool_ask_questions">Задать %d вопросов</string>
   <string name="chat_message_tool_call_generic">Вызван инструмент %1$s</string>
-  <string name="chat_message_tool_call_label">Вызван инструмент %1$s</string>
-  <string name="chat_message_tool_call_result">Результат вызова</string>
   <string name="chat_message_tool_call_title">Вызов инструмента</string>
   <string name="chat_message_tool_clipboard_read">Читать буфер обмена</string>
   <string name="chat_message_tool_clipboard_write">Записать в буфер обмена</string>
@@ -382,7 +378,6 @@
   <string name="language_traditional_chinese">🇨🇳 繁體中文</string>
   <string name="mcp_picker_syncing">Синхронизация MCP-серверов…</string>
   <string name="mcp_picker_title">Серверы MCP</string>
-  <string name="menu">Меню</string>
   <string name="menu_page_afternoon_greeting">Добрый день👋</string>
   <string name="menu_page_evening_greeting">Добрый вечер👋</string>
   <string name="menu_page_morning_greeting">Доброе утро👋</string>
@@ -441,7 +436,6 @@
   <string name="prompt_page_constant_active_desc">Срабатывание без совпадения ключевых слов</string>
   <string name="prompt_page_description">Описание</string>
   <string name="prompt_page_disabled">Отключено</string>
-  <string name="prompt_page_edit">Редактировать</string>
   <string name="prompt_page_edit_entry">Редактировать запись</string>
   <string name="prompt_page_edit_lorebook">Редактировать Lorebook</string>
   <string name="prompt_page_edit_mode_injection">Внедрение режима редактирования</string>
@@ -705,6 +699,9 @@
   <string name="setting_display_page_screen_corner_adaptation_input_only">Только поле ввода</string>
   <string name="setting_display_page_screen_corner_adaptation_all">Все</string>
   <string name="setting_display_page_screen_corner_adaptation_square">Прямые углы</string>
+  <string name="setting_display_page_screen_corner_adaptation_cannot_read">, не удалось прочитать скругление экрана.</string>
+  <string name="setting_display_page_screen_corner_adaptation_value_read">, считанное значение: %1$s dp</string>
+  <string name="setting_display_page_screen_corner_adaptation_small_value">, меньше 24dp, невозможно адаптировать к скруглению экрана</string>
   <string name="setting_display_page_volume_key_scroll_desc">Задаёт величину прокрутки при перелистывании клавишами громкости, подходит для экранов E-Ink</string>
   <string name="setting_display_page_volume_key_scroll_title">Прокрутка клавишами громкости</string>
   <string name="setting_files_page_clean_action">Очистить</string>
@@ -997,7 +994,6 @@
   <string name="setting_tts_page_model_description">Модель TTS для использования</string>
   <string name="setting_tts_page_model_placeholder_gemini">gemini-2.5-flash-preview-tts</string>
   <string name="setting_tts_page_model_placeholder_openai">gpt-4o-mini-tts</string>
-  <string name="setting_tts_page_more_options_content_description">Дополнительные параметры</string>
   <string name="setting_tts_page_name">Имя</string>
   <string name="setting_tts_page_name_description">Пользовательское имя для этого поставщика TTS</string>
   <string name="setting_tts_page_name_placeholder">Введите имя поставщика</string>
@@ -1008,7 +1004,6 @@
   <string name="setting_tts_page_provider_system">Системное TTS</string>
   <string name="setting_tts_page_provider_type">Тип поставщика</string>
   <string name="setting_tts_page_provider_type_description">Выберите тип поставщика TTS</string>
-  <string name="setting_tts_page_selected">Выбрано</string>
   <string name="setting_tts_page_similarity_boost">Усиление схожести</string>
   <string name="setting_tts_page_similarity_boost_description">Управление степенью совпадения голоса с оригиналом (0.0 - 1.0)</string>
   <string name="setting_tts_page_speech_rate">Скорость речи</string>
@@ -1050,7 +1045,6 @@
   <string name="skills_page_import_failed">Не удалось импортировать: %s</string>
   <string name="skills_page_import_success">Навык импортирован: %s</string>
   <string name="skills_page_import_from_github">Импорт из GitHub</string>
-  <string name="skills_page_more_actions">Дополнительные действия</string>
   <string name="skills_page_name_error">Не удаётся найти поле name, проверьте формат frontmatter</string>
   <string name="skills_page_paste_hint">Вставьте полное содержимое файла SKILL.md</string>
   <string name="skills_page_repo_url_hint">Поддерживает пути /tree/branch или подкаталоги</string>
@@ -1109,8 +1103,6 @@
   <string name="use_web_search">Веб-поиск</string>
   <string name="user_default_name">Пользователь</string>
   <string name="video">Видео</string>
-  <string name="web_search_disabled">Веб-поиск отключён</string>
-  <string name="web_search_enabled">Веб-поиск включён</string>
   <string name="setting_theme_page_delete_theme_title">Удалить тему</string>
   <string name="setting_theme_page_delete_theme_message">Вы уверены, что хотите удалить эту тему?</string>
   <string name="skills_page_import_from_file">Импортировать из файла</string>
@@ -1365,7 +1357,6 @@
   <string name="error_mcp_auth_no_code">Не удалось авторизовать: код авторизации не получен</string>
   <string name="error_mcp_discover_resource_metadata">Не удалось обнаружить метаданные защищённого ресурса (protected resource metadata)</string>
   <string name="error_mcp_discover_as_metadata">Не удалось обнаружить метаданные сервера авторизации (authorization server metadata): %1$s</string>
-  <string name="error_mcp_invalid_authorization_endpoint">Недопустимая конечная точка авторизации: %1$s</string>
   <string name="error_skill_cannot_read_file">Не удалось прочитать файл</string>
   <string name="error_skill_invalid_github_url">Недействительная ссылка на репозиторий GitHub</string>
   <string name="error_skill_read_github_dir">Не удалось прочитать каталог GitHub</string>

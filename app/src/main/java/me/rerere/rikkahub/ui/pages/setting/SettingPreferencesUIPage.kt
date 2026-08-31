@@ -36,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -91,7 +92,9 @@ import me.rerere.rikkahub.ui.hooks.rememberSharedPreferenceBoolean
 import me.rerere.rikkahub.ui.hooks.rememberSharedPreferenceString
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.ColorMode
+import me.rerere.rikkahub.ui.theme.MIN_TRUSTED_CORNER_RADIUS_DP
 import me.rerere.rikkahub.ui.theme.rememberChatFontFamily
+import me.rerere.rikkahub.ui.theme.rememberScreenCornerRadiusDp
 import me.rerere.rikkahub.utils.plus
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -651,11 +654,59 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                             Text(stringResource(R.string.setting_display_page_screen_corner_adaptation_title))
                         },
                         supportingContent = {
-                            Text(stringResource(R.string.setting_display_page_screen_corner_adaptation_desc))
+                            val cornerRadiusDp = rememberScreenCornerRadiusDp()
+                            Text(
+                                buildString {
+                                    append(stringResource(R.string.setting_display_page_screen_corner_adaptation_desc))
+                                    if (cornerRadiusDp == null) {
+                                        append(
+                                            stringResource(
+                                                R.string.setting_display_page_screen_corner_adaptation_cannot_read
+                                            )
+                                        )
+                                    } else {
+                                        append(
+                                            stringResource(
+                                                R.string.setting_display_page_screen_corner_adaptation_value_read,
+                                                formatCornerRadiusDp(cornerRadiusDp),
+                                            )
+                                        )
+                                        if (cornerRadiusDp < MIN_TRUSTED_CORNER_RADIUS_DP) {
+                                            append(
+                                                stringResource(
+                                                    R.string.setting_display_page_screen_corner_adaptation_small_value
+                                                )
+                                            )
+                                        }
+                                    }
+                                }
+                            )
                         },
                         trailingContent = {
+                            val cornerRadiusDp = rememberScreenCornerRadiusDp()
+                            val canAdapt =
+                                cornerRadiusDp != null &&
+                                    cornerRadiusDp >= MIN_TRUSTED_CORNER_RADIUS_DP
+                            LaunchedEffect(canAdapt, displaySetting.screenCornerAdaptation) {
+                                if (!canAdapt &&
+                                    displaySetting.screenCornerAdaptation == ScreenCornerAdaptation.ALL
+                                ) {
+                                    updateDisplaySetting(
+                                        displaySetting.copy(
+                                            screenCornerAdaptation = ScreenCornerAdaptation.DISABLED
+                                        )
+                                    )
+                                }
+                            }
+                            val options = if (canAdapt) {
+                                ScreenCornerAdaptation.entries
+                            } else {
+                                ScreenCornerAdaptation.entries.filterNot {
+                                    it == ScreenCornerAdaptation.ALL
+                                }
+                            }
                             Select(
-                                options = ScreenCornerAdaptation.entries,
+                                options = options,
                                 selectedOption = displaySetting.screenCornerAdaptation,
                                 onOptionSelected = {
                                     updateDisplaySetting(displaySetting.copy(screenCornerAdaptation = it))
@@ -1350,6 +1401,16 @@ private val ScreenCornerAdaptation.labelRes: Int
         ScreenCornerAdaptation.ALL -> R.string.setting_display_page_screen_corner_adaptation_all
         ScreenCornerAdaptation.SQUARE -> R.string.setting_display_page_screen_corner_adaptation_square
     }
+
+private fun formatCornerRadiusDp(value: Float): String {
+    val tenths = (value * 10f).roundToInt()
+    val rounded = tenths / 10f
+    return if (rounded == rounded.toInt().toFloat()) {
+        rounded.toInt().toString()
+    } else {
+        rounded.toString()
+    }
+}
 
 internal enum class AppLanguage(val tag: String, val labelRes: Int) {
     SYSTEM("", R.string.setting_general_language_system),

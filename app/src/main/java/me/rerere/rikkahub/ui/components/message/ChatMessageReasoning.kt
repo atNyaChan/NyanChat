@@ -28,12 +28,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -80,13 +82,13 @@ enum class ReasoningCardState(val expanded: Boolean) {
 @Stable
 private class ReasoningState(
     val scrollState: ScrollState,
+    val expandState: MutableState<ReasoningCardState>,
     initialDuration: Duration,
 ) {
-    var expandState by mutableStateOf(ReasoningCardState.Collapsed)
     var duration by mutableStateOf(initialDuration)
 
     fun onExpandedChange(nextExpanded: Boolean, loading: Boolean, defaultState: ReasoningCardState) {
-        expandState = if (loading && defaultState != ReasoningCardState.Collapsed) {
+        expandState.value = if (loading && defaultState != ReasoningCardState.Collapsed) {
             if (nextExpanded) ReasoningCardState.Expanded else ReasoningCardState.Preview
         } else {
             if (nextExpanded) ReasoningCardState.Expanded else ReasoningCardState.Collapsed
@@ -105,9 +107,17 @@ private fun rememberReasoningState(reasoning: UIMessagePart.Reasoning): Pair<Rea
         else -> ReasoningCardState.Expanded
     }
 
+    // 展开状态用 rememberSaveable 记住，思考块滚出屏幕被回收后再滚回来不会重置
+    val expandState = rememberSaveable(reasoning.createdAt) {
+        mutableStateOf(ReasoningCardState.Collapsed)
+    }
+    // 标记是否已处理过“生成结束”的展开/自动折叠，避免滚动回收重建后再次触发自动折叠
+    var finishedHandled by rememberSaveable(reasoning.createdAt) { mutableStateOf(false) }
+
     val state = remember(reasoning.createdAt) {
         ReasoningState(
             scrollState = scrollState,
+            expandState = expandState,
             initialDuration = reasoning.finishedAt?.let { it - reasoning.createdAt }
                 ?: (Clock.System.now() - reasoning.createdAt)
         )
@@ -115,12 +125,13 @@ private fun rememberReasoningState(reasoning: UIMessagePart.Reasoning): Pair<Rea
 
     LaunchedEffect(reasoning.reasoning, loading) {
         if (loading) {
-            if (!state.expandState.expanded && defaultState != ReasoningCardState.Collapsed)
-                state.expandState = defaultState
+            if (!state.expandState.value.expanded && defaultState != ReasoningCardState.Collapsed)
+                state.expandState.value = defaultState
             scrollState.animateScrollTo(scrollState.maxValue)
-        } else {
-            if (state.expandState.expanded) {
-                state.expandState = if (settings.displaySetting.autoCloseThinking)
+        } else if (!finishedHandled) {
+            finishedHandled = true
+            if (state.expandState.value.expanded) {
+                state.expandState.value = if (settings.displaySetting.autoCloseThinking)
                     ReasoningCardState.Collapsed
                 else
                     ReasoningCardState.Expanded
@@ -253,7 +264,7 @@ fun ChainOfThoughtScope.ChatMessageReasoningStep(
     }
 
     ControlledChainOfThoughtStep(
-        expanded = state.expandState == ReasoningCardState.Expanded,
+        expanded = state.expandState.value == ReasoningCardState.Expanded,
         onExpandedChange = { state.onExpandedChange(it, loading, defaultState) },
         icon = {
             Icon(
@@ -298,7 +309,7 @@ fun ChainOfThoughtScope.ChatMessageReasoningStep(
                         modifier = Modifier.shimmer(isLoading = loading),
                     )
                 }
-                if (state.expandState.expanded) {
+                if (state.expandState.value.expanded) {
                     if (settings.displaySetting.showTokenUsage) ProvideTextStyle(
                         MaterialTheme.typography.labelSmall.copy(
                             color = reasoningStatsColor,
@@ -338,12 +349,12 @@ fun ChainOfThoughtScope.ChatMessageReasoningStep(
             }
         },
         collapsedAdaptiveWidth = collapsedAdaptiveWidth,
-        contentVisible = state.expandState != ReasoningCardState.Collapsed,
+        contentVisible = state.expandState.value != ReasoningCardState.Collapsed,
         content = {
             ReasoningContent(
                 reasoning = reasoning,
                 assistant = assistant,
-                expandState = state.expandState,
+                expandState = state.expandState.value,
                 scrollState = state.scrollState,
                 fadeHeight = fadeHeight,
                 loading = loading,

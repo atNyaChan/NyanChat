@@ -24,7 +24,7 @@ private data class BottomScreenCornerRadiiPx(
     val right: Int = 0,
 )
 
-private const val MIN_TRUSTED_CORNER_RADIUS_DP = 8f
+const val MIN_TRUSTED_CORNER_RADIUS_DP = 24f
 
 data class ScreenEdgeCornerRadii(
     val start: Dp,
@@ -141,21 +141,53 @@ fun rememberScreenEdgeCornerShape(
     )
 }
 
+/**
+ * Returns the display's physical bottom-corner radius in dp (the larger of the
+ * two bottom corners), or null when the platform does not expose a usable value.
+ * Unlike [rememberScreenEdgeCornerRadii], this does not apply the 24dp trust
+ * threshold, so callers can report unreliable values to the user.
+ */
+@Composable
+fun rememberScreenCornerRadiusDp(): Float? {
+    val view = LocalView.current
+    val configuration = LocalConfiguration.current
+    val radiiPx by produceState(
+        initialValue = readRawBottomScreenCornerRadii(view),
+        view,
+        configuration.orientation,
+        configuration.screenWidthDp,
+        configuration.screenHeightDp,
+    ) {
+        // rootWindowInsets may not be available during the first composition.
+        withFrameNanos { }
+        value = readRawBottomScreenCornerRadii(view)
+    }
+    val density = LocalDensity.current.density
+    val maxRadiusPx = maxOf(radiiPx.left, radiiPx.right)
+    if (maxRadiusPx <= 0) return null
+    return maxRadiusPx / density
+}
+
 private fun readBottomScreenCornerRadii(view: View): BottomScreenCornerRadiiPx {
+    val radii = readRawBottomScreenCornerRadii(view)
+    val density = view.resources.displayMetrics.density
+    // A radius <= 24dp is not trustworthy; treat the API as failed and let
+    // callers fall back to the platform-agnostic fallback radius.
+    if (radii.left / density <= MIN_TRUSTED_CORNER_RADIUS_DP ||
+        radii.right / density <= MIN_TRUSTED_CORNER_RADIUS_DP
+    ) {
+        return BottomScreenCornerRadiiPx()
+    }
+    return radii
+}
+
+private fun readRawBottomScreenCornerRadii(view: View): BottomScreenCornerRadiiPx {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
         return BottomScreenCornerRadiiPx()
     }
     val windowInsets = view.rootWindowInsets ?: return BottomScreenCornerRadiiPx()
-    val density = view.resources.displayMetrics.density
     val left = windowInsets.getRoundedCorner(RoundedCorner.POSITION_BOTTOM_LEFT)?.radius ?: 0
     val right = windowInsets.getRoundedCorner(RoundedCorner.POSITION_BOTTOM_RIGHT)?.radius ?: 0
-    // A radius <= 8dp is not trustworthy; treat the API as failed and let
-    // callers fall back to the platform-agnostic fallback radius.
-    if (left / density <= MIN_TRUSTED_CORNER_RADIUS_DP ||
-        right / density <= MIN_TRUSTED_CORNER_RADIUS_DP
-    ) {
-        return BottomScreenCornerRadiiPx()
-    }
     return BottomScreenCornerRadiiPx(
         left = left,
         right = right,

@@ -109,7 +109,6 @@
   <string name="assistant_page_max_tokens_desc">生成的 Token 的最大数量，留空表示无限制</string>
   <string name="assistant_page_max_tokens_no_limit">无限制</string>
   <string name="assistant_page_memory">记忆</string>
-  <string name="assistant_page_memory_count">记忆: %d</string>
   <string name="assistant_page_memory_desc">启用记忆后，模型在与你对话时尝试主动记录你的信息，并在后续其他对话中使用，此功能需要模型支持工具调用才能正常工作</string>
   <string name="assistant_page_message_template">聊天内容模板</string>
   <string name="assistant_page_message_template_desc">控制聊天消息在发送给 LLM 之前的内容格式，通常不需要修改</string>
@@ -233,7 +232,6 @@
   <string name="backup_page_webdav_backup">WebDAV 备份</string>
   <string name="backup_page_webdav_backup_files">WebDAV 备份文件列表</string>
   <string name="backup_page_webdav_server_address">WebDAV 服务器地址</string>
-  <string name="built_in_search_description">启用模型内置的搜索功能</string>
   <string name="built_in_search_title">模型内置搜索</string>
   <string name="calculating">计算中...</string>
   <string name="cancel_edit">取消编辑</string>
@@ -245,8 +243,6 @@
   <string name="chat_message_tool_approve">批准</string>
   <string name="chat_message_tool_ask_questions">询问 %d 个问题</string>
   <string name="chat_message_tool_call_generic">调用工具 %1$s</string>
-  <string name="chat_message_tool_call_label">调用工具 %1$s</string>
-  <string name="chat_message_tool_call_result">调用结果</string>
   <string name="chat_message_tool_call_title">工具调用</string>
   <string name="chat_message_tool_clipboard_read">读取剪贴板</string>
   <string name="chat_message_tool_clipboard_write">写入剪贴板</string>
@@ -382,7 +378,6 @@
   <string name="language_traditional_chinese">🇨🇳 繁體中文</string>
   <string name="mcp_picker_syncing">正在同步 MCP 服务器...</string>
   <string name="mcp_picker_title">MCP 服务器</string>
-  <string name="menu">菜单</string>
   <string name="menu_page_afternoon_greeting">下午好\uD83D\uDC4B</string>
   <string name="menu_page_evening_greeting">晚上好\uD83D\uDC4B</string>
   <string name="menu_page_morning_greeting">早上好\uD83D\uDC4B</string>
@@ -441,7 +436,6 @@
   <string name="prompt_page_constant_active_desc">无需匹配关键词即触发</string>
   <string name="prompt_page_description">描述</string>
   <string name="prompt_page_disabled">已禁用</string>
-  <string name="prompt_page_edit">编辑</string>
   <string name="prompt_page_edit_entry">编辑条目</string>
   <string name="prompt_page_edit_lorebook">编辑世界书</string>
   <string name="prompt_page_edit_mode_injection">编辑模式注入</string>
@@ -705,6 +699,9 @@
   <string name="setting_display_page_screen_corner_adaptation_input_only">仅输入框</string>
   <string name="setting_display_page_screen_corner_adaptation_all">全部</string>
   <string name="setting_display_page_screen_corner_adaptation_square">直角</string>
+  <string name="setting_display_page_screen_corner_adaptation_cannot_read">，当前无法读取屏幕圆角。</string>
+  <string name="setting_display_page_screen_corner_adaptation_value_read">，当前读取到的值为 %1$s dp</string>
+  <string name="setting_display_page_screen_corner_adaptation_small_value">，小于 24dp，无法适配屏幕圆角</string>
   <string name="setting_display_page_volume_key_scroll_desc">设置使用音量键翻页时的滚动幅度，适合墨水屏</string>
   <string name="setting_display_page_volume_key_scroll_title">音量键翻页</string>
   <string name="setting_files_page_clean_action">清理</string>
@@ -997,7 +994,6 @@
   <string name="setting_tts_page_model_description">要使用的 TTS 模型</string>
   <string name="setting_tts_page_model_placeholder_gemini">gemini-2.5-flash-preview-tts</string>
   <string name="setting_tts_page_model_placeholder_openai">gpt-4o-mini-tts</string>
-  <string name="setting_tts_page_more_options_content_description">更多选项</string>
   <string name="setting_tts_page_name">名称</string>
   <string name="setting_tts_page_name_description">此 TTS 提供商的自定义名称</string>
   <string name="setting_tts_page_name_placeholder">输入提供商名称</string>
@@ -1008,7 +1004,6 @@
   <string name="setting_tts_page_provider_system">系统 TTS</string>
   <string name="setting_tts_page_provider_type">提供商类型</string>
   <string name="setting_tts_page_provider_type_description">选择 TTS 提供商类型</string>
-  <string name="setting_tts_page_selected">已选择</string>
   <string name="setting_tts_page_similarity_boost">相似度增强</string>
   <string name="setting_tts_page_similarity_boost_description">控制语音与原始声音的匹配程度（0.0 - 1.0）</string>
   <string name="setting_tts_page_speech_rate">语音速度</string>
@@ -1050,7 +1045,6 @@
   <string name="skills_page_import_failed">导入失败：%s</string>
   <string name="skills_page_import_success">技能已导入：%s</string>
   <string name="skills_page_import_from_github">从 GitHub 导入</string>
-  <string name="skills_page_more_actions">更多操作</string>
   <string name="skills_page_name_error">找不到名称字段，请检查 frontmatter 格式</string>
   <string name="skills_page_paste_hint">粘贴完整的 SKILL.md 文件内容</string>
   <string name="skills_page_repo_url_hint">支持 /tree/branch 或子目录路径</string>
@@ -1109,8 +1103,6 @@
   <string name="use_web_search">网络搜索</string>
   <string name="user_default_name">用户</string>
   <string name="video">视频</string>
-  <string name="web_search_disabled">已禁用网页搜索</string>
-  <string name="web_search_enabled">已启用网页搜索</string>
   <string name="setting_theme_page_delete_theme_title">删除主题</string>
   <string name="setting_theme_page_delete_theme_message">确定要删除此主题吗？</string>
   <string name="skills_page_import_from_file">从文件导入</string>
@@ -1365,7 +1357,6 @@
   <string name="error_mcp_auth_no_code">授权失败: 未返回授权码</string>
   <string name="error_mcp_discover_resource_metadata">无法发现受保护资源元数据 (protected resource metadata)</string>
   <string name="error_mcp_discover_as_metadata">无法发现授权服务器元数据 (authorization server metadata): %1$s</string>
-  <string name="error_mcp_invalid_authorization_endpoint">非法的授权端点: %1$s</string>
   <string name="error_skill_cannot_read_file">无法读取文件</string>
   <string name="error_skill_invalid_github_url">无效的 GitHub 仓库链接</string>
   <string name="error_skill_read_github_dir">读取 GitHub 目录失败</string>
