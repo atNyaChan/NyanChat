@@ -37,6 +37,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -135,6 +136,9 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
     }
     var boldFontWeightInput by remember(displaySetting.boldFontWeight) {
         mutableStateOf(displaySetting.boldFontWeight?.toString().orEmpty())
+    }
+    var ttsPlaybackSpeed by remember(settings.defaultTTSPlaybackSpeed) {
+        mutableFloatStateOf(settings.defaultTTSPlaybackSpeed)
     }
     val volumeKeyScrollMode = if (!displaySetting.enableVolumeKeyScroll) {
         VolumeKeyScrollMode.OFF
@@ -669,6 +673,24 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                         },
                     )
                     item(
+                        headlineContent = { Text(stringResource(R.string.setting_page_preferences_network_auto_retry)) },
+                        supportingContent = { Text(stringResource(R.string.setting_page_preferences_network_auto_retry_desc)) },
+                        trailingContent = {
+                            Switch(
+                                checked = settings.networkSetting.enableAutoRetry,
+                                onCheckedChange = { enabled ->
+                                    vm.updateSettings(
+                                        settings.copy(
+                                            networkSetting = settings.networkSetting.copy(
+                                                enableAutoRetry = enabled,
+                                            ),
+                                        )
+                                    )
+                                },
+                            )
+                        },
+                    )
+                    item(
                         headlineContent = { Text(stringResource(R.string.setting_page_preferences_network_user_agent)) },
                         supportingContent = {
                             Column {
@@ -989,6 +1011,37 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                     modifier = Modifier.padding(horizontal = 8.dp),
                     title = { Text(stringResource(R.string.setting_page_tts_settings)) },
                 ) {
+                    item(
+                        headlineContent = {
+                            Text(stringResource(R.string.setting_tts_page_default_playback_speed))
+                        },
+                        supportingContent = {
+                            Column {
+                                Text(stringResource(R.string.setting_tts_page_default_playback_speed_description))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    Slider(
+                                        value = ttsPlaybackSpeed,
+                                        onValueChange = {
+                                            ttsPlaybackSpeed = (it * 10).roundToInt() / 10f
+                                        },
+                                        onValueChangeFinished = {
+                                            vm.updateSettings(
+                                                settings.copy(defaultTTSPlaybackSpeed = ttsPlaybackSpeed)
+                                            )
+                                        },
+                                        valueRange = 0.5f..2.0f,
+                                        steps = 14,
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                    Text(text = "x${"%.1f".format(ttsPlaybackSpeed)}")
+                                }
+                            }
+                        },
+                    )
                     item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_tts_only_read_quoted_title)) },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_tts_only_read_quoted_desc)) },

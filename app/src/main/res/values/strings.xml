@@ -812,6 +812,8 @@
   <string name="setting_page_preferences_network_proxy_desc">Supports HTTP and SOCKS5 proxy URLs. Leave blank to use system settings.</string>
   <string name="setting_page_preferences_network_proxy_list_desc">Set the proxy server used when sending requests</string>
   <string name="setting_page_preferences_network_proxy_invalid">Enter a valid proxy URL with a host and port.</string>
+  <string name="setting_page_preferences_network_auto_retry">Automatic retry</string>
+  <string name="setting_page_preferences_network_auto_retry_desc">Retry model requests up to 3 times when network errors occur.</string>
   <string name="setting_page_dynamic_color">Dynamic Color</string>
   <string name="setting_page_dynamic_color_desc">Generate the app theme colors dynamically from your wallpaper</string>
   <string name="setting_page_mcp_desc">Configure MCP Servers</string>

@@ -812,6 +812,8 @@
   <string name="setting_page_preferences_network_proxy_desc">支持 HTTP 和 SOCKS5 代理 URL。留空以使用系统设置。</string>
   <string name="setting_page_preferences_network_proxy_list_desc">设置发送请求时使用的代理服务器</string>
   <string name="setting_page_preferences_network_proxy_invalid">请输入包含主机和端口的有效代理 URL。</string>
+  <string name="setting_page_preferences_network_auto_retry">自动重试</string>
+  <string name="setting_page_preferences_network_auto_retry_desc">发生网络错误时自动重试模型请求，最多重试 3 次。</string>
   <string name="setting_page_dynamic_color">动态颜色</string>
   <string name="setting_page_dynamic_color_desc">基于壁纸动态生成 App 主题配色</string>
   <string name="setting_page_mcp_desc">配置 MCP 服务器</string>
@@ -986,7 +988,7 @@
   <string name="setting_tts_page_base_url_placeholder">https://api.openai.com/v1</string>
   <string name="setting_tts_page_default_name">系统 TTS</string>
   <string name="setting_tts_page_default_playback_speed">默认播放速度</string>
-  <string name="setting_tts_page_default_playback_speed_description">在本地应用于所有 TTS 提供商，不更改其合成设置。</string>
+  <string name="setting_tts_page_default_playback_speed_description">本地应用于每个TTS提供商，不会更改其合成设置。</string>
   <string name="setting_tts_page_edit_provider">编辑提供商</string>
   <string name="setting_tts_page_delete_provider">删除 TTS 提供商</string>
   <string name="setting_tts_page_delete_provider_confirm">确定删除 TTS 提供商“%1$s”吗？此操作无法撤销。</string>

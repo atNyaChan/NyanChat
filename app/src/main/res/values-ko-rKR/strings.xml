@@ -812,6 +812,8 @@
   <string name="setting_page_preferences_network_proxy_desc">HTTP 및 SOCKS5 프록시 URL을 지원합니다. 비워 두면 시스템 설정을 사용합니다.</string>
   <string name="setting_page_preferences_network_proxy_list_desc">요청 전송 시 사용할 프록시 서버를 설정합니다</string>
   <string name="setting_page_preferences_network_proxy_invalid">호스트와 포트가 있는 유효한 프록시 URL을 입력하세요.</string>
+  <string name="setting_page_preferences_network_auto_retry">자동 재시도</string>
+  <string name="setting_page_preferences_network_auto_retry_desc">네트워크 오류 발생 시 모델 요청을 최대 3회 재시도합니다.</string>
   <string name="setting_page_dynamic_color">동적 색상</string>
   <string name="setting_page_dynamic_color_desc">배경화면을 기반으로 앱 테마 색상을 동적으로 생성</string>
   <string name="setting_page_mcp_desc">MCP 서버 구성</string>
@@ -986,7 +988,7 @@
   <string name="setting_tts_page_base_url_placeholder">https://api.openai.com/v1</string>
   <string name="setting_tts_page_default_name">시스템 TTS</string>
   <string name="setting_tts_page_default_playback_speed">기본 재생 속도</string>
-  <string name="setting_tts_page_default_playback_speed_description">합성 설정을 변경하지 않고 모든 TTS 제공자에 로컬로 적용됩니다.</string>
+  <string name="setting_tts_page_default_playback_speed_description">모든 TTS 제공업체에 로컬로 적용되며, 제공업체의 합성 설정은 변경하지 않습니다.</string>
   <string name="setting_tts_page_edit_provider">제공업체 편집</string>
   <string name="setting_tts_page_delete_provider">TTS 제공업체 삭제</string>
   <string name="setting_tts_page_delete_provider_confirm">TTS 제공업체 “%1$s”을(를) 삭제할까요? 이 작업은 되돌릴 수 없습니다.</string>

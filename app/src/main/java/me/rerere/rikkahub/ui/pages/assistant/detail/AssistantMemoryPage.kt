@@ -342,7 +342,6 @@ private fun MemoryItem(
                 )
                 Text(
                     text = memory.content,
-
                     maxLines = 5,
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.bodySmall,

@@ -812,6 +812,8 @@
   <string name="setting_page_preferences_network_proxy_desc">Поддерживает HTTP и SOCKS5 прокси-URL. Оставьте пустым для использования системных настроек.</string>
   <string name="setting_page_preferences_network_proxy_list_desc">Укажите прокси-сервер, используемый при отправке запросов</string>
   <string name="setting_page_preferences_network_proxy_invalid">Введите корректный URL прокси-сервера с хостом и портом.</string>
+  <string name="setting_page_preferences_network_auto_retry">Автоповтор</string>
+  <string name="setting_page_preferences_network_auto_retry_desc">Повторять запросы модели до 3 раз при сетевых ошибках.</string>
   <string name="setting_page_dynamic_color">Динамический цвет</string>
   <string name="setting_page_dynamic_color_desc">Динамически создавать цвета темы приложения на основе обоев</string>
   <string name="setting_page_mcp_desc">Настроить серверы MCP</string>
@@ -986,7 +988,7 @@
   <string name="setting_tts_page_base_url_placeholder">https://api.openai.com/v1</string>
   <string name="setting_tts_page_default_name">Системный TTS</string>
   <string name="setting_tts_page_default_playback_speed">Скорость воспроизведения по умолчанию</string>
-  <string name="setting_tts_page_default_playback_speed_description">Применяется локально ко всем провайдерам TTS без изменения настроек синтеза.</string>
+  <string name="setting_tts_page_default_playback_speed_description">Применяется локально к каждому TTS-провайдеру без изменения его настроек синтеза.</string>
   <string name="setting_tts_page_edit_provider">Редактировать поставщика</string>
   <string name="setting_tts_page_delete_provider">Удалить поставщика TTS</string>
   <string name="setting_tts_page_delete_provider_confirm">Удалить поставщика TTS «%1$s»? Это действие нельзя отменить.</string>

@@ -812,6 +812,8 @@
   <string name="setting_page_preferences_network_proxy_desc">HTTPおよびSOCKS5プロキシURLをサポートします。空白の場合はシステム設定を使用します。</string>
   <string name="setting_page_preferences_network_proxy_list_desc">リクエスト送信時に使用するプロキシサーバーを設定します</string>
   <string name="setting_page_preferences_network_proxy_invalid">ホストとポートを含む有効なプロキシURLを入力してください。</string>
+  <string name="setting_page_preferences_network_auto_retry">自動再試行</string>
+  <string name="setting_page_preferences_network_auto_retry_desc">ネットワークエラー時、モデルリクエストを最大3回再試行します。</string>
   <string name="setting_page_dynamic_color">ダイナミックカラー</string>
   <string name="setting_page_dynamic_color_desc">壁紙に基づいてアプリのテーマ配色を動的に生成する</string>
   <string name="setting_page_mcp_desc">MCPサーバーを設定</string>
@@ -986,7 +988,7 @@
   <string name="setting_tts_page_base_url_placeholder">https://api.openai.com/v1</string>
   <string name="setting_tts_page_default_name">システムTTS</string>
   <string name="setting_tts_page_default_playback_speed">デフォルトの再生速度</string>
-  <string name="setting_tts_page_default_playback_speed_description">合成設定を変更せず、すべてのTTSプロバイダーにローカルで適用されます。</string>
+  <string name="setting_tts_page_default_playback_speed_description">すべてのTTSプロバイダーにローカルで適用され、合成設定は変更されません。</string>
   <string name="setting_tts_page_edit_provider">プロバイダーを編集</string>
   <string name="setting_tts_page_delete_provider">TTS プロバイダーを削除</string>
   <string name="setting_tts_page_delete_provider_confirm">TTS プロバイダー「%1$s」を削除しますか？この操作は元に戻せません。</string>
