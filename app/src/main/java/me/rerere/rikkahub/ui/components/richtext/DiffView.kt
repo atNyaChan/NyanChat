@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,6 +20,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import me.rerere.rikkahub.ui.context.LocalSettings
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import androidx.compose.ui.util.fastForEach
 
 internal val DiffAddedColor = Color(0xFF4CAF50)
@@ -84,6 +87,9 @@ fun DiffView(
                 fontFamily = FontFamily.Monospace,
                 fontSize = 11.sp,
                 lineHeight = 16.sp,
+                style = LocalTextStyle.current.copy(
+                    fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+                ),
                 modifier = Modifier.padding(horizontal = 8.dp),
             )
         }
@@ -114,6 +120,9 @@ private fun DiffLine(line: String) {
         fontFamily = FontFamily.Monospace,
         fontSize = 11.sp,
         lineHeight = 16.sp,
+        style = LocalTextStyle.current.copy(
+            fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+        ),
         softWrap = false,
         modifier = Modifier
             .fillMaxWidth()

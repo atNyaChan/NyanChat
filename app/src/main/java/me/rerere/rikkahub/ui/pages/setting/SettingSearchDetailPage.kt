@@ -45,9 +45,11 @@ import me.rerere.rikkahub.ui.components.richtext.HighlightCodeVisualTransformati
 import me.rerere.rikkahub.ui.components.ui.FormItem
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalNavController
+import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.ui.theme.LocalDarkMode
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.utils.plus
 import me.rerere.search.DoubaoSearchMode
@@ -872,7 +874,10 @@ internal fun CustomJsOptions(
                 highlighter = highlighter,
                 darkMode = darkMode
             ),
-            textStyle = MaterialTheme.typography.bodySmall.merge(fontFamily = JetbrainsMono),
+            textStyle = MaterialTheme.typography.bodySmall.merge(
+                fontFamily = JetbrainsMono,
+                fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+            ),
         )
     }
 
@@ -895,7 +900,10 @@ internal fun CustomJsOptions(
             placeholder = {
                 Text(
                     text = SearchServiceOptions.CustomJsOptions.DEFAULT_SCRAPE_SCRIPT.trimIndent(),
-                    style = MaterialTheme.typography.bodySmall.merge(fontFamily = JetbrainsMono),
+                    style = MaterialTheme.typography.bodySmall.merge(
+                        fontFamily = JetbrainsMono,
+                        fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+                    ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 )
             },
@@ -904,7 +912,10 @@ internal fun CustomJsOptions(
                 highlighter = highlighter,
                 darkMode = darkMode
             ),
-            textStyle = MaterialTheme.typography.bodySmall.merge(fontFamily = JetbrainsMono),
+            textStyle = MaterialTheme.typography.bodySmall.merge(
+                fontFamily = JetbrainsMono,
+                fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+            ),
         )
     }
 }

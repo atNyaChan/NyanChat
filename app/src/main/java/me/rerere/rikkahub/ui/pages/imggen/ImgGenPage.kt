@@ -182,6 +182,7 @@ private fun CancelDialog(
     onConfirm: () -> Unit
 ) {
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.imggen_page_cancel_generation_title)) },
         text = { Text(stringResource(R.string.imggen_page_cancel_generation_message)) },
@@ -715,8 +716,10 @@ private fun ImageGalleryScreen(
             }
         }
     }
+
     pendingDeleteImage?.let { image ->
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { pendingDeleteImage = null },
             title = { Text(stringResource(R.string.imggen_page_delete_image_title)) },
             text = { Text(stringResource(R.string.imggen_page_delete_image_confirm)) },

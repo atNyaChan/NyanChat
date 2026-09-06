@@ -148,6 +148,7 @@ data class ChatError(
 data class RequestContextStats(
     val wordCount: Int,
     val toolCount: Int,
+    val fileCount: Int,
 )
 
 enum class ChatErrorSolution {
@@ -462,7 +463,7 @@ class ChatService(
         val assistant = settings.getAssistantById(conversation.assistantId)
             ?: settings.getCurrentAssistant()
         val model = settings.findModelById(assistant.chatModelId ?: settings.chatModelId)
-            ?: return RequestContextStats(wordCount = 0, toolCount = 0)
+            ?: return RequestContextStats(wordCount = 0, toolCount = 0, fileCount = 0)
         val memories = if (assistant.useGlobalMemory) {
             memoryRepository.getGlobalMemories()
         } else {
@@ -506,9 +507,25 @@ class ChatService(
                 }
             }
         }
+        // 与输入框附件统计一致：图片/视频/音频按文件计入；
+        // 文档能解析为正文文本的按词数计入（不计文件数），解析失败的按文件计入
+        var fileCount = 0
+        for (message in messages) {
+            for (part in message.parts) {
+                when (part) {
+                    is UIMessagePart.Image,
+                    is UIMessagePart.Video,
+                    is UIMessagePart.Audio -> fileCount++
+                    is UIMessagePart.Document ->
+                        if (DocumentAsPromptTransformer.extractDocumentText(part) == null) fileCount++
+                    else -> {}
+                }
+            }
+        }
         return RequestContextStats(
             wordCount = wordCount,
             toolCount = tools.size + builtInToolCount + if (assistant.enableMemory) 1 else 0,
+            fileCount = fileCount,
         )
     }
 

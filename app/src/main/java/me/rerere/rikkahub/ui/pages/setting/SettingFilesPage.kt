@@ -139,6 +139,7 @@ fun SettingFilesPage(
 
     if (showRebuildDialog) {
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { showRebuildDialog = false },
             title = { Text(stringResource(R.string.setting_files_page_rebuild_index)) },
             text = { Text(stringResource(R.string.search_page_rebuild_index_desc)) },
@@ -174,6 +175,7 @@ fun SettingFilesPage(
     if (pendingDelete != null) {
         val target = pendingDelete!!
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { pendingDelete = null },
             title = {
                 Text(

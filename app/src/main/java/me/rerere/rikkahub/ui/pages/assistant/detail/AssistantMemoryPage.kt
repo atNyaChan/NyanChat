@@ -115,6 +115,7 @@ private fun AssistantMemoryContent(
     // 记忆对话框
     memoryDialogState.EditStateContent { memory, update ->
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {
                 memoryDialogState.dismiss()
             },

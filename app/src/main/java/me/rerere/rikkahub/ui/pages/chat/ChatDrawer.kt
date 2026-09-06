@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -108,11 +109,17 @@ fun ChatDrawerContent(
     vm: ChatVM,
     settings: Settings,
     current: Conversation,
+    drawerState: DrawerState,
+    navDrawerPermanent: Boolean = false,
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val toaster = LocalToaster.current
     val repo = koinInject<ConversationRepository>()
+
+    // 侧栏是否可见（大屏常驻侧栏始终可见；弹出式侧栏则视抽屉打开状态而定），
+    // 用于在打开侧栏或列表内容刷新时把当前会话滚动到可视区域中间
+    val drawerVisible = navDrawerPermanent || drawerState.isOpen
 
     val activity = context as ComponentActivity
     val drawerVm: ChatDrawerVM = koinViewModel(viewModelStoreOwner = activity)
@@ -272,6 +279,7 @@ fun ChatDrawerContent(
                 conversationJobs = conversationJobs.keys,
                 listState = conversationListState,
                 totalConversations = conversationCount,
+                centerCurrent = drawerVisible,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
@@ -298,6 +306,7 @@ fun ChatDrawerContent(
 
             conversationToDelete?.let { conversation ->
                 AlertDialog(
+                    containerColor = MaterialTheme.colorScheme.surface,
                     onDismissRequest = { conversationToDelete = null },
                     title = { Text(stringResource(R.string.common_delete)) },
                     text = {
@@ -331,6 +340,7 @@ fun ChatDrawerContent(
 
             if (conversationsToDelete.isNotEmpty()) {
                 AlertDialog(
+                    containerColor = MaterialTheme.colorScheme.surface,
                     onDismissRequest = { conversationsToDelete = emptyList() },
                     title = { Text(stringResource(R.string.common_delete)) },
                     text = { Text(stringResource(R.string.chat_page_delete_selected_confirm, conversationsToDelete.size)) },
@@ -358,6 +368,7 @@ fun ChatDrawerContent(
 
             conversationToEditTitle?.let { conversation ->
                 AlertDialog(
+                    containerColor = MaterialTheme.colorScheme.surface,
                     onDismissRequest = { conversationToEditTitle = null },
                     title = { Text(stringResource(R.string.chat_page_edit_title)) },
                     text = {
@@ -477,6 +488,7 @@ fun ChatDrawerContent(
     // 昵称编辑对话框
     nicknameEditState.EditStateContent { nickname, onUpdate ->
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {
                 nicknameEditState.dismiss()
             },
@@ -517,6 +529,7 @@ fun ChatDrawerContent(
     if (showCreateFolderDialog) {
         var name by remember { mutableStateOf("") }
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { showCreateFolderDialog = false },
             title = { Text(stringResource(R.string.chat_page_create_folder)) },
             text = {
@@ -549,6 +562,7 @@ fun ChatDrawerContent(
     folderToRename?.let { folder ->
         var name by remember(folder.id) { mutableStateOf(folder.name) }
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { folderToRename = null },
             title = { Text(stringResource(R.string.chat_page_rename_folder)) },
             text = {
@@ -579,6 +593,7 @@ fun ChatDrawerContent(
     // 删除文件夹确认
     folderToDelete?.let { folder ->
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { folderToDelete = null },
             title = { Text(stringResource(R.string.chat_page_delete_folder)) },
             text = { Text(stringResource(R.string.chat_page_delete_folder_confirm, folder.name)) },
@@ -637,6 +652,7 @@ fun ChatDrawerContent(
 
     if (conversationsToMove.isNotEmpty() && moveCreateFolderAssistant == null && pendingMoveTarget == null) {
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { conversationsToMove = emptyList() },
             title = { Text(stringResource(R.string.conversation_move_to)) },
             text = {
@@ -747,6 +763,7 @@ fun ChatDrawerContent(
 
     pendingMoveTarget?.let { target ->
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { pendingMoveTarget = null },
             title = { Text(stringResource(R.string.chat_page_confirm_move)) },
             text = {
@@ -781,6 +798,7 @@ fun ChatDrawerContent(
     moveCreateFolderAssistant?.let { assistant ->
         var name by remember(assistant.id) { mutableStateOf("") }
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { moveCreateFolderAssistant = null },
             title = { Text(stringResource(R.string.chat_page_create_folder_in, assistant.name)) },
             text = {

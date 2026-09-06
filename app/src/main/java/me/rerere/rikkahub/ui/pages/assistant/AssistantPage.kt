@@ -336,6 +336,7 @@ private fun AssistantCreationSheet(
     }
     if (showCopyPicker) {
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { showCopyPicker = false },
             title = { Text(stringResource(R.string.assistant_page_copy_existing)) },
             text = {

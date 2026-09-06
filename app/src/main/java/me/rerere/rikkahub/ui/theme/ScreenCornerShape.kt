@@ -24,7 +24,7 @@ private data class BottomScreenCornerRadiiPx(
     val right: Int = 0,
 )
 
-const val MIN_TRUSTED_CORNER_RADIUS_DP = 24f
+const val MIN_TRUSTED_CORNER_RADIUS_DP = 28f
 
 data class ScreenEdgeCornerRadii(
     val start: Dp,
@@ -33,7 +33,7 @@ data class ScreenEdgeCornerRadii(
 
 val LocalScreenEdgeCornerRadii = compositionLocalOf<ScreenEdgeCornerRadii?> { null }
 val LocalScreenCornerAdaptationEnabled = compositionLocalOf { true }
-val LocalScreenCornerFallbackRadius = compositionLocalOf { 24.dp }
+val LocalScreenCornerFallbackRadius = compositionLocalOf { 28.dp }
 
 fun ScreenEdgeCornerRadii.inset(
     horizontalInset: Dp,
@@ -144,7 +144,7 @@ fun rememberScreenEdgeCornerShape(
 /**
  * Returns the display's physical bottom-corner radius in dp (the larger of the
  * two bottom corners), or null when the platform does not expose a usable value.
- * Unlike [rememberScreenEdgeCornerRadii], this does not apply the 24dp trust
+ * Unlike [rememberScreenEdgeCornerRadii], this does not apply the 28dp trust
  * threshold, so callers can report unreliable values to the user.
  */
 @Composable
@@ -171,7 +171,7 @@ fun rememberScreenCornerRadiusDp(): Float? {
 private fun readBottomScreenCornerRadii(view: View): BottomScreenCornerRadiiPx {
     val radii = readRawBottomScreenCornerRadii(view)
     val density = view.resources.displayMetrics.density
-    // A radius <= 24dp is not trustworthy; treat the API as failed and let
+    // A radius <= 28dp is not trustworthy; treat the API as failed and let
     // callers fall back to the platform-agnostic fallback radius.
     if (radii.left / density <= MIN_TRUSTED_CORNER_RADIUS_DP ||
         radii.right / density <= MIN_TRUSTED_CORNER_RADIUS_DP

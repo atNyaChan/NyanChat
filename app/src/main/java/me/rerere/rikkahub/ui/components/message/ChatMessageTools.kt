@@ -270,6 +270,7 @@ fun ChainOfThoughtScope.ChatMessageToolStep(
 
     if (showMemoryDeleteConfirm && memoryDeleteId != null && onToolApproval != null) {
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {
                 showMemoryDeleteConfirm = false
                 onToolApproval(tool.toolCallId, false, "")
@@ -570,6 +571,7 @@ private fun ToolDenyReasonDialog(
     var reason by remember { mutableStateOf("") }
 
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
         title = {
             Text(stringResource(R.string.chat_message_tool_deny_dialog_title))

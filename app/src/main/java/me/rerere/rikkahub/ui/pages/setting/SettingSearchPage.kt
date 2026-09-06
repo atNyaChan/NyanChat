@@ -193,6 +193,7 @@ private fun AddProviderDialog(
     }
 
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
         title = {
             Text(stringResource(R.string.setting_page_search_add_provider))

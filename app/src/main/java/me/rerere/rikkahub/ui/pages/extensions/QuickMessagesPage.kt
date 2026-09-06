@@ -260,7 +260,7 @@ private fun EditQuickMessageDialog(
     ) {
         Surface(
             shape = AlertDialogDefaults.shape,
-            color = AlertDialogDefaults.containerColor,
+            color = MaterialTheme.colorScheme.surface,
             tonalElevation = AlertDialogDefaults.TonalElevation,
         ) {
             Column(

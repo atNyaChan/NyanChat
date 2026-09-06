@@ -5,20 +5,28 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,8 +35,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -41,13 +53,19 @@ import kotlinx.serialization.json.longOrNull
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.ArrowDown01
 import me.rerere.hugeicons.stroke.ArrowRight01
+import me.rerere.rikkahub.R
+import me.rerere.rikkahub.data.datastore.Settings
+import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
+import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
+import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 
 @Composable
 fun JsonTree(
     json: JsonElement,
     modifier: Modifier = Modifier,
-    initialExpandLevel: Int = 1
+    initialExpandLevel: Int = 1,
+    fontFeatureSettings: String? = null,
 ) {
     var selectedString by remember { mutableStateOf<String?>(null) }
 
@@ -57,24 +75,107 @@ fun JsonTree(
             key = null,
             depth = 0,
             initialExpandLevel = initialExpandLevel,
-            onStringClick = { selectedString = it }
+            onStringClick = { selectedString = it },
+            fontFeatureSettings = fontFeatureSettings,
         )
     }
 
     selectedString?.let { content ->
-        ModalBottomSheet(
-            onDismissRequest = { selectedString = null },
-            sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
+        PreviewStringDialog(
+            content = content,
+            onDismiss = { selectedString = null },
+            fontFeatureSettings = fontFeatureSettings,
+        )
+    }
+}
+
+@Composable
+private fun PreviewStringDialog(
+    content: String,
+    onDismiss: () -> Unit,
+    fontFeatureSettings: String? = null,
+) {
+    var enableMarkdown by remember { mutableStateOf(false) }
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.94f)
+                .padding(16.dp),
+            shape = rememberScreenEdgeCornerShape(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
         ) {
-            Text(
-                text = content,
-                fontFamily = JetbrainsMono,
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-                style = MaterialTheme.typography.bodySmall
-            )
+                    .padding(24.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.log_page_preview_string),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = rememberScreenEdgeCornerShape(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                    ),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.log_page_enable_markdown_rendering),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Switch(
+                            checked = enableMarkdown,
+                            onCheckedChange = { enableMarkdown = it },
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 440.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    if (enableMarkdown) {
+                        CompositionLocalProvider(LocalSettings provides Settings()) {
+                            SelectionContainer {
+                                MarkdownBlock(content)
+                            }
+                        }
+                    } else {
+                        BasicTextField(
+                            value = content,
+                            onValueChange = {},
+                            readOnly = true,
+                            textStyle = MaterialTheme.typography.bodySmall.copy(
+                                fontFamily = JetbrainsMono,
+                                fontFeatureSettings = fontFeatureSettings,
+                            ),
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -85,13 +186,18 @@ private fun JsonNode(
     key: String?,
     depth: Int,
     initialExpandLevel: Int,
-    onStringClick: (String) -> Unit
+    onStringClick: (String) -> Unit,
+    fontFeatureSettings: String? = null,
 ) {
     when (element) {
-        is JsonObject -> JsonObjectNode(element, key, depth, initialExpandLevel, onStringClick)
-        is JsonArray -> JsonArrayNode(element, key, depth, initialExpandLevel, onStringClick)
-        is JsonPrimitive -> JsonPrimitiveNode(element, key, depth, onStringClick)
-        is JsonNull -> JsonNullNode(key, depth)
+        is JsonObject -> JsonObjectNode(
+            element, key, depth, initialExpandLevel, onStringClick, fontFeatureSettings,
+        )
+        is JsonArray -> JsonArrayNode(
+            element, key, depth, initialExpandLevel, onStringClick, fontFeatureSettings,
+        )
+        is JsonPrimitive -> JsonPrimitiveNode(element, key, depth, onStringClick, fontFeatureSettings)
+        is JsonNull -> JsonNullNode(key, depth, fontFeatureSettings)
     }
 }
 
@@ -101,7 +207,8 @@ private fun JsonObjectNode(
     key: String?,
     depth: Int,
     initialExpandLevel: Int,
-    onStringClick: (String) -> Unit
+    onStringClick: (String) -> Unit,
+    fontFeatureSettings: String? = null,
 ) {
     var expanded by rememberSaveable { mutableStateOf(depth < initialExpandLevel) }
     val entries = remember(obj) { obj.entries.toList() }
@@ -122,13 +229,14 @@ private fun JsonObjectNode(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
             if (key != null) {
-                KeyText(key)
-                Text(": ", fontFamily = JetbrainsMono)
+                KeyText(key, fontFeatureSettings)
+                Text(": ", fontFamily = JetbrainsMono, style = LocalTextStyle.current.copy(fontFeatureSettings = fontFeatureSettings))
             }
             Text(
                 text = if (expanded) "{" else "{ ... } (${entries.size})",
                 fontFamily = JetbrainsMono,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = LocalTextStyle.current.copy(fontFeatureSettings = fontFeatureSettings),
             )
         }
 
@@ -144,14 +252,16 @@ private fun JsonObjectNode(
                         key = childKey,
                         depth = depth + 1,
                         initialExpandLevel = initialExpandLevel,
-                        onStringClick = onStringClick
+                        onStringClick = onStringClick,
+                        fontFeatureSettings = fontFeatureSettings,
                     )
                 }
                 Row(modifier = Modifier.padding(start = (depth * 16 + 14).dp)) {
                     Text(
                         text = "}",
                         fontFamily = JetbrainsMono,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = LocalTextStyle.current.copy(fontFeatureSettings = fontFeatureSettings),
                     )
                 }
             }
@@ -165,7 +275,8 @@ private fun JsonArrayNode(
     key: String?,
     depth: Int,
     initialExpandLevel: Int,
-    onStringClick: (String) -> Unit
+    onStringClick: (String) -> Unit,
+    fontFeatureSettings: String? = null,
 ) {
     var expanded by rememberSaveable { mutableStateOf(depth < initialExpandLevel) }
 
@@ -185,13 +296,14 @@ private fun JsonArrayNode(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
             if (key != null) {
-                KeyText(key)
-                Text(": ", fontFamily = JetbrainsMono)
+                KeyText(key, fontFeatureSettings)
+                Text(": ", fontFamily = JetbrainsMono, style = LocalTextStyle.current.copy(fontFeatureSettings = fontFeatureSettings))
             }
             Text(
                 text = if (expanded) "[" else "[ ... ] (${array.size})",
                 fontFamily = JetbrainsMono,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = LocalTextStyle.current.copy(fontFeatureSettings = fontFeatureSettings),
             )
         }
 
@@ -207,14 +319,16 @@ private fun JsonArrayNode(
                         key = index.toString(),
                         depth = depth + 1,
                         initialExpandLevel = initialExpandLevel,
-                        onStringClick = onStringClick
+                        onStringClick = onStringClick,
+                        fontFeatureSettings = fontFeatureSettings,
                     )
                 }
                 Row(modifier = Modifier.padding(start = (depth * 16 + 14).dp)) {
                     Text(
                         text = "]",
                         fontFamily = JetbrainsMono,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = LocalTextStyle.current.copy(fontFeatureSettings = fontFeatureSettings),
                     )
                 }
             }
@@ -227,21 +341,23 @@ private fun JsonPrimitiveNode(
     primitive: JsonPrimitive,
     key: String?,
     depth: Int,
-    onStringClick: (String) -> Unit
+    onStringClick: (String) -> Unit,
+    fontFeatureSettings: String? = null,
 ) {
     Row(
         modifier = Modifier.padding(start = (depth * 16 + 14).dp, top = 2.dp, bottom = 2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (key != null) {
-            KeyText(key)
-            Text(": ", fontFamily = JetbrainsMono)
+            KeyText(key, fontFeatureSettings)
+            Text(": ", fontFamily = JetbrainsMono, style = LocalTextStyle.current.copy(fontFeatureSettings = fontFeatureSettings))
         }
         ValueText(
             primitive = primitive,
             onClick = if (primitive.isString) {
                 { onStringClick(primitive.contentOrNull ?: "") }
-            } else null
+            } else null,
+            fontFeatureSettings = fontFeatureSettings,
         )
     }
 }
@@ -249,35 +365,42 @@ private fun JsonPrimitiveNode(
 @Composable
 private fun JsonNullNode(
     key: String?,
-    depth: Int
+    depth: Int,
+    fontFeatureSettings: String? = null,
 ) {
     Row(
         modifier = Modifier.padding(start = (depth * 16 + 14).dp, top = 2.dp, bottom = 2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (key != null) {
-            KeyText(key)
-            Text(": ", fontFamily = JetbrainsMono)
+            KeyText(key, fontFeatureSettings)
+            Text(": ", fontFamily = JetbrainsMono, style = LocalTextStyle.current.copy(fontFeatureSettings = fontFeatureSettings))
         }
         Text(
             text = "null",
             fontFamily = JetbrainsMono,
-            color = MaterialTheme.colorScheme.outline
+            color = MaterialTheme.colorScheme.outline,
+            style = LocalTextStyle.current.copy(fontFeatureSettings = fontFeatureSettings),
         )
     }
 }
 
 @Composable
-private fun KeyText(key: String) {
+private fun KeyText(key: String, fontFeatureSettings: String? = null) {
     Text(
         text = "\"$key\"",
         fontFamily = JetbrainsMono,
-        color = MaterialTheme.colorScheme.primary
+        color = MaterialTheme.colorScheme.primary,
+        style = LocalTextStyle.current.copy(fontFeatureSettings = fontFeatureSettings),
     )
 }
 
 @Composable
-private fun ValueText(primitive: JsonPrimitive, onClick: (() -> Unit)? = null) {
+private fun ValueText(
+    primitive: JsonPrimitive,
+    onClick: (() -> Unit)? = null,
+    fontFeatureSettings: String? = null,
+) {
     val (text, color) = when {
         primitive.isString -> {
             val content = (primitive.contentOrNull ?: "")
@@ -306,6 +429,7 @@ private fun ValueText(primitive: JsonPrimitive, onClick: (() -> Unit)? = null) {
         fontFamily = JetbrainsMono,
         color = color,
         textDecoration = if (onClick != null) TextDecoration.Underline else null,
-        modifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
+        modifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier,
+        style = LocalTextStyle.current.copy(fontFeatureSettings = fontFeatureSettings),
     )
 }

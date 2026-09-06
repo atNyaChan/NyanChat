@@ -136,6 +136,24 @@ class ModelRegistryTest {
     }
 
     @Test
+    fun testFable() {
+        val visionInput = listOf(Modality.TEXT, Modality.IMAGE)
+        val toolReasoning = listOf(ModelAbility.TOOL, ModelAbility.REASONING)
+        assertTrue(ModelRegistry.FABLE.match("claude-fable-5"))
+        assertTrue(ModelRegistry.FABLE.match("claude-fable-5-1"))
+        assertTrue(ModelRegistry.FABLE.match("fable-5"))
+        assertTrue(ModelRegistry.FABLE.match("fable-5.1"))
+        assertEquals(visionInput, ModelRegistry.MODEL_INPUT_MODALITIES.getData("claude-fable-5"))
+        assertEquals(visionInput, ModelRegistry.MODEL_INPUT_MODALITIES.getData("claude-fable-5-1"))
+        assertEquals(visionInput, ModelRegistry.MODEL_INPUT_MODALITIES.getData("fable-5"))
+        assertEquals(visionInput, ModelRegistry.MODEL_INPUT_MODALITIES.getData("fable-5.1"))
+        assertEquals(toolReasoning, ModelRegistry.MODEL_ABILITIES.getData("claude-fable-5"))
+        assertEquals(toolReasoning, ModelRegistry.MODEL_ABILITIES.getData("claude-fable-5-1"))
+        assertEquals(toolReasoning, ModelRegistry.MODEL_ABILITIES.getData("fable-5"))
+        assertEquals(toolReasoning, ModelRegistry.MODEL_ABILITIES.getData("fable-5.1"))
+    }
+
+    @Test
     fun testDeepseekV4() {
         val reasonerAbilities = ModelRegistry.MODEL_ABILITIES.getData("deepseek-reasoner")
         assertEquals(

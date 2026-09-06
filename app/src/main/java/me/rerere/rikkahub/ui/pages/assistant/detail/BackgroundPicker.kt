@@ -122,6 +122,7 @@ fun BackgroundPicker(
 
     if (showPickOption) {
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {
                 showPickOption = false
             },
@@ -180,6 +181,7 @@ fun BackgroundPicker(
 
     if (showUrlInput) {
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {
                 showUrlInput = false
             },

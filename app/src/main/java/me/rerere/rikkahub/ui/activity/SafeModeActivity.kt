@@ -55,6 +55,7 @@ import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.datastore.getCurrentAssistant
 import me.rerere.rikkahub.ui.hooks.writeStringPreference
 import me.rerere.rikkahub.ui.theme.RikkahubTheme
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.RouteActivity
 import me.rerere.rikkahub.utils.CrashHandler
 import org.koin.android.ext.android.inject
@@ -153,7 +154,9 @@ class SafeModeActivity : ComponentActivity() {
                                         .padding(12.dp)
                                         .verticalScroll(vScroll)
                                         .horizontalScroll(hScroll),
-                                    style = MaterialTheme.typography.bodySmall,
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        fontFeatureSettings = settings.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+                                    ),
                                     fontFamily = FontFamily.Monospace,
                                 )
                             }

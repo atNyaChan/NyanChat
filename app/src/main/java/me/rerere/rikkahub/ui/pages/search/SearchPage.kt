@@ -120,6 +120,7 @@ fun SearchPage(initialModelId: String? = null, vm: SearchVM = koinViewModel()) {
 
     if (showRebuildDialog) {
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { showRebuildDialog = false },
             title = { Text(stringResource(R.string.search_page_rebuild_index)) },
             text = { Text(stringResource(R.string.search_page_rebuild_index_desc)) },

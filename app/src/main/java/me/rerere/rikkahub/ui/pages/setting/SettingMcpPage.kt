@@ -275,6 +275,7 @@ private fun McpServerItem(
         val context = LocalContext.current
         val fullText = error.detail ?: error.message
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { errorDetail = null },
             title = { Text(item.commonOptions.name.ifBlank { "MCP" }) },
             text = {

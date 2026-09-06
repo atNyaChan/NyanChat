@@ -125,6 +125,7 @@ fun WorkspaceTerminalPage(id: String, initialCwd: String) {
         val pendingCloseTab = terminalState.tabs.firstOrNull { it.id == pendingCloseTabId }
         if (pendingCloseTab != null) {
             AlertDialog(
+                containerColor = MaterialTheme.colorScheme.surface,
                 onDismissRequest = { pendingCloseTabId = null },
                 title = {
                     Text(

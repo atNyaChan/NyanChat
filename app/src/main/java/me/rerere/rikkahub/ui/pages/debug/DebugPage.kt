@@ -45,6 +45,7 @@ import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import org.koin.androidx.compose.koinViewModel
 import kotlin.random.Random
@@ -285,7 +286,9 @@ private fun ColorTokenItem(name: String, color: Color) {
             Text(name, style = MaterialTheme.typography.bodyMedium)
             Text(
                 color.toHexString(),
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+                ),
                 fontFamily = JetbrainsMono,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

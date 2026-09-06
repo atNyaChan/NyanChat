@@ -14,6 +14,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +44,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,7 +60,10 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.ui.theme.extendColors
@@ -87,6 +92,7 @@ fun ColumnScope.ConversationList(
     listState: LazyListState,
     totalConversations: Int,
     modifier: Modifier = Modifier,
+    centerCurrent: Boolean = false,
     onClick: (Conversation) -> Unit = {},
     onDelete: (Conversation) -> Unit = {},
     onEditTitle: (Conversation) -> Unit = {},
@@ -95,21 +101,50 @@ fun ColumnScope.ConversationList(
     onDeleteSelected: (List<Conversation>) -> Unit = {},
     onLoadAllConversations: suspend () -> List<Conversation> = { emptyList() },
 ) {
-    var hasScrolledToCurrent by remember { mutableStateOf(false) }
     var selectedConversations by remember { mutableStateOf<Map<Uuid, Conversation>>(emptyMap()) }
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(current.id, conversations.itemCount, hasScrolledToCurrent) {
-        if (hasScrolledToCurrent) return@LaunchedEffect
+    // 列表内容快照标识：会话增删/移动/置顶等引起内容变化时，用于触发一次「当前会话居中」。
+    // 用整个条目序列拼接而不是 itemCount，这样数量不变但对调顺序时也能感知变化。
+    val itemContentKey = conversations.itemSnapshotList.items.joinToString("|") { item ->
+        when (item) {
+            is ConversationListItem.DateHeader -> "d:${item.date}"
+            is ConversationListItem.PinnedHeader -> "p"
+            is ConversationListItem.Item -> "c:${item.conversation.id}"
+        }
+    }
+
+    // 打开侧栏或列表内容刷新后，尽量把当前会话置于可视区域中间
+    LaunchedEffect(centerCurrent, itemContentKey, current.id, listState) {
+        if (!centerCurrent) return@LaunchedEffect
+        // 用户正在手动滚动时不打扰（例如浏览时触发的分页加载引起的列表变化）
+        if (listState.isScrollInProgress) return@LaunchedEffect
         val currentIndex = conversations.itemSnapshotList.items.indexOfFirst {
             (it as? ConversationListItem.Item)?.conversation?.id == current.id
         }
-        if (currentIndex >= 0) {
-            val isVisible = listState.layoutInfo.visibleItemsInfo.any { it.index == currentIndex }
-            if (!isVisible) {
-                listState.scrollToItem(currentIndex)
+        if (currentIndex < 0) return@LaunchedEffect
+        // 当前会话已在可视区域内时不额外滚动
+        if (listState.layoutInfo.visibleItemsInfo.any { it.index == currentIndex }) {
+            return@LaunchedEffect
+        }
+
+        listState.scrollToItem(currentIndex)
+        // 先滚动到该条目再测量其高度与位置，以便计算居中所需的偏移
+        val itemInfo = withTimeoutOrNull(2000) {
+            snapshotFlow {
+                listState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == currentIndex }
             }
-            hasScrolledToCurrent = true
+                .filterNotNull()
+                .first()
+        } ?: return@LaunchedEffect
+
+        val layoutInfo = listState.layoutInfo
+        val viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
+        val targetTop = ((viewportSize - itemInfo.size).coerceAtLeast(0)) / 2
+        val currentTop = itemInfo.offset - layoutInfo.viewportStartOffset
+        val delta = currentTop - targetTop
+        if (delta != 0) {
+            listState.scrollBy(delta.toFloat())
         }
     }
 

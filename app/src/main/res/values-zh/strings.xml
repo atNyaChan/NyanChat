@@ -701,7 +701,7 @@
   <string name="setting_display_page_screen_corner_adaptation_square">直角</string>
   <string name="setting_display_page_screen_corner_adaptation_cannot_read">，当前无法读取屏幕圆角。</string>
   <string name="setting_display_page_screen_corner_adaptation_value_read">，当前读取到的值为 %1$s dp</string>
-  <string name="setting_display_page_screen_corner_adaptation_small_value">，小于 24dp，无法适配屏幕圆角</string>
+  <string name="setting_display_page_screen_corner_adaptation_small_value">，小于 28dp，无法适配屏幕圆角</string>
   <string name="setting_display_page_volume_key_scroll_desc">设置使用音量键翻页时的滚动幅度，适合墨水屏</string>
   <string name="setting_display_page_volume_key_scroll_title">音量键翻页</string>
   <string name="setting_files_page_clean_action">清理</string>
@@ -910,7 +910,7 @@
   <string name="setting_provider_page_embedding_model">嵌入</string>
   <string name="setting_provider_page_enable">启用</string>
   <string name="setting_provider_page_enabled">启用</string>
-  <string name="setting_provider_page_filter_example">例如：GPT-3.5</string>
+  <string name="setting_provider_page_filter_example">例如：gpt-6</string>
   <string name="setting_provider_page_filter_placeholder">输入模型名称筛选</string>
   <string name="setting_provider_page_image">图片</string>
   <string name="setting_provider_page_image_model">图像</string>
@@ -950,7 +950,6 @@
   <string name="setting_provider_page_reasoning">推理</string>
   <string name="setting_provider_page_response_api">Response API</string>
   <string name="setting_provider_page_response_api_warning">Response API 是 OpenAI 新一代 API，大部分提供商并不支持，如果你不知道这是什么，不要开启</string>
-  <string name="setting_provider_page_save_success">保存成功</string>
   <string name="setting_provider_page_scan_error">错误: %s</string>
   <string name="setting_provider_page_scan_qr_code">扫描二维码</string>
   <string name="setting_provider_page_select_all">全选（%1$d）</string>
@@ -1060,7 +1059,7 @@
   <string name="stats_page_dow_wed">三</string>
   <string name="stats_page_heatmap_less">少</string>
   <string name="stats_page_heatmap_more">多</string>
-  <string name="stats_page_heatmap_title">聊天热力图</string>
+  <string name="stats_page_heatmap_title">消息数热图</string>
   <string name="stats_page_input_tokens">输入 Token</string>
   <string name="stats_page_launch_count">应用启动次数</string>
   <string name="stats_page_output_tokens">输出 Token</string>
@@ -1263,6 +1262,8 @@
   <string name="request_intercept_dialog_title">【调试】即将发送的网络请求：</string>
   <string name="request_intercept_cancel">取消发送</string>
   <string name="request_intercept_confirm">确认发送</string>
+  <string name="log_page_preview_string">预览字符串</string>
+  <string name="log_page_enable_markdown_rendering">启用 Markdown 渲染</string>
   <string name="backup_page_import_failed_detail">导入失败：%1$s</string>
   <string name="backup_page_export_failed_detail">导出失败：%1$s</string>
   <string name="backup_page_rikkahub_format">类 RikkaHub 格式</string>

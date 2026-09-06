@@ -21,6 +21,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -63,8 +64,10 @@ import me.rerere.rikkahub.data.files.SkillMetadata
 import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.context.LocalNavController
+import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.CustomColors
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.utils.plus
 import org.koin.androidx.compose.koinViewModel
 import sh.calvin.reorderable.ReorderableItem
@@ -363,6 +366,7 @@ private fun AddSkillDialog(
     val nameError = content.isNotBlank() && name.isBlank()
 
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.skills_page_add_title)) },
         text = {
@@ -374,6 +378,9 @@ private fun AddSkillDialog(
                         Text(
                             "---\nname: my-skill\ndescription: \"...\"\n---\n\nWrite your skill instructions here...",
                             fontFamily = FontFamily.Monospace,
+                            style = LocalTextStyle.current.copy(
+                                fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+                            ),
                         )
                     },
                     supportingText = {
@@ -387,7 +394,10 @@ private fun AddSkillDialog(
                     isError = nameError,
                     minLines = 8,
                     maxLines = 14,
-                    textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                    textStyle = MaterialTheme.typography.bodySmall.copy(
+                        fontFamily = FontFamily.Monospace,
+                        fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+                    ),
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
@@ -415,6 +425,7 @@ private fun ImportSkillDialog(
     var loading by remember { mutableStateOf(false) }
 
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = { if (!loading) onDismiss() },
         title = { Text(stringResource(R.string.skills_page_import_from_github)) },
         text = {
@@ -428,7 +439,7 @@ private fun ImportSkillDialog(
                     value = url,
                     onValueChange = { url = it },
                     label = { Text(stringResource(R.string.skills_page_repo_url_label)) },
-                    placeholder = { Text("https://github.com/owner/repo", fontFamily = FontFamily.Monospace) },
+                    placeholder = { Text("https://github.com/owner/repo", fontFamily = FontFamily.Monospace, style = LocalTextStyle.current.copy(fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings)) },
                     supportingText = { Text(stringResource(R.string.skills_page_repo_url_hint)) },
                     singleLine = true,
                     enabled = !loading,

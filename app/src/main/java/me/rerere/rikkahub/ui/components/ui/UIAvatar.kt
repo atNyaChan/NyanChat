@@ -245,6 +245,7 @@ fun UIAvatar(
 
     if (showPickOption) {
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {
                 showPickOption = false
             },
@@ -330,6 +331,7 @@ fun UIAvatar(
 
     if (showUrlInput) {
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {
                 showUrlInput = false
             },

@@ -33,8 +33,10 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.components.richtext.HighlightCodeVisualTransformation
+import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.ui.theme.LocalDarkMode
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 
 private val jsonLenient = Json {
     ignoreUnknownKeys = true
@@ -197,7 +199,10 @@ fun CustomBodies(customBodies: List<CustomBody>, onUpdate: (List<CustomBody>) ->
                                     highlighter = LocalCodeHighlighter.current,
                                     darkMode = LocalDarkMode.current
                                 ),
-                                textStyle = LocalTextStyle.current.merge(fontFamily = JetbrainsMono),
+                                textStyle = LocalTextStyle.current.merge(
+                                    fontFamily = JetbrainsMono,
+                                    fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+                                ),
                             )
                         }
                     },

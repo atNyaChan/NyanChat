@@ -17,6 +17,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
@@ -46,8 +47,10 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.JsonTree
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
+import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.utils.JsonInstantPretty
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -159,6 +162,7 @@ fun PermissionLogPage() {
 
     if (showClearConfirm) {
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { showClearConfirm = false },
             title = { Text(stringResource(R.string.permission_log_page_clear_confirm)) },
             confirmButton = {
@@ -190,6 +194,7 @@ internal fun PermissionToolDetailContent(
 ) {
     val clipboard = LocalClipboard.current
     val scope = rememberCoroutineScope()
+    val codeFontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -209,7 +214,9 @@ internal fun PermissionToolDetailContent(
             )
             Text(
                 text = toolName,
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontFeatureSettings = codeFontFeatureSettings,
+                ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontFamily = JetbrainsMono,
             )
@@ -245,6 +252,7 @@ private fun PermissionLogDataField(
     value: String,
     onCopy: () -> Unit,
 ) {
+    val codeFontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings
     CollapsibleLogSection(
         title = label,
         initiallyExpanded = true,
@@ -254,9 +262,9 @@ private fun PermissionLogDataField(
             runCatching { JsonInstantPretty.parseToJsonElement(value) }.getOrNull()
         }
         if (json != null) {
-            JsonTree(json = json, initialExpandLevel = Int.MAX_VALUE)
+            JsonTree(json = json, initialExpandLevel = Int.MAX_VALUE, fontFeatureSettings = codeFontFeatureSettings)
         } else {
-            Text(value, fontFamily = JetbrainsMono)
+            Text(value, fontFamily = JetbrainsMono, style = LocalTextStyle.current.copy(fontFeatureSettings = codeFontFeatureSettings))
         }
     }
 }

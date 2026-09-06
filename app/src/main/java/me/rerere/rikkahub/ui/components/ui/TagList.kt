@@ -101,7 +101,8 @@ fun TagsInput(
         // 获取未选择的标签
         val unselectedTags = tags.filter { tag -> !value.contains(tag.id) }
 
-        AlertDialog(onDismissRequest = {
+        AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface, onDismissRequest = {
             showAddDialog = false
             tagName = ""
             showError = false

@@ -701,7 +701,7 @@
   <string name="setting_display_page_screen_corner_adaptation_square">직각</string>
   <string name="setting_display_page_screen_corner_adaptation_cannot_read">, 화면 모서리 둥글기 값을 읽을 수 없습니다.</string>
   <string name="setting_display_page_screen_corner_adaptation_value_read">, 현재 읽은 값은 %1$s dp입니다</string>
-  <string name="setting_display_page_screen_corner_adaptation_small_value">, 24dp 미만으로 화면 모서리에 맞출 수 없습니다</string>
+  <string name="setting_display_page_screen_corner_adaptation_small_value">, 28dp 미만으로 화면 모서리에 맞출 수 없습니다</string>
   <string name="setting_display_page_volume_key_scroll_desc">볼륨 키로 페이지를 넘길 때의 스크롤 양을 설정합니다. 전자 잉크 화면에 적합합니다</string>
   <string name="setting_display_page_volume_key_scroll_title">볼륨 키 페이지 스크롤</string>
   <string name="setting_files_page_clean_action">정리</string>
@@ -910,7 +910,7 @@
   <string name="setting_provider_page_embedding_model">임베딩</string>
   <string name="setting_provider_page_enable">활성화</string>
   <string name="setting_provider_page_enabled">활성화됨</string>
-  <string name="setting_provider_page_filter_example">예: GPT-3.5</string>
+  <string name="setting_provider_page_filter_example">예: gpt-6</string>
   <string name="setting_provider_page_filter_placeholder">모델 이름 입력하여 필터링</string>
   <string name="setting_provider_page_image">이미지</string>
   <string name="setting_provider_page_image_model">이미지</string>
@@ -950,7 +950,6 @@
   <string name="setting_provider_page_reasoning">추론</string>
   <string name="setting_provider_page_response_api">응답 API</string>
   <string name="setting_provider_page_response_api_warning">Response API는 OpenAI의 차세대 API입니다. 대부분의 제공업체에서 지원하지 않습니다. 이것이 무엇인지 모르는 경우 활성화하지 마세요.</string>
-  <string name="setting_provider_page_save_success">저장 성공</string>
   <string name="setting_provider_page_scan_error">오류: %s</string>
   <string name="setting_provider_page_scan_qr_code">QR 코드 스캔</string>
   <string name="setting_provider_page_select_all">전체 선택 (%1$d)</string>
@@ -1060,7 +1059,7 @@
   <string name="stats_page_dow_wed">수</string>
   <string name="stats_page_heatmap_less">적음</string>
   <string name="stats_page_heatmap_more">더보기</string>
-  <string name="stats_page_heatmap_title">채팅 히트맵</string>
+  <string name="stats_page_heatmap_title">메시지 수 히트맵</string>
   <string name="stats_page_input_tokens">입력 토큰</string>
   <string name="stats_page_launch_count">앱 실행 횟수</string>
   <string name="stats_page_output_tokens">출력 토큰</string>
@@ -1263,6 +1262,8 @@
   <string name="request_intercept_dialog_title">【디버그】보낼 네트워크 요청：</string>
   <string name="request_intercept_cancel">보내기 취소</string>
   <string name="request_intercept_confirm">보내기</string>
+  <string name="log_page_preview_string">문자열 미리 보기</string>
+  <string name="log_page_enable_markdown_rendering">Markdown 렌더링 사용</string>
   <string name="backup_page_import_failed_detail">가져오기 실패: %1$s</string>
   <string name="backup_page_export_failed_detail">내보내기 실패: %1$s</string>
   <string name="backup_page_rikkahub_format">RikkaHub 유사 형식</string>

@@ -542,6 +542,7 @@ private fun ModeInjectionEditSheet(
     }
     if (showDeleteConfirm) {
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { showDeleteConfirm = false },
             title = { Text(stringResource(R.string.prompt_page_delete_mode_injection_title)) },
             text = {
@@ -999,6 +1000,7 @@ private fun LorebookEditSheet(
     }
     if (showDeleteConfirm) {
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { showDeleteConfirm = false },
             title = { Text(stringResource(R.string.prompt_page_delete_lorebook_title)) },
             text = {
@@ -1415,6 +1417,7 @@ private fun RegexInjectionEditDialog(
     }
     if (showDeleteConfirm) {
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { showDeleteConfirm = false },
             title = { Text(stringResource(R.string.prompt_page_delete_entry)) },
             text = { Text(stringResource(R.string.prompt_page_delete_entry_confirm)) },

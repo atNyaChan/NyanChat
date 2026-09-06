@@ -27,6 +27,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -68,8 +69,10 @@ import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.JsonTree
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.Select
+import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.utils.JsonInstantPretty
 import me.rerere.rikkahub.utils.writeClipboardText
 import kotlinx.serialization.json.JsonArray
@@ -188,6 +191,7 @@ fun LogPage() {
     }
     if (showClearConfirm) {
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { showClearConfirm = false },
             title = { Text(stringResource(R.string.log_page_clear_confirm)) },
             confirmButton = {
@@ -288,6 +292,7 @@ private fun UnifiedLogList(
 @Composable
 private fun RequestLogCard(log: LogEntry.RequestLog, onClick: () -> Unit) {
     val dateFormat = remember { SimpleDateFormat("HH:mm:ss", Locale.getDefault()) }
+    val codeFontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings
     val statusCodeColor = if (log.responseCode == null || log.responseCode in 200..299) {
         MaterialTheme.colorScheme.primary
     } else {
@@ -323,7 +328,9 @@ private fun RequestLogCard(log: LogEntry.RequestLog, onClick: () -> Unit) {
 
             Text(
                 text = log.url,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontFeatureSettings = codeFontFeatureSettings,
+                ),
                 fontFamily = JetbrainsMono,
                 maxLines = 2
             )
@@ -339,6 +346,7 @@ private fun RequestLogCard(log: LogEntry.RequestLog, onClick: () -> Unit) {
                             SpanStyle(
                                 color = MaterialTheme.colorScheme.primary,
                                 fontFamily = JetbrainsMono,
+                                fontFeatureSettings = codeFontFeatureSettings,
                                 fontWeight = FontWeight.Bold,
                             )
                         ) {
@@ -363,6 +371,7 @@ private fun RequestLogCard(log: LogEntry.RequestLog, onClick: () -> Unit) {
                                 SpanStyle(
                                     color = statusCodeColor,
                                     fontFamily = JetbrainsMono,
+                                    fontFeatureSettings = codeFontFeatureSettings,
                                     fontWeight = FontWeight.SemiBold,
                                 )
                             ) {
@@ -415,6 +424,7 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
     val requestModel = remember(log.requestBody) {
         log.requestBody?.let(::extractRequestModel)
     }
+    val codeFontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings
 
     SelectionContainer {
         LazyColumn(
@@ -424,16 +434,16 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
         ) {
             item {
                 CollapsibleLogSection("Details") {
-                    DetailSection("Time", dateFormat.format(Date(log.timestamp)))
-                    DetailSection("URL", log.url)
-                    DetailSection("Method", log.method)
+                    DetailSection("Time", dateFormat.format(Date(log.timestamp)), codeFontFeatureSettings)
+                    DetailSection("URL", log.url, codeFontFeatureSettings)
+                    DetailSection("Method", log.method, codeFontFeatureSettings)
                     log.responseCode?.let { code ->
-                        DetailSection("Status Code", code.toString())
+                        DetailSection("Status Code", code.toString(), codeFontFeatureSettings)
                     }
                     log.durationMs?.let { duration ->
-                        DetailSection("Duration", "${duration}ms")
+                        DetailSection("Duration", "${duration}ms", codeFontFeatureSettings)
                     }
-                    log.error?.let { error -> DetailSection("Error", error) }
+                    log.error?.let { error -> DetailSection("Error", error, codeFontFeatureSettings) }
                 }
             }
 
@@ -442,7 +452,7 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
                     title = "Request Headers",
                     onCopy = { context.writeClipboardText(headersText(log.requestHeaders)) },
                 ) {
-                    HighlightedHeaders(log.requestHeaders)
+                    HighlightedHeaders(log.requestHeaders, codeFontFeatureSettings)
                 }
             }
 
@@ -454,9 +464,9 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
                 ) {
                     val jsonElement = remember(body) { parseResponseJson(body) }
                     if (jsonElement != null) {
-                        JsonTree(jsonElement, initialExpandLevel = 0)
+                        JsonTree(jsonElement, initialExpandLevel = 0, fontFeatureSettings = codeFontFeatureSettings)
                     } else {
-                        Text(body, fontFamily = JetbrainsMono)
+                        Text(body, fontFamily = JetbrainsMono, style = LocalTextStyle.current.copy(fontFeatureSettings = codeFontFeatureSettings))
                     }
                 }
             } }
@@ -466,7 +476,7 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
                     title = "Response Headers",
                     onCopy = { context.writeClipboardText(headersText(log.responseHeaders)) },
                 ) {
-                    HighlightedHeaders(log.responseHeaders)
+                    HighlightedHeaders(log.responseHeaders, codeFontFeatureSettings)
                 }
             }
 
@@ -478,9 +488,9 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
                 ) {
                     val jsonElement = remember(body) { parseResponseJson(body) }
                     if (jsonElement != null) {
-                        JsonTree(jsonElement, initialExpandLevel = 0)
+                        JsonTree(jsonElement, initialExpandLevel = 0, fontFeatureSettings = codeFontFeatureSettings)
                     } else {
-                        Text(body, fontFamily = JetbrainsMono)
+                        Text(body, fontFamily = JetbrainsMono, style = LocalTextStyle.current.copy(fontFeatureSettings = codeFontFeatureSettings))
                     }
                 }
             } }
@@ -498,6 +508,7 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
                                     SpanStyle(
                                         color = MaterialTheme.colorScheme.primary,
                                         fontFamily = JetbrainsMono,
+                                        fontFeatureSettings = codeFontFeatureSettings,
                                         fontWeight = FontWeight.Bold,
                                     )
                                 ) {
@@ -517,12 +528,14 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
                                     parseToolJson(section.content)
                                 }
                                 if (jsonElement != null) {
-                                    JsonTree(jsonElement, initialExpandLevel = 0)
+                                    JsonTree(jsonElement, initialExpandLevel = 0, fontFeatureSettings = codeFontFeatureSettings)
                                 } else {
                                     Text(
                                         text = section.content,
                                         fontFamily = JetbrainsMono,
-                                        style = MaterialTheme.typography.bodyMedium,
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            fontFeatureSettings = codeFontFeatureSettings,
+                                        ),
                                     )
                                 }
                             }
@@ -545,6 +558,7 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
                                 modifier = Modifier.fillMaxWidth(),
                                 textStyle = MaterialTheme.typography.bodyMedium.copy(
                                     fontFamily = JetbrainsMono,
+                                    fontFeatureSettings = codeFontFeatureSettings,
                                 ),
                                 minLines = 2,
                                 maxLines = 12,
@@ -998,7 +1012,7 @@ internal fun parseResponseJson(body: String): JsonElement? {
 }
 
 @Composable
-internal fun DetailSection(label: String, value: String) {
+internal fun DetailSection(label: String, value: String, fontFeatureSettings: String? = null) {
     val keyColor = MaterialTheme.colorScheme.primary
     val colonColor = MaterialTheme.colorScheme.tertiary
     val valueColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1009,19 +1023,24 @@ internal fun DetailSection(label: String, value: String) {
             withStyle(SpanStyle(color = valueColor)) { append(value) }
         },
         fontFamily = JetbrainsMono,
+        style = LocalTextStyle.current.copy(fontFeatureSettings = fontFeatureSettings),
         fontSize = 12.sp,
         lineHeight = 16.sp,
     )
 }
 
 @Composable
-internal fun HighlightedHeaders(headers: Map<String, String>) {
-    HighlightedKeyValues(headers)
+internal fun HighlightedHeaders(
+    headers: Map<String, String>,
+    fontFeatureSettings: String? = null,
+) {
+    HighlightedKeyValues(headers, fontFeatureSettings)
 }
 
 @Composable
 private fun HighlightedKeyValues(
     values: Map<String, String>,
+    fontFeatureSettings: String? = null,
 ) {
     val keyColor = MaterialTheme.colorScheme.primary
     val colonColor = MaterialTheme.colorScheme.tertiary
@@ -1036,6 +1055,7 @@ private fun HighlightedKeyValues(
             }
         },
         fontFamily = JetbrainsMono,
+        style = LocalTextStyle.current.copy(fontFeatureSettings = fontFeatureSettings),
         fontSize = 12.sp,
         lineHeight = 16.sp,
     )

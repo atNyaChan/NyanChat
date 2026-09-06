@@ -22,6 +22,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -61,8 +62,10 @@ import com.composables.icons.lucide.Trash2
 import com.dokar.sonner.ToastType
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.CustomColors
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.utils.plus
 import org.koin.androidx.compose.koinViewModel
 
@@ -260,7 +263,9 @@ private fun FileItem(
             )
             Text(
                 text = skillFile.file.name,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+                ),
                 fontFamily = FontFamily.Monospace,
                 modifier = Modifier
                     .weight(1f)
@@ -321,7 +326,9 @@ private fun DirItem(
                 )
                 Text(
                     text = node.name,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+                    ),
                     fontFamily = FontFamily.Monospace,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f),
@@ -351,8 +358,9 @@ private fun EditFileDialog(
     var content by rememberSaveable(skillFile.relativePath) { mutableStateOf(initialContent) }
 
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
-        title = { Text(skillFile.relativePath, fontFamily = FontFamily.Monospace) },
+        title = { Text(skillFile.relativePath, fontFamily = FontFamily.Monospace, style = LocalTextStyle.current.copy(fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings)) },
         text = {
             OutlinedTextField(
                 value = content,
@@ -360,7 +368,10 @@ private fun EditFileDialog(
                 label = { Text(stringResource(R.string.skill_detail_page_content)) },
                 minLines = 10,
                 maxLines = 20,
-                textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                textStyle = MaterialTheme.typography.bodySmall.copy(
+                    fontFamily = FontFamily.Monospace,
+                    fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+                ),
                 modifier = Modifier.fillMaxWidth(),
             )
         },
@@ -383,6 +394,7 @@ private fun AddFileDialog(
     val fileNameError = fileName.isNotBlank() && (fileName.contains('\\'))
 
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.skill_detail_page_new_file)) },
         text = {
@@ -391,7 +403,7 @@ private fun AddFileDialog(
                     value = fileName,
                     onValueChange = { fileName = it },
                     label = { Text(stringResource(R.string.skill_detail_page_file_name)) },
-                    placeholder = { Text("examples/basic.md", fontFamily = FontFamily.Monospace) },
+                    placeholder = { Text("examples/basic.md", fontFamily = FontFamily.Monospace, style = LocalTextStyle.current.copy(fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings)) },
                     supportingText = {
                         if (fileNameError) Text(
                             stringResource(R.string.skill_detail_page_file_name_invalid),
@@ -401,7 +413,10 @@ private fun AddFileDialog(
                     isError = fileNameError,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                    textStyle = MaterialTheme.typography.bodySmall.copy(
+                        fontFamily = FontFamily.Monospace,
+                        fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+                    ),
                     modifier = Modifier.fillMaxWidth(),
                 )
                 OutlinedTextField(
@@ -410,7 +425,10 @@ private fun AddFileDialog(
                     label = { Text(stringResource(R.string.skill_detail_page_content)) },
                     minLines = 6,
                     maxLines = 14,
-                    textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                    textStyle = MaterialTheme.typography.bodySmall.copy(
+                        fontFamily = FontFamily.Monospace,
+                        fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+                    ),
                     modifier = Modifier.fillMaxWidth(),
                 )
             }

@@ -36,6 +36,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import me.rerere.rikkahub.ui.components.table.DataTable
+import me.rerere.rikkahub.ui.context.LocalSettings
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.Node
@@ -75,6 +77,7 @@ private fun RenderNode(
     node: Node,
     onLinkClick: (String) -> Unit
 ) {
+    val codeFontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings
     when (node) {
         is TextNode -> {
             if (node.text().isNotBlank()) {
@@ -90,7 +93,7 @@ private fun RenderNode(
         is Element -> {
             when (node.tagName().lowercase()) {
                 "p" -> {
-                    val annotatedString = buildAnnotatedStringFromElement(node, onLinkClick)
+                    val annotatedString = buildAnnotatedStringFromElement(node, onLinkClick, codeFontFeatureSettings)
                     if (annotatedString.text.isNotBlank()) {
                         // Parse inline styles for <p> element
                         val style = node.attr("style")
@@ -118,7 +121,7 @@ private fun RenderNode(
                         else -> MaterialTheme.typography.titleSmall
                     }
 
-                    val annotatedString = buildAnnotatedStringFromElement(node, onLinkClick)
+                    val annotatedString = buildAnnotatedStringFromElement(node, onLinkClick, codeFontFeatureSettings)
                     if (annotatedString.text.isNotBlank()) {
                         // Parse inline styles for heading elements
                         val style = node.attr("style")
@@ -169,7 +172,7 @@ private fun RenderNode(
 
                 else -> {
                     // Render other elements as text
-                    val annotatedString = buildAnnotatedStringFromElement(node, onLinkClick)
+                    val annotatedString = buildAnnotatedStringFromElement(node, onLinkClick, codeFontFeatureSettings)
                     if (annotatedString.text.isNotBlank()) {
                         // Parse inline styles for other elements
                         val style = node.attr("style")
@@ -195,6 +198,7 @@ private fun RenderList(
     isOrdered: Boolean,
     onLinkClick: (String) -> Unit
 ) {
+    val codeFontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings
     Column(modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)) {
         listElement.children().forEachIndexed { index, item ->
             if (item.tagName().lowercase() == "li") {
@@ -207,7 +211,11 @@ private fun RenderList(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
 
-                    val annotatedString = buildAnnotatedStringFromElement(item, onLinkClick)
+                    val annotatedString = buildAnnotatedStringFromElement(
+                        item,
+                        onLinkClick,
+                        codeFontFeatureSettings,
+                    )
                     if (annotatedString.text.isNotBlank()) {
                         Text(
                             text = annotatedString,
@@ -229,6 +237,7 @@ private fun RenderDetails(
     onLinkClick: (String) -> Unit
 ) {
     val isOpenByDefault = detailsElement.hasAttr("open")
+    val codeFontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings
     var isExpanded by remember { mutableStateOf(isOpenByDefault) }
 
     val summaryElement = detailsElement.children().find {
@@ -253,7 +262,7 @@ private fun RenderDetails(
             )
 
             val summaryAnnotatedString = if (summaryElement != null) {
-                buildAnnotatedStringFromElement(summaryElement, onLinkClick)
+                buildAnnotatedStringFromElement(summaryElement, onLinkClick, codeFontFeatureSettings)
             } else {
                 AnnotatedString(summaryText)
             }
@@ -312,17 +321,19 @@ private fun RenderImage(
 
 private fun buildAnnotatedStringFromElement(
     element: Element,
-    onLinkClick: (String) -> Unit
+    onLinkClick: (String) -> Unit,
+    codeFontFeatureSettings: String? = null,
 ): AnnotatedString {
     return buildAnnotatedString {
-        processElementNodes(element, this, onLinkClick)
+        processElementNodes(element, this, onLinkClick, codeFontFeatureSettings)
     }
 }
 
 private fun processElementNodes(
     element: Element,
     builder: AnnotatedString.Builder,
-    onLinkClick: (String) -> Unit
+    onLinkClick: (String) -> Unit,
+    codeFontFeatureSettings: String? = null,
 ) {
     element.childNodes().forEach { node ->
         when (node) {
@@ -334,7 +345,7 @@ private fun processElementNodes(
                 when (node.tagName().lowercase()) {
                     "b", "strong" -> {
                         val start = builder.length
-                        processElementNodes(node, builder, onLinkClick)
+                        processElementNodes(node, builder, onLinkClick, codeFontFeatureSettings)
                         builder.addStyle(
                             SpanStyle(fontWeight = FontWeight.Bold),
                             start,
@@ -344,7 +355,7 @@ private fun processElementNodes(
 
                     "i", "em" -> {
                         val start = builder.length
-                        processElementNodes(node, builder, onLinkClick)
+                        processElementNodes(node, builder, onLinkClick, codeFontFeatureSettings)
                         builder.addStyle(
                             SpanStyle(fontStyle = FontStyle.Italic),
                             start,
@@ -354,7 +365,7 @@ private fun processElementNodes(
 
                     "u" -> {
                         val start = builder.length
-                        processElementNodes(node, builder, onLinkClick)
+                        processElementNodes(node, builder, onLinkClick, codeFontFeatureSettings)
                         builder.addStyle(
                             SpanStyle(textDecoration = TextDecoration.Underline),
                             start,
@@ -365,7 +376,7 @@ private fun processElementNodes(
                     "a" -> {
                         val href = node.attr("href")
                         val start = builder.length
-                        processElementNodes(node, builder, onLinkClick)
+                        processElementNodes(node, builder, onLinkClick, codeFontFeatureSettings)
                         if (href.isNotEmpty()) {
                             builder.addStyle(
                                 SpanStyle(
@@ -386,11 +397,12 @@ private fun processElementNodes(
 
                     "code" -> {
                         val start = builder.length
-                        processElementNodes(node, builder, onLinkClick)
+                        processElementNodes(node, builder, onLinkClick, codeFontFeatureSettings)
                         builder.addStyle(
                             SpanStyle(
                                 fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                                background = Color.Gray.copy(alpha = 0.2f)
+                                background = Color.Gray.copy(alpha = 0.2f),
+                                fontFeatureSettings = codeFontFeatureSettings,
                             ),
                             start,
                             builder.length
@@ -403,7 +415,7 @@ private fun processElementNodes(
 
                     "span" -> {
                         val start = builder.length
-                        processElementNodes(node, builder, onLinkClick)
+                        processElementNodes(node, builder, onLinkClick, codeFontFeatureSettings)
 
                         // Handle inline styles
                         val style = node.attr("style")
@@ -421,7 +433,7 @@ private fun processElementNodes(
 
                     "font" -> {
                         val start = builder.length
-                        processElementNodes(node, builder, onLinkClick)
+                        processElementNodes(node, builder, onLinkClick, codeFontFeatureSettings)
 
                         // Handle font color attribute
                         val color = node.attr("color")
@@ -438,7 +450,7 @@ private fun processElementNodes(
                     }
 
                     else -> {
-                        processElementNodes(node, builder, onLinkClick)
+                        processElementNodes(node, builder, onLinkClick, codeFontFeatureSettings)
                     }
                 }
             }
@@ -644,7 +656,8 @@ private fun RenderTable(
 
         tr.select("th, td").forEach { cell ->
             cells.add {
-                val annotatedString = buildAnnotatedStringFromElement(cell, onLinkClick)
+                val codeFontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings
+                val annotatedString = buildAnnotatedStringFromElement(cell, onLinkClick, codeFontFeatureSettings)
                 if (annotatedString.text.isNotBlank()) {
                     Text(
                         text = annotatedString,

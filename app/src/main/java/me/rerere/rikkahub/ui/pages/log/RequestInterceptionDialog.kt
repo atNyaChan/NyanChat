@@ -33,6 +33,7 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.event.AppEvent
 import me.rerere.rikkahub.ui.components.ui.JsonTree
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.utils.writeClipboardText
 
@@ -41,8 +42,10 @@ internal fun RequestInterceptionDialog(
     request: AppEvent.RequestInterception,
     onCancel: () -> Unit,
     onConfirm: () -> Unit,
+    enableCodeLigatures: Boolean = true,
 ) {
     val context = LocalContext.current
+    val codeFontFeatureSettings = enableCodeLigatures.codeFontFeatureSettings
     val jsonElement = remember(request.body) {
         request.body?.let(::parseResponseJson)
     }
@@ -79,7 +82,11 @@ internal fun RequestInterceptionDialog(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    RequestMethodLine(method = request.method, url = request.url)
+                    RequestMethodLine(
+                        method = request.method,
+                        url = request.url,
+                        fontFeatureSettings = codeFontFeatureSettings,
+                    )
 
                     if (request.headers.isNotEmpty()) {
                         CollapsibleLogSection(
@@ -97,9 +104,15 @@ internal fun RequestInterceptionDialog(
                             onCopy = { context.writeClipboardText(body) },
                         ) {
                             if (jsonElement != null) {
-                                JsonTree(jsonElement, initialExpandLevel = 1)
+                                JsonTree(jsonElement, initialExpandLevel = 1, fontFeatureSettings = codeFontFeatureSettings)
                             } else {
-                                Text(body, fontFamily = JetbrainsMono, style = MaterialTheme.typography.bodySmall)
+                                Text(
+                                    body,
+                                    fontFamily = JetbrainsMono,
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        fontFeatureSettings = codeFontFeatureSettings,
+                                    ),
+                                )
                             }
                         }
                     }
@@ -125,7 +138,11 @@ internal fun RequestInterceptionDialog(
 }
 
 @Composable
-private fun RequestMethodLine(method: String, url: String) {
+private fun RequestMethodLine(
+    method: String,
+    url: String,
+    fontFeatureSettings: String? = null,
+) {
     Text(
         text = buildAnnotatedString {
             withStyle(SpanStyle(color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)) {
@@ -141,6 +158,8 @@ private fun RequestMethodLine(method: String, url: String) {
         fontFamily = JetbrainsMono,
         fontSize = 12.sp,
         lineHeight = 16.sp,
-        style = MaterialTheme.typography.bodySmall,
+        style = MaterialTheme.typography.bodySmall.copy(
+            fontFeatureSettings = fontFeatureSettings,
+        ),
     )
 }

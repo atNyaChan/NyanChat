@@ -229,6 +229,7 @@ private fun EditWorkspaceDialog(
     val isDuplicate = trimmedName.isNotEmpty() && trimmedName in existingNames
 
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
         title = { Text(title) },
         text = {

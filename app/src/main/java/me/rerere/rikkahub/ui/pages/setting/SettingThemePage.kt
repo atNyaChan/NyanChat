@@ -521,6 +521,7 @@ private fun ImportThemeDialog(
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.setting_theme_page_import_theme)) },
         text = {

@@ -216,6 +216,7 @@ private fun ImportProviderButton(
 
     if (showImportDialog) {
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { showImportDialog = false },
             title = {
                 Text(
@@ -409,6 +410,7 @@ private fun AddButton(onAdd: (ProviderSetting) -> Unit) {
 
     if (dialogState.isEditing) {
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {
                 dialogState.dismiss()
             },

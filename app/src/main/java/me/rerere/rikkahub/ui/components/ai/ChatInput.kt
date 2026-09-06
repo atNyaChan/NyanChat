@@ -136,6 +136,7 @@ fun ChatInput(
     state: ChatInputState,
     requestWordCount: Int?,
     requestToolCount: Int,
+    requestFileCount: Int,
     onRequestWordCountRefresh: () -> Unit,
     loading: Boolean,
     settings: Settings,
@@ -365,15 +366,17 @@ fun ChatInput(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                 }
-                                if (displayedAttachmentCount > 0 || requestToolCount > 0) {
+                                // 文件数 = 输入框待发送的附件 + 请求上下文中已有消息的附件
+                                val totalFileCount = displayedAttachmentCount + requestFileCount
+                                if (totalFileCount > 0 || requestToolCount > 0) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                                     ) {
-                                        if (displayedAttachmentCount > 0) {
+                                        if (totalFileCount > 0) {
                                             StatCount(
                                                 icon = HugeIcons.File02,
-                                                count = displayedAttachmentCount,
+                                                count = totalFileCount,
                                                 label = "file",
                                             )
                                         }

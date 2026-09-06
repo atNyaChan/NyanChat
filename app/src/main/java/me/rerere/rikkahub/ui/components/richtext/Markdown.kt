@@ -100,6 +100,7 @@ import me.rerere.rikkahub.ui.components.table.DataTable
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.modifier.onClick
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.utils.toDp
 import org.intellij.markdown.IElementType
 import org.intellij.markdown.MarkdownElementTypes
@@ -551,6 +552,9 @@ private fun MarkdownNode(
                 Text(
                     text = formula,
                     fontFamily = FontFamily.Monospace,
+                    style = LocalTextStyle.current.copy(
+                        fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+                    ),
                     modifier = modifier.padding(horizontal = 1.dp)
                 )
             }
@@ -570,6 +574,9 @@ private fun MarkdownNode(
                 Text(
                     text = formula,
                     fontFamily = FontFamily.Monospace,
+                    style = LocalTextStyle.current.copy(
+                        fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+                    ),
                     modifier = modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)
@@ -584,11 +591,7 @@ private fun MarkdownNode(
                 text = code,
                 style = TextStyle(
                     fontFamily = JetbrainsMono,
-                    fontFeatureSettings = if (enableCodeLigatures) {
-                        "\"liga\", \"calt\""
-                    } else {
-                        "\"liga\" 0, \"calt\" 0"
-                    },
+                    fontFeatureSettings = enableCodeLigatures.codeFontFeatureSettings,
                 ),
                 modifier = modifier
             )
@@ -1025,11 +1028,7 @@ private fun AnnotatedString.Builder.appendMarkdownNodeContent(
     latexColorArgb: Int = 0,
     onClickCitation: (String) -> Unit = {},
 ) {
-    val codeFontFeatureSettings = if (enableCodeLigatures) {
-        "\"liga\", \"calt\""
-    } else {
-        "\"liga\" 0, \"calt\" 0"
-    }
+    val codeFontFeatureSettings = enableCodeLigatures.codeFontFeatureSettings
     when {
         node.type == MarkdownTokenTypes.BLOCK_QUOTE -> {}
 
@@ -1148,6 +1147,8 @@ private fun AnnotatedString.Builder.appendMarkdownNodeContent(
                                             fontSize = 10.sp,
                                             lineHeight = 10.sp,
                                             fontFamily = JetbrainsMono,
+                                            fontFeatureSettings = LocalSettings.current.displaySetting
+                                                .enableCodeLigatures.codeFontFeatureSettings,
                                             color = colorScheme.onTertiaryContainer,
                                             fontWeight = FontWeight.Thin
                                         ),
@@ -1257,6 +1258,7 @@ private fun AnnotatedString.Builder.appendMarkdownNodeContent(
                     SpanStyle(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 0.95.em,
+                        fontFeatureSettings = enableCodeLigatures.codeFontFeatureSettings,
                     )
                 ) {
                     append(formula)

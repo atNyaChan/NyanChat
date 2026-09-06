@@ -267,6 +267,7 @@ class RouteActivity : AppCompatActivity() {
         }
         authorizationRequest?.let { request ->
             AlertDialog(
+                containerColor = MaterialTheme.colorScheme.surface,
                 onDismissRequest = {
                     if (!request.decision.isCompleted) request.decision.complete(false)
                 },
@@ -300,6 +301,7 @@ class RouteActivity : AppCompatActivity() {
                 onConfirm = {
                     if (!request.decision.isCompleted) request.decision.complete(true)
                 },
+                enableCodeLigatures = settings.displaySetting.enableCodeLigatures,
             )
         }
         val startScreen = Screen.Chat(

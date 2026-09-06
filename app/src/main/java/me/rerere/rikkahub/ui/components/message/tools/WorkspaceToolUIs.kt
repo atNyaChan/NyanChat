@@ -42,7 +42,9 @@ import me.rerere.rikkahub.ui.components.richtext.DiffRemovedColor
 import me.rerere.rikkahub.ui.components.richtext.DiffView
 import me.rerere.rikkahub.ui.components.richtext.HighlightCodeBlock
 import me.rerere.rikkahub.ui.components.richtext.parseDiffStats
+import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.modifier.shimmer
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.utils.generateUnifiedDiff
 import me.rerere.rikkahub.utils.jsonPrimitiveOrNull
 
@@ -253,6 +255,7 @@ private fun FileContentSummary(text: String, path: String?, loading: Boolean) {
             lineHeight = 14.sp,
             maxLines = FILE_SUMMARY_MAX_LINES,
             overflow = TextOverflow.Ellipsis,
+            fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
             modifier = Modifier.fillMaxWidth(),
         )
     }

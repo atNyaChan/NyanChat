@@ -28,6 +28,7 @@ fun <T> ExportDialog(
     onDismiss: () -> Unit
 ) {
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
         title = { Text(title ?: stringResource(R.string.common_export)) },
         text = {

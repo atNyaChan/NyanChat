@@ -170,14 +170,18 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
     val hazeState = rememberHazeState()
     var cachedRequestBaseWordCount by remember { mutableStateOf<Int?>(null) }
     var cachedRequestToolCount by remember { mutableStateOf(0) }
+    var cachedRequestFileCount by remember { mutableStateOf(0) }
     var requestWordCountJob by remember { mutableStateOf<Job?>(null) }
     // Unlike isImeVisible, the target changes as soon as the IME animation starts.
     val imeTargetVisible = WindowInsets.imeAnimationTarget.getBottom(density) > 0
     val collapseToolbar = imeTargetVisible &&
         setting.displaySetting.collapseChatInputToolbarWhenKeyboardVisible
-    // 开启了“收起输入框工具栏”时，输入框为空或工具栏收起时不做上下文词数/工具数统计
-    val skipRequestStats = setting.displaySetting.collapseChatInputToolbarWhenKeyboardVisible &&
-        (inputState.isEmpty() || collapseToolbar)
+    // 正在生成消息（发送按钮被取消键取代）期间不做上下文词数/工具数统计，
+    // 生成完成（loadingJob 恢复为 null）后自动重新统计并刷新显示。
+    // 开启了“收起输入框工具栏”时，输入框为空或工具栏收起时同样跳过统计
+    val skipRequestStats = loadingJob != null ||
+        (setting.displaySetting.collapseChatInputToolbarWhenKeyboardVisible &&
+            (inputState.isEmpty() || collapseToolbar))
     val inputContents = inputState.getContents()
     val currentInputWordCount = inputContents.sumOf { part ->
         (part as? UIMessagePart.Text)?.text?.wordCount() ?: 0
@@ -205,6 +209,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
             requestWordCountJob?.cancel()
             cachedRequestBaseWordCount = null
             cachedRequestToolCount = 0
+            cachedRequestFileCount = 0
         }
     }
     val refreshRequestWordCount = {
@@ -218,6 +223,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
                 cachedRequestBaseWordCount = try {
                     vm.estimateRequestContextStats(inputState.editingMessage).also {
                         cachedRequestToolCount = it.toolCount
+                        cachedRequestFileCount = it.fileCount
                     }.wordCount
                 } catch (e: CancellationException) {
                     throw e
@@ -232,6 +238,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
         requestWordCountJob = null
         cachedRequestBaseWordCount = null
         cachedRequestToolCount = 0
+        cachedRequestFileCount = 0
     }
 
     // 编辑历史消息时只统计被编辑消息及其之前的内容，进入或退出编辑后重新按新的统计范围计算
@@ -246,6 +253,16 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
         } else {
             refreshRequestWordCount()
         }
+    }
+
+    // 操作消息树后（删除消息、切换消息分支导致 selectIndex 变化）重新统计；
+    // 删除为异步落内存，因此在会话状态更新引起重组后通过本条路径刷新
+    LaunchedEffect(
+        conversation.messageNodes.map { node ->
+            node.id to node.messages.getOrNull(node.selectIndex)?.id
+        }
+    ) {
+        refreshRequestWordCount()
     }
 
     // 初始化输入状态（处理传入的 files 和 text 参数）
@@ -300,6 +317,8 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
                         current = conversation,
                         vm = vm,
                         settings = setting,
+                        drawerState = drawerState,
+                        navDrawerPermanent = true,
                     )
                 }
             ) {
@@ -307,6 +326,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
                     inputState = inputState,
                     requestWordCount = requestWordCount,
                     requestToolCount = cachedRequestToolCount,
+                    requestFileCount = cachedRequestFileCount,
                     onRequestWordCountRefresh = refreshRequestWordCount,
                     loadingJob = loadingJob,
                     processingStatus = processingStatus,
@@ -336,6 +356,8 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
                         current = conversation,
                         vm = vm,
                         settings = setting,
+                        drawerState = drawerState,
+                        navDrawerPermanent = false,
                     )
                 }
             ) {
@@ -343,6 +365,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
                     inputState = inputState,
                     requestWordCount = requestWordCount,
                     requestToolCount = cachedRequestToolCount,
+                    requestFileCount = cachedRequestFileCount,
                     onRequestWordCountRefresh = refreshRequestWordCount,
                     loadingJob = loadingJob,
                     processingStatus = processingStatus,
@@ -373,6 +396,7 @@ private fun ChatPageContent(
     inputState: ChatInputState,
     requestWordCount: Int?,
     requestToolCount: Int,
+    requestFileCount: Int,
     onRequestWordCountRefresh: () -> Unit,
     loadingJob: Job?,
     processingStatus: String? = null,
@@ -455,6 +479,7 @@ private fun ChatPageContent(
                     state = inputState,
                     requestWordCount = requestWordCount,
                     requestToolCount = requestToolCount,
+                    requestFileCount = requestFileCount,
                     onRequestWordCountRefresh = onRequestWordCountRefresh,
                     loading = loadingJob != null,
                     settings = setting,
@@ -959,6 +984,7 @@ private fun TopBar(
     )
     titleState.EditStateContent { title, onUpdate ->
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {
                 titleState.dismiss()
             },

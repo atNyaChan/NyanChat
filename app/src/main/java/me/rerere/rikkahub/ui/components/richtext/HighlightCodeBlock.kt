@@ -78,6 +78,7 @@ import me.rerere.rikkahub.ui.theme.AtomOneDarkPalette
 import me.rerere.rikkahub.ui.theme.AtomOneLightPalette
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.ui.theme.LocalDarkMode
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.utils.toDp
 import kotlin.time.Clock
 
@@ -114,11 +115,7 @@ fun HighlightCodeBlock(
     }
     val autoWrap = settings.displaySetting.codeBlockAutoWrap
     val showLineNumbers = settings.displaySetting.showLineNumbers
-    val fontFeatureSettings = if (settings.displaySetting.enableCodeLigatures) {
-        "\"liga\", \"calt\""
-    } else {
-        "\"liga\" 0, \"calt\" 0"
-    }
+    val fontFeatureSettings = settings.displaySetting.enableCodeLigatures.codeFontFeatureSettings
 
     val createDocumentLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("*/*")
@@ -385,6 +382,9 @@ private fun HighlightCodeActions(
             fontFamily = JetbrainsMono,
             color = MaterialTheme.colorScheme.onSurfaceVariant
                 .copy(alpha = 0.5f),
+            style = LocalTextStyle.current.copy(
+                fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+            ),
         )
         Spacer(Modifier.weight(1f))
         Row(

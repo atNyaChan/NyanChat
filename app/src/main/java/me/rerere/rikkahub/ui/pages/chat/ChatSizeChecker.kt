@@ -62,6 +62,7 @@ fun ConversationSizeWarningDialog(
     onDismiss: () -> Unit
 ) {
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
         icon = {
             Icon(

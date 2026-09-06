@@ -701,7 +701,7 @@
   <string name="setting_display_page_screen_corner_adaptation_square">Square</string>
   <string name="setting_display_page_screen_corner_adaptation_cannot_read">, unable to read the screen corner radius.</string>
   <string name="setting_display_page_screen_corner_adaptation_value_read">, current screen corner radius: %1$s dp</string>
-  <string name="setting_display_page_screen_corner_adaptation_small_value">, less than 24dp, cannot adapt to the screen corners</string>
+  <string name="setting_display_page_screen_corner_adaptation_small_value">, less than 28dp, cannot adapt to the screen corners</string>
   <string name="setting_display_page_volume_key_scroll_desc">Set the scroll amount when using volume keys to turn pages, suitable for e-ink screens</string>
   <string name="setting_display_page_volume_key_scroll_title">Volume Key Page Scroll</string>
   <string name="setting_files_page_clean_action">Clean</string>
@@ -910,7 +910,7 @@
   <string name="setting_provider_page_embedding_model">Embedding</string>
   <string name="setting_provider_page_enable">Enable</string>
   <string name="setting_provider_page_enabled">Enabled</string>
-  <string name="setting_provider_page_filter_example">e.g.: GPT-3.5</string>
+  <string name="setting_provider_page_filter_example">e.g.: gpt-6</string>
   <string name="setting_provider_page_filter_placeholder">Enter model name to filter</string>
   <string name="setting_provider_page_image">Image</string>
   <string name="setting_provider_page_image_model">Image</string>
@@ -950,7 +950,6 @@
   <string name="setting_provider_page_reasoning">Reasoning</string>
   <string name="setting_provider_page_response_api">Response API</string>
   <string name="setting_provider_page_response_api_warning">Response API is OpenAI\'s next-generation API. Most providers do not support it. If you don\'t know what this is, don\'t enable it.</string>
-  <string name="setting_provider_page_save_success">Save successful</string>
   <string name="setting_provider_page_scan_error">Error: %s</string>
   <string name="setting_provider_page_scan_qr_code">Scan QR Code</string>
   <string name="setting_provider_page_select_all">Select All (%1$d)</string>
@@ -1060,7 +1059,7 @@
   <string name="stats_page_dow_wed">Wed</string>
   <string name="stats_page_heatmap_less">Less</string>
   <string name="stats_page_heatmap_more">More</string>
-  <string name="stats_page_heatmap_title">Chat Heatmap</string>
+  <string name="stats_page_heatmap_title">Message Count Heatmap</string>
   <string name="stats_page_input_tokens">Input Tokens</string>
   <string name="stats_page_launch_count">App Launch Count</string>
   <string name="stats_page_output_tokens">Output Tokens</string>
@@ -1263,6 +1262,8 @@
   <string name="request_intercept_dialog_title">[Debug] Outgoing network request:</string>
   <string name="request_intercept_cancel">Cancel</string>
   <string name="request_intercept_confirm">Send</string>
+  <string name="log_page_preview_string">Preview String</string>
+  <string name="log_page_enable_markdown_rendering">Enable Markdown Rendering</string>
   <string name="backup_page_import_failed_detail">Import failed: %1$s</string>
   <string name="backup_page_export_failed_detail">Export failed: %1$s</string>
   <string name="backup_page_rikkahub_format">RikkaHub-like format</string>

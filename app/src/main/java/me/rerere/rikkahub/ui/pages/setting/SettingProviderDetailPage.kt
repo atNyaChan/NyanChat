@@ -113,6 +113,7 @@ import me.rerere.rikkahub.ui.components.ui.Tag
 import me.rerere.rikkahub.ui.components.ui.TagType
 import me.rerere.rikkahub.ui.components.ui.rememberShareSheetState
 import me.rerere.rikkahub.ui.context.LocalNavController
+import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.hooks.useEditState
 import me.rerere.rikkahub.ui.pages.assistant.detail.CustomBodies
@@ -120,6 +121,7 @@ import me.rerere.rikkahub.ui.pages.assistant.detail.CustomHeaders
 import me.rerere.rikkahub.ui.pages.setting.components.ProviderConfigure
 import me.rerere.rikkahub.ui.pages.setting.components.ProviderConnectionTester
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
@@ -204,10 +206,6 @@ fun SettingProviderDetailSheet(
             }
         )
         vm.updateSettings(newSettings)
-        toaster.show(
-            context.getString(R.string.setting_provider_page_save_success),
-            type = ToastType.Success,
-        )
         onDismiss()
     }
 
@@ -437,6 +435,7 @@ fun SettingProviderDetailSheet(
 
     if (showDeleteDialog) {
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { showDeleteDialog = false },
             title = {
                 Text(stringResource(R.string.confirm_delete))
@@ -812,7 +811,10 @@ private fun ProviderConfigTogglesCardGroup(
                                     label = { Text(stringResource(R.string.setting_provider_page_balance_json_key)) },
                                     isError = !isJsonExprValid(provider.balanceOption.resultPath),
                                     modifier = Modifier.fillMaxWidth(),
-                                    textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = JetbrainsMono)
+                                    textStyle = MaterialTheme.typography.bodySmall.copy(
+                                        fontFamily = JetbrainsMono,
+                                        fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+                                    )
                                 )
                             }
                         },
@@ -973,7 +975,10 @@ private fun GoogleServiceAccountFields(
         modifier = Modifier.fillMaxWidth(),
         maxLines = 6,
         minLines = 3,
-        textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = JetbrainsMono),
+        textStyle = MaterialTheme.typography.bodySmall.copy(
+            fontFamily = JetbrainsMono,
+            fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+        ),
         visualTransformation = if (privateKeyVisible) VisualTransformation.None else PasswordVisualTransformation(),
         trailingIcon = {
             IconButton(onClick = { privateKeyVisible = !privateKeyVisible }) {
@@ -1619,6 +1624,7 @@ private fun ModelSettingsForm(
 
     migrationTarget?.let { targetModel ->
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { migrationTarget = null },
             title = { Text(stringResource(R.string.setting_provider_page_migrate_id_confirm_title)) },
             text = {
@@ -1666,6 +1672,7 @@ private fun ModelSettingsForm(
             )
         )
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { showDeleteDialog = false },
             title = {
                 Text(stringResource(R.string.setting_provider_page_delete_model))

@@ -41,7 +41,9 @@ import me.rerere.rikkahub.ui.components.webview.WEB_VIEW_BASE_URL
 import me.rerere.rikkahub.ui.components.webview.WebView
 import me.rerere.rikkahub.ui.components.webview.WebViewContentCache
 import me.rerere.rikkahub.ui.components.webview.rememberWebViewState
+import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -174,7 +176,9 @@ fun WebViewPage(url: String, contentId: String) {
                             Text(
                                 text = "${message.messageLevel().name}: ${message.message()}\n" +
                                     "Source: ${message.sourceId()}:${message.lineNumber()}",
-                                style = MaterialTheme.typography.bodySmall,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+                                ),
                                 fontFamily = JetbrainsMono,
                                 modifier = Modifier
                                     .fillMaxWidth()

@@ -4,6 +4,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
@@ -18,6 +19,7 @@ fun BackupDialog(
     exporting: Boolean = false,
 ) {
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = {},
         title = {
             Text(
@@ -58,6 +60,7 @@ fun RestoreWarningDialog(
     if (!show) return
 
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.backup_page_restore_warning_title)) },
         text = { Text(stringResource(R.string.backup_page_restore_warning_desc)) },

@@ -10,6 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -74,6 +75,7 @@ fun SystemErrorDialog(toaster: SystemToaster) {
     val message = toaster.errorMessage ?: return
     val context = LocalContext.current
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = toaster::dismissError,
         title = { Text(stringResource(R.string.common_error)) },
         text = {

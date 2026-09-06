@@ -574,6 +574,12 @@ object ModelRegistry {
         tokens("qwen", "mt")
     }
 
+    val FABLE = defineModel {
+        tokens("fable")
+        visionInput()
+        toolReasoningAbility()
+    }
+
     private val ALL_MODELS = listOf(
         GPT4O,
         GPT_4_1,
@@ -666,7 +672,8 @@ object ModelRegistry {
         LONGCAT_2,
         MUSE_SPARK,
         MUSE_GLIMMER,
-        QWEN_MT
+        QWEN_MT,
+        FABLE
     )
 
     val MODEL_INPUT_MODALITIES = ModelData { modelId ->

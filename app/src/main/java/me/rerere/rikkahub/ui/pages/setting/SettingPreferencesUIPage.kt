@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
@@ -1136,6 +1137,7 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
 
     if (proxyDialogVisible) {
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { proxyDialogVisible = false },
             modifier = Modifier.imePadding(),
             title = {

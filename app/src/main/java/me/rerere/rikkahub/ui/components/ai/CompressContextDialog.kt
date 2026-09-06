@@ -53,6 +53,7 @@ fun CompressContextDialog(
     }
 
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = {
             if (!isLoading) {
                 onDismiss()

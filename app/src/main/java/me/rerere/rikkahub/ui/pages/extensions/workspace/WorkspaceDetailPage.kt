@@ -401,6 +401,7 @@ fun WorkspaceDetailPage(id: String) {
 
     installError?.let { message ->
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = vm::dismissInstallError,
             title = { Text(stringResource(R.string.workspace_detail_rootfs_install_failed)) },
             text = { Text(message) },
@@ -414,6 +415,7 @@ fun WorkspaceDetailPage(id: String) {
 
     installProgress?.let { progress ->
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {},
             title = { Text(stringResource(R.string.workspace_detail_installing_rootfs)) },
             text = { RootfsProgress(progress) },
@@ -449,6 +451,7 @@ fun WorkspaceDetailPage(id: String) {
             mutableStateOf(state.workspace?.name.orEmpty())
         }
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { showRenameDialog = false },
             title = { Text(stringResource(R.string.workspace_page_rename)) },
             text = {
@@ -536,6 +539,7 @@ private fun CreateWorkspaceFolderDialog(
     }
 
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.chat_page_create_folder)) },
         text = {
@@ -784,6 +788,7 @@ private fun InstallRootfsDialog(
     var url by rememberSaveable(workspace.id) { mutableStateOf(DEFAULT_ROOTFS_URL) }
 
     AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.workspace_detail_install_rootfs)) },
         text = {

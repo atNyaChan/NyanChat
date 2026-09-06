@@ -75,6 +75,7 @@ import me.rerere.hugeicons.stroke.Tick01
 import me.rerere.rikkahub.ui.components.table.DataTable
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.utils.toDp
 import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
 import org.intellij.markdown.html.HtmlGenerator
@@ -165,12 +166,14 @@ private fun HtmlStyledElement(
 ) {
     val baseTextStyle = LocalTextStyle.current
     val density = LocalDensity.current
-    val elementStyle = remember(element.attr("style"), density, baseTextStyle) {
+    val codeFontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings
+    val elementStyle = remember(element.attr("style"), density, baseTextStyle, codeFontFeatureSettings) {
         element.attr("style").takeIf { it.isNotBlank() }?.let {
             parseBlockTextStyle(
                 style = it,
                 density = density,
                 baseTextStyle = baseTextStyle,
+                codeFontFeatureSettings = codeFontFeatureSettings,
             )
         }
     }
@@ -298,12 +301,14 @@ private fun HtmlParagraph(
 ) {
     val baseTextStyle = LocalTextStyle.current
     val density = LocalDensity.current
-    val paragraphStyle = remember(element.attr("style"), density, baseTextStyle) {
+    val codeFontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings
+    val paragraphStyle = remember(element.attr("style"), density, baseTextStyle, codeFontFeatureSettings) {
         element.attr("style").takeIf { it.isNotBlank() }?.let {
             parseBlockTextStyle(
                 style = it,
                 density = density,
                 baseTextStyle = baseTextStyle,
+                codeFontFeatureSettings = codeFontFeatureSettings,
             )
         }
     }
@@ -575,6 +580,7 @@ private fun HtmlBlockquote(element: Element, onClickCitation: (String) -> Unit) 
 @Composable
 private fun HtmlMathBlock(formula: String) {
     val enableLatexRendering = LocalSettings.current.displaySetting.enableLatexRendering
+    val enableCodeLigatures = LocalSettings.current.displaySetting.enableCodeLigatures
     if (enableLatexRendering) {
         MathBlock(
             latex = formula,
@@ -589,6 +595,9 @@ private fun HtmlMathBlock(formula: String) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
+            style = LocalTextStyle.current.copy(
+                fontFeatureSettings = enableCodeLigatures.codeFontFeatureSettings,
+            ),
         )
     }
 }
@@ -871,11 +880,7 @@ private fun AnnotatedString.Builder.appendHtmlInlineElement(
     boldFontWeight: FontWeight,
     onClickCitation: (String) -> Unit,
 ) {
-    val codeFontFeatureSettings = if (enableCodeLigatures) {
-        "\"liga\", \"calt\""
-    } else {
-        "\"liga\" 0, \"calt\" 0"
-    }
+    val codeFontFeatureSettings = enableCodeLigatures.codeFontFeatureSettings
     val cssStyle = element.attr("style").takeIf { it.isNotBlank() }?.let {
         parseInlineSpanStyle(
             style = it,
@@ -1018,7 +1023,13 @@ private fun AnnotatedString.Builder.appendHtmlInlineElement(
                         ),
                     )
                 } else {
-                    withStyle(SpanStyle(fontFamily = FontFamily.Monospace, fontSize = 0.95.em)) {
+                    withStyle(
+                        SpanStyle(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 0.95.em,
+                            fontFeatureSettings = enableCodeLigatures.codeFontFeatureSettings,
+                        )
+                    ) {
                         append(formula)
                     }
                 }
@@ -1032,6 +1043,7 @@ private fun AnnotatedString.Builder.appendHtmlInlineElement(
                 element = element,
                 density = density,
                 baseFontSize = style.fontSize,
+                codeFontFeatureSettings = codeFontFeatureSettings,
             )
             if (inlineStyle != null) {
                 appendStyledChildren(inlineStyle)
@@ -1063,6 +1075,7 @@ private fun buildFontTagStyle(
     element: Element,
     density: Density,
     baseFontSize: TextUnit,
+    codeFontFeatureSettings: String? = null,
 ): SpanStyle? {
     val color = element.attr("color").takeIf { it.isNotBlank() }?.let(::parseColor)
     val styleAttr = element.attr("style").takeIf { it.isNotBlank() }?.let {
@@ -1070,6 +1083,7 @@ private fun buildFontTagStyle(
             style = it,
             density = density,
             baseFontSize = baseFontSize,
+            codeFontFeatureSettings = codeFontFeatureSettings,
         )
     }
     val sizeAttr = element.attr("size").takeIf { it.isNotBlank() }?.let {
@@ -1093,6 +1107,7 @@ private fun parseInlineSpanStyle(
     style: String,
     density: Density,
     baseFontSize: TextUnit,
+    codeFontFeatureSettings: String? = null,
 ): SpanStyle? {
     val properties = parseCssDeclarations(style)
 
@@ -1129,7 +1144,12 @@ private fun parseInlineSpanStyle(
 
     properties["font-family"]?.let { value ->
         parseFontFamily(value)?.let {
-            spanStyle = spanStyle.merge(SpanStyle(fontFamily = it))
+            val familyStyle = if (it == FontFamily.Monospace && codeFontFeatureSettings != null) {
+                SpanStyle(fontFamily = it, fontFeatureSettings = codeFontFeatureSettings)
+            } else {
+                SpanStyle(fontFamily = it)
+            }
+            spanStyle = spanStyle.merge(familyStyle)
             hasStyle = true
         }
     }
@@ -1178,6 +1198,7 @@ private fun parseBlockTextStyle(
     style: String,
     density: Density,
     baseTextStyle: TextStyle,
+    codeFontFeatureSettings: String? = null,
 ): TextStyle? {
     val properties = parseCssDeclarations(style)
 
@@ -1185,6 +1206,7 @@ private fun parseBlockTextStyle(
         style = style,
         density = density,
         baseFontSize = baseTextStyle.fontSize,
+        codeFontFeatureSettings = codeFontFeatureSettings,
     )
 
     var hasStyle = inlineStyle != null
@@ -1194,6 +1216,7 @@ private fun parseBlockTextStyle(
         fontWeight = inlineStyle?.fontWeight,
         fontStyle = inlineStyle?.fontStyle,
         fontFamily = inlineStyle?.fontFamily,
+        fontFeatureSettings = inlineStyle?.fontFeatureSettings,
         letterSpacing = inlineStyle?.letterSpacing ?: TextUnit.Unspecified,
         background = inlineStyle?.background ?: Color.Unspecified,
         textDecoration = inlineStyle?.textDecoration,
