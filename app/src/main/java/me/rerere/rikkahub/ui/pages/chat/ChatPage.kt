@@ -80,6 +80,7 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.getCurrentAssistant
 import me.rerere.rikkahub.data.datastore.getCurrentChatModel
+import me.rerere.rikkahub.data.datastore.getSelectedASRProvider
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.ai.transformers.DocumentAsPromptTransformer
 import me.rerere.rikkahub.data.model.Assistant
@@ -167,6 +168,8 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
             drawerState.close()
         }
     }
+
+    val startVoiceMode = rememberVoiceModeStarter(vm, setting)
 
     val inputState = vm.inputState
     val hazeState = rememberHazeState()
@@ -325,6 +328,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
                 }
             ) {
                 ChatPageContent(
+                    onStartVoiceMode = startVoiceMode,
                     inputState = inputState,
                     requestWordCount = requestWordCount,
                     requestToolCount = cachedRequestToolCount,
@@ -364,6 +368,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
                 }
             ) {
                 ChatPageContent(
+                    onStartVoiceMode = startVoiceMode,
                     inputState = inputState,
                     requestWordCount = requestWordCount,
                     requestToolCount = cachedRequestToolCount,
@@ -395,6 +400,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
 
 @Composable
 private fun ChatPageContent(
+    onStartVoiceMode: () -> Unit,
     inputState: ChatInputState,
     requestWordCount: Int?,
     requestToolCount: Int,
@@ -477,8 +483,18 @@ private fun ChatPageContent(
                 )
             },
             bottomBar = {
+                val messageQueue by vm.messageQueue.collectAsStateWithLifecycle()
+                val voiceState by vm.voiceSession.state.collectAsStateWithLifecycle()
                 ChatInput(
+                    onStartVoiceMode = onStartVoiceMode,
+                    voiceState = voiceState,
+                    onStopVoiceMode = vm.voiceSession::stop,
                     state = inputState,
+                    messageQueue = messageQueue,
+                    onRemoveQueuedMessage = vm::removeQueuedMessage,
+                    onBeginEditQueuedMessage = vm::beginEditQueuedMessage,
+                    onFinishEditQueuedMessage = vm::finishEditQueuedMessage,
+                    onResumeMessageQueue = vm::resumeMessageQueue,
                     requestWordCount = requestWordCount,
                     requestToolCount = requestToolCount,
                     requestFileCount = requestFileCount,
@@ -554,6 +570,7 @@ private fun ChatPageContent(
                             conversation = conversation,
                             assistant = assistant,
                             vm = vm,
+                            onStartVoiceMode = onStartVoiceMode,
                             onRequestStatsRefresh = onRequestWordCountRefresh,
                             onCollapse = {
                                 filesExpanded = false
@@ -656,12 +673,16 @@ private fun ChatFilesPanel(
     conversation: Conversation,
     assistant: Assistant,
     vm: ChatVM,
+    onStartVoiceMode: () -> Unit,
     onRequestStatsRefresh: () -> Unit,
     onCollapse: () -> Unit,
 ) {
     val context = LocalContext.current
     val toaster = LocalToaster.current
     val filesManager: FilesManager = koinInject()
+    val voiceState by vm.voiceSession.state.collectAsStateWithLifecycle()
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
     var showInjectionSheet by remember { mutableStateOf(false) }
     var showCompressDialog by remember { mutableStateOf(false) }
 
@@ -864,6 +885,17 @@ private fun ChatFilesPanel(
         onPickVideo = { videoPickerLauncher.launch("video/*") },
         onPickAudio = { audioPickerLauncher.launch("audio/*") },
         onPickFile = { filePickerLauncher.launch(arrayOf("*/*")) },
+        onStartVoiceMode = if (
+            setting.getSelectedASRProvider()?.supportsServerVadVoiceMode == true &&
+            voiceState.phase == VoicePhase.Off
+        ) {
+            {
+                dismissAll()
+                focusManager.clearFocus(force = true)
+                keyboardController?.hide()
+                onStartVoiceMode()
+            }
+        } else null,
     )
 }
 

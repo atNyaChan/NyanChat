@@ -45,6 +45,7 @@ import me.rerere.hugeicons.stroke.Package
 import me.rerere.hugeicons.stroke.Package01
 import me.rerere.hugeicons.stroke.Settings02
 import me.rerere.hugeicons.stroke.Video01
+import me.rerere.hugeicons.stroke.Voice
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.ai.mcp.McpManager
@@ -87,6 +88,7 @@ internal fun FilesPicker(
     onPickVideo: () -> Unit,
     onPickAudio: () -> Unit,
     onPickFile: () -> Unit,
+    onStartVoiceMode: (() -> Unit)? = null,
 ) {
     val settings = LocalSettings.current
     val provider = settings.getCurrentChatModel()?.findProvider(providers = settings.providers)
@@ -117,6 +119,7 @@ internal fun FilesPicker(
                 onPickVideo = onPickVideo,
                 onPickAudio = onPickAudio,
                 onPickFile = onPickFile,
+                onStartVoiceMode = onStartVoiceMode,
             )
         }
 
@@ -490,6 +493,7 @@ private fun CardGroupScope.photoButtonItems(
     onPickVideo: () -> Unit,
     onPickAudio: () -> Unit,
     onPickFile: () -> Unit,
+    onStartVoiceMode: (() -> Unit)? = null,
 ) {
     item(onClick = onTakePic) {
         BigIconTextButton(
@@ -522,6 +526,14 @@ private fun CardGroupScope.photoButtonItems(
             icon = { Icon(HugeIcons.Files02, null) },
             text = { Text(stringResource(R.string.file)) },
         )
+    }
+    onStartVoiceMode?.let { start ->
+        item(onClick = start) {
+            BigIconTextButton(
+                icon = { Icon(HugeIcons.Voice, null) },
+                text = { Text(stringResource(R.string.chat_page_voice_title)) },
+            )
+        }
     }
 }
 
