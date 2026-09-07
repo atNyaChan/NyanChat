@@ -33,11 +33,8 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlinx.serialization.json.jsonObject
 import me.rerere.ai.core.MessageRole
 import me.rerere.ai.core.ReasoningLevel
-import me.rerere.ai.core.Tool
-import me.rerere.ai.provider.BuiltInTools
 import me.rerere.ai.provider.Model
 import me.rerere.ai.provider.ModelAbility
 import me.rerere.ai.provider.ProviderManager
@@ -55,15 +52,12 @@ import me.rerere.common.android.Logging
 import me.rerere.rikkahub.AppScope
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.ai.GenerationChunk
-import me.rerere.rikkahub.data.ai.GenerationHandler
+import me.rerere.rikkahub.data.ai.GenerationLoop
 import me.rerere.rikkahub.data.ai.TranslationHandler
 import me.rerere.rikkahub.data.ai.mcp.McpManager
-import me.rerere.rikkahub.data.ai.tools.createConversationTools
-import me.rerere.rikkahub.data.ai.tools.local.LocalTools
-import me.rerere.rikkahub.data.ai.tools.createSearchTools
-import me.rerere.rikkahub.data.ai.tools.createSkillTools
-import me.rerere.rikkahub.data.ai.tools.createWorkspaceTools
-import me.rerere.rikkahub.data.files.SkillManager
+import me.rerere.rikkahub.data.ai.tools.ChatToolFactory
+import me.rerere.rikkahub.data.ai.tools.InvalidMcpServerNamesException
+import me.rerere.rikkahub.data.ai.tools.shouldUseExternalWebSearch
 import me.rerere.rikkahub.data.ai.transformers.Base64ImageToLocalFileTransformer
 import me.rerere.rikkahub.data.ai.transformers.DocumentAsPromptTransformer
 import me.rerere.rikkahub.data.ai.transformers.OcrTransformer
@@ -98,7 +92,6 @@ import me.rerere.rikkahub.web.BadRequestException
 import me.rerere.rikkahub.web.NotFoundException
 import me.rerere.rikkahub.utils.applyPlaceholders
 import me.rerere.rikkahub.utils.wordCount
-import me.rerere.workspace.WorkspaceShellStatus
 import java.time.Instant
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
@@ -116,11 +109,6 @@ internal fun backgroundTextGenerationParams(
     customHeaders = model.customHeaders,
     customBody = model.customBodies,
 )
-
-internal fun shouldUseExternalWebSearch(assistant: Assistant, model: Model): Boolean {
-    val builtInSearchActive = assistant.useBuiltInSearch && BuiltInTools.Search in model.tools
-    return assistant.enableWebSearch && !builtInSearchActive
-}
 
 internal fun createForkConversation(
     source: Conversation,
@@ -180,14 +168,13 @@ class ChatService(
     private val settingsStore: SettingsStore,
     private val conversationRepo: ConversationRepository,
     private val memoryRepository: MemoryRepository,
-    private val generationHandler: GenerationHandler,
+    private val generationLoop: GenerationLoop,
     private val translationHandler: TranslationHandler,
     private val templateTransformer: TemplateTransformer,
     private val providerManager: ProviderManager,
-    private val localTools: LocalTools,
+    private val chatToolFactory: ChatToolFactory,
     val mcpManager: McpManager,
     private val filesManager: FilesManager,
-    private val skillManager: SkillManager,
     private val workspaceRepository: WorkspaceRepository,
     private val folderRepository: FolderRepository,
 ) {
@@ -478,12 +465,17 @@ class ChatService(
         } else {
             currentMessages
         }
-        val tools = buildRequestTools(settings, assistant, model, conversation)
+        val tools = chatToolFactory.createTools(
+            settings = settings,
+            assistant = assistant,
+            model = model,
+            workspaceCwd = conversation.workspaceCwd,
+        )
         // 内置工具只计入实际会传给模型的部分（受“模型内置搜索”开关与提供商支持情况限制）
         val builtInToolCount = model.findProvider(settings.providers)
             ?.let { chatRequestBuiltInTools(model, it, assistant.useBuiltInSearch).size }
             ?: 0
-        val wordCount = generationHandler.prepareRequestMessages(
+        val wordCount = generationLoop.prepareRequestMessages(
             settings = settings,
             model = model,
             messages = messages,
@@ -524,68 +516,9 @@ class ChatService(
         }
         return RequestContextStats(
             wordCount = wordCount,
-            toolCount = tools.size + builtInToolCount + if (assistant.enableMemory) 1 else 0,
+            toolCount = tools.size + builtInToolCount,
             fileCount = fileCount,
         )
-    }
-
-    private suspend fun buildRequestTools(
-        settings: Settings,
-        assistant: Assistant,
-        model: Model,
-        conversation: Conversation,
-    ): List<Tool> = buildList {
-        if (shouldUseExternalWebSearch(assistant, model)) {
-            addAll(createSearchTools(settings))
-        }
-        addAll(
-            localTools.getTools(
-                options = assistant.localTools,
-                manualAuthorizationTools = assistant.manualAuthorizationTools,
-            )
-        )
-        if (assistant.enableRecentChatsReference) {
-            addAll(createConversationTools(conversationRepo, assistant.id))
-        }
-        addAll(createWorkspaceToolsIfReady(assistant.workspaceId?.toString(), conversation.workspaceCwd))
-        if (assistant.enabledSkills.isNotEmpty()) {
-            addAll(
-                createSkillTools(
-                    enabledSkills = assistant.enabledSkills,
-                    allSkills = skillManager.listSkills(),
-                )
-            )
-        }
-        mcpManager.getAllAvailableTools().also { allTools ->
-            val invalidNames = allTools
-                .map { it.second }
-                .distinct()
-                .filter { name ->
-                    name.isEmpty() || !name.all {
-                        it in 'a'..'z' || it in 'A'..'Z' || it in '0'..'9'
-                    }
-                }
-            if (invalidNames.isNotEmpty()) {
-                error(
-                    context.getString(
-                        R.string.error_mcp_invalid_server_name,
-                        invalidNames.joinToString(", ")
-                    )
-                )
-            }
-        }.forEach { (serverId, serverName, tool) ->
-            add(
-                Tool(
-                    name = "mcp__${serverName}__${tool.name}",
-                    description = tool.description ?: "",
-                    parameters = { tool.inputSchema },
-                    needsApproval = { tool.needsApproval },
-                    execute = {
-                        mcpManager.callTool(serverId, tool.name, it.jsonObject)
-                    },
-                )
-            )
-        }
     }
 
     // ---- 重新生成消息 ----
@@ -743,6 +676,27 @@ class ChatService(
         }
         val activePendingResponse = pendingResponse ?: UIMessage.assistant("")
         val useExternalWebSearch = shouldUseExternalWebSearch(assistant, model)
+        val conversationBeforeToolBuild = getConversationFlow(conversationId).value
+
+        val tools = try {
+            chatToolFactory.createTools(
+                settings = settings,
+                assistant = assistant,
+                model = model,
+                workspaceCwd = conversationBeforeToolBuild.workspaceCwd,
+            )
+        } catch (error: InvalidMcpServerNamesException) {
+            addError(
+                error = IllegalStateException(
+                    context.getString(
+                        R.string.error_mcp_invalid_server_name,
+                        error.names.joinToString(", "),
+                    )
+                ),
+                conversationId = conversationId,
+            )
+            return false
+        }
 
         return runCatching {
 
@@ -787,7 +741,7 @@ class ChatService(
                 }
             }
             val responseMessageIndex = requestMessages.size
-            generationHandler.generateText(
+            generationLoop.generateText(
                 settings = settings,
                 model = model,
                 processingStatus = session.processingStatus,
@@ -809,7 +763,7 @@ class ChatService(
                     add(workspaceReminderTransformer)
                 },
                 outputTransformers = outputTransformers,
-                tools = buildRequestTools(settings, assistant, model, conversation),
+                tools = tools,
             ).onCompletion { cause ->
                 // 只有生成流正常完成时才允许保留 API 返回的空助手消息；取消、断网或其他异常
                 // 都会移除尚无内容的临时消息。取消状态下保存必须放进 NonCancellable。
@@ -929,19 +883,6 @@ class ChatService(
             )
         }
         return copy(messageNodes = updatedNodes)
-    }
-
-    private suspend fun createWorkspaceToolsIfReady(workspaceId: String?, cwd: String? = null): List<Tool> {
-        if (workspaceId.isNullOrBlank()) return emptyList()
-        val workspace = workspaceRepository.getById(workspaceId) ?: return emptyList()
-        if (workspace.shellStatus != WorkspaceShellStatus.READY.name) {
-            Log.d(
-                TAG,
-                "createWorkspaceToolsIfReady: skip workspace tools, workspace=$workspaceId, status=${workspace.shellStatus}"
-            )
-            return emptyList()
-        }
-        return createWorkspaceTools(workspaceId, workspaceRepository, cwd)
     }
 
     // ---- 检查无效消息 ----
