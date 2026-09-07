@@ -210,6 +210,7 @@
   <string name="backup_page_restart_desc">应用需要重启以使设置生效。</string>
   <string name="backup_page_restore">恢复</string>
   <string name="backup_page_restore_failed">恢复失败: %s</string>
+  <string name="backup_page_restore_failed_preserved">备份恢复失败，已保留原数据。请重新导入备份。</string>
   <string name="backup_page_restore_now">恢复</string>
   <string name="backup_page_restore_success">恢复成功</string>
   <string name="backup_page_restore_warning_title">覆盖现有数据？</string>
@@ -528,6 +529,9 @@
   <string name="search_page_sort_newest">最新优先</string>
   <string name="search_page_sort_oldest">最旧优先</string>
   <string name="search_page_sort_relevance">相关性</string>
+  <string name="search_page_scope">搜索范围</string>
+  <string name="search_page_scope_current_assistant">当前助手</string>
+  <string name="search_page_scope_all_assistants">全部助手</string>
   <string name="search_page_mode">搜索方式</string>
   <string name="search_page_mode_title">仅匹配标题</string>
   <string name="search_page_mode_exact">精准匹配</string>

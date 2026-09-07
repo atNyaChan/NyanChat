@@ -210,6 +210,7 @@
   <string name="backup_page_restart_desc">應用需要重啟以使設置生效。</string>
   <string name="backup_page_restore">恢復</string>
   <string name="backup_page_restore_failed">恢復失敗: %s</string>
+  <string name="backup_page_restore_failed_preserved">備份恢復失敗，已保留原資料。請重新匯入備份。</string>
   <string name="backup_page_restore_now">恢復</string>
   <string name="backup_page_restore_success">恢復成功</string>
   <string name="backup_page_restore_warning_title">覆蓋現有資料？</string>
@@ -528,6 +529,9 @@
   <string name="search_page_sort_newest">最新優先</string>
   <string name="search_page_sort_oldest">最舊優先</string>
   <string name="search_page_sort_relevance">相關性</string>
+  <string name="search_page_scope">搜尋範圍</string>
+  <string name="search_page_scope_current_assistant">目前助手</string>
+  <string name="search_page_scope_all_assistants">全部助手</string>
   <string name="search_page_mode">搜尋方式</string>
   <string name="search_page_mode_title">僅比對標題</string>
   <string name="search_page_mode_exact">精確比對</string>

@@ -84,9 +84,10 @@ class MessageFtsManager(private val database: AppDatabase) {
         mode: MessageSearchMode = MessageSearchMode.FUZZY,
         limit: Int = 50,
         offset: Int = 0,
+        assistantId: String? = null,
     ): List<MessageSearchResult> = withContext(Dispatchers.IO) {
         if (mode != MessageSearchMode.FUZZY) {
-            return@withContext searchExact(keyword, sort, mode, limit, offset)
+            return@withContext searchExact(keyword, sort, mode, limit, offset, assistantId)
         }
         val terms = keyword.split(Regex("\\s+")).filter(String::isNotEmpty)
         if (terms.isEmpty()) return@withContext emptyList()
@@ -99,9 +100,10 @@ class MessageFtsManager(private val database: AppDatabase) {
             SELECT node_id, message_id, conversation_id, title, update_at, text
             FROM message_search_cache
             WHERE instr(text, ?) > 0
+            ${assistantFilter(assistantId)}
             ORDER BY $orderBy
             """.trimIndent(),
-            arrayOf(terms.first())
+            sqlArgs(terms.first(), assistantId),
         )
         val matches = buildList {
             cursor.use {
@@ -136,6 +138,7 @@ class MessageFtsManager(private val database: AppDatabase) {
         sort: MessageSearchSort = MessageSearchSort.NEWEST_FIRST,
         limit: Int = 50,
         offset: Int = 0,
+        assistantId: String? = null,
     ): List<MessageSearchResult> = withContext(Dispatchers.IO) {
         val orderBy = when (sort) {
             MessageSearchSort.RELEVANCE, MessageSearchSort.NEWEST_FIRST -> "c.update_at DESC"
@@ -149,10 +152,11 @@ class MessageFtsManager(private val database: AppDatabase) {
                  json_each(mn.messages) j
             WHERE json_extract(j.value, '$.role') = 'assistant'
               AND json_extract(j.value, '$.modelId') = ?
+              ${conversationAssistantFilter(assistantId)}
             ORDER BY $orderBy
             LIMIT ? OFFSET ?
             """.trimIndent(),
-            arrayOf<Any?>(modelId.toString(), limit, offset),
+            sqlArgs(modelId.toString(), assistantId, limit, offset),
         )
         buildList {
             cursor.use {
@@ -173,27 +177,34 @@ class MessageFtsManager(private val database: AppDatabase) {
         }
     }
 
-    suspend fun countByModel(modelId: Uuid): Int = withContext(Dispatchers.IO) {
+    suspend fun countByModel(modelId: Uuid, assistantId: String? = null): Int = withContext(Dispatchers.IO) {
         val cursor = db.query(
             """
             SELECT COUNT(*)
-            FROM message_node mn, json_each(mn.messages) j
+            FROM message_node mn
+            JOIN conversationentity c ON c.id = mn.conversation_id,
+                 json_each(mn.messages) j
             WHERE json_extract(j.value, '$.role') = 'assistant'
               AND json_extract(j.value, '$.modelId') = ?
+              ${conversationAssistantFilter(assistantId)}
             """.trimIndent(),
-            arrayOf(modelId.toString()),
+            sqlArgs(modelId.toString(), assistantId),
         )
         cursor.use { if (it.moveToFirst()) it.getInt(0) else 0 }
     }
 
-    suspend fun getUsedModelIds(): List<Uuid> = withContext(Dispatchers.IO) {
+    suspend fun getUsedModelIds(assistantId: String? = null): List<Uuid> = withContext(Dispatchers.IO) {
         val cursor = db.query(
             """
             SELECT DISTINCT json_extract(j.value, '$.modelId')
-            FROM message_node mn, json_each(mn.messages) j
+            FROM message_node mn
+            JOIN conversationentity c ON c.id = mn.conversation_id,
+                 json_each(mn.messages) j
             WHERE json_extract(j.value, '$.role') = 'assistant'
               AND json_extract(j.value, '$.modelId') IS NOT NULL
-            """.trimIndent()
+              ${conversationAssistantFilter(assistantId)}
+            """.trimIndent(),
+            if (assistantId != null) arrayOf(assistantId) else emptyArray(),
         )
         buildList {
             cursor.use {
@@ -208,6 +219,7 @@ class MessageFtsManager(private val database: AppDatabase) {
         sort: MessageSearchSort = MessageSearchSort.NEWEST_FIRST,
         limit: Int = 50,
         offset: Int = 0,
+        assistantId: String? = null,
     ): List<MessageSearchResult> = withContext(Dispatchers.IO) {
         val orderBy = when (sort) {
             MessageSearchSort.RELEVANCE, MessageSearchSort.NEWEST_FIRST -> "c.update_at DESC"
@@ -221,10 +233,11 @@ class MessageFtsManager(private val database: AppDatabase) {
                  json_each(mn.messages) j
             WHERE json_extract(j.value, '$.role') = 'assistant'
               AND json_extract(j.value, '$.modelId') IS NULL
+              ${conversationAssistantFilter(assistantId)}
             ORDER BY $orderBy
             LIMIT ? OFFSET ?
             """.trimIndent(),
-            arrayOf(limit, offset),
+            sqlArgs(assistantId, limit, offset),
         )
         buildList {
             cursor.use {
@@ -245,14 +258,18 @@ class MessageFtsManager(private val database: AppDatabase) {
         }
     }
 
-    suspend fun countManuallyEdited(): Int = withContext(Dispatchers.IO) {
+    suspend fun countManuallyEdited(assistantId: String? = null): Int = withContext(Dispatchers.IO) {
         val cursor = db.query(
             """
             SELECT COUNT(*)
-            FROM message_node mn, json_each(mn.messages) j
+            FROM message_node mn
+            JOIN conversationentity c ON c.id = mn.conversation_id,
+                 json_each(mn.messages) j
             WHERE json_extract(j.value, '$.role') = 'assistant'
               AND json_extract(j.value, '$.modelId') IS NULL
-            """.trimIndent()
+              ${conversationAssistantFilter(assistantId)}
+            """.trimIndent(),
+            if (assistantId != null) arrayOf(assistantId) else emptyArray(),
         )
         cursor.use { if (it.moveToFirst()) it.getInt(0) else 0 }
     }
@@ -262,21 +279,24 @@ class MessageFtsManager(private val database: AppDatabase) {
         sort: MessageSearchSort = MessageSearchSort.NEWEST_FIRST,
         limit: Int = 50,
         offset: Int = 0,
+        assistantId: String? = null,
     ): List<MessageSearchResult> = withContext(Dispatchers.IO) {
-        loadAttachmentMessages(state, sort).drop(offset).take(limit)
+        loadAttachmentMessages(state, sort, assistantId).drop(offset).take(limit)
     }
 
-    suspend fun countByAttachmentState(state: MessageAttachmentState): Int = withContext(Dispatchers.IO) {
-        loadAttachmentMessages(state, MessageSearchSort.NEWEST_FIRST).size
+    suspend fun countByAttachmentState(state: MessageAttachmentState, assistantId: String? = null): Int =
+        withContext(Dispatchers.IO) {
+        loadAttachmentMessages(state, MessageSearchSort.NEWEST_FIRST, assistantId).size
     }
 
-    suspend fun countSearch(keyword: String, mode: MessageSearchMode): Int = withContext(Dispatchers.IO) {
+    suspend fun countSearch(keyword: String, mode: MessageSearchMode, assistantId: String? = null): Int =
+        withContext(Dispatchers.IO) {
         if (mode == MessageSearchMode.FUZZY) {
             val terms = keyword.split(Regex("\\s+")).filter(String::isNotEmpty)
             if (terms.isEmpty()) return@withContext 0
             val cursor = db.query(
-                "SELECT text FROM message_search_cache WHERE instr(text, ?) > 0",
-                arrayOf(terms.first()),
+                "SELECT text FROM message_search_cache WHERE instr(text, ?) > 0 ${assistantFilter(assistantId)}",
+                sqlArgs(terms.first(), assistantId),
             )
             return@withContext cursor.use {
                 var count = 0
@@ -293,12 +313,30 @@ class MessageFtsManager(private val database: AppDatabase) {
                 "COUNT(*)"
             }
             val cursor = db.query(
-                "SELECT $countTarget FROM message_search_cache WHERE instr($column, ?) > 0",
-                arrayOf(keyword),
+                "SELECT $countTarget FROM message_search_cache WHERE instr($column, ?) > 0 ${assistantFilter(assistantId)}",
+                sqlArgs(keyword, assistantId),
             )
             return@withContext cursor.use { if (it.moveToFirst()) it.getInt(0) else 0 }
         }
     }
+
+    private fun conversationAssistantFilter(assistantId: String?): String =
+        if (assistantId != null) " AND c.assistant_id = ?" else ""
+
+    private fun assistantFilter(assistantId: String?): String =
+        if (assistantId != null) {
+            """
+            AND EXISTS (
+                SELECT 1 FROM conversationentity AS conversation
+                WHERE conversation.id = message_search_cache.conversation_id
+                  AND conversation.assistant_id = ?
+            )
+            """.trimIndent()
+        } else {
+            ""
+        }
+
+    private fun sqlArgs(vararg args: Any?): Array<Any?> = args.filterNotNull().toTypedArray()
 
     private fun searchExact(
         keyword: String,
@@ -306,6 +344,7 @@ class MessageFtsManager(private val database: AppDatabase) {
         mode: MessageSearchMode,
         limit: Int,
         offset: Int,
+        assistantId: String? = null,
     ): List<MessageSearchResult> {
         val titleOnly = mode == MessageSearchMode.TITLE_ONLY
         val orderBy = when (sort) {
@@ -318,11 +357,12 @@ class MessageFtsManager(private val database: AppDatabase) {
             SELECT node_id, message_id, conversation_id, title, update_at, text
             FROM message_search_cache
             WHERE instr(${if (titleOnly) "title" else "text"}, ?) > 0
+            ${assistantFilter(assistantId)}
             $groupBy
             ORDER BY $orderBy
             LIMIT ? OFFSET ?
             """.trimIndent(),
-            arrayOf<Any?>(keyword, limit, offset),
+            sqlArgs(keyword, assistantId, limit, offset),
         )
         return buildList {
             cursor.use {
@@ -345,6 +385,7 @@ class MessageFtsManager(private val database: AppDatabase) {
     private fun loadAttachmentMessages(
         state: MessageAttachmentState,
         sort: MessageSearchSort,
+        assistantId: String? = null,
     ): List<MessageSearchResult> {
         val orderBy = when (sort) {
             MessageSearchSort.RELEVANCE, MessageSearchSort.NEWEST_FIRST -> "c.update_at DESC"
@@ -358,8 +399,10 @@ class MessageFtsManager(private val database: AppDatabase) {
                  json_each(mn.messages) message,
                  json_each(json_extract(message.value, '$.parts')) part
             WHERE json_extract(part.value, '$.url') IS NOT NULL
+            ${conversationAssistantFilter(assistantId)}
             ORDER BY $orderBy
-            """.trimIndent()
+            """.trimIndent(),
+            if (assistantId != null) arrayOf(assistantId) else emptyArray(),
         )
         return buildList {
             cursor.use {

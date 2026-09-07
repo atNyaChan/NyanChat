@@ -4,6 +4,8 @@ import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Refresh01
 import me.rerere.hugeicons.stroke.Search01
 import me.rerere.hugeicons.stroke.Sorting01
+import me.rerere.hugeicons.stroke.User
+import me.rerere.hugeicons.stroke.UserMultiple
 import me.rerere.hugeicons.stroke.ArrowLeft01
 import me.rerere.hugeicons.stroke.ArrowLeftDouble
 import me.rerere.hugeicons.stroke.ArrowRight01
@@ -171,6 +173,10 @@ fun SearchPage(initialModelId: String? = null, vm: SearchVM = koinViewModel()) {
                         onDeletedModelSearch = vm::onDeletedModelSearch,
                         onManuallyEditedMessagesSearch = vm::onManuallyEditedMessagesSearch,
                         onAttachmentSearch = vm::onAttachmentSearch,
+                    )
+                    AssistantScopeMenuButton(
+                        current = vm.searchScope,
+                        onScopeChange = vm::onSearchScopeChange,
                     )
                     SortMenuButton(
                         current = vm.sortOrder,
@@ -517,6 +523,55 @@ private fun SearchModeMenuButton(
                         },
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AssistantScopeMenuButton(
+    current: SearchScope,
+    onScopeChange: (SearchScope) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { expanded = true }) {
+            Icon(
+                when (current) {
+                    SearchScope.CURRENT_ASSISTANT -> HugeIcons.User
+                    SearchScope.ALL_ASSISTANTS -> HugeIcons.UserMultiple
+                },
+                contentDescription = stringResource(R.string.search_page_scope),
+            )
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
+        ) {
+            SearchScope.entries.forEach { scope ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            stringResource(
+                                when (scope) {
+                                    SearchScope.CURRENT_ASSISTANT -> R.string.search_page_scope_current_assistant
+                                    SearchScope.ALL_ASSISTANTS -> R.string.search_page_scope_all_assistants
+                                }
+                            )
+                        )
+                    },
+                    leadingIcon = {
+                        RadioButton(
+                            selected = scope == current,
+                            onClick = null,
+                        )
+                    },
+                    onClick = {
+                        expanded = false
+                        onScopeChange(scope)
+                    },
+                )
             }
         }
     }

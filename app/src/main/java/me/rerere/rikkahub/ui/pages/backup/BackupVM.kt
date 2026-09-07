@@ -125,10 +125,7 @@ class BackupVM(
     }
 
     suspend fun restoreFromLocalFile(file: File) {
-        webDavSync.restoreFromLocalFile(
-            file,
-            settings.value.webDavConfig.copy(items = localBackupItems.value),
-        )
+        webDavSync.restoreFromLocalFile(file)
         filesManager.invalidateAttachmentIndex()
     }
 

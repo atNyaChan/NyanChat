@@ -145,6 +145,18 @@ class WorkspaceManager(
         return file.length()
     }
 
+    fun resolveFile(
+        root: String,
+        path: String,
+        area: WorkspaceStorageArea = WorkspaceStorageArea.FILES,
+    ): File {
+        val location = storageLocation(root, area, path)
+        val file = fileSystem.resolve(location.rootDir, location.relativePath)
+        require(file.exists()) { "File does not exist: $path" }
+        require(file.isFile) { "Path is not a file: $path" }
+        return file
+    }
+
     fun exportFile(
         root: String,
         path: String,

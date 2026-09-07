@@ -210,6 +210,7 @@
   <string name="backup_page_restart_desc">The app needs to restart for the changes to take effect.</string>
   <string name="backup_page_restore">Restore</string>
   <string name="backup_page_restore_failed">Restore failed: %s</string>
+  <string name="backup_page_restore_failed_preserved">Restore failed, original data preserved. Please re-import your backup.</string>
   <string name="backup_page_restore_now">Restore</string>
   <string name="backup_page_restore_success">Restore successful</string>
   <string name="backup_page_restore_warning_title">Overwrite existing data?</string>
@@ -528,6 +529,9 @@
   <string name="search_page_sort_newest">Newest first</string>
   <string name="search_page_sort_oldest">Oldest first</string>
   <string name="search_page_sort_relevance">Relevance</string>
+  <string name="search_page_scope">Search scope</string>
+  <string name="search_page_scope_current_assistant">Current Assistant</string>
+  <string name="search_page_scope_all_assistants">All Assistants</string>
   <string name="search_page_mode">Search mode</string>
   <string name="search_page_mode_title">Title only</string>
   <string name="search_page_mode_exact">Exact match</string>

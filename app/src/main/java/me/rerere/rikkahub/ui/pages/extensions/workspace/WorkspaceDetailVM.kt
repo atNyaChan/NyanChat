@@ -180,6 +180,11 @@ class WorkspaceDetailVM(
         }
     }
 
+    suspend fun resolveImageFile(
+        entry: WorkspaceFileEntry,
+        area: WorkspaceStorageArea,
+    ): File = repository.resolveFile(id, area, entry.path)
+
     fun exportRootfsArchive(
         outputStream: OutputStream,
         onComplete: (Throwable?) -> Unit,

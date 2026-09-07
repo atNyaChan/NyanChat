@@ -9,12 +9,16 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import me.rerere.ai.provider.Model
 import me.rerere.rikkahub.data.db.fts.MessageSearchResult
 import me.rerere.rikkahub.data.db.fts.MessageAttachmentState
 import me.rerere.rikkahub.data.db.fts.MessageSearchMode
 import me.rerere.rikkahub.data.db.fts.MessageSearchSort
+import me.rerere.rikkahub.data.datastore.SettingsStore
+import me.rerere.rikkahub.data.datastore.getCurrentAssistant
 import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.rikkahub.ui.hooks.readStringPreference
 import me.rerere.rikkahub.ui.hooks.writeStringPreference
@@ -24,13 +28,23 @@ private const val SORT_ORDER_PREF_KEY = "search_page_sort_order"
 private const val SEARCH_MODE_PREF_KEY = "search_page_search_mode"
 private const val PAGE_SIZE = 20
 
+enum class SearchScope {
+    ALL_ASSISTANTS,
+    CURRENT_ASSISTANT,
+}
+
 class SearchVM(
     private val context: Application,
     private val conversationRepo: ConversationRepository,
+    settingsStore: SettingsStore,
 ) : ViewModel() {
     private val _searchQuery = MutableStateFlow("")
+    private var currentAssistantId: Uuid? = null
+    private var existingModelIds: Set<Uuid> = emptySet()
 
     var searchQuery by mutableStateOf("")
+        private set
+    var searchScope by mutableStateOf(SearchScope.ALL_ASSISTANTS)
         private set
     var sortOrder by mutableStateOf(
         runCatching {
@@ -77,6 +91,20 @@ class SearchVM(
             context.writeStringPreference(SORT_ORDER_PREF_KEY, sortOrder.name)
         }
         viewModelScope.launch {
+            settingsStore.settingsFlow
+                .map { it.getCurrentAssistant().id }
+                .distinctUntilChanged()
+                .collect { assistantId ->
+                    currentAssistantId = assistantId
+                    if (searchScope == SearchScope.CURRENT_ASSISTANT) {
+                        viewModelScope.launch {
+                            reloadDeletedModelIds()
+                            performSearch(searchQuery)
+                        }
+                    }
+                }
+        }
+        viewModelScope.launch {
             _searchQuery
                 .debounce(300L)
                 .collectLatest { query -> performSearch(query) }
@@ -107,6 +135,19 @@ class SearchVM(
             performSearch(searchQuery)
         }
     }
+
+    fun onSearchScopeChange(scope: SearchScope) {
+        if (searchScope == scope) return
+        searchScope = scope
+        currentPage = 1
+        viewModelScope.launch {
+            reloadDeletedModelIds()
+            performSearch(searchQuery)
+        }
+    }
+
+    val assistantFilter: Uuid?
+        get() = if (searchScope == SearchScope.CURRENT_ASSISTANT) currentAssistantId else null
 
     fun onSearchModeChange(mode: MessageSearchMode) {
         if (searchMode == mode && !isModelFilteredSearch) return
@@ -172,8 +213,15 @@ class SearchVM(
     }
 
     fun loadDeletedModelIds(existingModelIds: Set<Uuid>) {
+        this.existingModelIds = existingModelIds
         viewModelScope.launch {
-            deletedModelIds = conversationRepo.getUsedMessageModelIds()
+            reloadDeletedModelIds()
+        }
+    }
+
+    private fun reloadDeletedModelIds() {
+        viewModelScope.launch {
+            deletedModelIds = conversationRepo.getUsedMessageModelIds(assistantFilter)
                 .filterNot(existingModelIds::contains)
                 .sortedBy { it.toString() }
         }
@@ -241,29 +289,31 @@ class SearchVM(
         }
         isLoading = true
         try {
+            val assistantId = assistantFilter
             resultCount = when {
-                model != null -> conversationRepo.countMessagesByModel(model.id)
-                deletedModelId != null -> conversationRepo.countMessagesByModel(deletedModelId)
-                manuallyEdited -> conversationRepo.countManuallyEditedMessages()
+                model != null -> conversationRepo.countMessagesByModel(model.id, assistantId)
+                deletedModelId != null -> conversationRepo.countMessagesByModel(deletedModelId, assistantId)
+                manuallyEdited -> conversationRepo.countManuallyEditedMessages(assistantId)
                 selectedAttachmentState != null ->
-                    conversationRepo.countMessagesByAttachmentState(selectedAttachmentState)
-                else -> conversationRepo.countSearchMessages(query, searchMode)
+                    conversationRepo.countMessagesByAttachmentState(selectedAttachmentState, assistantId)
+                else -> conversationRepo.countSearchMessages(query, searchMode, assistantId)
             }
             currentPage = currentPage.coerceIn(1, totalPages)
             val offset = (currentPage - 1) * PAGE_SIZE
             results = when {
-                model != null -> conversationRepo.searchMessagesByModel(model.id, sortOrder, PAGE_SIZE, offset)
+                model != null -> conversationRepo.searchMessagesByModel(model.id, sortOrder, PAGE_SIZE, offset, assistantId)
                 deletedModelId != null ->
-                    conversationRepo.searchMessagesByModel(deletedModelId, sortOrder, PAGE_SIZE, offset)
-                manuallyEdited -> conversationRepo.searchManuallyEditedMessages(sortOrder, PAGE_SIZE, offset)
+                    conversationRepo.searchMessagesByModel(deletedModelId, sortOrder, PAGE_SIZE, offset, assistantId)
+                manuallyEdited -> conversationRepo.searchManuallyEditedMessages(sortOrder, PAGE_SIZE, offset, assistantId)
                 selectedAttachmentState != null ->
                     conversationRepo.searchMessagesByAttachmentState(
                         selectedAttachmentState,
                         sortOrder,
                         PAGE_SIZE,
                         offset,
+                        assistantId,
                     )
-                else -> conversationRepo.searchMessages(query, sortOrder, searchMode, PAGE_SIZE, offset)
+                else -> conversationRepo.searchMessages(query, sortOrder, searchMode, PAGE_SIZE, offset, assistantId)
             }
         } finally {
             isLoading = false

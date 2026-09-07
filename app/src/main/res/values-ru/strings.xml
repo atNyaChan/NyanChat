@@ -210,6 +210,7 @@
   <string name="backup_page_restart_desc">Приложение необходимо перезапустить, чтобы изменения вступили в силу.</string>
   <string name="backup_page_restore">Восстановить</string>
   <string name="backup_page_restore_failed">Ошибка восстановления: %s</string>
+  <string name="backup_page_restore_failed_preserved">Не удалось восстановить резервную копию, исходные данные сохранены. Повторите импорт.</string>
   <string name="backup_page_restore_now">Восстановить</string>
   <string name="backup_page_restore_success">Восстановление выполнено успешно</string>
   <string name="backup_page_restore_warning_title">Перезаписать существующие данные?</string>
@@ -528,6 +529,9 @@
   <string name="search_page_sort_newest">Сначала новые</string>
   <string name="search_page_sort_oldest">Сначала старые</string>
   <string name="search_page_sort_relevance">По релевантности</string>
+  <string name="search_page_scope">Область поиска</string>
+  <string name="search_page_scope_current_assistant">Текущий ассистент</string>
+  <string name="search_page_scope_all_assistants">Все ассистенты</string>
   <string name="search_page_mode">Режим поиска</string>
   <string name="search_page_mode_title">Только заголовок</string>
   <string name="search_page_mode_exact">Точное совпадение</string>
