@@ -80,13 +80,13 @@ class ChatInputState {
                 originalParts.forEachIndexed { index, part ->
                     when {
                         index == editedTextIndex -> {
-                            if (text.isNotBlank()) {
+                            if (text.isNotEmpty()) {
                                 merged.add(UIMessagePart.Text(text))
                             }
                         }
 
                         part is UIMessagePart.Text -> {
-                            if (part.text.isNotBlank()) {
+                            if (part.text.isNotEmpty()) {
                                 merged.add(part)
                             }
                         }
@@ -99,20 +99,20 @@ class ChatInputState {
                         }
                     }
                 }
-                if (editedTextIndex < 0 && text.isNotBlank()) {
+                if (editedTextIndex < 0 && text.isNotEmpty()) {
                     merged.add(0, UIMessagePart.Text(text))
                 }
                 // Newly added attachments are appended in insertion order.
                 merged.addAll(remainingAttachments)
                 return merged
             }
-            return if (text.isBlank()) messageContent else listOf(UIMessagePart.Text(text)) + messageContent
+            return if (text.isEmpty()) messageContent else listOf(UIMessagePart.Text(text)) + messageContent
         }
-        return if (text.isBlank()) messageContent else listOf(UIMessagePart.Text(text)) + messageContent
+        return if (text.isEmpty()) messageContent else listOf(UIMessagePart.Text(text)) + messageContent
     }
 
     fun isEmpty(): Boolean {
-        return textContent.text.isBlank() && messageContent.isEmpty()
+        return textContent.text.isEmpty() && messageContent.isEmpty()
     }
 
     fun addImages(uris: List<Uri>) {

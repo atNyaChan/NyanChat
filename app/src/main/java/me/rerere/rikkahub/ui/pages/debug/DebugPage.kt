@@ -19,7 +19,9 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecondaryTabRow
@@ -27,7 +29,9 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -43,11 +47,13 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.getCurrentAssistant
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.context.LocalSettings
-import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import org.koin.androidx.compose.koinViewModel
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import kotlin.random.Random
 import kotlin.random.nextInt
 import kotlin.uuid.Uuid
@@ -67,7 +73,7 @@ fun DebugPage(vm: DebugVM = koinViewModel()) {
             )
         }
     ) { contentPadding ->
-        val state = rememberPagerState { 3 }
+        val state = rememberPagerState { 2 }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -98,17 +104,6 @@ fun DebugPage(vm: DebugVM = koinViewModel()) {
                         Text("Colors")
                     }
                 )
-                Tab(
-                    selected = state.currentPage == 2,
-                    onClick = {
-                        scope.launch {
-                            state.animateScrollToPage(2)
-                        }
-                    },
-                    text = {
-                        Text("Logging")
-                    }
-                )
             }
             HorizontalPager(
                 state = state,
@@ -119,7 +114,6 @@ fun DebugPage(vm: DebugVM = koinViewModel()) {
                 when (page) {
                     0 -> MainPage(vm)
                     1 -> ColorsPage()
-                    2 -> Box {}
                 }
             }
         }
@@ -129,11 +123,19 @@ fun DebugPage(vm: DebugVM = koinViewModel()) {
 @Composable
 private fun MainPage(vm: DebugVM) {
     val settings = LocalSettings.current
-    val toaster = LocalToaster.current
+    val scope = rememberCoroutineScope()
+    var isRecalculating by remember { mutableStateOf(false) }
+    var isCreatingOversized by remember { mutableStateOf(false) }
+    var isCreatingMessages by remember { mutableStateOf(false) }
+    var isSavingDatabase by remember { mutableStateOf(false) }
+    var lastDatabaseSaveTime by remember { mutableStateOf<Long?>(null) }
     val oversizedTitle = stringResource(R.string.debug_page_oversized_conversation_title, 30)
     val creatingOversizedMsg = stringResource(R.string.debug_page_creating_oversized_conversation)
     val messagesTitle = stringResource(R.string.debug_page_messages_conversation_title, 1024)
     val creatingMessagesMsg = stringResource(R.string.debug_page_creating_1024_conversation)
+    LaunchedEffect(Unit) {
+        lastDatabaseSaveTime = vm.lastDatabaseSaveTimeMillis()
+    }
     Column(
         modifier = Modifier
             .padding(8.dp)
@@ -141,6 +143,60 @@ private fun MainPage(vm: DebugVM) {
             .imePadding(),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
+        Button(
+            onClick = {
+                isSavingDatabase = true
+                scope.launch {
+                    try {
+                        vm.saveDatabase()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    } finally {
+                        isSavingDatabase = false
+                        lastDatabaseSaveTime = vm.lastDatabaseSaveTimeMillis()
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.debug_page_save_database_now))
+        }
+        Text(
+            text = if (isSavingDatabase) {
+                stringResource(R.string.debug_page_saving_database)
+            } else {
+                lastDatabaseSaveTime?.let {
+                    stringResource(
+                        R.string.debug_page_last_database_save_time,
+                        formatDebugTimestamp(it),
+                    )
+                } ?: stringResource(R.string.debug_page_last_database_save_time_never)
+            },
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 12.dp, end = 12.dp, bottom = 4.dp),
+        )
+
+        Button(
+            onClick = {
+                isRecalculating = true
+                scope.launch {
+                    try {
+                        vm.recalculateConversationTimes()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    } finally {
+                        isRecalculating = false
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.debug_page_recalculate_chat_time))
+        }
+
         Button(
             onClick = {
                 val current = settings.getCurrentAssistant()
@@ -173,8 +229,16 @@ private fun MainPage(vm: DebugVM) {
 
         Button(
             onClick = {
-                vm.createOversizedConversation(30, oversizedTitle)
-                toaster.show(creatingOversizedMsg)
+                isCreatingOversized = true
+                scope.launch {
+                    try {
+                        vm.createOversizedConversation(30, oversizedTitle)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    } finally {
+                        isCreatingOversized = false
+                    }
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -183,14 +247,47 @@ private fun MainPage(vm: DebugVM) {
 
         Button(
             onClick = {
-                vm.createConversationWithMessages(1024, messagesTitle)
-                toaster.show(creatingMessagesMsg)
+                isCreatingMessages = true
+                scope.launch {
+                    try {
+                        vm.createConversationWithMessages(1024, messagesTitle)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    } finally {
+                        isCreatingMessages = false
+                    }
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(stringResource(R.string.debug_page_create_1024_conversation))
         }
     }
+
+    if (isRecalculating) {
+        DebugProgressDialog(stringResource(R.string.debug_page_recalculating_chat_time))
+    }
+    if (isCreatingOversized) {
+        DebugProgressDialog(creatingOversizedMsg)
+    }
+    if (isCreatingMessages) {
+        DebugProgressDialog(creatingMessagesMsg)
+    }
+}
+
+@Composable
+private fun DebugProgressDialog(title: String) {
+    AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
+        onDismissRequest = { },
+        title = {
+            Text(title)
+        },
+        text = {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        },
+        confirmButton = {},
+    )
 }
 
 @Composable
@@ -299,4 +396,10 @@ private fun ColorTokenItem(name: String, color: Color) {
 private fun Color.toHexString(): String {
     val argb = toArgb()
     return "#%08X".format(argb)
+}
+
+private fun formatDebugTimestamp(millis: Long): String {
+    return Instant.ofEpochMilli(millis)
+        .atZone(ZoneId.systemDefault())
+        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
 }

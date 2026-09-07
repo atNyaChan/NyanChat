@@ -76,6 +76,7 @@ data class TextGenerationParams(
     val customBody: List<CustomBody> = emptyList(),
     val cacheControl: JsonObject? = null,
     val sessionId: String? = null,
+    val includeHistoryReasoning: Boolean = true,
 )
 
 @Serializable

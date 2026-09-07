@@ -10,7 +10,9 @@ import me.rerere.ai.ui.UIMessagePart
 import me.rerere.ai.util.InstantSerializer
 import me.rerere.rikkahub.data.datastore.DEFAULT_ASSISTANT_ID
 import java.time.Instant
+import java.time.ZoneId
 import kotlin.uuid.Uuid
+import kotlinx.datetime.toJavaLocalDateTime
 
 @Serializable
 data class Conversation(
@@ -39,6 +41,19 @@ data class Conversation(
             .flatMap { node -> node.messages.flatMap { it.parts } }
             .localFileUrls()
             .map { it.toUri() }
+
+    /**
+     * 现存所有消息（含分支）中时间最晚的那条消息对应的 Instant；没有消息时为 null。
+     */
+    val newestMessageTime: Instant?
+        get() = messageNodes
+            .flatMap { node -> node.messages }
+            .mapNotNull { message ->
+                message.createdAt.toJavaLocalDateTime()
+                    .atZone(ZoneId.systemDefault())
+                    .toInstant()
+            }
+            .maxOrNull()
 
     /**
      *  当前选中的 message

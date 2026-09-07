@@ -237,7 +237,7 @@ class ResponseAPI(
             }
 
             // messages
-            put("input", buildMessages(messages).withCacheBreakpoints(messages, params.cacheControl))
+            put("input", buildMessages(messages, params.includeHistoryReasoning).withCacheBreakpoints(messages, params.cacheControl))
             params.cacheControl?.let { put("cache_control", it) }
 
             // reasoning
@@ -307,7 +307,10 @@ class ResponseAPI(
         }.mergeCustomBody(params.customBody)
     }
 
-    internal fun buildMessages(messages: List<UIMessage>) = buildJsonArray {
+    internal fun buildMessages(
+        messages: List<UIMessage>,
+        includeHistoryReasoning: Boolean = true,
+    ) = buildJsonArray {
         messages
             .filter { message ->
                 message.role != MessageRole.SYSTEM && (
@@ -319,7 +322,7 @@ class ResponseAPI(
             }
             .forEach { message ->
                 if (message.role == MessageRole.ASSISTANT) {
-                    addAssistantItems(message)
+                    addAssistantItems(message, includeHistoryReasoning)
                 } else {
                     addUserItems(message)
                 }
@@ -389,7 +392,10 @@ class ResponseAPI(
         return JsonObject(this + ("content" to cachedContent))
     }
 
-    private fun JsonArrayBuilder.addAssistantItems(message: UIMessage) {
+    private fun JsonArrayBuilder.addAssistantItems(
+        message: UIMessage,
+        includeHistoryReasoning: Boolean = true,
+    ) {
         val groups = groupPartsByToolBoundary(message.parts)
         val contentBuffer = mutableListOf<UIMessagePart>()
 
@@ -398,6 +404,9 @@ class ResponseAPI(
                 is PartGroup.Content -> {
                     val emittedReasoningIds = mutableSetOf<String>()
                     group.parts.forEach { part ->
+                        if (part is UIMessagePart.Reasoning && !includeHistoryReasoning) {
+                            return@forEach
+                        }
                         when (part) {
                             is UIMessagePart.Reasoning -> {
                                 val reasoningMetadata = part.metadataAs<OpenAIReasoningMetadata>()

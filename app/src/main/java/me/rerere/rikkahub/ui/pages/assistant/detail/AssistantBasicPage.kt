@@ -402,6 +402,67 @@ internal fun AssistantBasicContent(
             FormItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {
+                    Text(stringResource(R.string.assistant_page_stream_output))
+                },
+                description = {
+                    Text(stringResource(R.string.assistant_page_stream_output_desc))
+                },
+                tail = {
+                    Switch(
+                        checked = assistant.streamOutput,
+                        onCheckedChange = {
+                            onUpdate(assistant.copy(streamOutput = it))
+                        }
+                    )
+                }
+            )
+            FormItem(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                label = {
+                    Text(stringResource(R.string.assistant_page_return_thinking))
+                },
+                description = {
+                    Text(stringResource(R.string.assistant_page_return_thinking_desc))
+                },
+                tail = {
+                    Switch(
+                        checked = assistant.includeHistoryReasoning,
+                        onCheckedChange = {
+                            onUpdate(assistant.copy(includeHistoryReasoning = it))
+                        }
+                    )
+                }
+            )
+            FormItem(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                label = {
+                    Text(stringResource(R.string.assistant_page_thinking_budget))
+                },
+                tail = {
+                    ReasoningButton(
+                        reasoningLevel = assistant.reasoningLevel,
+                        onUpdateReasoningLevel = { level ->
+                            onUpdate(assistant.copy(reasoningLevel = level))
+                        }
+                    )
+                },
+            )
+            FormItem(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                label = { Text(stringResource(R.string.assistant_page_context_cache)) },
+                description = {
+                    Text(stringResource(R.string.assistant_page_context_cache_desc))
+                },
+                tail = {
+                    ContextCachePicker(
+                        value = assistant.contextCache,
+                        onValueChange = { onUpdate(assistant.copy(contextCache = it)) },
+                    )
+                },
+            )
+            FormItem(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                label = {
                     Text(stringResource(R.string.assistant_page_temperature))
                 },
                 description = {
@@ -479,50 +540,6 @@ internal fun AssistantBasicContent(
                     singleLine = true,
                 )
             }
-            FormItem(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                label = {
-                    Text(stringResource(R.string.assistant_page_thinking_budget))
-                },
-                tail = {
-                    ReasoningButton(
-                        reasoningLevel = assistant.reasoningLevel,
-                        onUpdateReasoningLevel = { level ->
-                            onUpdate(assistant.copy(reasoningLevel = level))
-                        }
-                    )
-                },
-            )
-            FormItem(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                label = { Text(stringResource(R.string.assistant_page_context_cache)) },
-                description = {
-                    Text(stringResource(R.string.assistant_page_context_cache_desc))
-                },
-                tail = {
-                    ContextCachePicker(
-                        value = assistant.contextCache,
-                        onValueChange = { onUpdate(assistant.copy(contextCache = it)) },
-                    )
-                },
-            )
-            FormItem(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                label = {
-                    Text(stringResource(R.string.assistant_page_stream_output))
-                },
-                description = {
-                    Text(stringResource(R.string.assistant_page_stream_output_desc))
-                },
-                tail = {
-                    Switch(
-                        checked = assistant.streamOutput,
-                        onCheckedChange = {
-                            onUpdate(assistant.copy(streamOutput = it))
-                        }
-                    )
-                }
-            )
             FormItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {

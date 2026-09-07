@@ -36,7 +36,7 @@ class ThinkTagTransformerTest {
             parts = listOf(nativeReasoning, text),
         )
 
-        val result = listOf(message).transformThinkTags(now, generationFinished = true).single()
+        val result = listOf(message).transformThinkTags(now, generationFinished = true, parseMidThink = false).single()
 
         assertEquals(listOf(nativeReasoning, text), result.parts)
     }
@@ -57,7 +57,7 @@ class ThinkTagTransformerTest {
         )
         val message = UIMessage(role = MessageRole.ASSISTANT, parts = parts)
 
-        val result = listOf(message).transformThinkTags(now, generationFinished = true).single()
+        val result = listOf(message).transformThinkTags(now, generationFinished = true, parseMidThink = false).single()
 
         assertEquals(parts, result.parts)
     }
@@ -66,7 +66,7 @@ class ThinkTagTransformerTest {
     fun `unclosed prefix tag should remain unfinished while streaming`() {
         val message = UIMessage.assistant("<think>reason in progress")
 
-        val result = listOf(message).transformThinkTags(now, generationFinished = false).single()
+        val result = listOf(message).transformThinkTags(now, generationFinished = false, parseMidThink = false).single()
 
         assertEquals("reason in progress", result.parts.filterIsInstance<UIMessagePart.Reasoning>().single().reasoning)
         assertNull(result.parts.filterIsInstance<UIMessagePart.Reasoning>().single().finishedAt)
@@ -75,15 +75,15 @@ class ThinkTagTransformerTest {
     @Test
     fun `generation finish should close reasoning created by visual transform`() {
         val message = UIMessage.assistant("<think>reason in progress")
-        val visualResult = listOf(message).transformThinkTags(now, generationFinished = false)
+        val visualResult = listOf(message).transformThinkTags(now, generationFinished = false, parseMidThink = false)
 
-        val finishedResult = visualResult.transformThinkTags(now, generationFinished = true).single()
+        val finishedResult = visualResult.transformThinkTags(now, generationFinished = true, parseMidThink = false).single()
 
         assertEquals(now, finishedResult.parts.filterIsInstance<UIMessagePart.Reasoning>().single().finishedAt)
     }
 
     private fun transform(text: String): UIMessage {
         val message = UIMessage.assistant(text)
-        return listOf(message).transformThinkTags(now, generationFinished = true).single()
+        return listOf(message).transformThinkTags(now, generationFinished = true, parseMidThink = false).single()
     }
 }

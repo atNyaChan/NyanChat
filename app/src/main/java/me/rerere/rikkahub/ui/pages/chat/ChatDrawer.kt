@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -47,7 +48,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -117,14 +117,15 @@ fun ChatDrawerContent(
     val toaster = LocalToaster.current
     val repo = koinInject<ConversationRepository>()
 
-    // 侧栏是否可见（大屏常驻侧栏始终可见；弹出式侧栏则视抽屉打开状态而定），
-    // 用于在打开侧栏或列表内容刷新时把当前会话滚动到可视区域中间
-    val drawerVisible = navDrawerPermanent || drawerState.isOpen
+    // 是否需要对当前会话居中（大屏常驻侧栏始终需要）。
+    // 弹出式侧栏在 targetValue 变为 Open（即刚发起打开、抽屉动画刚开始、内容基本还不可见）时就触发居中，
+    // 这样居中滚动在侧栏完全打开前即可完成，避免出现“打开后再滚动”的情况。
+    val drawerVisible = navDrawerPermanent || drawerState.targetValue == DrawerValue.Open
 
     val activity = context as ComponentActivity
     val drawerVm: ChatDrawerVM = koinViewModel(viewModelStoreOwner = activity)
 
-    val conversations = drawerVm.conversations.collectAsLazyPagingItems()
+    val conversations by drawerVm.conversations.collectAsStateWithLifecycle(initialValue = emptyList())
     val folders by drawerVm.folders.collectAsStateWithLifecycle()
     val selectedFolderId by drawerVm.selectedFolderId.collectAsStateWithLifecycle()
     val allFolders by drawerVm.allFolders.collectAsStateWithLifecycle()
@@ -322,7 +323,6 @@ fun ChatDrawerContent(
                             conversationToDelete = null
                             scope.launch {
                                 vm.deleteConversation(conversation).join()
-                                conversations.refresh()
                                 if (conversation.id == current.id) {
                                     // 删除后新建的空会话归入侧栏当前选中的文件夹
                                     navigateToChatPage(navController, folderId = selectedFolderId)
@@ -350,7 +350,6 @@ fun ChatDrawerContent(
                             conversationsToDelete = emptyList()
                             scope.launch {
                                 targets.map(vm::deleteConversation).forEach { it.join() }
-                                conversations.refresh()
                                 if (targets.any { it.id == current.id }) {
                                     // 删除后新建的空会话归入侧栏当前选中的文件夹
                                     navigateToChatPage(navController, folderId = selectedFolderId)
@@ -392,7 +391,6 @@ fun ChatDrawerContent(
                             TextButton(onClick = {
                                 vm.updateConversationTitle(conversation, editedTitle)
                                 conversationToEditTitle = null
-                                conversations.refresh()
                             }) { Text(stringResource(R.string.common_confirm_action)) }
                         }
                     },
@@ -602,7 +600,6 @@ fun ChatDrawerContent(
                     onClick = {
                         if (drawerVm.deleteFolder(folder.id)) {
                             folderToDelete = null
-                            conversations.refresh()
                         } else {
                             toaster.show(context.getString(R.string.chat_page_delete_folder_generating), type = ToastType.Warning)
                         }
@@ -626,7 +623,6 @@ fun ChatDrawerContent(
         }
         conversationsToMove = emptyList()
         pendingMoveTarget = null
-        conversations.refresh()
     }
 
     val moveTargetListState = rememberLazyListState()

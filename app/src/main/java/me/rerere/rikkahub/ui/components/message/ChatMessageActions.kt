@@ -40,6 +40,7 @@ import kotlinx.datetime.toJavaLocalDateTime
 import me.rerere.ai.core.MessageRole
 import me.rerere.ai.provider.Model
 import me.rerere.ai.ui.UIMessage
+import me.rerere.ai.ui.UIMessagePart
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Copy01
 import me.rerere.hugeicons.stroke.Delete01
@@ -57,6 +58,7 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.model.MessageNode
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalSettings
+import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.context.LocalTTSState
 import me.rerere.rikkahub.utils.copyMessageToClipboard
 import me.rerere.rikkahub.utils.extractQuotedContentAsText
@@ -245,6 +247,12 @@ fun ColumnScope.ChatMessageActionButtons(
     )
 }
 
+@Suppress("DEPRECATION")
+private val UIMessage.containsToolCall: Boolean
+    get() = parts.any { part ->
+        part is UIMessagePart.Tool || part is UIMessagePart.ToolCall || part is UIMessagePart.ServerTool
+    }
+
 @Composable
 fun ChatMessageActionsSheet(
     message: UIMessage,
@@ -259,6 +267,8 @@ fun ChatMessageActionsSheet(
     onDismissRequest: () -> Unit
 ) {
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val toaster = LocalToaster.current
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)),
@@ -271,12 +281,25 @@ fun ChatMessageActionsSheet(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // Edit
+            val canEdit = !message.containsToolCall
             Card(
                 onClick = {
-                    onDismissRequest()
-                    onEdit()
+                    if (canEdit) {
+                        onDismissRequest()
+                        onEdit()
+                    } else {
+                        toaster.show(context.getString(R.string.chat_message_cannot_edit_tool_call))
+                    }
                 },
-                shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape()
+                shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
+                colors = if (canEdit) {
+                    CardDefaults.cardColors()
+                } else {
+                    CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.4f),
+                        contentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                    )
+                },
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

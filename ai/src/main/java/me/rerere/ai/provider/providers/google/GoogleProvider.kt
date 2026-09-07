@@ -388,7 +388,7 @@ class GoogleProvider(private val client: OkHttpClient, context: Context? = null)
         // Contents (user messages)
         put(
             "contents",
-            buildContents(messages).withCacheBreakpoint(params.cacheControl)
+            buildContents(messages, params.includeHistoryReasoning).withCacheBreakpoint(params.cacheControl)
         )
         params.cacheControl?.let { put("cache_control", it) }
 
@@ -651,13 +651,16 @@ class GoogleProvider(private val client: OkHttpClient, context: Context? = null)
         }
     }
 
-    private fun buildContents(messages: List<UIMessage>): JsonArray {
+    private fun buildContents(
+        messages: List<UIMessage>,
+        includeHistoryReasoning: Boolean,
+    ): JsonArray {
         return buildJsonArray {
             messages
                 .filter { it.role != MessageRole.SYSTEM && it.isValidToUpload() }
                 .forEach { message ->
                     if (message.role == MessageRole.ASSISTANT) {
-                        addModelMessage(message)
+                        addModelMessage(message, includeHistoryReasoning)
                     } else {
                         addUserMessage(message)
                     }
@@ -691,14 +694,20 @@ class GoogleProvider(private val client: OkHttpClient, context: Context? = null)
         })
     }
 
-    private fun JsonArrayBuilder.addModelMessage(message: UIMessage) {
+    private fun JsonArrayBuilder.addModelMessage(
+        message: UIMessage,
+        includeHistoryReasoning: Boolean,
+    ) {
         val groups = groupPartsByToolBoundary(message.parts)
         val partsBuffer = mutableListOf<JsonObject>()
 
         for (group in groups) {
             when (group) {
                 is PartGroup.Content -> {
-                    group.parts.flatMap { it.toGoogleParts() }.forEach { partsBuffer.add(it) }
+                    val contentParts =
+                        if (includeHistoryReasoning) group.parts
+                        else group.parts.filterNot { it is UIMessagePart.Reasoning }
+                    contentParts.flatMap { it.toGoogleParts() }.forEach { partsBuffer.add(it) }
                 }
 
                 is PartGroup.Tools -> {

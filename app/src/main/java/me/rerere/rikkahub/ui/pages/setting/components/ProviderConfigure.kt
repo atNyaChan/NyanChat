@@ -284,17 +284,6 @@ private fun ProviderConfigureOpenAI(
         )
     }
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(stringResource(R.string.setting_provider_page_include_history_reasoning))
-        Switch(
-            checked = provider.includeHistoryReasoning,
-            onCheckedChange = { onEdit(provider.copy(includeHistoryReasoning = it)) }
-        )
-    }
 }
 
 @Composable

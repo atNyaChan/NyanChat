@@ -15,6 +15,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
@@ -131,6 +132,17 @@ internal fun FilesPicker(
                     mcpManager = mcpManager,
                     onClick = { showMcpPicker = true },
                 )
+            }
+
+            item(
+                trailingContent = {
+                    Switch(
+                        checked = assistant.includeHistoryReasoning,
+                        onCheckedChange = { onUpdateAssistant(assistant.copy(includeHistoryReasoning = it)) },
+                    )
+                },
+            ) {
+                Text(stringResource(R.string.assistant_page_return_thinking))
             }
 
             item(

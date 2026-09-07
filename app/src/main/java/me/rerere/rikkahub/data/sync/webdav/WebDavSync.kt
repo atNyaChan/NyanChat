@@ -280,7 +280,7 @@ internal fun makeRikkaHubCompatible(settings: JsonElement): JsonElement {
     val assistants = (compatibleRoot["assistants"] as? JsonArray)?.let { array ->
         JsonArray(array.map { assistantElement ->
             val assistant = assistantElement as? JsonObject ?: return@map assistantElement
-            val compatibleAssistant = assistant - setOf("contextCache", "manualAuthorizationTools")
+            val compatibleAssistant = assistant - setOf("contextCache", "manualAuthorizationTools", "includeHistoryReasoning")
             val localTools = (compatibleAssistant["localTools"] as? JsonArray)?.let { tools ->
                 JsonArray(tools.filterNot { tool ->
                     val type = (tool as? JsonObject)?.get("type")?.toString()?.trim('"')

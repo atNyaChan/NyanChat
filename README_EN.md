@@ -55,7 +55,7 @@
   - Due to RikkaHub limitations, some data (such as workspaces, assistant avatars, and backgrounds) cannot be imported from RikkaHub.
   - When exporting to RikkaHub, NyanChat-specific settings and metadata (such as model pricing) will be lost.
   - NyanChat only supports importing data from RikkaHub 2.x. To import data from RikkaHub 1.x, first update RikkaHub to 2.x and complete the database migration. Migrated data cannot be re-imported into RikkaHub 1.x.
-  - Older versions of RikkaHub (e.g., `2.3.x`) cannot read NyanChat archives. Please update RikkaHub to `2.4.x` (the latest version) first.
+  - Older versions of RikkaHub (e.g., `2.3.x`) cannot read NyanChat archives. Please update RikkaHub to at least `2.4.1` first.
 - NyanChat **follows RikkaHub updates** — most future RikkaHub features will be merged into NyanChat, so you can use it with confidence.
 
 ## 🔒 Privacy

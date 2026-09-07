@@ -130,6 +130,8 @@
   <string name="assistant_page_regex_visual_only">表示のみ（実際のメッセージには影響しません）</string>
   <string name="assistant_page_remove">削除</string>
   <string name="assistant_page_remove_background">背景を削除</string>
+  <string name="assistant_page_return_thinking">思考の送信</string>
+  <string name="assistant_page_return_thinking_desc">過去のメッセージの思考内容をモデルに送り返す</string>
   <string name="assistant_page_select_background">背景画像を選択</string>
   <string name="assistant_page_select_from_gallery">ギャラリーから選択</string>
   <string name="assistant_page_stream_output">ストリーミング出力</string>
@@ -791,6 +793,7 @@
   <string name="setting_page_built_in_tools_url_context_desc">URLコンテンツ処理を有効化</string>
   <string name="setting_page_chat_storage">ストレージ管理</string>
   <string name="chat_message_attachment_deleted">添付ファイルは削除されました</string>
+  <string name="chat_message_cannot_edit_tool_call">ツール呼び出しを含むメッセージは編集できません</string>
   <string name="setting_page_chat_storage_desc">%1$d ファイル、%2$.2f MB</string>
   <string name="setting_page_color_mode">カラーモード</string>
   <string name="setting_page_color_mode_dark">ダーク</string>
@@ -1116,7 +1119,6 @@
   <string name="setting_model_page_prompt_ocr">OCR プロンプト</string>
   <string name="setting_model_page_prompt_compress">コンテキスト圧縮プロンプト</string>
   <string name="setting_display_page_bubble_opacity_title">吹き出しの不透明度</string>
-  <string name="setting_provider_page_include_history_reasoning">履歴の思考過程を送信</string>
   <string name="assistant_page_gradient_background">グラデーション背景</string>
   <string name="assistant_page_gradient_background_desc">チャットページで動的なグラデーション背景を使用します</string>
   <string name="assistant_page_workspace">ワークスペース</string>
@@ -1272,7 +1274,7 @@
   <string name="backup_page_export_failed_detail">エクスポート失敗：%1$s</string>
   <string name="backup_page_rikkahub_format">RikkaHub類似形式</string>
   <string name="backup_page_tar_desc">アプリデータをTARファイルにエクスポート（RikkaHub非対応）</string>
-  <string name="backup_page_legacy_export">旧形式でエクスポート（RikkaHub 2.4.x 対応）</string>
+  <string name="backup_page_legacy_export">旧形式でエクスポート（RikkaHub 2.4.1+ 対応）</string>
   <string name="backup_page_delete_remote_title">%1$s バックアップファイルを削除</string>
   <string name="backup_page_delete_remote_desc">このバックアップファイルを削除しますか？この操作は元に戻せません。</string>
   <string name="backup_page_legacy_export_desc">この Fork で追加された非互換設定を削除；ワークスペース環境は含まれません</string>
@@ -1338,7 +1340,13 @@
   <string name="debug_page_creating_oversized_conversation">30MB の超大な会話を作成中…</string>
   <string name="debug_page_messages_conversation_title">%1$d 件のメッセージテスト</string>
   <string name="debug_page_oversized_conversation_title">超大な会話テスト (%1$dMB)</string>
+  <string name="debug_page_recalculate_chat_time">チャット時間を再計算</string>
+  <string name="debug_page_recalculating_chat_time">チャット時間を再計算中…</string>
   <string name="debug_page_set_chat_model_null">Chat モデルを空に設定</string>
+  <string name="debug_page_save_database_now">データベースを保存</string>
+  <string name="debug_page_saving_database">データベースを保存中…</string>
+  <string name="debug_page_last_database_save_time">最終保存時間: %1$s</string>
+  <string name="debug_page_last_database_save_time_never">最終保存時間: なし</string>
   <string name="default_provider_alibaba_bailian">Alibaba Cloud Bailian</string>
   <string name="default_provider_moonshot">Moonshot AI</string>
   <string name="default_provider_siliconflow">SiliconFlow</string>

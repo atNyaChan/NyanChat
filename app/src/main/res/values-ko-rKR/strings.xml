@@ -130,6 +130,8 @@
   <string name="assistant_page_regex_visual_only">시각적 표시만 (실제 메시지에는 영향을 주지 않고 표시만 변경)</string>
   <string name="assistant_page_remove">제거</string>
   <string name="assistant_page_remove_background">배경 제거</string>
+  <string name="assistant_page_return_thinking">사고 내용 전송</string>
+  <string name="assistant_page_return_thinking_desc">이전 메시지의 사고 내용을 모델에 다시 전송합니다</string>
   <string name="assistant_page_select_background">배경 이미지 선택</string>
   <string name="assistant_page_select_from_gallery">갤러리에서 선택</string>
   <string name="assistant_page_stream_output">스트리밍 출력</string>
@@ -791,6 +793,7 @@
   <string name="setting_page_built_in_tools_url_context_desc">URL 콘텐츠 처리 활성화</string>
   <string name="setting_page_chat_storage">저장 공간 관리</string>
   <string name="chat_message_attachment_deleted">첨부 파일이 삭제되었습니다</string>
+  <string name="chat_message_cannot_edit_tool_call">도구 호출이 포함된 메시지는 편집할 수 없습니다</string>
   <string name="setting_page_chat_storage_desc">%1$d개 파일, %2$.2f MB</string>
   <string name="setting_page_color_mode">색상 모드</string>
   <string name="setting_page_color_mode_dark">어두움</string>
@@ -1116,7 +1119,6 @@
   <string name="setting_model_page_prompt_ocr">OCR 프롬프트</string>
   <string name="setting_model_page_prompt_compress">컨텍스트 압축 프롬프트</string>
   <string name="setting_display_page_bubble_opacity_title">버블 불투명도</string>
-  <string name="setting_provider_page_include_history_reasoning">이전 추론 내용 전송</string>
   <string name="assistant_page_gradient_background">그라데이션 배경</string>
   <string name="assistant_page_gradient_background_desc">채팅 페이지에서 동적 그라데이션 배경 사용</string>
   <string name="assistant_page_workspace">작업 공간</string>
@@ -1272,7 +1274,7 @@
   <string name="backup_page_export_failed_detail">내보내기 실패: %1$s</string>
   <string name="backup_page_rikkahub_format">RikkaHub 유사 형식</string>
   <string name="backup_page_tar_desc">앱 데이터를 TAR 파일로 내보내기(RikkaHub와 호환되지 않음)</string>
-  <string name="backup_page_legacy_export">레거시 형식 내보내기(RikkaHub 2.4.x 호환)</string>
+  <string name="backup_page_legacy_export">레거시 형식 내보내기(RikkaHub 2.4.1+ 호환)</string>
   <string name="backup_page_delete_remote_title">%1$s 백업 파일 삭제</string>
   <string name="backup_page_delete_remote_desc">이 백업 파일을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.</string>
   <string name="backup_page_legacy_export_desc">이 Fork에서 추가한 비호환 설정 제거; 작업 공간 환경은 포함되지 않음</string>
@@ -1338,7 +1340,13 @@
   <string name="debug_page_creating_oversized_conversation">30MB 대용량 대화 생성 중…</string>
   <string name="debug_page_messages_conversation_title">메시지 %1$d개 테스트</string>
   <string name="debug_page_oversized_conversation_title">대용량 대화 테스트 (%1$dMB)</string>
+  <string name="debug_page_recalculate_chat_time">채팅 시간 다시 계산</string>
+  <string name="debug_page_recalculating_chat_time">채팅 시간 다시 계산 중…</string>
   <string name="debug_page_set_chat_model_null">Chat 모델을 비우기</string>
+  <string name="debug_page_save_database_now">데이터베이스 즉시 저장</string>
+  <string name="debug_page_saving_database">데이터베이스 저장 중…</string>
+  <string name="debug_page_last_database_save_time">마지막 저장 시간: %1$s</string>
+  <string name="debug_page_last_database_save_time_never">마지막 저장 시간: 없음</string>
   <string name="default_provider_alibaba_bailian">Alibaba Cloud Bailian</string>
   <string name="default_provider_moonshot">Moonshot AI</string>
   <string name="default_provider_siliconflow">SiliconFlow</string>

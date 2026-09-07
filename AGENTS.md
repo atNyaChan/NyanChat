@@ -53,13 +53,7 @@ merges in git history, but NEVER let git auto-merge file contents.
       user. Do not guess.
 4. Commit ONCE. Message format:
 
-   merge(upstream): sync to <newest-hash>
-
-   ported:
-   - <hash> <subject>
-   - <hash> <subject>
-   skipped:
-   - <hash> <subject>
+   merge(upstream): sync to <newest-hash> (skipped: <hash> <subject>, <hash> <subject>)(if any)
 
 5. Verify `git log HEAD..upstream/main` is now empty.
 

@@ -1612,6 +1612,10 @@ class ChatService(
     ) {
         val currentConversation = getConversationFlow(conversationId).value
         val updatedConversation = buildConversationAfterMessageDelete(currentConversation, messageId)
+            ?.let { deleted ->
+                // 删除后把聊天排序时间同步为现存消息中最新的一条
+                deleted.copy(updateAt = deleted.newestMessageTime ?: deleted.updateAt)
+            }
 
         if (updatedConversation == null) {
             if (failIfMissing) {
@@ -1717,7 +1721,7 @@ class ChatService(
  * Prepares streamed messages for the conversation UI.
  *
  * The first assistant response receives the placeholder identity. Later tool continuations keep
- * their own IDs, including legitimately empty assistant responses returned by an API.
+ * their own IDs; empty assistant continuations (no UI content and no tools) are hidden.
  */
 internal fun List<UIMessage>.prepareGeneratedMessages(
     responseMessageIndex: Int,
@@ -1727,12 +1731,17 @@ internal fun List<UIMessage>.prepareGeneratedMessages(
         index >= responseMessageIndex && this[index].role == MessageRole.ASSISTANT
     } ?: return this
 
-    return mapIndexed { index, message ->
+    return mapIndexedNotNull { index, message ->
         when {
             index == firstAssistantIndex -> message.copy(
                 id = pendingResponse.id,
                 createdAt = pendingResponse.createdAt,
             )
+
+            index > firstAssistantIndex &&
+                message.role == MessageRole.ASSISTANT &&
+                message.parts.isEmptyUIMessage() &&
+                message.getTools().isEmpty() -> null
 
             else -> message
         }

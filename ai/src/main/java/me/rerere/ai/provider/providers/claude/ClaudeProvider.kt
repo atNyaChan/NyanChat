@@ -439,7 +439,7 @@ class ClaudeProvider(private val client: OkHttpClient, context: Context? = null)
             put("model", params.model.modelId)
             put(
                 "messages",
-                buildMessages(messages, params.cacheControl)
+                buildMessages(messages, params.cacheControl, params.includeHistoryReasoning)
             )
             put("max_tokens", params.maxTokens ?: 64_000)
 
@@ -545,12 +545,13 @@ class ClaudeProvider(private val client: OkHttpClient, context: Context? = null)
     private fun buildMessages(
         messages: List<UIMessage>,
         cacheControl: JsonObject?,
+        includeHistoryReasoning: Boolean,
     ) = buildJsonArray {
         messages
             .filter { it.isValidToUpload() && it.role != MessageRole.SYSTEM }
             .forEach { message ->
                 if (message.role == MessageRole.ASSISTANT) {
-                    addAssistantMessage(message)
+                    addAssistantMessage(message, includeHistoryReasoning)
                 } else {
                     addUserMessage(message)
                 }
@@ -601,14 +602,20 @@ class ClaudeProvider(private val client: OkHttpClient, context: Context? = null)
         })
     }
 
-    private fun JsonArrayBuilder.addAssistantMessage(message: UIMessage) {
+    private fun JsonArrayBuilder.addAssistantMessage(
+        message: UIMessage,
+        includeHistoryReasoning: Boolean,
+    ) {
         val groups = groupPartsByToolBoundary(message.parts)
         val contentBuffer = mutableListOf<JsonObject>()
 
         for (group in groups) {
             when (group) {
                 is PartGroup.Content -> {
-                    group.parts.toContentBlocks().forEach { contentBuffer.add(it) }
+                    val contentParts =
+                        if (includeHistoryReasoning) group.parts
+                        else group.parts.filterNot { it is UIMessagePart.Reasoning }
+                    contentParts.toContentBlocks().forEach { contentBuffer.add(it) }
                 }
 
                 is PartGroup.Tools -> {

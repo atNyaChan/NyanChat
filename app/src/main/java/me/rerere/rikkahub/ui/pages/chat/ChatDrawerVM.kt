@@ -4,10 +4,6 @@ import android.app.Application
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
-import androidx.paging.cachedIn
-import androidx.paging.insertSeparators
-import androidx.paging.map
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,8 +14,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import me.rerere.rikkahub.R
@@ -80,71 +76,18 @@ class ChatDrawerVM(
         .flatMapLatest { it }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
-    val conversations: Flow<PagingData<ConversationListItem>> =
+    val conversations: Flow<List<ConversationListItem>> =
         combine(assistantIdFlow, _selectedFolderId) { assistantId, folderId ->
             assistantId to folderId
         }
             .flatMapLatest { (assistantId, folderId) ->
                 if (folderId == null) {
-                    conversationRepo.getUnfiledConversationsOfAssistantPaging(assistantId)
+                    conversationRepo.getUnfiledConversationsOfAssistant(assistantId)
                 } else {
-                    conversationRepo.getConversationsOfFolderPaging(folderId)
+                    conversationRepo.getConversationsOfFolder(folderId)
                 }
             }
-            .map { pagingData ->
-                pagingData
-                    .map { ConversationListItem.Item(it) }
-                    .insertSeparators<ConversationListItem.Item, ConversationListItem> { before, after ->
-                        when {
-                            before == null && after is ConversationListItem.Item -> {
-                                if (after.conversation.isPinned) {
-                                    ConversationListItem.PinnedHeader
-                                } else {
-                                    val afterDate = after.conversation.updateAt
-                                        .atZone(ZoneId.systemDefault())
-                                        .toLocalDate()
-                                    ConversationListItem.DateHeader(
-                                        date = afterDate,
-                                        label = getDateLabel(afterDate)
-                                    )
-                                }
-                            }
-
-                            before is ConversationListItem.Item && after is ConversationListItem.Item -> {
-                                if (before.conversation.isPinned && !after.conversation.isPinned) {
-                                    val afterDate = after.conversation.updateAt
-                                        .atZone(ZoneId.systemDefault())
-                                        .toLocalDate()
-                                    ConversationListItem.DateHeader(
-                                        date = afterDate,
-                                        label = getDateLabel(afterDate)
-                                    )
-                                } else if (!after.conversation.isPinned) {
-                                    val beforeDate = before.conversation.updateAt
-                                        .atZone(ZoneId.systemDefault())
-                                        .toLocalDate()
-                                    val afterDate = after.conversation.updateAt
-                                        .atZone(ZoneId.systemDefault())
-                                        .toLocalDate()
-
-                                    if (beforeDate != afterDate) {
-                                        ConversationListItem.DateHeader(
-                                            date = afterDate,
-                                            label = getDateLabel(afterDate)
-                                        )
-                                    } else {
-                                        null
-                                    }
-                                } else {
-                                    null
-                                }
-                            }
-
-                            else -> null
-                        }
-                    }
-            }
-            .cachedIn(viewModelScope)
+            .map { list -> withHeaders(list.map { ConversationListItem.Item(it) }) }
 
     val scrollIndex: Int get() = savedStateHandle["scrollIndex"] ?: 0
     val scrollOffset: Int get() = savedStateHandle["scrollOffset"] ?: 0
@@ -169,27 +112,16 @@ class ChatDrawerVM(
     }
 
     /**
-     * 分页拉取当前视图（按助手 + 当前文件夹筛选）下的全部会话，用于“全选”。
+     * 一次性读取当前视图（按助手 + 当前文件夹筛选）下的全部会话，用于“全选”。
      */
     suspend fun loadAllConversationsForSelection(): List<Conversation> {
         val assistantId = assistantIdFlow.first()
         val folderId = _selectedFolderId.value
-        val result = mutableListOf<Conversation>()
-        var offset = 0
-        val pageSize = 64
-        while (true) {
-            val page = if (folderId == null) {
-                conversationRepo.getUnfiledConversationsOfAssistantPage(assistantId, offset, pageSize)
-            } else {
-                conversationRepo.getConversationsOfFolderPage(folderId, offset, pageSize)
-            }
-            if (page.items.isEmpty()) break
-            result += page.items
-            val next = page.nextOffset ?: break
-            if (next <= offset) break
-            offset = next
+        return if (folderId == null) {
+            conversationRepo.getUnfiledConversationsOfAssistant(assistantId).first()
+        } else {
+            conversationRepo.getConversationsOfFolder(folderId).first()
         }
-        return result
     }
 
     fun selectFolderAfterAssistantChange(assistantId: Uuid, folderId: Uuid?) {
@@ -260,5 +192,62 @@ class ChatDrawerVM(
             yesterday -> context.getString(R.string.chat_page_yesterday)
             else -> date.toLocalString(date.year != today.year)
         }
+    }
+
+    /**
+     * 在一列按「置顶优先、更新时间倒序」排序的会话前插入对应的置顶/日期标题。
+     * 结果总长度略大于原列表，完全在内存中构建，供侧栏全量列表一次展示。
+     */
+    private fun withHeaders(items: List<ConversationListItem.Item>): List<ConversationListItem> {
+        val result = mutableListOf<ConversationListItem>()
+        var previous: ConversationListItem.Item? = null
+        for (after in items) {
+            val before = previous
+            when {
+                before == null -> {
+                    if (after.conversation.isPinned) {
+                        result += ConversationListItem.PinnedHeader
+                    } else {
+                        val afterDate = after.conversation.updateAt
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+                        result += ConversationListItem.DateHeader(
+                            date = afterDate,
+                            label = getDateLabel(afterDate)
+                        )
+                    }
+                }
+
+                before.conversation.isPinned && !after.conversation.isPinned -> {
+                    val afterDate = after.conversation.updateAt
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate()
+                    result += ConversationListItem.DateHeader(
+                        date = afterDate,
+                        label = getDateLabel(afterDate)
+                    )
+                }
+
+                !after.conversation.isPinned -> {
+                    val beforeDate = before.conversation.updateAt
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate()
+                    val afterDate = after.conversation.updateAt
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate()
+                    if (beforeDate != afterDate) {
+                        result += ConversationListItem.DateHeader(
+                            date = afterDate,
+                            label = getDateLabel(afterDate)
+                        )
+                    }
+                }
+
+                else -> Unit
+            }
+            result += after
+            previous = after
+        }
+        return result
     }
 }

@@ -130,6 +130,8 @@
   <string name="assistant_page_regex_visual_only">僅視覺效果（僅影響顯示，不影響實際訊息）</string>
   <string name="assistant_page_remove">移除</string>
   <string name="assistant_page_remove_background">移除背景</string>
+  <string name="assistant_page_return_thinking">回傳思考</string>
+  <string name="assistant_page_return_thinking_desc">把歷史訊息中的思考內容回傳給模型</string>
   <string name="assistant_page_select_background">選擇背景圖片</string>
   <string name="assistant_page_select_from_gallery">從相簿選擇</string>
   <string name="assistant_page_stream_output">串流輸出</string>
@@ -791,6 +793,7 @@
   <string name="setting_page_built_in_tools_url_context_desc">啟用 URL 內容處理</string>
   <string name="setting_page_chat_storage">儲存空間管理</string>
   <string name="chat_message_attachment_deleted">附件已被刪除</string>
+  <string name="chat_message_cannot_edit_tool_call">無法編輯含有工具呼叫的訊息</string>
   <string name="setting_page_chat_storage_desc">%1$d 個檔案，%2$.2f MB</string>
   <string name="setting_page_color_mode">顏色模式</string>
   <string name="setting_page_color_mode_dark">深色</string>
@@ -1116,7 +1119,6 @@
   <string name="setting_model_page_prompt_ocr">OCR 提示詞</string>
   <string name="setting_model_page_prompt_compress">上下文壓縮提示詞</string>
   <string name="setting_display_page_bubble_opacity_title">氣泡透明度</string>
-  <string name="setting_provider_page_include_history_reasoning">回傳歷史思考過程</string>
   <string name="assistant_page_gradient_background">漸層背景</string>
   <string name="assistant_page_gradient_background_desc">在聊天頁面上使用動態漸變背景</string>
   <string name="assistant_page_workspace">工作區</string>
@@ -1272,7 +1274,7 @@
   <string name="backup_page_export_failed_detail">匯出失敗：%1$s</string>
   <string name="backup_page_rikkahub_format">類 RikkaHub 格式</string>
   <string name="backup_page_tar_desc">將 App 資料匯出為 TAR 檔案（不相容 RikkaHub）</string>
-  <string name="backup_page_legacy_export">匯出舊版格式（相容 RikkaHub 2.4.x）</string>
+  <string name="backup_page_legacy_export">匯出舊版格式（相容 RikkaHub 2.4.1+）</string>
   <string name="backup_page_delete_remote_title">刪除 %1$s 備份檔案</string>
   <string name="backup_page_delete_remote_desc">確定要刪除這個備份檔案嗎？此操作無法復原。</string>
   <string name="backup_page_legacy_export_desc">移除此 Fork 新增的不相容設定欄位；不包含工作區環境</string>
@@ -1338,7 +1340,13 @@
   <string name="debug_page_creating_oversized_conversation">正在建立 30MB 超大對話…</string>
   <string name="debug_page_messages_conversation_title">%1$d 條訊息測試</string>
   <string name="debug_page_oversized_conversation_title">超大對話測試 (%1$dMB)</string>
+  <string name="debug_page_recalculate_chat_time">重新計算聊天時間</string>
+  <string name="debug_page_recalculating_chat_time">正在重新計算聊天時間…</string>
   <string name="debug_page_set_chat_model_null">將 Chat 模型設為空</string>
+  <string name="debug_page_save_database_now">立刻儲存資料庫</string>
+  <string name="debug_page_saving_database">正在儲存資料庫…</string>
+  <string name="debug_page_last_database_save_time">上次儲存時間: %1$s</string>
+  <string name="debug_page_last_database_save_time_never">上次儲存時間: 從未</string>
   <string name="default_provider_alibaba_bailian">阿里云百炼</string>
   <string name="default_provider_moonshot">月之暗面</string>
   <string name="default_provider_siliconflow">硅基流动</string>

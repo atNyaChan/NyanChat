@@ -146,11 +146,13 @@ class MessageQueueTest {
     }
 
     @Test
-    fun `rejects empty input but accepts attachment only input`() {
+    fun `rejects only truly empty input but accepts whitespace and attachment input`() {
         val queue = MessageQueue()
-        queue.enqueue(text("  "))
         queue.enqueue(emptyList())
         assertNull(queue.takeNext())
+
+        queue.enqueue(text("  "))
+        assertEquals(text("  "), queue.takeNext()!!.parts)
 
         val parts = listOf(UIMessagePart.Image("file:///test.png"))
         queue.enqueue(parts)

@@ -12,9 +12,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -59,8 +60,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -88,7 +87,7 @@ sealed class ConversationListItem {
 @Composable
 fun ColumnScope.ConversationList(
     current: Conversation,
-    conversations: LazyPagingItems<ConversationListItem>,
+    conversations: List<ConversationListItem>,
     conversationJobs: Collection<Uuid>,
     listState: LazyListState,
     totalConversations: Int,
@@ -105,9 +104,13 @@ fun ColumnScope.ConversationList(
     var selectedConversations by remember { mutableStateOf<Map<Uuid, Conversation>>(emptyMap()) }
     val scope = rememberCoroutineScope()
 
+    // 多选状态下长按聊天时，弹出仅含「移动到…/删除」菜单的目标会话 id。
+    // 状态放在父级而不是单个 item 的 remember 里，避免列表重组合时被重置。
+    var batchMenuConversationId by remember { mutableStateOf<Uuid?>(null) }
+
     // 列表内容快照标识：会话增删/移动/置顶等引起内容变化时，用于触发一次「当前会话居中」。
-    // 用整个条目序列拼接而不是 itemCount，这样数量不变但对调顺序时也能感知变化。
-    val itemContentKey = conversations.itemSnapshotList.items.joinToString("|") { item ->
+    // 用整个条目序列拼接而不是数量，这样数量不变但对调顺序时也能感知变化。
+    val itemContentKey = conversations.joinToString("|") { item ->
         when (item) {
             is ConversationListItem.DateHeader -> "d:${item.date}"
             is ConversationListItem.PinnedHeader -> "p"
@@ -118,9 +121,9 @@ fun ColumnScope.ConversationList(
     // 打开侧栏或列表内容刷新后，尽量把当前会话置于可视区域中间
     LaunchedEffect(centerCurrent, itemContentKey, current.id, listState) {
         if (!centerCurrent) return@LaunchedEffect
-        // 用户正在手动滚动时不打扰（例如浏览时触发的分页加载引起的列表变化）
+        // 用户正在手动滚动时不打扰（例如浏览时触发的列表变化）
         if (listState.isScrollInProgress) return@LaunchedEffect
-        val currentIndex = conversations.itemSnapshotList.items.indexOfFirst {
+        val currentIndex = conversations.indexOfFirst {
             (it as? ConversationListItem.Item)?.conversation?.id == current.id
         }
         if (currentIndex < 0) return@LaunchedEffect
@@ -129,8 +132,12 @@ fun ColumnScope.ConversationList(
             return@LaunchedEffect
         }
 
+        // 目标条目尚不在可视区域内（上面的可见性判断已提前返回），先瞬时（无平滑动画）定位到它，
+        // 以便读取其实际高度来计算居中偏移；这里不做平滑滚动，
+        // 避免“先滚到可视区域上方、再滚到中间”的两段式动画。
         listState.scrollToItem(currentIndex)
-        // 先滚动到该条目再测量其高度与位置，以便计算居中所需的偏移
+
+        // 等到目标条目完成布局，读取它的高度与位置
         val itemInfo = withTimeoutOrNull(2000) {
             snapshotFlow {
                 listState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == currentIndex }
@@ -145,7 +152,10 @@ fun ColumnScope.ConversationList(
         val currentTop = itemInfo.offset - layoutInfo.viewportStartOffset
         val delta = currentTop - targetTop
         if (delta != 0) {
-            listState.scrollBy(delta.toFloat())
+            // 一次平滑滚动，直接从当前偏移滚到目标偏移（正好居中）。
+            // 注：animateScrollToItem 的 scrollOffset 是 firstVisibleItemScrollOffset 语义，
+            // 正数代表条目滚到视口上方、数值符号相反，因此这里用 scrollBy(delta) 而非 scrollOffset。
+            listState.animateScrollBy(delta.toFloat())
         }
     }
 
@@ -191,7 +201,7 @@ fun ColumnScope.ConversationList(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-        if (conversations.itemCount == 0) {
+        if (conversations.isEmpty()) {
             item {
                 Box(
                     modifier = Modifier
@@ -209,16 +219,16 @@ fun ColumnScope.ConversationList(
         }
 
         items(
-            count = conversations.itemCount,
-            key = conversations.itemKey { item ->
+            items = conversations,
+            key = { item ->
                 when (item) {
                     is ConversationListItem.DateHeader -> "date_${item.date}"
                     is ConversationListItem.PinnedHeader -> "pinned_header"
                     is ConversationListItem.Item -> item.conversation.id.toString()
                 }
             }
-        ) { index ->
-            when (val item = conversations[index]) {
+        ) { item ->
+            when (item) {
                 is ConversationListItem.DateHeader -> {
                     DateHeaderItem(
                         label = item.label,
@@ -247,17 +257,29 @@ fun ColumnScope.ConversationList(
                         },
                         onLongClick = { conversation ->
                             selectedConversations = selectedConversations + (conversation.id to conversation)
+                            batchMenuConversationId = conversation.id
                         },
+                        onBeginMultiSelect = { conversation ->
+                            selectedConversations = selectedConversations + (conversation.id to conversation)
+                        },
+                        onBatchMove = {
+                            onMove(selectedConversations.values.toList(), true)
+                            selectedConversations = emptyMap()
+                            batchMenuConversationId = null
+                        },
+                        onBatchDelete = {
+                            onDeleteSelected(selectedConversations.values.toList())
+                            selectedConversations = emptyMap()
+                            batchMenuConversationId = null
+                        },
+                        batchMenuExpanded = selectedConversations.isNotEmpty() && batchMenuConversationId == item.conversation.id,
+                        onDismissBatchMenu = { batchMenuConversationId = null },
                         onDelete = onDelete,
                         onEditTitle = onEditTitle,
                         onPin = onPin,
                         onMove = { onMove(listOf(it), false) },
                         modifier = Modifier.animateItem()
                     )
-                }
-
-                null -> {
-                    // Placeholder for loading state
                 }
             }
         }
@@ -321,11 +343,16 @@ private fun ConversationItem(
     multiSelecting: Boolean,
     loading: Boolean,
     modifier: Modifier = Modifier,
+    onBatchMove: () -> Unit = {},
+    onBatchDelete: () -> Unit = {},
+    batchMenuExpanded: Boolean = false,
+    onDismissBatchMenu: () -> Unit = {},
     onDelete: (Conversation) -> Unit = {},
     onEditTitle: (Conversation) -> Unit = {},
     onPin: (Conversation) -> Unit = {},
     onMove: (Conversation) -> Unit = {},
     onLongClick: (Conversation) -> Unit = {},
+    onBeginMultiSelect: (Conversation) -> Unit = {},
     onClick: (Conversation) -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -401,73 +428,95 @@ private fun ConversationItem(
                 )
             }
             DropdownMenu(
-                expanded = showDropdownMenu,
-                onDismissRequest = { showDropdownMenu = false },
+                expanded = showDropdownMenu || batchMenuExpanded,
+                onDismissRequest = {
+                    showDropdownMenu = false
+                    onDismissBatchMenu()
+                },
                 shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
                 offset = DpOffset(
                     x = with(LocalDensity.current) { menuOffsetX.toDp() },
                     y = 0.dp,
                 ),
             ) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.conversation_multi_select)) },
-                    onClick = {
-                        onLongClick(conversation)
-                        showDropdownMenu = false
-                    },
-                    leadingIcon = { Icon(HugeIcons.CheckList, null) },
-                )
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.conversation_move_to)) },
-                    onClick = {
-                        onMove(conversation)
-                        showDropdownMenu = false
-                    },
-                    leadingIcon = { Icon(HugeIcons.Forward02, null) },
-                )
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            if (conversation.isPinned) stringResource(R.string.unpin_chat) else stringResource(R.string.pin_chat)
-                        )
-                    },
-                    onClick = {
-                        onPin(conversation)
-                        showDropdownMenu = false
-                    },
-                    leadingIcon = {
-                        Icon(
-                            if (conversation.isPinned) HugeIcons.PinOff else HugeIcons.Pin,
-                            null
-                        )
-                    }
-                )
+                if (multiSelecting) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.conversation_move_to)) },
+                        onClick = {
+                            showDropdownMenu = false
+                            onBatchMove()
+                        },
+                        leadingIcon = { Icon(HugeIcons.Forward02, null) },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.common_delete)) },
+                        onClick = {
+                            showDropdownMenu = false
+                            onBatchDelete()
+                        },
+                        leadingIcon = { Icon(HugeIcons.Delete01, null) },
+                    )
+                } else {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.conversation_multi_select)) },
+                        onClick = {
+                            onBeginMultiSelect(conversation)
+                            showDropdownMenu = false
+                        },
+                        leadingIcon = { Icon(HugeIcons.CheckList, null) },
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.conversation_move_to)) },
+                        onClick = {
+                            onMove(conversation)
+                            showDropdownMenu = false
+                        },
+                        leadingIcon = { Icon(HugeIcons.Forward02, null) },
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                if (conversation.isPinned) stringResource(R.string.unpin_chat) else stringResource(R.string.pin_chat)
+                            )
+                        },
+                        onClick = {
+                            onPin(conversation)
+                            showDropdownMenu = false
+                        },
+                        leadingIcon = {
+                            Icon(
+                                if (conversation.isPinned) HugeIcons.PinOff else HugeIcons.Pin,
+                                null
+                            )
+                        }
+                    )
 
-                DropdownMenuItem(
-                    text = {
-                        Text(stringResource(R.string.chat_page_edit_title))
-                    },
-                    onClick = {
-                        onEditTitle(conversation)
-                        showDropdownMenu = false
-                    },
-                    leadingIcon = {
-                        Icon(HugeIcons.PencilEdit01, null)
-                    }
-                )
+                    DropdownMenuItem(
+                        text = {
+                            Text(stringResource(R.string.chat_page_edit_title))
+                        },
+                        onClick = {
+                            onEditTitle(conversation)
+                            showDropdownMenu = false
+                        },
+                        leadingIcon = {
+                            Icon(HugeIcons.PencilEdit01, null)
+                        }
+                    )
 
-                DropdownMenuItem(
-                    text = {
-                        Text(stringResource(id = R.string.common_delete))
-                    },
-                    onClick = {
-                        onDelete(conversation)
-                        showDropdownMenu = false
-                    },
-                    leadingIcon = {
-                        Icon(HugeIcons.Delete01, null)
-                    }
-                )
+                    DropdownMenuItem(
+                        text = {
+                            Text(stringResource(id = R.string.common_delete))
+                        },
+                        onClick = {
+                            onDelete(conversation)
+                            showDropdownMenu = false
+                        },
+                        leadingIcon = {
+                            Icon(HugeIcons.Delete01, null)
+                        }
+                    )
+                }
             }
             }
         }

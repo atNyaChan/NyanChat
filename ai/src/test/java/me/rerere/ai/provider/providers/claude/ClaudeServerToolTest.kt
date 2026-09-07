@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
@@ -420,16 +421,11 @@ class ClaudeServerToolTest {
         val method = ClaudeProvider::class.java.getDeclaredMethod(
             "buildMessages",
             List::class.java,
+            JsonObject::class.java,
             Boolean::class.javaPrimitiveType,
-            me.rerere.ai.provider.ClaudePromptCacheTtl::class.java,
         )
         method.isAccessible = true
-        return method.invoke(
-            provider,
-            messages,
-            false,
-            me.rerere.ai.provider.ClaudePromptCacheTtl.FIVE_MINUTES,
-        ) as JsonArray
+        return method.invoke(provider, messages, null, false) as JsonArray
     }
 
     private fun serverToolUse(

@@ -1,6 +1,7 @@
 package me.rerere.ai.provider.providers.claude
 
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
@@ -8,7 +9,6 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import me.rerere.ai.core.MessageRole
-import me.rerere.ai.provider.ClaudePromptCacheTtl
 import me.rerere.ai.ui.ClaudeReasoningMetadata
 import me.rerere.ai.ui.ServerToolMetadata
 import me.rerere.ai.ui.ServerToolProtocol
@@ -46,11 +46,11 @@ class ClaudeRequestMessageTest {
         val method = ClaudeProvider::class.java.getDeclaredMethod(
             "buildMessages",
             List::class.java,
+            JsonObject::class.java,
             Boolean::class.javaPrimitiveType,
-            ClaudePromptCacheTtl::class.java
         )
         method.isAccessible = true
-        return method.invoke(provider, messages, false, ClaudePromptCacheTtl.FIVE_MINUTES) as JsonArray
+        return method.invoke(provider, messages, null, true) as JsonArray
     }
 
     @Test

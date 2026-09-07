@@ -130,6 +130,8 @@
   <string name="assistant_page_regex_visual_only">Visual Only (affects display only, not actual message)</string>
   <string name="assistant_page_remove">Remove</string>
   <string name="assistant_page_remove_background">Remove Background</string>
+  <string name="assistant_page_return_thinking">Return Thinking</string>
+  <string name="assistant_page_return_thinking_desc">Send thinking content from previous messages back to the model</string>
   <string name="assistant_page_select_background">Select Background Image</string>
   <string name="assistant_page_select_from_gallery">Select from Gallery</string>
   <string name="assistant_page_stream_output">Stream Output</string>
@@ -791,6 +793,7 @@
   <string name="setting_page_built_in_tools_url_context_desc">Enable URL content processing</string>
   <string name="setting_page_chat_storage">Storage Management</string>
   <string name="chat_message_attachment_deleted">Attachment deleted</string>
+  <string name="chat_message_cannot_edit_tool_call">Cannot edit messages containing tool calls</string>
   <string name="setting_page_chat_storage_desc">%1$d files, %2$.2f MB</string>
   <string name="setting_page_color_mode">Color Mode</string>
   <string name="setting_page_color_mode_dark">Dark</string>
@@ -1116,7 +1119,6 @@
   <string name="setting_model_page_prompt_ocr">OCR Prompt</string>
   <string name="setting_model_page_prompt_compress">Context Compression Prompt</string>
   <string name="setting_display_page_bubble_opacity_title">Bubble Opacity</string>
-  <string name="setting_provider_page_include_history_reasoning">Include History Reasoning</string>
   <string name="assistant_page_gradient_background">Gradient Background</string>
   <string name="assistant_page_gradient_background_desc">Use a dynamic gradient background on the chat page</string>
   <string name="assistant_page_workspace">Workspace</string>
@@ -1272,7 +1274,7 @@
   <string name="backup_page_export_failed_detail">Export failed: %1$s</string>
   <string name="backup_page_rikkahub_format">RikkaHub-like format</string>
   <string name="backup_page_tar_desc">Export app data as a TAR file (not compatible with RikkaHub)</string>
-  <string name="backup_page_legacy_export">Export legacy format (RikkaHub 2.4.x compatible)</string>
+  <string name="backup_page_legacy_export">Export legacy format (RikkaHub 2.4.1+ compatible)</string>
   <string name="backup_page_delete_remote_title">Delete %1$s backup file</string>
   <string name="backup_page_delete_remote_desc">Are you sure you want to delete this backup file? This action cannot be undone.</string>
   <string name="backup_page_legacy_export_desc">Remove incompatible settings added by this fork; workspace environments are not included</string>
@@ -1338,7 +1340,13 @@
   <string name="debug_page_creating_oversized_conversation">Creating a 30MB oversized conversation…</string>
   <string name="debug_page_messages_conversation_title">%1$d messages test</string>
   <string name="debug_page_oversized_conversation_title">Oversized conversation test (%1$dMB)</string>
+  <string name="debug_page_recalculate_chat_time">Recalculate chat times</string>
+  <string name="debug_page_recalculating_chat_time">Recalculating chat times…</string>
   <string name="debug_page_set_chat_model_null">Set Chat model to empty</string>
+  <string name="debug_page_save_database_now">Save database now</string>
+  <string name="debug_page_saving_database">Saving database…</string>
+  <string name="debug_page_last_database_save_time">Last save time: %1$s</string>
+  <string name="debug_page_last_database_save_time_never">Last save time: never</string>
   <string name="default_provider_alibaba_bailian">Alibaba Cloud Bailian</string>
   <string name="default_provider_moonshot">Moonshot AI</string>
   <string name="default_provider_siliconflow">SiliconFlow</string>

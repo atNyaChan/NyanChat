@@ -66,19 +66,6 @@ class ConversationRepository(
             }
     }
 
-    fun getConversationsOfAssistantPaging(assistantId: Uuid): Flow<PagingData<Conversation>> = Pager(
-        config = PagingConfig(
-            pageSize = PAGE_SIZE,
-            initialLoadSize = INITIAL_LOAD_SIZE,
-            enablePlaceholders = false
-        ),
-        pagingSourceFactory = { conversationDAO.getConversationsOfAssistantPaging(assistantId.toString()) }
-    ).flow.map { pagingData ->
-        pagingData.map { entity ->
-            conversationSummaryToConversation(entity)
-        }
-    }
-
     fun getUnfiledConversationsOfAssistantPaging(assistantId: Uuid): Flow<PagingData<Conversation>> = Pager(
         config = PagingConfig(
             pageSize = PAGE_SIZE,
@@ -90,6 +77,16 @@ class ConversationRepository(
         pagingData.map { entity ->
             conversationSummaryToConversation(entity)
         }
+    }
+
+    fun getUnfiledConversationsOfAssistant(assistantId: Uuid): Flow<List<Conversation>> {
+        return conversationDAO.getUnfiledConversationsOfAssistant(assistantId.toString())
+            .map { list -> list.map { conversationSummaryToConversation(it) } }
+    }
+
+    fun getConversationsOfFolder(folderId: Uuid): Flow<List<Conversation>> {
+        return conversationDAO.getConversationsOfFolder(folderId.toString())
+            .map { list -> list.map { conversationSummaryToConversation(it) } }
     }
 
     fun getConversationsOfFolderPaging(folderId: Uuid): Flow<PagingData<Conversation>> = Pager(
@@ -452,6 +449,20 @@ class ConversationRepository(
     suspend fun deleteConversationOfAssistant(assistantId: Uuid) {
         getConversationsOfAssistant(assistantId).first().forEach { conversation ->
             deleteConversation(conversation)
+        }
+    }
+
+    /**
+     * 扫描所有聊天，把每个聊天的排序时间（updateAt）修正为现存消息中最新的一条。
+     */
+    suspend fun recalculateConversationTimes() {
+        conversationDAO.getAllIds().forEach { id ->
+            val conversationId = runCatching { Uuid.parse(id) }.getOrNull() ?: return@forEach
+            val conversation = getConversationById(conversationId) ?: return@forEach
+            val newest = conversation.newestMessageTime ?: return@forEach
+            if (newest != conversation.updateAt) {
+                conversationDAO.update(conversationToConversationEntity(conversation.copy(updateAt = newest)))
+            }
         }
     }
 

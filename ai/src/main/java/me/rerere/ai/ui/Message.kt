@@ -114,7 +114,7 @@ fun List<UIMessagePart>.isEmptyUIMessage(): Boolean {
     if (this.isEmpty()) return true
     return this.all { message ->
         when (message) {
-            is UIMessagePart.Text -> message.text.isEmpty()
+            is UIMessagePart.Text -> message.text.isBlank()
             is UIMessagePart.Image -> message.url.isBlank()
             is UIMessagePart.Document -> message.url.isBlank()
             is UIMessagePart.Reasoning -> message.reasoning.isBlank()

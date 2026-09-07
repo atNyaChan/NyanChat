@@ -442,6 +442,7 @@ class GenerationLoop(
                 }
             },
             sessionId = conversationId?.toString(),
+            includeHistoryReasoning = assistant.includeHistoryReasoning,
         )
         try {
             if (stream) {

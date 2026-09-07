@@ -130,6 +130,8 @@
   <string name="assistant_page_regex_visual_only">Только визуально (влияет только на отображение, не на само сообщение)</string>
   <string name="assistant_page_remove">Удалить</string>
   <string name="assistant_page_remove_background">Убрать фон</string>
+  <string name="assistant_page_return_thinking">Отправка рассуждений</string>
+  <string name="assistant_page_return_thinking_desc">Отправлять модели содержимое рассуждений из предыдущих сообщений</string>
   <string name="assistant_page_select_background">Выбрать фоновое изображение</string>
   <string name="assistant_page_select_from_gallery">Выбрать из галереи</string>
   <string name="assistant_page_stream_output">Потоковый вывод</string>
@@ -791,6 +793,7 @@
   <string name="setting_page_built_in_tools_url_context_desc">Включить обработку содержимого по URL</string>
   <string name="setting_page_chat_storage">Управление хранилищем</string>
   <string name="chat_message_attachment_deleted">Вложение удалено</string>
+  <string name="chat_message_cannot_edit_tool_call">Невозможно редактировать сообщения, содержащие вызовы инструментов</string>
   <string name="setting_page_chat_storage_desc">%1$d файлов, %2$.2f МБ</string>
   <string name="setting_page_color_mode">Цветовая схема</string>
   <string name="setting_page_color_mode_dark">Тёмная</string>
@@ -1116,7 +1119,6 @@
   <string name="setting_model_page_prompt_ocr">Промпт OCR</string>
   <string name="setting_model_page_prompt_compress">Промпт сжатия контекста</string>
   <string name="setting_display_page_bubble_opacity_title">Прозрачность пузырьков</string>
-  <string name="setting_provider_page_include_history_reasoning">Отправлять историю рассуждений</string>
   <string name="assistant_page_gradient_background">Градиентный фон</string>
   <string name="assistant_page_gradient_background_desc">Использовать динамический градиентный фон на странице чата</string>
   <string name="assistant_page_workspace">Рабочая область</string>
@@ -1272,7 +1274,7 @@
   <string name="backup_page_export_failed_detail">Ошибка экспорта: %1$s</string>
   <string name="backup_page_rikkahub_format">Формат, подобный RikkaHub</string>
   <string name="backup_page_tar_desc">Экспорт данных приложения в TAR (несовместимо с RikkaHub)</string>
-  <string name="backup_page_legacy_export">Экспорт в старом формате (совместимо с RikkaHub 2.4.x)</string>
+  <string name="backup_page_legacy_export">Экспорт в старом формате (совместимо с RikkaHub 2.4.1+)</string>
   <string name="backup_page_delete_remote_title">Удалить файл резервной копии %1$s</string>
   <string name="backup_page_delete_remote_desc">Удалить этот файл резервной копии? Это действие нельзя отменить.</string>
   <string name="backup_page_legacy_export_desc">Удалить несовместимые настройки, добавленные в этом форке; окружения рабочих пространств не включены</string>
@@ -1338,7 +1340,13 @@
   <string name="debug_page_creating_oversized_conversation">Создание большого диалога на 30 МБ…</string>
   <string name="debug_page_messages_conversation_title">Тест с %1$d сообщениями</string>
   <string name="debug_page_oversized_conversation_title">Тест большого диалога (%1$d МБ)</string>
+  <string name="debug_page_recalculate_chat_time">Пересчитать время чатов</string>
+  <string name="debug_page_recalculating_chat_time">Пересчёт времени чатов…</string>
   <string name="debug_page_set_chat_model_null">Очистить модель Chat</string>
+  <string name="debug_page_save_database_now">Сохранить базу данных сейчас</string>
+  <string name="debug_page_saving_database">Сохранение базы данных…</string>
+  <string name="debug_page_last_database_save_time">Время последнего сохранения: %1$s</string>
+  <string name="debug_page_last_database_save_time_never">Время последнего сохранения: никогда</string>
   <string name="default_provider_alibaba_bailian">Alibaba Cloud Bailian</string>
   <string name="default_provider_moonshot">Moonshot AI</string>
   <string name="default_provider_siliconflow">SiliconFlow</string>

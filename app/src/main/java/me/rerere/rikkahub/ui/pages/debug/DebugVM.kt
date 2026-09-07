@@ -1,14 +1,19 @@
 package me.rerere.rikkahub.ui.pages.debug
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.rerere.ai.core.MessageRole
 import me.rerere.ai.ui.UIMessage
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.rikkahub.data.datastore.DEFAULT_ASSISTANT_ID
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.SettingsStore
+import me.rerere.rikkahub.data.db.AppDatabase
+import me.rerere.rikkahub.data.db.SQLiteConfiguration
 import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.data.model.MessageNode
 import me.rerere.rikkahub.data.repository.ConversationRepository
@@ -21,6 +26,8 @@ import kotlin.uuid.Uuid
 class DebugVM(
     private val settingsStore: SettingsStore,
     private val conversationRepository: ConversationRepository,
+    private val database: AppDatabase,
+    private val context: Context,
 ) : ViewModel() {
     fun updateSettings(settings: Settings) {
         viewModelScope.launch {
@@ -29,84 +36,104 @@ class DebugVM(
     }
 
     /**
+     * 立刻把 WAL 中的数据固化（checkpoint）到主数据库文件。
+     */
+    suspend fun saveDatabase() = withContext(Dispatchers.IO) {
+        database.openHelper.writableDatabase.query("PRAGMA wal_checkpoint(TRUNCATE)").use { cursor ->
+            check(cursor.moveToFirst() && cursor.getInt(0) == 0) {
+                "Could not checkpoint the database"
+            }
+        }
+    }
+
+    /** 主数据库文件最后修改时间（毫秒），即上次真正保存到 .db 文件的时间。 */
+    fun lastDatabaseSaveTimeMillis(): Long? {
+        val dbFile = context.getDatabasePath(SQLiteConfiguration.DATABASE_NAME)
+        return if (dbFile.exists()) dbFile.lastModified() else null
+    }
+
+    /**
+     * 重新计算所有聊天的排序时间（updateAt）为各自现存消息中最新的一条。
+     */
+    suspend fun recalculateConversationTimes() {
+        conversationRepository.recalculateConversationTimes()
+    }
+
+    /**
      * 创建一个超大的对话用于测试 CursorWindow 限制
      * @param sizeMB 目标大小（MB）
      * @param title 对话标题
      */
-    fun createOversizedConversation(sizeMB: Int = 3, title: String = "Oversized conversation test (${sizeMB}MB)") {
-        viewModelScope.launch {
-            val targetSize = sizeMB * 1024 * 1024
-            val messageNodes = mutableListOf<MessageNode>()
-            var currentSize = 0
+    suspend fun createOversizedConversation(sizeMB: Int = 3, title: String = "Oversized conversation test (${sizeMB}MB)") {
+        val targetSize = sizeMB * 1024 * 1024
+        val messageNodes = mutableListOf<MessageNode>()
+        var currentSize = 0
 
-            // 生成大量消息直到达到目标大小
-            var index = 0
-            while (currentSize < targetSize) {
-                // 生成一个包含大量文本的消息（约 100KB 每条）
-                val largeText = buildString {
-                    repeat(100) {
-                        append("This is a long test text used to test the CursorWindow size limit. ")
-                        append("The \"Row too big to fit into CursorWindow\" error usually occurs when a single row exceeds 2MB. ")
-                        append("Lorem ipsum dolor sit amet, consectetur adipiscing elit. ")
-                        append("Index: $index, Block: $it. ")
-                    }
+        // 生成大量消息直到达到目标大小
+        var index = 0
+        while (currentSize < targetSize) {
+            // 生成一个包含大量文本的消息（约 100KB 每条）
+            val largeText = buildString {
+                repeat(100) {
+                    append("This is a long test text used to test the CursorWindow size limit. ")
+                    append("The \"Row too big to fit into CursorWindow\" error usually occurs when a single row exceeds 2MB. ")
+                    append("Lorem ipsum dolor sit amet, consectetur adipiscing elit. ")
+                    append("Index: $index, Block: $it. ")
                 }
-
-                val userMessage = UIMessage(
-                    id = Uuid.random(),
-                    role = MessageRole.USER,
-                    parts = listOf(UIMessagePart.Text(largeText)),
-                    createdAt = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
-                )
-                val assistantMessage = UIMessage(
-                    id = Uuid.random(),
-                    role = MessageRole.ASSISTANT,
-                    parts = listOf(UIMessagePart.Text("Reply: $largeText")),
-                    createdAt = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
-                )
-
-                messageNodes.add(MessageNode.of(userMessage))
-                messageNodes.add(MessageNode.of(assistantMessage))
-
-                currentSize += largeText.length * 2 * 2 // 大约估算
-                index++
             }
 
-            val conversation = Conversation(
+            val userMessage = UIMessage(
                 id = Uuid.random(),
-                assistantId = DEFAULT_ASSISTANT_ID,
-                title = title,
-                messageNodes = messageNodes,
+                role = MessageRole.USER,
+                parts = listOf(UIMessagePart.Text(largeText)),
+                createdAt = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
+            )
+            val assistantMessage = UIMessage(
+                id = Uuid.random(),
+                role = MessageRole.ASSISTANT,
+                parts = listOf(UIMessagePart.Text("Reply: $largeText")),
+                createdAt = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
             )
 
-            conversationRepository.insertConversation(conversation)
+            messageNodes.add(MessageNode.of(userMessage))
+            messageNodes.add(MessageNode.of(assistantMessage))
+
+            currentSize += largeText.length * 2 * 2 // 大约估算
+            index++
         }
+
+        val conversation = Conversation(
+            id = Uuid.random(),
+            assistantId = DEFAULT_ASSISTANT_ID,
+            title = title,
+            messageNodes = messageNodes,
+        )
+
+        conversationRepository.insertConversation(conversation)
     }
 
-    fun createConversationWithMessages(messageCount: Int = 1024, title: String = "${messageCount} messages test") {
-        viewModelScope.launch {
-            val messageNodes = ArrayList<MessageNode>(messageCount)
-            val timeZone = TimeZone.currentSystemDefault()
-            repeat(messageCount) { index ->
-                val role = if (index % 2 == 0) MessageRole.USER else MessageRole.ASSISTANT
-                val message = UIMessage(
-                    id = Uuid.random(),
-                    role = role,
-                    parts = listOf(UIMessagePart.Text(randomMessageText(index, role))),
-                    createdAt = Clock.System.now().toLocalDateTime(timeZone),
-                )
-                messageNodes.add(MessageNode.of(message))
-            }
-
-            val conversation = Conversation(
+    suspend fun createConversationWithMessages(messageCount: Int = 1024, title: String = "${messageCount} messages test") {
+        val messageNodes = ArrayList<MessageNode>(messageCount)
+        val timeZone = TimeZone.currentSystemDefault()
+        repeat(messageCount) { index ->
+            val role = if (index % 2 == 0) MessageRole.USER else MessageRole.ASSISTANT
+            val message = UIMessage(
                 id = Uuid.random(),
-                assistantId = DEFAULT_ASSISTANT_ID,
-                title = title,
-                messageNodes = messageNodes,
+                role = role,
+                parts = listOf(UIMessagePart.Text(randomMessageText(index, role))),
+                createdAt = Clock.System.now().toLocalDateTime(timeZone),
             )
-
-            conversationRepository.insertConversation(conversation)
+            messageNodes.add(MessageNode.of(message))
         }
+
+        val conversation = Conversation(
+            id = Uuid.random(),
+            assistantId = DEFAULT_ASSISTANT_ID,
+            title = title,
+            messageNodes = messageNodes,
+        )
+
+        conversationRepository.insertConversation(conversation)
     }
 
     private fun randomMessageText(index: Int, role: MessageRole): String {

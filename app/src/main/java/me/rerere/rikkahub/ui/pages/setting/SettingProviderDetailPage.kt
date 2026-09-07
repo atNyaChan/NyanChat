@@ -781,16 +781,6 @@ private fun ProviderConfigTogglesCardGroup(
                     }
                 )
 
-                FormItem(
-                    label = { Text(stringResource(R.string.setting_provider_page_include_history_reasoning)) },
-                    tail = {
-                        Switch(
-                            checked = provider.includeHistoryReasoning,
-                            onCheckedChange = { onEdit(provider.copy(includeHistoryReasoning = it)) }
-                        )
-                    }
-                )
-
                 BalanceFormItem(
                     provider = provider,
                     balanceRefreshTick = balanceRefreshTick,
