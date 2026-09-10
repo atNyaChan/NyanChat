@@ -79,7 +79,7 @@ fun WorkspaceTerminalPage(id: String, initialCwd: String) {
     var pendingCloseTabId by remember(root) { mutableStateOf<Long?>(null) }
 
     LaunchedEffect(root, initialCwd) {
-        root?.let { sessionManager.ensureSession(it, initialCwd) }
+        root?.let { sessionManager.ensureSession(it, initialCwd, state.workspace?.shellCompatibilityMode ?: false) }
     }
 
     RikkahubTheme(colorMode = ColorMode.DARK) {
@@ -88,7 +88,7 @@ fun WorkspaceTerminalPage(id: String, initialCwd: String) {
                 root = root,
                 state = terminalState,
                 contentPadding = innerPadding,
-                onCreateTab = { root?.let { sessionManager.createTab(it, initialCwd) } },
+                onCreateTab = { root?.let { sessionManager.createTab(it, initialCwd, state.workspace?.shellCompatibilityMode ?: false) } },
                 onSelectTab = { tabId ->
                     root?.let { sessionManager.selectTab(it, tabId) }
                 },

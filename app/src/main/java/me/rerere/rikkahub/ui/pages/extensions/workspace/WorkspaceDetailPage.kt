@@ -85,6 +85,7 @@ import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
 import androidx.compose.ui.res.stringResource
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.ImagePreviewDialog
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalNavController
@@ -110,6 +111,7 @@ fun WorkspaceDetailPage(id: String) {
     val state by vm.state.collectAsStateWithLifecycle()
     val installProgress by vm.installProgress.collectAsStateWithLifecycle()
     val installError by vm.installError.collectAsStateWithLifecycle()
+    val settingsError by vm.settingsError.collectAsStateWithLifecycle()
     val hasWorkspaceContent = state.workspaceHasContent
     val pagerState = rememberPagerState { if (hasWorkspaceContent) 2 else 1 }
     val scope = rememberCoroutineScope()
@@ -327,6 +329,7 @@ fun WorkspaceDetailPage(id: String) {
                     installProgress = installProgress,
                     onInstallRootfs = { showInstallDialog = true },
                     onToolApprovalChange = vm::setToolApproval,
+                    onShellCompatibilityModeChange = vm::setShellCompatibilityMode,
                 )
 
                 1 -> WorkspaceFilesPage(
@@ -338,6 +341,11 @@ fun WorkspaceDetailPage(id: String) {
                     onOpen = { entry ->
                         when {
                             entry.isDirectory -> vm.open(entry)
+
+                            entry.name.substringAfterLast('.').equals("svg", ignoreCase = true) ->
+                                navController.navigate(
+                                    Screen.WorkspaceFileEditor(id, state.area.name, entry.path)
+                                )
 
                             else -> when (entry.detectFileType()) {
                                 WorkspaceFileType.TEXT -> navController.navigate(
@@ -417,6 +425,20 @@ fun WorkspaceDetailPage(id: String) {
             text = { Text(message) },
             confirmButton = {
                 TextButton(onClick = vm::dismissInstallError) {
+                    Text(stringResource(R.string.common_ok))
+                }
+            },
+        )
+    }
+
+    settingsError?.let { message ->
+        AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
+            onDismissRequest = vm::dismissSettingsError,
+            title = { Text(stringResource(R.string.workspace_detail_settings_save_failed)) },
+            text = { Text(message.ifBlank { stringResource(R.string.workspace_detail_settings_save_failed) }) },
+            confirmButton = {
+                TextButton(onClick = vm::dismissSettingsError) {
                     Text(stringResource(R.string.common_ok))
                 }
             },
@@ -599,75 +621,82 @@ private fun WorkspaceBasicPage(
     installProgress: RootfsInstallProgress?,
     onInstallRootfs: () -> Unit,
     onToolApprovalChange: (String, Boolean) -> Unit,
+    onShellCompatibilityModeChange: (Boolean) -> Unit,
 ) {
     val shellStatus = workspace?.shellStatus
     val installing = installProgress != null
     val hasRootfs = shellStatus == WorkspaceShellStatus.READY.name
     val isBroken = shellStatus == WorkspaceShellStatus.BROKEN.name
-    val installButtonText = when {
-        shellStatus == WorkspaceShellStatus.READY.name || isBroken ->
-            stringResource(R.string.workspace_detail_reinstall_rootfs)
-        else -> stringResource(R.string.workspace_detail_install_rootfs)
-    }
+    val isReinstall = hasRootfs || isBroken
+    val installButtonText =
+        if (isReinstall) stringResource(R.string.workspace_detail_reinstall_rootfs)
+        else stringResource(R.string.workspace_detail_install_rootfs)
+    val installDescription =
+        if (isReinstall) stringResource(R.string.workspace_detail_reinstall_rootfs_desc)
+        else stringResource(R.string.workspace_detail_enable_shell_desc)
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CustomColors.cardColorsOnSurfaceContainer,
-                shape = rememberScreenEdgeCornerShape(),
+            CardGroup(
+                title = {
+                    Text(stringResource(R.string.workspace_detail_rootfs))
+                },
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    Text(
-                        text = installButtonText,
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    if (!hasRootfs) {
+                item {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Button(
+                            onClick = onInstallRootfs,
+                            enabled = workspace != null && !installing,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Icon(HugeIcons.Bash, contentDescription = null)
+                            Text(
+                                text = installButtonText,
+                                modifier = Modifier.padding(start = 8.dp),
+                            )
+                        }
                         Text(
-                            text = stringResource(
-                                if (isBroken) {
-                                    R.string.workspace_detail_broken_rootfs_desc
-                                } else {
-                                    R.string.workspace_detail_enable_shell_desc
-                                }
-                            ),
+                            text = installDescription,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-                        if (isBroken && workspaceHasContent) {
-                            Text(
-                                text = stringResource(R.string.workspace_detail_reinstall_warning),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.error,
-                            )
-                        }
                     }
-
-                    Button(
-                        onClick = onInstallRootfs,
-                        enabled = workspace != null && !installing,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Icon(HugeIcons.Bash, contentDescription = null)
-                        Text(
-                            text = installButtonText,
-                            modifier = Modifier.padding(start = 8.dp),
-                        )
-                    }
-
                 }
             }
         }
 
         if (hasRootfs) {
+            item {
+                CardGroup(
+                    title = {
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(stringResource(R.string.workspace_detail_compatibility_mode))
+                            Text(
+                                text = stringResource(R.string.workspace_detail_compatibility_mode_desc),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    },
+                ) {
+                    item(
+                        headlineContent = { Text(stringResource(R.string.workspace_detail_compatibility_mode)) },
+                        trailingContent = {
+                            Switch(
+                                checked = workspace.shellCompatibilityMode,
+                                onCheckedChange = onShellCompatibilityModeChange,
+                            )
+                        },
+                    )
+                }
+            }
+
             item {
                 WorkspaceToolApprovalCard(
                     workspace = workspace,
@@ -684,59 +713,38 @@ private fun WorkspaceToolApprovalCard(
     onToolApprovalChange: (String, Boolean) -> Unit,
 ) {
     val overrides = workspace?.toolApprovalOverrides().orEmpty()
+    val tools = workspaceToolApprovalItems()
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CustomColors.cardColorsOnSurfaceContainer,
-        shape = rememberScreenEdgeCornerShape(),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
+    CardGroup(
+        title = {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(
-                    text = stringResource(R.string.workspace_detail_tool_approval),
-                    style = MaterialTheme.typography.titleMedium,
-                )
+                Text(stringResource(R.string.workspace_detail_tool_approval))
                 Text(
                     text = stringResource(R.string.workspace_detail_tool_approval_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-
-            workspaceToolApprovalItems().forEach { (toolName, label) ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(2.dp),
-                    ) {
-                        Text(
-                            text = label,
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                        Text(
-                            text = toolName,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
+        },
+    ) {
+        tools.forEach { (toolName, label) ->
+            item(
+                headlineContent = { Text(label) },
+                supportingContent = {
+                    Text(
+                        text = toolName,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                trailingContent = {
                     Switch(
                         checked = resolveWorkspaceToolApproval(toolName, overrides),
                         onCheckedChange = { onToolApprovalChange(toolName, it) },
                         enabled = workspace != null,
                     )
-                }
-            }
+                },
+            )
         }
     }
 }

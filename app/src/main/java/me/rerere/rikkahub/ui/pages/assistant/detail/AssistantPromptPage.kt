@@ -80,6 +80,7 @@ import me.rerere.rikkahub.data.model.toMessageNode
 import me.rerere.rikkahub.ui.components.message.ChatMessage
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CompactNumberField
 import me.rerere.rikkahub.ui.components.ui.FormItem
 import me.rerere.rikkahub.ui.components.ui.ExtensionSelector
 import me.rerere.rikkahub.ui.components.ui.Select
@@ -152,6 +153,9 @@ private fun AssistantPromptContent(
     var pendingPresetDeleteIndex by remember { mutableStateOf<Int?>(null) }
     var pendingRegexDeleteIndex by remember { mutableStateOf<Int?>(null) }
     var expandedRegexId by remember { mutableStateOf<Uuid?>(null) }
+    var timeReminderIntervalInput by remember(assistant.timeReminderIntervalMinutes) {
+        mutableStateOf(assistant.timeReminderIntervalMinutes.toString())
+    }
 
     Column(
         modifier = Modifier
@@ -276,6 +280,29 @@ private fun AssistantPromptContent(
                     )
                 }
             )
+            if (assistant.enableTimeReminder) {
+                FormItem(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    label = {
+                        Text(stringResource(R.string.assistant_page_time_reminder_interval))
+                    },
+                    description = {
+                        Text(stringResource(R.string.assistant_page_time_reminder_interval_desc))
+                    },
+                    tail = {
+                        CompactNumberField(
+                            value = timeReminderIntervalInput,
+                            onValueChange = { value ->
+                                timeReminderIntervalInput = value.filter { it.isDigit() }
+                                timeReminderIntervalInput.toIntOrNull()?.takeIf { it > 0 }?.let {
+                                    onUpdate(assistant.copy(timeReminderIntervalMinutes = it))
+                                }
+                            },
+                            isError = timeReminderIntervalInput.toIntOrNull()?.let { it <= 0 } ?: true,
+                        )
+                    },
+                )
+            }
         }
 
         Card(

@@ -156,6 +156,8 @@
   <string name="assistant_page_thinking_budget">思考预算</string>
   <string name="assistant_page_time_reminder">时间提醒</string>
   <string name="assistant_page_time_reminder_desc">在间隔较大的消息前自动插入时间提醒，帮助 AI 理解对话间隔</string>
+  <string name="assistant_page_time_reminder_interval">时间提醒间隔</string>
+  <string name="assistant_page_time_reminder_interval_desc">当消息间隔超过此间隔时插入提醒（始终在第一条用户消息之前提醒），单位为分钟。</string>
   <string name="assistant_page_title">助手设置</string>
   <string name="assistant_picker_title">选择助手</string>
   <string name="assistant_page_top_p">Top P</string>
@@ -366,6 +368,13 @@
   <string name="imggen_page_no_generated_images">暂无生成的图片</string>
   <string name="imggen_page_delete_image_title">删除图片</string>
   <string name="imggen_page_delete_image_confirm">确定删除这张图片吗？此操作无法撤销。</string>
+  <string name="imggen_page_delete_images_title">删除图片</string>
+  <string name="imggen_page_delete_images_message">删除选定的图片（%1$d）？此操作无法撤销。</string>
+  <string name="imggen_page_delete_images_success">已删除 %1$d 张图片</string>
+  <string name="imggen_page_delete_images_failed">已删除：%1$d。失败：%2$d。请重试。</string>
+  <string name="imggen_page_deleting">删除中…</string>
+  <string name="imggen_page_selected_count">已选择：%1$d</string>
+  <string name="imggen_page_select_image">选择图片</string>
   <string name="imggen_page_prompt_placeholder">描述您想要生成的图片...</string>
   <string name="imggen_page_save_failed">保存失败: %1$s</string>
   <string name="imggen_page_settings_title">图片生成设置</string>
@@ -1151,11 +1160,16 @@
   <string name="workspace_detail_install_success">已为工作区 %1$s 安装 Rootfs</string>
   <string name="workspace_detail_reinstall_rootfs">重新安装 Rootfs</string>
   <string name="workspace_detail_install_rootfs">安装 Rootfs</string>
+  <string name="workspace_detail_rootfs">Rootfs</string>
+  <string name="workspace_detail_reinstall_rootfs_desc">重新安装 Rootfs 将会重置此工作区的环境</string>
   <string name="workspace_detail_enable_shell_desc">允许此工作区使用本地 Rootfs 运行终端环境</string>
   <string name="workspace_detail_broken_rootfs_desc">此工作区已损坏，请重新安装 Rootfs 以继续使用</string>
   <string name="workspace_detail_reinstall_warning">重新安装 Rootfs 会删除所有原有文件，请考虑先导出工作区以备份文件</string>
   <string name="workspace_detail_tool_approval">工具审批</string>
   <string name="workspace_detail_tool_approval_desc">启用后，AI 调用此工具前需要用户确认</string>
+  <string name="workspace_detail_compatibility_mode">兼容模式</string>
+  <string name="workspace_detail_compatibility_mode_desc">如果终端无法启动，请尝试启用此功能。这可能会降低性能。适用于新的终端标签页及后续命令。</string>
+  <string name="workspace_detail_settings_save_failed">保存设置失败</string>
   <string name="workspace_detail_tool_read_file">读取文件</string>
   <string name="workspace_detail_tool_write_file">写入文件</string>
   <string name="workspace_detail_tool_edit_file">编辑文件</string>
@@ -1274,7 +1288,7 @@
   <string name="backup_page_export_failed_detail">导出失败：%1$s</string>
   <string name="backup_page_rikkahub_format">类 RikkaHub 格式</string>
   <string name="backup_page_tar_desc">导出 App 数据为 TAR 文件（不兼容 RikkaHub）</string>
-  <string name="backup_page_legacy_export">导出旧版格式（兼容 RikkaHub 2.4.1+）</string>
+  <string name="backup_page_legacy_export">导出旧版格式（兼容 RikkaHub 2.5.1+）</string>
   <string name="backup_page_delete_remote_title">删除 %1$s 备份文件</string>
   <string name="backup_page_delete_remote_desc">确定删除这个备份文件吗？此操作无法撤销。</string>
   <string name="backup_page_legacy_export_desc">移除本 Fork 新增的不兼容设置字段；不包含工作区环境</string>
@@ -1314,7 +1328,7 @@
   <string name="setting_page_search_delete_confirm">确定删除搜索服务“%1$s”吗？</string>
   <string name="setting_mcp_page_delete_confirm">确定删除 MCP 服务器“%1$s”吗？</string>
   <string name="assistant_page_context_message_limit">上下文消息限制</string>
-  <string name="assistant_page_context_message_limit_desc">限制发送给模型的最近消息数量。超出限制时，上下文会一次性缩减至约一半，而非每轮丢弃一条消息，从而保持请求前缀稳定，并使提示词缓存在多轮对话中持续生效，最小为20。留空表示无限制。</string>
+  <string name="assistant_page_context_message_limit_desc">限制发送给模型的最近消息数量</string>
   <string name="assistant_page_context_message_limit_placeholder">无限制</string>
   <string name="assistant_page_context_message_limit_warning">会在每次截断上下文时使提示词缓存失效，上限越大，截断越少。</string>
   <string name="workspace_file_editor_save">保存</string>

@@ -156,6 +156,8 @@
   <string name="assistant_page_thinking_budget">思考預算</string>
   <string name="assistant_page_time_reminder">時間提醒</string>
   <string name="assistant_page_time_reminder_desc">自動在時間間隔較大的訊息前插入時間提醒，幫助 AI 理解對話間隔</string>
+  <string name="assistant_page_time_reminder_interval">時間提醒間隔</string>
+  <string name="assistant_page_time_reminder_interval_desc">當訊息間隔超過此間隔時插入提醒（第一則使用者訊息前一律提醒），單位為分鐘。</string>
   <string name="assistant_page_title">助手設定</string>
   <string name="assistant_picker_title">選擇助手</string>
   <string name="assistant_page_top_p">Top P</string>
@@ -366,6 +368,13 @@
   <string name="imggen_page_no_generated_images">暂無生成的圖片</string>
   <string name="imggen_page_delete_image_title">刪除圖片</string>
   <string name="imggen_page_delete_image_confirm">確定刪除這張圖片嗎？此操作無法復原。</string>
+  <string name="imggen_page_delete_images_title">刪除圖片</string>
+  <string name="imggen_page_delete_images_message">刪除選取的圖片（%1$d）？此操作無法復原。</string>
+  <string name="imggen_page_delete_images_success">已刪除 %1$d 張圖片</string>
+  <string name="imggen_page_delete_images_failed">已刪除：%1$d。失敗：%2$d。請再試一次。</string>
+  <string name="imggen_page_deleting">刪除中…</string>
+  <string name="imggen_page_selected_count">已選取：%1$d</string>
+  <string name="imggen_page_select_image">選擇圖片</string>
   <string name="imggen_page_prompt_placeholder">描述您想要生成的圖片...</string>
   <string name="imggen_page_save_failed">保存失敗： %1$s</string>
   <string name="imggen_page_settings_title">圖片生成設定</string>
@@ -1151,11 +1160,16 @@
   <string name="workspace_detail_install_success">已為工作區 %1$s 安裝 Rootfs</string>
   <string name="workspace_detail_reinstall_rootfs">重新安裝 Rootfs</string>
   <string name="workspace_detail_install_rootfs">安裝 Rootfs</string>
+  <string name="workspace_detail_rootfs">Rootfs</string>
+  <string name="workspace_detail_reinstall_rootfs_desc">重新安裝 Rootfs 將會重置此工作區的環境</string>
   <string name="workspace_detail_enable_shell_desc">允許此工作區使用本地 Rootfs 來執行終端環境</string>
   <string name="workspace_detail_broken_rootfs_desc">此工作區已損壞，請重新安裝 Rootfs 以繼續使用</string>
   <string name="workspace_detail_reinstall_warning">重新安裝 Rootfs 會刪除所有原有檔案，請考慮先匯出工作區以備份檔案</string>
   <string name="workspace_detail_tool_approval">工具核准</string>
   <string name="workspace_detail_tool_approval_desc">啟用後，AI 調用此工具前需要用戶確認。</string>
+  <string name="workspace_detail_compatibility_mode">相容模式</string>
+  <string name="workspace_detail_compatibility_mode_desc">如果終端機無法啟動，請嘗試啟用此選項。這可能會降低效能。適用於新的終端機分頁和後續指令。</string>
+  <string name="workspace_detail_settings_save_failed">儲存設定失敗</string>
   <string name="workspace_detail_tool_read_file">讀取檔案</string>
   <string name="workspace_detail_tool_write_file">寫入檔案</string>
   <string name="workspace_detail_tool_edit_file">編輯檔案</string>
@@ -1274,7 +1288,7 @@
   <string name="backup_page_export_failed_detail">匯出失敗：%1$s</string>
   <string name="backup_page_rikkahub_format">類 RikkaHub 格式</string>
   <string name="backup_page_tar_desc">將 App 資料匯出為 TAR 檔案（不相容 RikkaHub）</string>
-  <string name="backup_page_legacy_export">匯出舊版格式（相容 RikkaHub 2.4.1+）</string>
+  <string name="backup_page_legacy_export">匯出舊版格式（相容 RikkaHub 2.5.1+）</string>
   <string name="backup_page_delete_remote_title">刪除 %1$s 備份檔案</string>
   <string name="backup_page_delete_remote_desc">確定要刪除這個備份檔案嗎？此操作無法復原。</string>
   <string name="backup_page_legacy_export_desc">移除此 Fork 新增的不相容設定欄位；不包含工作區環境</string>
@@ -1314,7 +1328,7 @@
   <string name="setting_page_search_delete_confirm">確定刪除搜尋服務「%1$s」嗎？</string>
   <string name="setting_mcp_page_delete_confirm">確定刪除 MCP 伺服器「%1$s」嗎？</string>
   <string name="assistant_page_context_message_limit">上下文訊息限制</string>
-  <string name="assistant_page_context_message_limit_desc">限制發送給模型的最近訊息數量。當超出限制時，上下文會一次性修剪到大約一半，而不是每次輪次刪除一條訊息，這樣請求前綴保持穩定，提示詞緩存可以在多次輪次中繼續運作，最小為20。留空表示無限制。</string>
+  <string name="assistant_page_context_message_limit_desc">限制傳送給模型的最近訊息數量</string>
   <string name="assistant_page_context_message_limit_placeholder">無限制</string>
   <string name="assistant_page_context_message_limit_warning">每次截斷上下文時都會使提示詞快取失效，上限越大，截斷越少。</string>
   <string name="workspace_file_editor_save">儲存</string>

@@ -55,7 +55,7 @@
   - 由于 RikkaHub 限制，部分数据（如工作区、助手头像和背景）无法从 RikkaHub 导入。
   - 导出到 RikkaHub 时，NyanChat 独有的设置和元数据（如模型价格）会丢失。
   - NyanChat 仅支持导入 RikkaHub 2.x 的数据。如果要从 RikkaHub 1.x 导入数据，请先把 RikkaHub 更新至 2.x 并完成数据库迁移。迁移后的数据不能重新导入 RikkaHub 1.x。
-  - 旧版本 RikkaHub（如`2.3.x`）无法读取 NyanChat 存档，请先将 RikkaHub 更新至至少 `2.4.1`。
+  - 旧版本 RikkaHub（如`2.4.x`）无法读取 NyanChat 存档，请先将 RikkaHub 更新至至少 `2.5.1`。
 - NyanChat **会跟随 RikkaHub 更新**，RikkaHub 未来的大部分新功能都将被合入 NyanChat，可以放心使用。
 
 ## 🔒 隐私

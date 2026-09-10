@@ -158,7 +158,7 @@ fun SettingProviderDetailSheet(
     var showModelPicker by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     val customModelDialog = useEditState<Model> { edited ->
-        internalProvider = internalProvider.addModel(edited)
+        internalProvider = internalProvider.addModel(edited.copy(displayName = edited.displayName.trim()))
     }
 
     val modelList by produceState(emptyList(), internalProvider.id) {
@@ -196,10 +196,11 @@ fun SettingProviderDetailSheet(
     }
 
     val onSave = {
+        val providerToSave: ProviderSetting = internalProvider.copyProvider(name = internalProvider.name.trim())
         val newSettings = settings.copy(
             providers = settings.providers.map {
                 if (internalProvider.id == it.id) {
-                    internalProvider
+                    providerToSave
                 } else {
                     it
                 }
@@ -599,7 +600,7 @@ private fun ProviderConfigFieldsCardGroup(
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedTextField(
                                 value = provider.name,
-                                onValueChange = { onEdit(provider.copy(name = it.trim())) },
+                                onValueChange = { onEdit(provider.copy(name = it)) },
                                 label = { Text(stringResource(R.string.setting_provider_page_name)) },
                                 modifier = Modifier.fillMaxWidth(),
                             )
@@ -654,7 +655,7 @@ private fun ProviderConfigFieldsCardGroup(
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedTextField(
                                 value = provider.name,
-                                onValueChange = { onEdit(provider.copy(name = it.trim())) },
+                                onValueChange = { onEdit(provider.copy(name = it)) },
                                 label = { Text(stringResource(R.string.setting_provider_page_name)) },
                                 modifier = Modifier.fillMaxWidth(),
                             )
@@ -703,7 +704,7 @@ private fun ProviderConfigFieldsCardGroup(
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedTextField(
                                 value = provider.name,
-                                onValueChange = { onEdit(provider.copy(name = it.trim())) },
+                                onValueChange = { onEdit(provider.copy(name = it)) },
                                 label = { Text(stringResource(R.string.setting_provider_page_name)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 maxLines = 3,
@@ -1297,7 +1298,7 @@ private fun ModelSettingsForm(
                                         OutlinedTextField(
                                             value = model.displayName,
                                             onValueChange = {
-                                                onModelChange(model.copy(displayName = it.trim()))
+                                                onModelChange(model.copy(displayName = it))
                                             },
                                             label = { Text(stringResource(if (isEdit) R.string.setting_provider_page_model_name else R.string.setting_provider_page_model_display_name)) },
                                             modifier = Modifier.fillMaxWidth(),
@@ -1918,7 +1919,7 @@ private fun ModelCard(
     onMigrateModelId: (Model, Model) -> Unit,
 ) {
     val dialogState = useEditState<Model> {
-        onEdit(it)
+        onEdit(it.copy(displayName = it.displayName.trim()))
     }
     val scope = rememberCoroutineScope()
 
@@ -2261,7 +2262,7 @@ private fun ProviderOverrideSettings(
                         }
                         TextButton(
                             onClick = {
-                                onUpdateProviderOverride(internalProvider)
+                                onUpdateProviderOverride(internalProvider.copyProvider(name = internalProvider.name.trim()))
                                 showProviderConfig = false
                                 editingProvider = null
                             },

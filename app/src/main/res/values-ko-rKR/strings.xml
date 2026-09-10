@@ -156,6 +156,8 @@
   <string name="assistant_page_thinking_budget">사고 예산</string>
   <string name="assistant_page_time_reminder">시간 알림</string>
   <string name="assistant_page_time_reminder_desc">시간 간격이 큰 메시지 앞에 자동으로 시간 알림을 삽입하여 AI가 대화 간격을 이해할 수 있도록 도와줍니다</string>
+  <string name="assistant_page_time_reminder_interval">시간 알림 간격</string>
+  <string name="assistant_page_time_reminder_interval_desc">메시지 간격이 이 간격을 초과하면 알림을 삽입합니다(항상 첫 사용자 메시지 전에 알림). 단위는 분입니다.</string>
   <string name="assistant_page_title">어시스턴트 설정</string>
   <string name="assistant_picker_title">어시스턴트 선택</string>
   <string name="assistant_page_top_p">Top P</string>
@@ -366,6 +368,13 @@
   <string name="imggen_page_no_generated_images">생성된 이미지가 없습니다</string>
   <string name="imggen_page_delete_image_title">이미지 삭제</string>
   <string name="imggen_page_delete_image_confirm">이 이미지를 삭제할까요? 이 작업은 되돌릴 수 없습니다.</string>
+  <string name="imggen_page_delete_images_title">이미지 삭제</string>
+  <string name="imggen_page_delete_images_message">선택한 이미지(%1$d)를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.</string>
+  <string name="imggen_page_delete_images_success">이미지 %1$d개가 삭제되었습니다.</string>
+  <string name="imggen_page_delete_images_failed">삭제됨: %1$d. 실패: %2$d. 다시 시도하세요.</string>
+  <string name="imggen_page_deleting">삭제 중…</string>
+  <string name="imggen_page_selected_count">선택됨: %1$d</string>
+  <string name="imggen_page_select_image">이미지 선택</string>
   <string name="imggen_page_prompt_placeholder">생성하고 싶은 이미지를 설명하세요...</string>
   <string name="imggen_page_save_failed">저장 실패: %1$s</string>
   <string name="imggen_page_settings_title">이미지 생성 설정</string>
@@ -1151,11 +1160,16 @@
   <string name="workspace_detail_install_success">워크스페이스 %1$s에 Rootfs를 설치했습니다</string>
   <string name="workspace_detail_reinstall_rootfs">Rootfs 재설치</string>
   <string name="workspace_detail_install_rootfs">Rootfs 설치</string>
+  <string name="workspace_detail_rootfs">Rootfs</string>
+  <string name="workspace_detail_reinstall_rootfs_desc">Rootfs를 재설치하면 이 워크스페이스의 환경이 초기화됩니다</string>
   <string name="workspace_detail_enable_shell_desc">이 워크스페이스에서 로컬 Rootfs를 사용하여 터미널 환경을 실행할 수 있도록 허용합니다.</string>
   <string name="workspace_detail_broken_rootfs_desc">이 작업 공간이 손상되었습니다. 계속 사용하려면 Rootfs를 재설치하세요</string>
   <string name="workspace_detail_reinstall_warning">Rootfs를 재설치하면 기존 파일이 모두 삭제됩니다. 먼저 작업 공간을 내보내 파일을 백업하는 것을 고려하세요</string>
   <string name="workspace_detail_tool_approval">도구 승인</string>
   <string name="workspace_detail_tool_approval_desc">활성화되면 AI가 이 도구를 호출하기 전에 사용자 확인이 필요합니다.</string>
+  <string name="workspace_detail_compatibility_mode">호환 모드</string>
+  <string name="workspace_detail_compatibility_mode_desc">터미널이 시작되지 않으면 이 옵션을 활성화해 보세요. 성능이 저하될 수 있습니다. 새 터미널 탭과 이후 명령에 적용됩니다.</string>
+  <string name="workspace_detail_settings_save_failed">설정 저장에 실패했습니다.</string>
   <string name="workspace_detail_tool_read_file">파일 읽기</string>
   <string name="workspace_detail_tool_write_file">파일 쓰기</string>
   <string name="workspace_detail_tool_edit_file">파일 편집</string>
@@ -1274,7 +1288,7 @@
   <string name="backup_page_export_failed_detail">내보내기 실패: %1$s</string>
   <string name="backup_page_rikkahub_format">RikkaHub 유사 형식</string>
   <string name="backup_page_tar_desc">앱 데이터를 TAR 파일로 내보내기(RikkaHub와 호환되지 않음)</string>
-  <string name="backup_page_legacy_export">레거시 형식 내보내기(RikkaHub 2.4.1+ 호환)</string>
+  <string name="backup_page_legacy_export">레거시 형식 내보내기(RikkaHub 2.5.1+ 호환)</string>
   <string name="backup_page_delete_remote_title">%1$s 백업 파일 삭제</string>
   <string name="backup_page_delete_remote_desc">이 백업 파일을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.</string>
   <string name="backup_page_legacy_export_desc">이 Fork에서 추가한 비호환 설정 제거; 작업 공간 환경은 포함되지 않음</string>
@@ -1314,7 +1328,7 @@
   <string name="setting_page_search_delete_confirm">검색 서비스 “%1$s”을(를) 삭제할까요?</string>
   <string name="setting_mcp_page_delete_confirm">MCP 서버 “%1$s”을(를) 삭제할까요?</string>
   <string name="assistant_page_context_message_limit">컨텍스트 메시지 제한</string>
-  <string name="assistant_page_context_message_limit_desc">모델로 전송되는 최근 메시지 수를 제한합니다. 제한을 초과하면 한 번에 하나씩 메시지를 삭제하는 대신 컨텍스트가 한 번에 약 절반으로 줄어들어 요청 접두사가 안정적으로 유지되고 프롬프트 캐싱이 여러 턴 동안 계속 작동합니다. 최솟값은 20입니다. 비워 두면 제한이 없습니다.</string>
+  <string name="assistant_page_context_message_limit_desc">모델로 전송되는 최근 메시지 수를 제한합니다.</string>
   <string name="assistant_page_context_message_limit_placeholder">제한 없음</string>
   <string name="assistant_page_context_message_limit_warning">컨텍스트가 정리될 때마다 프롬프트 캐시가 무효화됩니다. 제한 값이 클수록 정리 빈도가 줄어듭니다.</string>
   <string name="workspace_file_editor_save">저장</string>

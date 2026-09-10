@@ -156,6 +156,8 @@
   <string name="assistant_page_thinking_budget">思考バジェット</string>
   <string name="assistant_page_time_reminder">時間リマインダー</string>
   <string name="assistant_page_time_reminder_desc">会話の間隔が大きいメッセージの前に自動で時刻リマインダーを挿入し、AIが会話の間隔を理解しやすくします</string>
+  <string name="assistant_page_time_reminder_interval">時間リマインダー間隔</string>
+  <string name="assistant_page_time_reminder_interval_desc">メッセージ間隔がこの間隔を超えた場合にリマインダーを挿入します（最初のユーザーメッセージの前には常にリマインド）。単位は分です。</string>
   <string name="assistant_page_title">アシスタント設定</string>
   <string name="assistant_picker_title">アシスタントを選択</string>
   <string name="assistant_page_top_p">Top P</string>
@@ -366,6 +368,13 @@
   <string name="imggen_page_no_generated_images">生成された画像がありません</string>
   <string name="imggen_page_delete_image_title">画像を削除</string>
   <string name="imggen_page_delete_image_confirm">この画像を削除しますか？この操作は元に戻せません。</string>
+  <string name="imggen_page_delete_images_title">画像を削除</string>
+  <string name="imggen_page_delete_images_message">選択した画像 (%1$d) を削除しますか？この操作は元に戻せません。</string>
+  <string name="imggen_page_delete_images_success">画像を%1$d件削除しました</string>
+  <string name="imggen_page_delete_images_failed">削除：%1$d件、失敗：%2$d件。もう一度お試しください。</string>
+  <string name="imggen_page_deleting">削除中…</string>
+  <string name="imggen_page_selected_count">選択中: %1$d</string>
+  <string name="imggen_page_select_image">画像を選択</string>
   <string name="imggen_page_prompt_placeholder">生成したい画像を説明してください...</string>
   <string name="imggen_page_save_failed">保存に失敗しました: %1$s</string>
   <string name="imggen_page_settings_title">画像生成設定</string>
@@ -1151,11 +1160,16 @@
   <string name="workspace_detail_install_success">ワークスペース %1$s に Rootfs をインストールしました</string>
   <string name="workspace_detail_reinstall_rootfs">Rootfs 再インストール</string>
   <string name="workspace_detail_install_rootfs">Rootfs をインストール</string>
+  <string name="workspace_detail_rootfs">Rootfs</string>
+  <string name="workspace_detail_reinstall_rootfs_desc">Rootfs を再インストールすると、このワークスペースの環境はリセットされます</string>
   <string name="workspace_detail_enable_shell_desc">このワークスペースでローカルのRootfsを使用したターミナル環境の実行を許可します</string>
   <string name="workspace_detail_broken_rootfs_desc">このワークスペースは破損しています。続行するには Rootfs を再インストールしてください</string>
   <string name="workspace_detail_reinstall_warning">Rootfs を再インストールすると既存のファイルがすべて削除されます。先にワークスペースをエクスポートしてバックアップすることを検討してください</string>
   <string name="workspace_detail_tool_approval">ツール承認</string>
   <string name="workspace_detail_tool_approval_desc">有効にすると、AIがこのツールを呼び出す前にユーザーの確認が必要です</string>
+  <string name="workspace_detail_compatibility_mode">互換モード</string>
+  <string name="workspace_detail_compatibility_mode_desc">ターミナルが起動しない場合、これを有効にしてみてください。パフォーマンスが低下する可能性があります。新しいターミナルタブとその後のコマンドに適用されます。</string>
+  <string name="workspace_detail_settings_save_failed">設定の保存に失敗しました</string>
   <string name="workspace_detail_tool_read_file">ファイルを読み込む</string>
   <string name="workspace_detail_tool_write_file">ファイルに書き込む</string>
   <string name="workspace_detail_tool_edit_file">ファイル編集</string>
@@ -1274,7 +1288,7 @@
   <string name="backup_page_export_failed_detail">エクスポート失敗：%1$s</string>
   <string name="backup_page_rikkahub_format">RikkaHub類似形式</string>
   <string name="backup_page_tar_desc">アプリデータをTARファイルにエクスポート（RikkaHub非対応）</string>
-  <string name="backup_page_legacy_export">旧形式でエクスポート（RikkaHub 2.4.1+ 対応）</string>
+  <string name="backup_page_legacy_export">旧形式でエクスポート（RikkaHub 2.5.1+ 対応）</string>
   <string name="backup_page_delete_remote_title">%1$s バックアップファイルを削除</string>
   <string name="backup_page_delete_remote_desc">このバックアップファイルを削除しますか？この操作は元に戻せません。</string>
   <string name="backup_page_legacy_export_desc">この Fork で追加された非互換設定を削除；ワークスペース環境は含まれません</string>
@@ -1314,7 +1328,7 @@
   <string name="setting_page_search_delete_confirm">検索サービス「%1$s」を削除しますか？</string>
   <string name="setting_mcp_page_delete_confirm">MCP サーバー「%1$s」を削除しますか？</string>
   <string name="assistant_page_context_message_limit">コンテキストメッセージ上限</string>
-  <string name="assistant_page_context_message_limit_desc">モデルに送信する直近のメッセージ数の上限を設定します。上限を超えた場合、ターンごとに1件ずつ削除するのではなく、一度にコンテキストを約半分まで切り詰めます。これによりリクエストのプレフィックスが安定し、プロンプトキャッシュが多くのターンにわたって有効に働きます。最小値は20です。空欄の場合は無制限です。</string>
+  <string name="assistant_page_context_message_limit_desc">モデルに送信する最近のメッセージ数を制限します。</string>
   <string name="assistant_page_context_message_limit_placeholder">無制限</string>
   <string name="assistant_page_context_message_limit_warning">コンテキストが切り詰められるたびにプロンプトキャッシュが無効になります。上限が大きいほど切り詰めの頻度は下がります。</string>
   <string name="workspace_file_editor_save">保存</string>

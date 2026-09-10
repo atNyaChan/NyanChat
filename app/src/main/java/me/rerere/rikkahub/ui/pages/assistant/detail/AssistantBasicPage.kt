@@ -272,15 +272,14 @@ internal fun AssistantBasicContent(
                         .fillMaxWidth()
                         .onFocusChanged { focusState ->
                             if (!focusState.isFocused) {
-                                val normalizedLimit = contextMessageLimitInput
+                                val limit = contextMessageLimitInput
                                     .toIntOrNull()
-                                    ?.coerceAtLeast(MIN_CONTEXT_MESSAGE_LIMIT)
                                     ?: 0
-                                contextMessageLimitInput = normalizedLimit
+                                contextMessageLimitInput = limit
                                     .takeIf { it > 0 }
                                     ?.toString()
                                     .orEmpty()
-                                onUpdate(assistant.copy(contextMessageLimit = normalizedLimit))
+                                onUpdate(assistant.copy(contextMessageLimit = limit))
                             }
                         },
                     placeholder = {
@@ -598,11 +597,3 @@ internal fun AssistantBasicContent(
         onSelect = { onUpdate(assistant.copy(chatModelId = it.id)) },
     )
 }
-
-/**
- * 上下文限制的最小有效值
- *
- * 低于此值时截断点几乎每轮都在移动, 提示词缓存命中率跌破 90%,
- * 且保留的上下文通常达不到可缓存的最小长度, 限制本身失去意义
- */
-private const val MIN_CONTEXT_MESSAGE_LIMIT = 20

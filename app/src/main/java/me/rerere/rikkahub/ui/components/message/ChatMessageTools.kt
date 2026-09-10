@@ -18,6 +18,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -217,11 +218,7 @@ fun ChainOfThoughtScope.ChatMessageToolStep(
         } else {
             null
         },
-        onClick = if (context.content != null || isPending || images.isNotEmpty()) {
-            { showResult = true }
-        } else {
-            null
-        },
+        onClick = { showResult = true },
         content = if (hasExtraContent) {
             {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -403,7 +400,10 @@ private fun ChainOfThoughtScope.AskUserToolStep(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                questions.forEach { q ->
+                questions.forEachIndexed { index, q ->
+                    if (index > 0) {
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    }
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
                             text = q.question,
@@ -412,92 +412,55 @@ private fun ChainOfThoughtScope.AskUserToolStep(
                         )
 
                         if (isPending && onToolAnswer != null) {
-                            when (q.selectionType) {
-                                "single" -> {
-                                    // Single select: chips only, no text input
-                                    if (q.options.isNotEmpty()) {
-                                        FlowRow(
-                                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                            verticalArrangement = Arrangement.spacedBy(4.dp),
-                                        ) {
-                                            q.options.forEach { option ->
-                                                FilterChip(
-                                                    selected = answers[q.id] == option,
-                                                    onClick = { answers[q.id] = option },
-                                                    label = {
-                                                        Text(
-                                                            text = option,
-                                                            style = MaterialTheme.typography.labelSmall,
-                                                        )
-                                                    },
+                            if (q.options.isNotEmpty()) {
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    verticalArrangement = Arrangement.spacedBy(0.dp),
+                                ) {
+                                    q.options.forEach { option ->
+                                        val selectedOptions = multiAnswers[q.id] ?: emptySet()
+                                        FilterChip(
+                                            selected = if (q.selectionType == "multi") {
+                                                option in selectedOptions
+                                            } else {
+                                                answers[q.id] == option
+                                            },
+                                            onClick = {
+                                                if (q.selectionType == "multi") {
+                                                    multiAnswers[q.id] = if (option in selectedOptions) {
+                                                        selectedOptions - option
+                                                    } else {
+                                                        selectedOptions + option
+                                                    }
+                                                } else {
+                                                    answers[q.id] = option
+                                                }
+                                            },
+                                            label = {
+                                                Text(
+                                                    text = option,
+                                                    style = MaterialTheme.typography.labelSmall,
                                                 )
-                                            }
-                                        }
+                                            },
+                                        )
                                     }
-                                }
-                                "multi" -> {
-                                    // Multi select: chips only, multiple can be selected
-                                    if (q.options.isNotEmpty()) {
-                                        FlowRow(
-                                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                            verticalArrangement = Arrangement.spacedBy(4.dp),
-                                        ) {
-                                            q.options.forEach { option ->
-                                                val selectedSet = multiAnswers[q.id] ?: emptySet()
-                                                FilterChip(
-                                                    selected = selectedSet.contains(option),
-                                                    onClick = {
-                                                        val current = selectedSet.toMutableSet()
-                                                        if (current.contains(option)) current.remove(option)
-                                                        else current.add(option)
-                                                        multiAnswers[q.id] = current
-                                                    },
-                                                    label = {
-                                                        Text(
-                                                            text = option,
-                                                            style = MaterialTheme.typography.labelSmall,
-                                                        )
-                                                    },
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                                else -> {
-                                    // Text (default): optional option chips + free text input
-                                    if (q.options.isNotEmpty()) {
-                                        FlowRow(
-                                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                            verticalArrangement = Arrangement.spacedBy(4.dp),
-                                        ) {
-                                            q.options.forEach { option ->
-                                                FilterChip(
-                                                    selected = answers[q.id] == option,
-                                                    onClick = { answers[q.id] = option },
-                                                    label = {
-                                                        Text(
-                                                            text = option,
-                                                            style = MaterialTheme.typography.labelSmall,
-                                                        )
-                                                    },
-                                                )
-                                            }
-                                        }
-                                    }
-
-                                    // Free text input
-                                    OutlinedTextField(
-                                        value = answers[q.id] ?: "",
-                                        onValueChange = { answers[q.id] = it },
-                                        modifier = Modifier
-                                            .fillMaxWidth(),
-                                        textStyle = MaterialTheme.typography.bodySmall,
-                                        singleLine = false,
-                                        minLines = 1,
-                                        maxLines = Int.MAX_VALUE,
-                                    )
                                 }
                             }
+
+                            OutlinedTextField(
+                                value = answers[q.id] ?: "",
+                                onValueChange = { answers[q.id] = it },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .then(
+                                        if (q.options.isEmpty()) Modifier.padding(top = 8.dp)
+                                        else Modifier
+                                    ),
+                                textStyle = MaterialTheme.typography.bodySmall,
+                                singleLine = false,
+                                minLines = 1,
+                                maxLines = Int.MAX_VALUE,
+                            )
                         } else if (isAnswered) {
                             // Show the user's answer
                             val answeredState = tool.approvalState as ToolApprovalState.Answered
@@ -524,7 +487,11 @@ private fun ChainOfThoughtScope.AskUserToolStep(
                                 put("answers", buildJsonObject {
                                     questions.forEach { q ->
                                         when (q.selectionType) {
-                                            "multi" -> put(q.id, JsonPrimitive(multiAnswers[q.id]?.joinToString(", ") ?: ""))
+                                            "multi" -> put(q.id, JsonPrimitive(
+                                                (multiAnswers[q.id].orEmpty().toList() +
+                                                    listOfNotNull(answers[q.id]?.takeIf { it.isNotBlank() }))
+                                                    .joinToString(", ")
+                                            ))
                                             else -> put(q.id, JsonPrimitive(answers[q.id] ?: ""))
                                         }
                                     }
@@ -534,7 +501,7 @@ private fun ChainOfThoughtScope.AskUserToolStep(
                         },
                         enabled = questions.all { q ->
                             when (q.selectionType) {
-                                "multi" -> !multiAnswers[q.id].isNullOrEmpty()
+                                "multi" -> !multiAnswers[q.id].isNullOrEmpty() || !answers[q.id].isNullOrBlank()
                                 else -> !answers[q.id].isNullOrBlank()
                             }
                         },

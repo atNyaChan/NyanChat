@@ -10,6 +10,8 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -340,6 +342,23 @@ class ImgGenVM(
             }
         }
     }
+
+    suspend fun deleteImages(images: List<GeneratedImage>): List<GeneratedImage> =
+        withContext(Dispatchers.IO) {
+            images.filter { image ->
+                try {
+                    val file = File(image.filePath)
+                    check(!file.exists() || file.delete()) { "Failed to delete image file" }
+                    genMediaRepository.deleteMedia(image.id)
+                    false
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to delete image ${image.id}", e)
+                    true
+                }
+            }
+        }
 
     private fun deleteReferenceFiles(paths: List<String>) {
         viewModelScope.launch {
