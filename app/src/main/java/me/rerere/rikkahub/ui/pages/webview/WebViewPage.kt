@@ -155,7 +155,7 @@ fun WebViewPage(url: String, contentId: String) {
     }
 
     if (showConsoleSheet) {
-        ModalBottomSheet(
+        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { showConsoleSheet = false },
             sheetState = sheetState
         ) {

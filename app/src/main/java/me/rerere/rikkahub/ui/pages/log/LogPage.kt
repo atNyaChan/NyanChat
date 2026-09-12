@@ -280,7 +280,7 @@ private fun UnifiedLogList(
     }
 
     selectedLog?.let { log ->
-        ModalBottomSheet(
+        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { selectedLog = null },
             sheetState = sheetState
         ) {

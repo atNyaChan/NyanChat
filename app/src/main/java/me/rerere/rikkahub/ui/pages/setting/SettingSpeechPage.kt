@@ -172,7 +172,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
         var currentProvider by remember(provider) { mutableStateOf(provider) }
         var showDeleteConfirm by remember(provider.id) { mutableStateOf(false) }
 
-        ModalBottomSheet(
+        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {
                 editingTTSProvider = null
             },
@@ -285,7 +285,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
         var currentProvider by remember(provider) { mutableStateOf(provider) }
         var showDeleteConfirm by remember(provider.id) { mutableStateOf(false) }
 
-        ModalBottomSheet(
+        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {
                 editingASRProvider = null
             },
@@ -495,7 +495,7 @@ private fun AddTTSProviderButton(onAdd: (TTSProviderSetting) -> Unit) {
 
     if (showBottomSheet) {
         val bottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
-        ModalBottomSheet(
+        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {
                 showBottomSheet = false
             },
@@ -566,7 +566,7 @@ private fun AddASRProviderButton(onAdd: (ASRProviderSetting) -> Unit) {
 
     if (showBottomSheet) {
         val bottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
-        ModalBottomSheet(
+        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {
                 showBottomSheet = false
             },

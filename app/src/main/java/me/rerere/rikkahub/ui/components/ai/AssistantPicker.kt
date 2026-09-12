@@ -147,7 +147,7 @@ private fun AssistantPickerSheet(
         }
     }
 
-    ModalBottomSheet(
+    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
     ) {

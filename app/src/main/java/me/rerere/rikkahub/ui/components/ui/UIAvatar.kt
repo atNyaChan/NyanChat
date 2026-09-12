@@ -207,7 +207,7 @@ fun UIAvatar(
                     if (onUpdate != null) showPickOption = true
                 },
                 tonalElevation = 4.dp,
-                color = MaterialTheme.colorScheme.secondaryContainer,
+                color = MaterialTheme.colorScheme.primaryContainer,
                 content = avatarContent,
             )
         } else {
@@ -215,7 +215,7 @@ fun UIAvatar(
                 shape = rememberAvatarShape(loading),
                 modifier = Modifier.fillMaxSize(),
                 tonalElevation = 4.dp,
-                color = MaterialTheme.colorScheme.secondaryContainer,
+                color = MaterialTheme.colorScheme.primaryContainer,
                 content = avatarContent,
             )
         }
@@ -307,7 +307,7 @@ fun UIAvatar(
     }
 
     if (showEmojiPicker) {
-        ModalBottomSheet(
+        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {
                 showEmojiPicker = false
             },

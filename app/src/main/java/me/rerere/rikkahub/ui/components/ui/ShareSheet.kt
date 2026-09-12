@@ -38,7 +38,7 @@ fun ShareSheet(
 ) {
     val context = LocalContext.current
     if (state.isShow) {
-        ModalBottomSheet(
+        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {
                 state.dismiss()
             },

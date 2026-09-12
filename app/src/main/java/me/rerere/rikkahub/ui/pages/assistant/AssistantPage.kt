@@ -261,7 +261,7 @@ private fun AssistantCreationSheet(
 ) {
     var showCopyPicker by remember { mutableStateOf(false) }
     state.EditStateContent { assistant, update ->
-        ModalBottomSheet(
+        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {
                 state.dismiss()
             },

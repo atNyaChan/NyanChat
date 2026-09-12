@@ -368,7 +368,7 @@ private fun ModeInjectionEditSheet(
         }
     }
 
-    ModalBottomSheet(
+    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         sheetGesturesEnabled = false,
@@ -855,7 +855,7 @@ private fun LorebookEditSheet(
         onEdit(book.copy(entries = reordered))
     }
 
-    ModalBottomSheet(
+    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         sheetGesturesEnabled = false,
@@ -1124,7 +1124,7 @@ private fun RegexInjectionEditDialog(
             }
     }
 
-    ModalBottomSheet(
+    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         sheetGesturesEnabled = false,

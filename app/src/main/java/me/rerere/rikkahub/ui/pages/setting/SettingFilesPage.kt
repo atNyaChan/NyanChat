@@ -236,7 +236,7 @@ fun SettingFilesPage(
             initialValue = SheetValue.Hidden,
             enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
         )
-        ModalBottomSheet(
+        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { showCleanSheet = false },
             sheetState = sheetState,
         ) {
@@ -543,7 +543,7 @@ private fun FileItem(
                         .fillMaxWidth()
                         .padding(top = 8.dp),
                     shape = MaterialTheme.shapes.large,
-                    color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    color = MaterialTheme.colorScheme.surfaceContainer,
                 ) {
                     Row(
                         modifier = Modifier

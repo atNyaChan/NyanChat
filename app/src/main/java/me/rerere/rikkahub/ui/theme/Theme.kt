@@ -4,6 +4,7 @@ import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.rememberPlatformOverscrollFactory
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
@@ -116,7 +117,7 @@ fun RikkahubTheme(
             (settings.displaySetting.screenCornerAdaptation == ScreenCornerAdaptation.ALL),
         LocalScreenCornerFallbackRadius provides
             if (settings.displaySetting.screenCornerAdaptation == ScreenCornerAdaptation.SQUARE) 4.dp else 24.dp,
-        LocalOverscrollFactory provides null
+        LocalOverscrollFactory provides rememberPlatformOverscrollFactory()
     ) {
         MaterialExpressiveTheme(
             colorScheme = colorSchemeConverted,

@@ -218,7 +218,7 @@ fun SettingProviderDetailSheet(
         onDismiss()
     }
 
-    ModalBottomSheet(
+    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = {
             onDismiss()
         },
@@ -508,7 +508,7 @@ fun SettingProviderDetailSheet(
                 initialValue = SheetValue.Hidden,
                 enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
             )
-            ModalBottomSheet(
+            ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
                 onDismissRequest = {
                     customModelDialog.dismiss()
                 },
@@ -1012,7 +1012,7 @@ private fun ModelPickerSheet(
     onAllModelDeselected: (List<Model>) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    ModalBottomSheet(
+    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
         sheetState = rememberBottomSheetState(
             initialValue = SheetValue.Hidden,
@@ -1935,7 +1935,7 @@ private fun ModelCard(
                 initialValue = SheetValue.Hidden,
                 enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
             )
-            ModalBottomSheet(
+            ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
                 onDismissRequest = {
                     dialogState.dismiss()
                 },
@@ -2212,7 +2212,7 @@ private fun ProviderOverrideSettings(
 
         // Provider configuration modal
         if (showProviderConfig && editingProvider != null) {
-            ModalBottomSheet(
+            ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
                 onDismissRequest = {
                     showProviderConfig = false
                     editingProvider = null

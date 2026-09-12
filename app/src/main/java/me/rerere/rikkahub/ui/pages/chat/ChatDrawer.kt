@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -81,6 +80,12 @@ import me.rerere.rikkahub.ui.components.ui.Greeting
 import me.rerere.rikkahub.ui.components.ui.Tooltip
 import me.rerere.rikkahub.ui.components.ui.UIAvatar
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import dev.chrisbanes.haze.HazeInput
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.blur.HazeBlurStyle
+import dev.chrisbanes.haze.blur.hazeBlur
+import dev.chrisbanes.haze.blur.material3.Material3
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.context.Navigator
 import com.dokar.sonner.ToastType
@@ -111,6 +116,7 @@ fun ChatDrawerContent(
     current: Conversation,
     drawerState: DrawerState,
     navDrawerPermanent: Boolean = false,
+    hazeState: HazeState,
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -182,8 +188,28 @@ fun ChatDrawerContent(
         LocalScreenCornerFallbackRadius.current
     }
 
+    val drawerHazeStyle = HazeBlurStyle.Material3 {
+        blurRadius(12.dp)
+    }
+
     ModalDrawerSheet(
-        modifier = Modifier.width(300.dp),
+        modifier = Modifier
+            .fillMaxWidth(0.9f)
+            .then(
+                if (settings.displaySetting.enableBlurEffect) {
+                    Modifier.hazeBlur(
+                        input = HazeInput.Sources(hazeState),
+                        style = drawerHazeStyle,
+                    )
+                } else {
+                    Modifier
+                }
+            ),
+        drawerContainerColor = if (settings.displaySetting.enableBlurEffect) {
+            Color.Transparent
+        } else {
+            MaterialTheme.colorScheme.surface
+        },
         drawerShape = RoundedCornerShape(
             topEnd = drawerEndCorner,
             bottomEnd = drawerEndCorner,
@@ -837,7 +863,7 @@ private fun DrawerActions(navController: Navigator) {
                 .fillMaxWidth()
                 .padding(horizontal = 4.dp),
             shape = MaterialTheme.shapes.medium,
-            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            color = Color.Transparent,
         ) {
             Row(
                 modifier = Modifier
@@ -873,7 +899,7 @@ private fun DrawerAction(
     Surface(
         onClick = onClick,
         modifier = modifier,
-        color = MaterialTheme.colorScheme.primaryContainer,
+        color = MaterialTheme.colorScheme.surfaceContainer,
         shape = CircleShape,
         contentColor = MaterialTheme.colorScheme.onSurface,
     ) {
@@ -999,7 +1025,7 @@ private fun FolderChip(
         color = if (selected) {
             MaterialTheme.colorScheme.secondaryContainer
         } else {
-            MaterialTheme.colorScheme.surfaceContainerLow
+            Color.Transparent
         },
         modifier = Modifier
             .clip(CircleShape)

@@ -261,7 +261,7 @@ fun ModelListSheet(
         }
     }
 
-    ModalBottomSheet(
+    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = {
             state.close()
         },

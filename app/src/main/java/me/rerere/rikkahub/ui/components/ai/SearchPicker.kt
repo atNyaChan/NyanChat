@@ -90,7 +90,7 @@ fun SearchPickerSheet(
     onDismiss: () -> Unit,
 ) {
     if (show) {
-        ModalBottomSheet(
+        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = onDismiss,
             sheetState = rememberBottomSheetState(
                 initialValue = SheetValue.Hidden,

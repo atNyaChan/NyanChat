@@ -9,7 +9,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imeAnimationTarget
@@ -177,16 +176,9 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
     var cachedRequestToolCount by remember { mutableStateOf(0) }
     var cachedRequestFileCount by remember { mutableStateOf(0) }
     var requestWordCountJob by remember { mutableStateOf<Job?>(null) }
-    // Unlike isImeVisible, the target changes as soon as the IME animation starts.
-    val imeTargetVisible = WindowInsets.imeAnimationTarget.getBottom(density) > 0
-    val collapseToolbar = imeTargetVisible &&
-        setting.displaySetting.collapseChatInputToolbarWhenKeyboardVisible
     // 正在生成消息（发送按钮被取消键取代）期间不做上下文词数/工具数统计，
     // 生成完成（loadingJob 恢复为 null）后自动重新统计并刷新显示。
-    // 开启了“收起输入框工具栏”时，输入框为空或工具栏收起时同样跳过统计
-    val skipRequestStats = loadingJob != null ||
-        (setting.displaySetting.collapseChatInputToolbarWhenKeyboardVisible &&
-            (inputState.isEmpty() || collapseToolbar))
+    val skipRequestStats = loadingJob != null
     val inputContents = inputState.getContents()
     val currentInputWordCount = inputContents.sumOf { part ->
         (part as? UIMessagePart.Text)?.text?.wordCount() ?: 0
@@ -324,6 +316,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
                         settings = setting,
                         drawerState = drawerState,
                         navDrawerPermanent = true,
+                        hazeState = hazeState,
                     )
                 }
             ) {
@@ -364,6 +357,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
                         settings = setting,
                         drawerState = drawerState,
                         navDrawerPermanent = false,
+                        hazeState = hazeState,
                     )
                 }
             ) {

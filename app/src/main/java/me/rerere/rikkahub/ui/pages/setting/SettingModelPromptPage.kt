@@ -57,7 +57,7 @@ internal fun PromptEditor(
             PromptType.OCR -> settings.ocrPrompt
             PromptType.COMPRESS -> settings.compressPrompt
         }
-        ModalBottomSheet(
+        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = onDismiss,
             sheetState = sheetState,
         ) {

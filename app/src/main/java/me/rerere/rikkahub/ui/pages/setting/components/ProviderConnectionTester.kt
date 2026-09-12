@@ -290,7 +290,7 @@ private fun TestResultItem(
         val stackTrace = remember(state.error) {
             state.error.stackTraceToString()
         }
-        ModalBottomSheet(
+        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { showErrorSheet = false },
             sheetState = sheetState,
         ) {

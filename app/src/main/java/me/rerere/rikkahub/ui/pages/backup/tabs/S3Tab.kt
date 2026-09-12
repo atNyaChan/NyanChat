@@ -334,7 +334,7 @@ fun S3Tab(
     }
 
     if (showBackupFiles) {
-        ModalBottomSheet(
+        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {
                 showBackupFiles = false
             },

@@ -127,7 +127,7 @@ fun ChatExportSheet(
     val imageSuccessMessage = stringResource(R.string.chat_page_export_success, "Image")
 
     if (visible) {
-        ModalBottomSheet(
+        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = onDismissRequest,
             sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)),
         ) {

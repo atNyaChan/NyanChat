@@ -656,8 +656,6 @@
   <string name="setting_display_page_enable_auto_scroll_title">自動滾動</string>
   <string name="setting_display_page_enable_blur_effect_desc">為主頁的 UI 元素加上半透明毛玻璃效果</string>
   <string name="setting_display_page_enable_blur_effect_title">啟用模糊效果</string>
-  <string name="setting_display_page_collapse_input_toolbar_title">鍵盤彈出時收起輸入框工具列</string>
-  <string name="setting_display_page_collapse_input_toolbar_desc">展開鍵盤時收起輸入框的工具列</string>
   <string name="setting_display_page_enable_latex_rendering_desc">使用 LaTeX 語法呈現數學表達式與公式</string>
   <string name="setting_display_page_enable_latex_rendering_title">啟用 LaTeX 渲染</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_desc">訊息生成時啟用觸覺回饋效果</string>

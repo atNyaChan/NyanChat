@@ -64,6 +64,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -189,7 +190,7 @@ fun ChatInput(
         part !is UIMessagePart.Document ||
             (part.url in documentWordCounts && documentWordCounts[part.url] == null)
     }
-    val hazeTintColor = MaterialTheme.colorScheme.surfaceContainerLow
+    val hazeTintColor = MaterialTheme.colorScheme.surface
     val inputHazeStyle = HazeBlurStyle.Material3 {
         blurRadius(12.dp)
     }
@@ -200,8 +201,6 @@ fun ChatInput(
     val density = LocalDensity.current
     // Unlike isImeVisible, the target changes as soon as the IME animation starts.
     val imeTargetVisible = WindowInsets.imeAnimationTarget.getBottom(density) > 0
-    val collapseToolbar = imeTargetVisible &&
-        settings.displaySetting.collapseChatInputToolbarWhenKeyboardVisible
     val containerShape = rememberScreenEdgeCornerShape(
         horizontalInset = 8.dp,
         bottomInset = 8.dp,
@@ -274,6 +273,12 @@ fun ChatInput(
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .shadow(
+                        elevation = 6.dp,
+                        shape = containerShape,
+                        clip = false,
+                        spotColor = Color.Transparent,
+                    )
                     .clip(containerShape)
                     .then(
                         if (settings.displaySetting.enableBlurEffect) Modifier.hazeBlur(
@@ -318,23 +323,8 @@ fun ChatInput(
                             }
                         },
                         onSendMessage = { sendMessage() },
-                        trailingContent = {
-                            if (collapseToolbar && !asrState.isRecording) {
-                                SendButton(
-                                    loading = loading,
-                                    empty = state.isEmpty(),
-                                    onClick = { sendMessage() },
-                                    onLongClick = { sendMessageWithoutAnswer() },
-                                )
-                            }
-                        },
                     )
 
-                    AnimatedVisibility(
-                        visible = !collapseToolbar,
-                        enter = expandVertically(expandFrom = Alignment.Bottom) + fadeIn(),
-                        exit = shrinkVertically() + fadeOut(),
-                    ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -483,7 +473,6 @@ fun ChatInput(
                             )
                         }
                     }
-                    }
 
                     AnimatedVisibility(
                         visible = filesExpanded,
@@ -558,7 +547,7 @@ private fun SendButton(
     val showStop = loading && empty
     val containerColor = when {
         showStop -> MaterialTheme.colorScheme.errorContainer
-        empty -> MaterialTheme.colorScheme.surfaceContainerHigh
+        empty -> MaterialTheme.colorScheme.surfaceContainer
         else -> MaterialTheme.colorScheme.primary
     }
     val contentColor = when {

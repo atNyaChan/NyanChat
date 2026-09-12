@@ -144,7 +144,7 @@ internal fun EditedFilesList(
     if (selectedPath != null) {
         val path = selectedPath!!
         val fileName = remember(path) { path.substringAfterLast('/') }
-        ModalBottomSheet(
+        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = { selectedPath = null },
             sheetState = rememberBottomSheetState(
                 initialValue = SheetValue.Hidden,

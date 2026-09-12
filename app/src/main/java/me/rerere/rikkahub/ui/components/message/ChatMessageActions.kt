@@ -269,7 +269,7 @@ fun ChatMessageActionsSheet(
     var showDeleteConfirm by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val toaster = LocalToaster.current
-    ModalBottomSheet(
+    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismissRequest,
         sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)),
     ) {
@@ -293,7 +293,7 @@ fun ChatMessageActionsSheet(
                 },
                 shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
                 colors = if (canEdit) {
-                    CardDefaults.cardColors()
+                    CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)
                 } else {
                     CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.4f),
@@ -328,6 +328,7 @@ fun ChatMessageActionsSheet(
                         onTranslateRequest()
                     },
                     shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -347,6 +348,7 @@ fun ChatMessageActionsSheet(
                     onShare()
                 },
                 shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -374,6 +376,7 @@ fun ChatMessageActionsSheet(
                     onFork()
                 },
                 shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -401,6 +404,7 @@ fun ChatMessageActionsSheet(
                         onToggleFavorite()
                     },
                     shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
