@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -340,9 +341,18 @@ internal fun AssistantBasicContent(
                         Text(stringResource(R.string.assistant_page_background_opacity_desc))
                     }
                 ) {
+                    val backgroundOpacityState = remember {
+                        SliderState(value = backgroundOpacity, trackRange = 0.1f..1f, steps = 8)
+                    }
+                    LaunchedEffect(backgroundOpacity) {
+                        if (backgroundOpacityState.value != backgroundOpacity) {
+                            backgroundOpacityState.value = backgroundOpacity
+                        }
+                    }
                     Slider(
-                        value = backgroundOpacity,
+                        state = backgroundOpacityState,
                         onValueChange = {
+                            backgroundOpacityState.value = it
                             onUpdate(
                                 assistant.copy(
                                     backgroundOpacity = it.toFixed(2).toFloatOrNull()
@@ -350,8 +360,6 @@ internal fun AssistantBasicContent(
                                 )
                             )
                         },
-                        valueRange = 0.1f..1f,
-                        steps = 8,
                         modifier = Modifier.fillMaxWidth()
                     )
                     Text(

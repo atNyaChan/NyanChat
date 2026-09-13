@@ -35,6 +35,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -43,7 +44,6 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -572,17 +572,20 @@ private fun ColorPickerRow(
     val hsl = remember(color) {
         FloatArray(3).also { ColorUtils.colorToHSL(color.toArgb(), it) }
     }
-    var hue by remember(color) { mutableFloatStateOf(hsl[0]) }
-    var saturation by remember(color) { mutableFloatStateOf(hsl[1]) }
-    var lightness by remember(color) { mutableFloatStateOf(hsl[2]) }
+    val hueState = remember(color) { SliderState(value = hsl[0], trackRange = 0f..360f) }
+    val saturationState = remember(color) { SliderState(value = hsl[1], trackRange = 0f..1f) }
+    val lightnessState = remember(color) { SliderState(value = hsl[2], trackRange = 0f..1f) }
     var hueInput by remember(color) { mutableStateOf(hsl[0].roundToInt().toString()) }
     var saturationInput by remember(color) { mutableStateOf((hsl[1] * 100).roundToInt().toString()) }
     var lightnessInput by remember(color) { mutableStateOf((hsl[2] * 100).roundToInt().toString()) }
+    val hue = hueState.value
+    val saturation = saturationState.value
+    val lightness = lightnessState.value
 
     fun updateColor(newHue: Float, newSaturation: Float, newLightness: Float) {
-        hue = newHue
-        saturation = newSaturation
-        lightness = newLightness
+        hueState.value = newHue
+        saturationState.value = newSaturation
+        lightnessState.value = newLightness
         hueInput = newHue.roundToInt().toString()
         saturationInput = (newSaturation * 100).roundToInt().toString()
         lightnessInput = (newLightness * 100).roundToInt().toString()
@@ -604,27 +607,24 @@ private fun ColorPickerRow(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("H", style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(16.dp))
                 Slider(
-                    value = hue,
+                    state = hueState,
                     onValueChange = { updateColor(it, saturation, lightness) },
-                    valueRange = 0f..360f,
                     modifier = Modifier.weight(1f),
                 )
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("S", style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(16.dp))
                 Slider(
-                    value = saturation,
+                    state = saturationState,
                     onValueChange = { updateColor(hue, it, lightness) },
-                    valueRange = 0f..1f,
                     modifier = Modifier.weight(1f),
                 )
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("L", style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(16.dp))
                 Slider(
-                    value = lightness,
+                    state = lightnessState,
                     onValueChange = { updateColor(hue, saturation, it) },
-                    valueRange = 0f..1f,
                     modifier = Modifier.weight(1f),
                 )
             }

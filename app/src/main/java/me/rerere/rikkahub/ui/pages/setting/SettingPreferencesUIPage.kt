@@ -32,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -39,7 +40,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -143,8 +143,12 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
     var boldFontWeightInput by remember(displaySetting.boldFontWeight) {
         mutableStateOf(displaySetting.boldFontWeight?.toString().orEmpty())
     }
-    var ttsPlaybackSpeed by remember(settings.defaultTTSPlaybackSpeed) {
-        mutableFloatStateOf(settings.defaultTTSPlaybackSpeed)
+    val ttsPlaybackSpeedState = remember(settings.defaultTTSPlaybackSpeed) {
+        SliderState(
+            value = settings.defaultTTSPlaybackSpeed,
+            trackRange = 0.5f..2.0f,
+            steps = 14,
+        )
     }
     val volumeKeyScrollMode = if (!displaySetting.enableVolumeKeyScroll) {
         VolumeKeyScrollMode.OFF
@@ -532,13 +536,20 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
+                                val bubbleOpacityState = remember {
+                                    SliderState(value = displaySetting.bubbleOpacity, trackRange = 0.1f..1.0f, steps = 8)
+                                }
+                                LaunchedEffect(displaySetting.bubbleOpacity) {
+                                    if (bubbleOpacityState.value != displaySetting.bubbleOpacity) {
+                                        bubbleOpacityState.value = displaySetting.bubbleOpacity
+                                    }
+                                }
                                 Slider(
-                                    value = displaySetting.bubbleOpacity,
+                                    state = bubbleOpacityState,
                                     onValueChange = {
+                                        bubbleOpacityState.value = it
                                         updateDisplaySetting(displaySetting.copy(bubbleOpacity = it))
                                     },
-                                    valueRange = 0.1f..1.0f,
-                                    steps = 8,
                                     modifier = Modifier.weight(1f)
                                 )
                                 Text(text = "${(displaySetting.bubbleOpacity * 100).roundToInt()}%")
@@ -863,13 +874,20 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
+                                val fontSizeRatioState = remember {
+                                    SliderState(value = displaySetting.fontSizeRatio, trackRange = 0.5f..2f, steps = 11)
+                                }
+                                LaunchedEffect(displaySetting.fontSizeRatio) {
+                                    if (fontSizeRatioState.value != displaySetting.fontSizeRatio) {
+                                        fontSizeRatioState.value = displaySetting.fontSizeRatio
+                                    }
+                                }
                                 Slider(
-                                    value = displaySetting.fontSizeRatio,
+                                    state = fontSizeRatioState,
                                     onValueChange = {
+                                        fontSizeRatioState.value = it
                                         updateDisplaySetting(displaySetting.copy(fontSizeRatio = it))
                                     },
-                                    valueRange = 0.5f..2f,
-                                    steps = 11,
                                     modifier = Modifier.weight(1f)
                                 )
                                 Text(text = "${(displaySetting.fontSizeRatio * 100).toInt()}%")
@@ -1058,20 +1076,18 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 ) {
                                     Slider(
-                                        value = ttsPlaybackSpeed,
+                                        state = ttsPlaybackSpeedState,
                                         onValueChange = {
-                                            ttsPlaybackSpeed = (it * 10).roundToInt() / 10f
+                                            ttsPlaybackSpeedState.value = (it * 10).roundToInt() / 10f
                                         },
                                         onValueChangeFinished = {
                                             vm.updateSettings(
-                                                settings.copy(defaultTTSPlaybackSpeed = ttsPlaybackSpeed)
+                                                settings.copy(defaultTTSPlaybackSpeed = ttsPlaybackSpeedState.value)
                                             )
                                         },
-                                        valueRange = 0.5f..2.0f,
-                                        steps = 14,
                                         modifier = Modifier.weight(1f),
                                     )
-                                    Text(text = "x${"%.1f".format(ttsPlaybackSpeed)}")
+                                    Text(text = "x${"%.1f".format(ttsPlaybackSpeedState.value)}")
                                 }
                             }
                         },
