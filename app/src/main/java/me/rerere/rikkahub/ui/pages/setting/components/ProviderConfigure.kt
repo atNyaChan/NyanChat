@@ -204,8 +204,6 @@ private fun ProviderConfigureOpenAI(
     provider: ProviderSetting.OpenAI,
     onEdit: (provider: ProviderSetting.OpenAI) -> Unit
 ) {
-    val toaster = LocalToaster.current
-
     provider.description()
 
     OutlinedTextField(
@@ -266,22 +264,31 @@ private fun ProviderConfigureOpenAI(
         )
     }
 
-    val responseAPIWarning = stringResource(R.string.setting_provider_page_response_api_warning)
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(stringResource(R.string.setting_provider_page_response_api))
-        Switch(
-            checked = provider.useResponseApi,
-            onCheckedChange = {
-                onEdit(provider.copy(useResponseApi = it))
-                if (it && provider.baseUrl.toHttpUrlOrNull()?.host != "api.openai.com") {
-                    toaster.show(message = responseAPIWarning, type = ToastType.Warning)
+    val responseApiNotCompatible = stringResource(R.string.setting_provider_page_response_api_not_compatible)
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(stringResource(R.string.setting_provider_page_response_api))
+            Switch(
+                checked = provider.useResponseApi,
+                onCheckedChange = {
+                    onEdit(provider.copy(useResponseApi = it))
                 }
-            }
-        )
+            )
+        }
+        if (provider.baseUrl.toHttpUrlOrNull()?.host?.let {
+                it != "api.openai.com" && it != "api.deepseek.com" && it != "openrouter.ai"
+            } == true
+        ) {
+            Text(
+                text = responseApiNotCompatible,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 
 }

@@ -116,14 +116,6 @@ val DEFAULT_PROVIDERS = listOf(
         builtIn = true
     ),
     ProviderSetting.OpenAI(
-        id = Uuid.parse("da93779f-3956-48cc-82ef-67bb482eaaf7"),
-        name = "302.AI",
-        baseUrl = "https://api.302.ai/v1",
-        apiKey = "",
-        enabled = false,
-        builtIn = true,
-    ),
-    ProviderSetting.OpenAI(
         id = Uuid.parse("ff3cde7e-0f65-43d7-8fb2-6475c99f5990"),
         name = "xAI",
         baseUrl = "https://api.x.ai/v1",

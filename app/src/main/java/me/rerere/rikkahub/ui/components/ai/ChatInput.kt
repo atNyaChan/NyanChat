@@ -1,6 +1,8 @@
 package me.rerere.rikkahub.ui.components.ai
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -25,23 +27,26 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imeAnimationTarget
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -49,12 +54,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -65,22 +70,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import com.dokar.sonner.ToastType
 import dev.chrisbanes.haze.HazeInput
 import dev.chrisbanes.haze.HazeState
@@ -88,6 +99,7 @@ import dev.chrisbanes.haze.blur.HazeBlurStyle
 import dev.chrisbanes.haze.blur.hazeBlur
 import dev.chrisbanes.haze.blur.material3.Material3
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collectLatest
 import me.rerere.ai.provider.Model
 import me.rerere.ai.provider.ModelAbility
@@ -99,7 +111,6 @@ import me.rerere.hugeicons.stroke.Add01
 import me.rerere.hugeicons.stroke.ArrowUp02
 import me.rerere.hugeicons.stroke.Cancel01
 import me.rerere.hugeicons.stroke.File02
-import me.rerere.hugeicons.stroke.Fullscreen
 import me.rerere.hugeicons.stroke.MinusSign
 import me.rerere.hugeicons.stroke.Tools
 import me.rerere.hugeicons.stroke.Upload02
@@ -208,6 +219,38 @@ fun ChatInput(
             settings.displaySetting.screenCornerAdaptation == ScreenCornerAdaptation.ALL,
     )
 
+    var isExpanded by remember { mutableStateOf(false) }
+    var collapsedHeightPx by remember { mutableStateOf(0f) }
+    val collapsedHeight = with(density) { collapsedHeightPx.toDp() }
+
+    // The expanded input is pinned at a fixed distance from the top of the screen; only its
+    // bottom edge moves (following the IME/build-nav bars), so the top edge never shifts with
+    // the keyboard. This mirrors Agora's fillMaxHeight + fixed-top-offset anchoring.
+    val screenHeightPx = LocalContext.current.resources.displayMetrics.heightPixels
+    val topOffsetPx = screenHeightPx * 0.05f
+    val navBarPx = WindowInsets.navigationBars.getBottom(density)
+    val imeInsetPx = WindowInsets.ime.getBottom(density)
+    val bottomPadPx = with(density) { 8.dp.toPx() }
+    val fullHeightPx = (
+        screenHeightPx
+            - topOffsetPx
+            - navBarPx
+            - imeInsetPx
+            - bottomPadPx
+        ).coerceAtLeast(collapsedHeightPx)
+    val fullHeight = with(density) { fullHeightPx.toDp() }
+    val bottomInset = with(density) { (navBarPx + imeInsetPx + bottomPadPx).toDp() }
+
+    // Only expand/collapse animates the height; changes caused by the IME are reflected live in
+    // `fullHeight` so the bottom tracks the keyboard instantly while the top stays pinned.
+    val expandProgress by animateFloatAsState(
+        targetValue = if (isExpanded) 1f else 0f,
+        animationSpec = tween(300),
+        label = "chatInputExpand",
+    )
+    val animatedHeight = collapsedHeight + (fullHeight - collapsedHeight) * expandProgress
+    val lockHeight = isExpanded || expandProgress > 0f
+
     fun sendMessage() {
         focusManager.clearFocus(force = true)
         keyboardController?.hide()
@@ -256,12 +299,21 @@ fun ChatInput(
     ) {
         Column(
             modifier = modifier
-                .imePadding()
-                .navigationBarsPadding()
+                .fillMaxWidth()
                 .padding(horizontal = 8.dp)
-                .padding(bottom = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(bottom = bottomInset),
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .then(if (lockHeight) Modifier.height(animatedHeight) else Modifier)
+                    .onSizeChanged {
+                        if (!isExpanded && !lockHeight) {
+                            collapsedHeightPx = it.height.toFloat()
+                        }
+                    },
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
             MessageQueuePanel(
                 state = messageQueue,
                 settings = settings,
@@ -272,6 +324,7 @@ fun ChatInput(
             )
             Surface(
                 modifier = Modifier
+                    .then(if (lockHeight) Modifier.weight(1f) else Modifier)
                     .fillMaxWidth()
                     .shadow(
                         elevation = 6.dp,
@@ -296,6 +349,28 @@ fun ChatInput(
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
+                    if (state.isEditing()) {
+                        Surface(
+                            shape = RoundedCornerShape(20.dp),
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            modifier = Modifier.padding(horizontal = 8.dp),
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(text = stringResource(R.string.editing))
+                                Spacer(Modifier.weight(1f))
+                                Icon(
+                                    imageVector = HugeIcons.Cancel01,
+                                    contentDescription = stringResource(R.string.cancel_edit),
+                                    modifier = Modifier.clickable { state.clearInput() }
+                                )
+                            }
+                        }
+                    }
                     if (voiceState.phase != VoicePhase.Off) {
                         VoiceModeRow(
                             state = voiceState,
@@ -323,6 +398,9 @@ fun ChatInput(
                             }
                         },
                         onSendMessage = { sendMessage() },
+                        expandedFill = lockHeight,
+                        onToggleExpand = { isExpanded = !isExpanded },
+                        modifier = if (lockHeight) Modifier.weight(1f) else Modifier,
                     )
 
                     Row(
@@ -487,7 +565,7 @@ fun ChatInput(
                     }
                 }
             }
-
+            }
         }
     }
 }
@@ -589,6 +667,9 @@ private fun TextInputRow(
     onFocusChanged: (Boolean) -> Unit,
     onSendMessage: () -> Unit,
     trailingContent: @Composable () -> Unit = {},
+    expandedFill: Boolean = false,
+    onToggleExpand: () -> Unit = {},
+    modifier: Modifier = Modifier,
 ) {
     val settings = LocalSettings.current
     val filesManager: FilesManager = koinInject()
@@ -598,34 +679,12 @@ private fun TextInputRow(
     }
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .then(modifier)
+            .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        if (state.isEditing()) {
-            Surface(
-                shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                modifier = Modifier.padding(horizontal = 8.dp),
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 14.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = stringResource(R.string.editing))
-                    Spacer(Modifier.weight(1f))
-                    Icon(
-                        imageVector = HugeIcons.Cancel01,
-                        contentDescription = stringResource(R.string.cancel_edit),
-                        modifier = Modifier.clickable { state.clearInput() }
-                    )
-                }
-            }
-        }
-
         var isFocused by remember { mutableStateOf(false) }
-        var isFullScreen by remember { mutableStateOf(false) }
         var completionList by remember { mutableStateOf<ChatCompletionList?>(null) }
         val receiveContentListener = remember(
             settings.displaySetting.pasteLongTextAsFile, settings.displaySetting.pasteLongTextThreshold
@@ -713,21 +772,36 @@ private fun TextInputRow(
             )
         }
 
-        TextField(
-            state = state.textContent,
+        val textScrollState = rememberScrollState()
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .testTag("chat_input")
-                .contentReceiver(receiveContentListener)
-                .onFocusChanged {
-                    isFocused = it.isFocused
-                    onFocusChanged(it.isFocused)
-                },
-            shape = MaterialTheme.shapes.largeIncreased,
+                .then(if (expandedFill) Modifier.weight(1f) else Modifier)
+                .fillMaxWidth(),
+        ) {
+            TextField(
+                state = state.textContent,
+                scrollState = textScrollState,
+                modifier = Modifier
+                    .then(if (expandedFill) Modifier.fillMaxHeight() else Modifier)
+                    .fillMaxWidth()
+                    .testTag("chat_input")
+                    .contentReceiver(receiveContentListener)
+                    .onFocusChanged {
+                        isFocused = it.isFocused
+                        onFocusChanged(it.isFocused)
+                    },
+                shape = MaterialTheme.shapes.largeIncreased,
             placeholder = {
                 Text(stringResource(R.string.chat_input_placeholder))
             },
-            lineLimits = TextFieldLineLimits.MultiLine(maxHeightInLines = 5),
+            lineLimits = if (expandedFill) {
+                TextFieldLineLimits.MultiLine(
+                    minHeightInLines = 1,
+                    maxHeightInLines = Int.MAX_VALUE,
+                )
+            } else {
+                TextFieldLineLimits.MultiLine(maxHeightInLines = 5)
+            },
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.Sentences,
                 imeAction = if (settings.displaySetting.sendOnEnter) ImeAction.Send else ImeAction.Default
@@ -748,12 +822,24 @@ private fun TextInputRow(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    if (isFocused) {
+                    if (isFocused || expandedFill) {
                         IconButton(
                             onClick = {
-                                isFullScreen = !isFullScreen
-                            }) {
-                            Icon(HugeIcons.Fullscreen, null)
+                                onToggleExpand()
+                            },
+                            modifier = Modifier.size(30.dp),
+                        ) {
+                            Icon(
+                                painter = painterResource(
+                                    if (expandedFill) R.drawable.collapse_all_24px
+                                    else R.drawable.expand_all_24px
+                                ),
+                                contentDescription = stringResource(
+                                    if (expandedFill) R.string.code_block_collapse
+                                    else R.string.code_block_expand
+                                ),
+                                modifier = Modifier.size(18.dp),
+                            )
                         }
                     }
                     trailingContent()
@@ -765,9 +851,56 @@ private fun TextInputRow(
                 }
             } else null,
         )
-        if (isFullScreen) {
-            FullScreenEditor(state = state) {
-                isFullScreen = false
+            TextScrollbar(
+                scrollState = textScrollState,
+                modifier = Modifier.matchParentSize(),
+            )
+        }
+    }
+}
+
+@Composable
+private fun TextScrollbar(
+    scrollState: ScrollState,
+    modifier: Modifier = Modifier,
+) {
+    val scope = rememberCoroutineScope()
+    val thumbColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f)
+    Box(modifier = modifier) {
+        Canvas(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .width(8.dp)
+                .fillMaxHeight()
+                .pointerInput(scrollState) {
+                    detectVerticalDragGestures { change, dragAmount ->
+                        change.consume()
+                        val viewport = size.height.toFloat()
+                        val max = scrollState.maxValue
+                        if (max > 0 && viewport > 0f) {
+                            val thumbHeight = (viewport * viewport / (viewport + max))
+                                .coerceAtLeast(24f)
+                            val trackHeight = viewport - thumbHeight
+                            val delta = if (trackHeight > 0f) {
+                                dragAmount * max / trackHeight
+                            } else 0f
+                            scope.launch { scrollState.scrollBy(delta) }
+                        }
+                    }
+                }
+        ) {
+            val viewport = size.height
+            val max = scrollState.maxValue
+            if (max > 0 && viewport > 0f) {
+                val thumbHeight = (viewport * viewport / (viewport + max)).coerceAtLeast(24f)
+                val trackHeight = viewport - thumbHeight
+                val fraction = if (trackHeight > 0f) scrollState.value.toFloat() / max else 0f
+                drawRoundRect(
+                    color = thumbColor,
+                    topLeft = Offset(size.width / 2f - 1.5.dp.toPx(), fraction * trackHeight),
+                    size = Size(3.dp.toPx(), thumbHeight),
+                    cornerRadius = CornerRadius(1.5.dp.toPx()),
+                )
             }
         }
     }
@@ -777,8 +910,7 @@ private fun TextInputRow(
 private fun CompletionPopup(
     completionList: ChatCompletionList,
     onItemClick: (ChatCompletionItem) -> Unit,
-) {
-    Surface(
+) {    Surface(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(max = 280.dp),
@@ -897,73 +1029,6 @@ private fun QuickMessageButton(
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun FullScreenEditor(
-    state: ChatInputState, onDone: () -> Unit
-) {
-    BasicAlertDialog(
-        onDismissRequest = {
-            onDone()
-        },
-        properties = DialogProperties(
-            usePlatformDefaultWidth = false, decorFitsSystemWindows = false
-        ),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .safeDrawingPadding()
-                .imePadding(),
-            verticalArrangement = Arrangement.Bottom
-        ) {
-            Surface(
-                modifier = Modifier
-                    .widthIn(max = 800.dp)
-                    .fillMaxHeight(0.9f),
-                shape = rememberScreenEdgeCornerShape(
-                    squareBottom = true,
-                )
-            ) {
-                Column(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .fillMaxSize(),
-                    horizontalAlignment = Alignment.End,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Row {
-                        TextButton(
-                            onClick = {
-                                onDone()
-                            }) {
-                            Text(stringResource(R.string.common_save))
-                        }
-                    }
-                    TextField(
-                        state = state.textContent,
-                        modifier = Modifier
-                            .padding(bottom = 2.dp)
-                            .fillMaxSize(),
-                        shape = RoundedCornerShape(32.dp),
-                        placeholder = {
-                            Text(stringResource(R.string.chat_input_placeholder))
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            capitalization = KeyboardCapitalization.Sentences,
-                        ),
-                        colors = TextFieldDefaults.colors().copy(
-                            unfocusedIndicatorColor = Color.Transparent,
-                            focusedIndicatorColor = Color.Transparent,
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                        ),
-                    )
                 }
             }
         }

@@ -749,8 +749,6 @@ private fun ProviderConfigTogglesCardGroup(
     onRefreshBalance: () -> Unit,
     onEdit: (ProviderSetting) -> Unit,
 ) {
-    val toaster = LocalToaster.current
-    val responseAPIWarning = stringResource(R.string.setting_provider_page_response_api_warning)
     CardGroup(modifier = Modifier.fillMaxWidth()) {
         when (provider) {
             is ProviderSetting.OpenAI -> {
@@ -766,17 +764,23 @@ private fun ProviderConfigTogglesCardGroup(
 
                 FormItem(
                     label = { Text(stringResource(R.string.setting_provider_page_response_api)) },
+                    description = {
+                        if (provider.baseUrl.toHttpUrlOrNull()?.host?.let {
+                                it != "api.openai.com" && it != "api.deepseek.com" && it != "openrouter.ai"
+                            } == true
+                        ) {
+                            Text(
+                                text = stringResource(R.string.setting_provider_page_response_api_not_compatible),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    },
                     tail = {
                         Switch(
                             checked = provider.useResponseApi,
                             onCheckedChange = {
                                 onEdit(provider.copy(useResponseApi = it))
-                                if (it && provider.baseUrl.toHttpUrlOrNull()?.host != "api.openai.com") {
-                                    toaster.show(
-                                        message = responseAPIWarning,
-                                        type = ToastType.Warning,
-                                    )
-                                }
                             }
                         )
                     }
@@ -1281,18 +1285,18 @@ private fun ModelSettingsForm(
                                         OutlinedTextField(
                                             value = model.modelId,
                                             onValueChange = {
-                                                if (!isEdit) {
-                                                    setModelId(it.trim())
-                                                }
+                                                setModelId(it.trim())
                                             },
                                             label = { Text(stringResource(R.string.setting_provider_page_model_id)) },
                                             modifier = Modifier.fillMaxWidth(),
                                             placeholder = {
-                                                if (!isEdit) {
-                                                    Text(stringResource(R.string.setting_provider_page_model_id_placeholder))
-                                                }
+                                                Text(stringResource(R.string.setting_provider_page_model_id_placeholder))
                                             },
-                                            enabled = !isEdit
+                                            supportingText = {
+                                                if (isEdit) {
+                                                    Text(stringResource(R.string.setting_provider_page_model_id_not_recommended))
+                                                }
+                                            }
                                         )
 
                                         OutlinedTextField(

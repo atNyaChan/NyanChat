@@ -630,6 +630,7 @@
   <string name="setting_display_page_auto_play_tts_desc">助理訊息產生完成後自動播放語音</string>
   <string name="setting_display_page_auto_play_tts_title">產生後自動播放 TTS</string>
   <string name="setting_display_page_chat_font_family_default">預設</string>
+  <string name="setting_display_page_chat_font_family_thin">更細</string>
   <string name="setting_display_page_chat_font_family_custom">自訂</string>
   <string name="setting_display_page_chat_font_family_monospace">等寬字體</string>
   <string name="setting_display_page_chat_font_family_serif">Serif</string>
@@ -940,6 +941,7 @@
   <string name="setting_provider_page_model_display_name_placeholder">例如：GPT-3.5, 用於 UI 顯示</string>
   <string name="setting_provider_page_model_id">模型 ID</string>
   <string name="setting_provider_page_model_id_placeholder">例如：gpt-3.5-turbo</string>
+  <string name="setting_provider_page_model_id_not_recommended">不建議修改</string>
   <string name="setting_provider_page_model_name">模型名稱</string>
   <string name="setting_provider_page_set_price">設定價格</string>
   <string name="setting_provider_page_price_formula_without_cache">沒有快取讀取：輸入價格 × 輸入 token + 輸出價格 × 輸出 token</string>
@@ -963,7 +965,7 @@
   <string name="setting_provider_page_qr_decode_failed">解析二維碼失敗：%s</string>
   <string name="setting_provider_page_reasoning">推理</string>
   <string name="setting_provider_page_response_api">Response API</string>
-  <string name="setting_provider_page_response_api_warning">Response API 是 OpenAI 新一代 API，大部分提供商並不支持，如果你不知道這是什麼，不要開啟</string>
+  <string name="setting_provider_page_response_api_not_compatible">可能不相容</string>
   <string name="setting_provider_page_scan_error">錯誤: %s</string>
   <string name="setting_provider_page_scan_qr_code">掃描二維碼</string>
   <string name="setting_provider_page_select_all">全選 (%1$d)</string>

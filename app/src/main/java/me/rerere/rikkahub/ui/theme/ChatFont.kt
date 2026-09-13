@@ -9,6 +9,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import me.rerere.rikkahub.data.datastore.ChatFontFamily
 import me.rerere.rikkahub.data.datastore.DisplaySetting
 import java.io.File
@@ -39,10 +40,25 @@ fun rememberChatFontFamily(displaySetting: DisplaySetting): FontFamily {
 
 fun DisplaySetting.resolveChatFontFamily(context: Context): FontFamily = when (chatFontFamily) {
     ChatFontFamily.DEFAULT -> FontFamily.Default
+    ChatFontFamily.OUTFIT -> outfitFontFamily(context.assets)
     ChatFontFamily.SERIF -> FontFamily.Serif
     ChatFontFamily.MONOSPACE -> FontFamily.Monospace
     ChatFontFamily.CUSTOM -> loadCustomFontFamily(context, chatCustomFontPath) ?: FontFamily.Default
 }
+
+fun DisplaySetting.resolvedDefaultFontWeight(): FontWeight? =
+    if (chatFontFamily == ChatFontFamily.OUTFIT) {
+        FontWeight(defaultFontWeight ?: 450)
+    } else {
+        defaultFontWeight?.let { FontWeight(it) }
+    }
+
+fun DisplaySetting.resolvedBoldFontWeight(): FontWeight =
+    if (chatFontFamily == ChatFontFamily.OUTFIT) {
+        FontWeight(boldFontWeight ?: 700)
+    } else {
+        FontWeight(boldFontWeight ?: FontWeight.Bold.weight)
+    }
 
 private fun loadCustomFontFamily(context: Context, relativePath: String): FontFamily? {
     val file = resolveFilesDirFile(context, relativePath) ?: return null

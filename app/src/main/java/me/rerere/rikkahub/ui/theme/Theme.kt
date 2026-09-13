@@ -5,9 +5,11 @@ import android.os.Build
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.rememberPlatformOverscrollFactory
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
@@ -30,6 +32,9 @@ import me.rerere.rikkahub.ui.hooks.rememberUserSettingsState
 
 private val ExtendLightColors = lightExtendColors()
 private val ExtendDarkColors = darkExtendColors()
+
+// Outlined 文本框统一使用 16dp 圆角（对应主题中的 extraSmall 形状）
+private val RikkahubShapes = Shapes().copy(extraSmall = RoundedCornerShape(16.dp))
 val LocalExtendColors = compositionLocalOf { ExtendLightColors }
 
 val LocalDarkMode = compositionLocalOf { false }
@@ -122,6 +127,7 @@ fun RikkahubTheme(
         MaterialExpressiveTheme(
             colorScheme = colorSchemeConverted,
             typography = typography,
+            shapes = RikkahubShapes,
             content = content,
             motionScheme = MotionScheme.expressive()
         )

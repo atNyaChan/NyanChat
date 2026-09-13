@@ -588,6 +588,8 @@ data class NetworkSetting(
 enum class ChatFontFamily {
     @SerialName("default")
     DEFAULT,
+    @SerialName("outfit")
+    OUTFIT,
     @SerialName("serif")
     SERIF,
     @SerialName("monospace")
@@ -650,7 +652,7 @@ data class DisplaySetting(
     val chatFontFamily: ChatFontFamily = ChatFontFamily.DEFAULT,
     val chatCustomFontPath: String = "",
     val chatCustomFontName: String = "",
-    val useChatFontGlobally: Boolean = false,
+    val useChatFontGlobally: Boolean = true,
     val defaultFontWeight: Int? = null,
     val boldFontWeight: Int? = null,
     val screenCornerAdaptation: ScreenCornerAdaptation = ScreenCornerAdaptation.ALL,

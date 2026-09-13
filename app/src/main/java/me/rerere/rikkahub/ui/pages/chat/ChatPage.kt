@@ -77,6 +77,7 @@ import me.rerere.hugeicons.stroke.Menu03
 import me.rerere.hugeicons.stroke.MessageAdd01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
+import me.rerere.rikkahub.data.datastore.getAssistantById
 import me.rerere.rikkahub.data.datastore.getCurrentAssistant
 import me.rerere.rikkahub.data.datastore.getCurrentChatModel
 import me.rerere.rikkahub.data.datastore.getSelectedASRProvider
@@ -259,6 +260,13 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
             node.id to node.messages.getOrNull(node.selectIndex)?.id
         }
     ) {
+        refreshRequestWordCount()
+    }
+
+    // 切换“回传思考”（includeHistoryReasoning）后计入/排除历史思考内容，需重新统计请求总词数
+    val currentIncludeHistoryReasoning = setting.getAssistantById(conversation.assistantId)
+        ?.includeHistoryReasoning
+    LaunchedEffect(currentIncludeHistoryReasoning) {
         refreshRequestWordCount()
     }
 
@@ -1018,9 +1026,11 @@ private fun TopBar(
             text = {
                 OutlinedTextField(
                     value = title,
-                    onValueChange = onUpdate,
+                    onValueChange = { newValue ->
+                        onUpdate(newValue.replace("\n", "").replace("\r", ""))
+                    },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
+                    singleLine = false,
                 )
             },
             confirmButton = {

@@ -101,6 +101,7 @@ import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.modifier.onClick
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
+import me.rerere.rikkahub.ui.theme.resolvedBoldFontWeight
 import me.rerere.rikkahub.utils.toDp
 import org.intellij.markdown.IElementType
 import org.intellij.markdown.MarkdownElementTypes
@@ -489,9 +490,7 @@ private fun MarkdownNode(
         }
 
         MarkdownElementTypes.STRONG -> {
-            val boldFontWeight = FontWeight(
-                LocalSettings.current.displaySetting.boldFontWeight ?: FontWeight.Bold.weight
-            )
+            val boldFontWeight = LocalSettings.current.displaySetting.resolvedBoldFontWeight()
             ProvideTextStyle(TextStyle(fontWeight = boldFontWeight)) {
                 node.children.fastForEach { child ->
                     MarkdownNode(
@@ -805,9 +804,7 @@ private fun Paragraph(
     }
     val enableLatexRendering = LocalSettings.current.displaySetting.enableLatexRendering
     val enableCodeLigatures = LocalSettings.current.displaySetting.enableCodeLigatures
-    val boldFontWeight = FontWeight(
-        LocalSettings.current.displaySetting.boldFontWeight ?: FontWeight.Bold.weight
-    )
+    val boldFontWeight = LocalSettings.current.displaySetting.resolvedBoldFontWeight()
 
     val textStyle = LocalTextStyle.current
     val density = LocalDensity.current

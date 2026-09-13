@@ -52,7 +52,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -94,8 +93,11 @@ import me.rerere.rikkahub.ui.hooks.rememberSharedPreferenceString
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.ColorMode
 import me.rerere.rikkahub.ui.theme.MIN_TRUSTED_CORNER_RADIUS_DP
+import me.rerere.rikkahub.ui.theme.outfitFontFamily
 import me.rerere.rikkahub.ui.theme.rememberChatFontFamily
 import me.rerere.rikkahub.ui.theme.rememberScreenCornerRadiusDp
+import me.rerere.rikkahub.ui.theme.resolvedBoldFontWeight
+import me.rerere.rikkahub.ui.theme.resolvedDefaultFontWeight
 import me.rerere.rikkahub.utils.plus
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -787,13 +789,13 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                                 leading = {
                                     Text(
                                         text = "Aa",
-                                        fontFamily = displaySetting.chatFontFamily.toFontFamilyUI(customChatFontFamily),
+                                        fontFamily = displaySetting.chatFontFamily.toFontFamilyUI(context, customChatFontFamily),
                                     )
                                 },
                                 optionLeading = { family ->
                                     Text(
                                         text = "Aa",
-                                        fontFamily = family.toFontFamilyUI(customChatFontFamily),
+                                        fontFamily = family.toFontFamilyUI(context, customChatFontFamily),
                                     )
                                 }
                             )
@@ -941,17 +943,15 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                                 previewPart1,
                                 previewPart2,
                                 displaySetting.fontSizeRatio,
-                                displaySetting.defaultFontWeight,
-                                displaySetting.boldFontWeight,
+                                displaySetting.resolvedDefaultFontWeight(),
+                                displaySetting.resolvedBoldFontWeight(),
                                 chatFontFamily,
                             ) {
                                 buildAnnotatedString {
                                     append(previewPart1)
                                     withStyle(
                                         SpanStyle(
-                                            fontWeight = FontWeight(
-                                                displaySetting.boldFontWeight ?: FontWeight.Bold.weight
-                                            )
+                                            fontWeight = displaySetting.resolvedBoldFontWeight()
                                         )
                                     ) {
                                         append(previewPart2)
@@ -964,7 +964,7 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                                     fontSize = LocalTextStyle.current.fontSize * displaySetting.fontSizeRatio,
                                     lineHeight = LocalTextStyle.current.lineHeight * displaySetting.fontSizeRatio,
                                     fontFamily = chatFontFamily,
-                                    fontWeight = displaySetting.defaultFontWeight?.let { FontWeight(it) },
+                                    fontWeight = displaySetting.resolvedDefaultFontWeight(),
                                 ),
                             )
                         },
@@ -1271,13 +1271,15 @@ private data class ImportedChatFontUI(
 @Composable
 private fun ChatFontFamily.labelUI(): String = when (this) {
     ChatFontFamily.DEFAULT -> stringResource(R.string.setting_display_page_chat_font_family_default)
+    ChatFontFamily.OUTFIT -> stringResource(R.string.setting_display_page_chat_font_family_thin)
     ChatFontFamily.SERIF -> stringResource(R.string.setting_display_page_chat_font_family_serif)
     ChatFontFamily.MONOSPACE -> stringResource(R.string.setting_display_page_chat_font_family_monospace)
     ChatFontFamily.CUSTOM -> stringResource(R.string.setting_display_page_chat_font_family_custom)
 }
 
-private fun ChatFontFamily.toFontFamilyUI(customFontFamily: FontFamily): FontFamily = when (this) {
+private fun ChatFontFamily.toFontFamilyUI(context: Context, customFontFamily: FontFamily): FontFamily = when (this) {
     ChatFontFamily.DEFAULT -> FontFamily.Default
+    ChatFontFamily.OUTFIT -> outfitFontFamily(context.assets)
     ChatFontFamily.SERIF -> FontFamily.Serif
     ChatFontFamily.MONOSPACE -> FontFamily.Monospace
     ChatFontFamily.CUSTOM -> customFontFamily

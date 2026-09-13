@@ -149,18 +149,32 @@ fun SearchPage(initialModelId: String? = null, vm: SearchVM = koinViewModel()) {
             LargeFlexibleTopAppBar(
                 navigationIcon = { BackButton() },
                 title = {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.Bottom,
-                    ) {
-                        Text(stringResource(R.string.search_page_title))
-                        if (vm.hasSearchCriteria && !vm.isLoading && !vm.isRebuilding) {
-                            Text(
-                                text = stringResource(R.string.search_page_result_count, vm.resultCount),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(bottom = 3.dp),
-                            )
+                    val collapsed = scrollBehavior.state.collapsedFraction > 0.5f
+                    if (collapsed) {
+                        Column {
+                            Text(stringResource(R.string.search_page_title))
+                            if (vm.hasSearchCriteria && !vm.isLoading && !vm.isRebuilding) {
+                                Text(
+                                    text = stringResource(R.string.search_page_result_count, vm.resultCount),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    } else {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.Bottom,
+                        ) {
+                            Text(stringResource(R.string.search_page_title))
+                            if (vm.hasSearchCriteria && !vm.isLoading && !vm.isRebuilding) {
+                                Text(
+                                    text = stringResource(R.string.search_page_result_count, vm.resultCount),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(bottom = 3.dp),
+                                )
+                            }
                         }
                     }
                 },

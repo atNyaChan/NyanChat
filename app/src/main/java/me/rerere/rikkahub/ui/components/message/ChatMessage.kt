@@ -51,7 +51,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
@@ -91,6 +90,7 @@ import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.LocalChatFontFamily
 import me.rerere.rikkahub.ui.theme.rememberChatFontFamily
 import me.rerere.rikkahub.ui.theme.extendColors
+import me.rerere.rikkahub.ui.theme.resolvedDefaultFontWeight
 import me.rerere.rikkahub.utils.JsonInstant
 import me.rerere.rikkahub.utils.formatNumber
 import me.rerere.rikkahub.utils.openUrl
@@ -131,7 +131,7 @@ fun ChatMessage(
         fontSize = LocalTextStyle.current.fontSize * settings.fontSizeRatio,
         lineHeight = LocalTextStyle.current.lineHeight * settings.fontSizeRatio,
         fontFamily = chatFontFamily,
-        fontWeight = settings.defaultFontWeight?.let { FontWeight(it) },
+        fontWeight = settings.resolvedDefaultFontWeight(),
     )
     var showActionsSheet by remember { mutableStateOf(false) }
     var showTranslateDialog by remember { mutableStateOf(false) }
@@ -187,11 +187,7 @@ fun ChatMessage(
             }
         }
 
-        val showActions = if (lastMessage) {
-            message.role == MessageRole.USER || message.role == MessageRole.ASSISTANT || !loading
-        } else {
-            message.parts.isEmptyUIMessage().not()
-        }
+        val showActions = true
 
         AnimatedVisibility(
             visible = showActions,
@@ -426,7 +422,8 @@ private fun MessagePartsBlock(
                         // 内部可选择的 Text 会频繁注册/注销，与 Compose 选择工具栏在绘制阶段
                         // 对 selectable 列表的排序产生并发修改，导致 ConcurrentModificationException。
                         // 生成结束后内容稳定，再启用文本选择。
-                        if (loading) {
+                        // 用户消息不受流式重渲染影响，生成期间也始终允许长按选中并复制文字。
+                        if (loading && role != MessageRole.USER) {
                             textContent()
                         } else {
                             SelectionContainer {

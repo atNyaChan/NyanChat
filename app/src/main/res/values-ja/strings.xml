@@ -630,6 +630,7 @@
   <string name="setting_display_page_auto_play_tts_desc">アシスタントのメッセージ生成完了後にTTSを自動再生</string>
   <string name="setting_display_page_auto_play_tts_title">生成後にTTSを自動再生</string>
   <string name="setting_display_page_chat_font_family_default">デフォルト</string>
+  <string name="setting_display_page_chat_font_family_thin">細め</string>
   <string name="setting_display_page_chat_font_family_custom">カスタム</string>
   <string name="setting_display_page_chat_font_family_monospace">等幅</string>
   <string name="setting_display_page_chat_font_family_serif">明朝体</string>
@@ -940,6 +941,7 @@
   <string name="setting_provider_page_model_display_name_placeholder">例：GPT-3.5、UI表示用</string>
   <string name="setting_provider_page_model_id">モデルID</string>
   <string name="setting_provider_page_model_id_placeholder">例：gpt-3.5-turbo</string>
+  <string name="setting_provider_page_model_id_not_recommended">変更しないことをお勧めします</string>
   <string name="setting_provider_page_model_name">モデル名</string>
   <string name="setting_provider_page_set_price">料金を設定</string>
   <string name="setting_provider_page_price_formula_without_cache">キャッシュ読み取りなし：入力価格 × 入力トークン + 出力価格 × 出力トークン</string>
@@ -963,7 +965,7 @@
   <string name="setting_provider_page_qr_decode_failed">QRコードの解析に失敗しました：%s</string>
   <string name="setting_provider_page_reasoning">推論</string>
   <string name="setting_provider_page_response_api">Response API</string>
-  <string name="setting_provider_page_response_api_warning">Response APIはOpenAIの次世代APIです。ほとんどのプロバイダーはサポートしていません。これが何かわからない場合は、有効にしないでください。</string>
+  <string name="setting_provider_page_response_api_not_compatible">非対応の可能性があります</string>
   <string name="setting_provider_page_scan_error">エラー: %s</string>
   <string name="setting_provider_page_scan_qr_code">QRコードをスキャン</string>
   <string name="setting_provider_page_select_all">すべて選択 (%1$d)</string>

@@ -76,6 +76,7 @@ import me.rerere.rikkahub.ui.components.table.DataTable
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
+import me.rerere.rikkahub.ui.theme.resolvedBoldFontWeight
 import me.rerere.rikkahub.utils.toDp
 import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
 import org.intellij.markdown.html.HtmlGenerator
@@ -348,9 +349,7 @@ private fun HtmlParagraphContent(
 
     val enableLatexRendering = LocalSettings.current.displaySetting.enableLatexRendering
     val enableCodeLigatures = LocalSettings.current.displaySetting.enableCodeLigatures
-    val boldFontWeight = FontWeight(
-        LocalSettings.current.displaySetting.boldFontWeight ?: FontWeight.Bold.weight
-    )
+    val boldFontWeight = LocalSettings.current.displaySetting.resolvedBoldFontWeight()
     val hasInlineMath = element.select("span.math").any { it.attr("inline") == "true" }
     val colorScheme = MaterialTheme.colorScheme
     val textStyle = LocalTextStyle.current
@@ -715,9 +714,7 @@ private fun HtmlProgress(element: Element) {
 private fun HtmlInlineGroup(nodes: List<Node>, onClickCitation: (String) -> Unit) {
     val enableLatexRendering = LocalSettings.current.displaySetting.enableLatexRendering
     val enableCodeLigatures = LocalSettings.current.displaySetting.enableCodeLigatures
-    val boldFontWeight = FontWeight(
-        LocalSettings.current.displaySetting.boldFontWeight ?: FontWeight.Bold.weight
-    )
+    val boldFontWeight = LocalSettings.current.displaySetting.resolvedBoldFontWeight()
     val colorScheme = MaterialTheme.colorScheme
     val textStyle = LocalTextStyle.current
     val density = LocalDensity.current
@@ -804,9 +801,7 @@ private fun HtmlInlineAsComposable(node: Node, onClickCitation: (String) -> Unit
                     val density = LocalDensity.current
                     val enableLatexRendering = LocalSettings.current.displaySetting.enableLatexRendering
                     val enableCodeLigatures = LocalSettings.current.displaySetting.enableCodeLigatures
-                    val boldFontWeight = FontWeight(
-                        LocalSettings.current.displaySetting.boldFontWeight ?: FontWeight.Bold.weight
-                    )
+                    val boldFontWeight = LocalSettings.current.displaySetting.resolvedBoldFontWeight()
                     val (annotated, inlineContents) = remember(
                         node.outerHtml(),
                         enableLatexRendering,

@@ -630,6 +630,7 @@
   <string name="setting_display_page_auto_play_tts_desc">Автоматически воспроизводить TTS после завершения генерации ответа ассистента</string>
   <string name="setting_display_page_auto_play_tts_title">Автовоспроизведение TTS после генерации</string>
   <string name="setting_display_page_chat_font_family_default">По умолчанию</string>
+  <string name="setting_display_page_chat_font_family_thin">Тоньше</string>
   <string name="setting_display_page_chat_font_family_custom">Пользовательский</string>
   <string name="setting_display_page_chat_font_family_monospace">Моноширинный</string>
   <string name="setting_display_page_chat_font_family_serif">С засечками</string>
@@ -940,6 +941,7 @@
   <string name="setting_provider_page_model_display_name_placeholder">например: GPT-3.5, для отображения в интерфейсе</string>
   <string name="setting_provider_page_model_id">ID модели</string>
   <string name="setting_provider_page_model_id_placeholder">например: gpt-3.5-turbo</string>
+  <string name="setting_provider_page_model_id_not_recommended">Менять не рекомендуется</string>
   <string name="setting_provider_page_model_name">Название модели</string>
   <string name="setting_provider_page_set_price">Настроить цены</string>
   <string name="setting_provider_page_price_formula_without_cache">Без чтения кэша: цена ввода × входные токены + цена вывода × выходные токены</string>
@@ -963,7 +965,7 @@
   <string name="setting_provider_page_qr_decode_failed">Не удалось распознать QR-код: %s</string>
   <string name="setting_provider_page_reasoning">Размышления</string>
   <string name="setting_provider_page_response_api">API ответов</string>
-  <string name="setting_provider_page_response_api_warning">Response API — это новое поколение API от OpenAI. Большинство поставщиков его не поддерживают. Если вы не знаете, что это такое, не включайте его.</string>
+  <string name="setting_provider_page_response_api_not_compatible">Может быть несовместимо</string>
   <string name="setting_provider_page_scan_error">Ошибка: %s</string>
   <string name="setting_provider_page_scan_qr_code">Сканировать QR-код</string>
   <string name="setting_provider_page_select_all">Выбрать все (%1$d)</string>

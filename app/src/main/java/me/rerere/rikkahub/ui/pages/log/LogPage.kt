@@ -481,12 +481,14 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
             }
 
             log.responseBody?.let { body -> item {
+                val jsonElement = remember(body) { parseResponseJson(body) }
                 CollapsibleLogSection(
                     title = "Response Body",
                     initiallyExpanded = true,
-                    onCopy = { context.writeClipboardText(body) },
+                    onCopy = { context.writeClipboardText(
+                        jsonElement?.let { JsonInstantPretty.encodeToString(it) } ?: body
+                    ) },
                 ) {
-                    val jsonElement = remember(body) { parseResponseJson(body) }
                     if (jsonElement != null) {
                         JsonTree(jsonElement, initialExpandLevel = 0, fontFeatureSettings = codeFontFeatureSettings)
                     } else {

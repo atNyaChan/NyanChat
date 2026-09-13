@@ -625,6 +625,8 @@ class ChatService(
             message.parts.sumOf { part ->
                 when (part) {
                     is UIMessagePart.Text -> part.text.wordCount()
+                    is UIMessagePart.Reasoning ->
+                        if (assistant.includeHistoryReasoning) part.reasoning.wordCount() else 0
                     else -> 0
                 }
             }
