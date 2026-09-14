@@ -362,6 +362,7 @@
   <string name="imggen_page_cancel_generation_title">取消生成</string>
   <string name="imggen_page_gallery">相册</string>
   <string name="imggen_page_generate_image">生成图片</string>
+  <string name="imggen_page_generating">正在生成图片（已用时 %1$d s）</string>
   <string name="imggen_page_generation_count">生成数量</string>
   <string name="imggen_page_generation_count_desc">每次生成的图片数量</string>
   <string name="imggen_page_image_saved_success">图片已保存到相册</string>
@@ -1091,7 +1092,8 @@
   <string name="tag_input_dialog_title">添加标签</string>
   <string name="take_picture">拍照</string>
   <string name="test_tts">测试语音</string>
-  <string name="text_area_fullscreen_edit">全屏编辑</string>
+  <string name="text_area_collapse">收起</string>
+  <string name="text_area_expand">展开</string>
   <string name="text_area_import_failed">导入文件失败</string>
   <string name="text_area_import_from_file">从文件导入</string>
   <string name="text_area_import_success">文件导入成功</string>

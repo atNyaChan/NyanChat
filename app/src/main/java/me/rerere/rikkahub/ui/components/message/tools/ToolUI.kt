@@ -64,6 +64,15 @@ interface ToolUIRenderer {
     fun Preview(context: ToolUIContext, onDismissRequest: () -> Unit) {
         DefaultToolPreview(context = context)
     }
+
+    /**
+     * 是否将完整详情直接内联在步骤中(点击步骤展开/收起), 而不是弹出单独的 BottomSheet 详情页。
+     * 开启时 [Summary] 应渲染完整内容, 点击步骤切换展开/收起, 不弹出详情页。
+     */
+    val inlineDetail: Boolean get() = false
+
+    /** 工具是否正在执行中, 用于标题行的加载渐变效果; 默认由消息 loading 状态决定 */
+    fun isRunning(context: ToolUIContext): Boolean = false
 }
 
 /** 未注册工具使用的默认渲染器, 全部行为来自 [ToolUIRenderer] 的默认实现 */

@@ -362,6 +362,7 @@
   <string name="imggen_page_cancel_generation_title">取消生成</string>
   <string name="imggen_page_gallery">相簿</string>
   <string name="imggen_page_generate_image">生成圖片</string>
+  <string name="imggen_page_generating">正在生成圖片（已用時 %1$d s）</string>
   <string name="imggen_page_generation_count">生成數量</string>
   <string name="imggen_page_generation_count_desc">每次生成的圖片數量</string>
   <string name="imggen_page_image_saved_success">圖片已保存到相簿</string>
@@ -624,7 +625,7 @@
   <string name="setting_display_page_amoled_dark_mode_desc">在暗色主題中使用純黑背景，適合 AMOLED 螢幕</string>
   <string name="setting_display_page_amoled_dark_mode_title">AMOLED 暗色模式</string>
   <string name="setting_display_page_auto_collapse_thinking_desc">思考完成自動折疊思考內容</string>
-  <string name="setting_display_page_auto_collapse_thinking_title">自動折疊思考</string>
+  <string name="setting_display_page_auto_collapse_thinking_title">自動摺疊思考</string>
   <string name="setting_display_page_parse_mid_think_title">解析中途思考</string>
   <string name="setting_display_page_parse_mid_think_desc">把非訊息開頭的 &lt;think&gt; 標籤解析為思考區塊</string>
   <string name="setting_display_page_auto_play_tts_desc">助理訊息產生完成後自動播放語音</string>
@@ -1091,7 +1092,8 @@
   <string name="tag_input_dialog_title">添加標籤</string>
   <string name="take_picture">拍照</string>
   <string name="test_tts">測試語音</string>
-  <string name="text_area_fullscreen_edit">全螢幕編輯</string>
+  <string name="text_area_collapse">收合</string>
+  <string name="text_area_expand">展開</string>
   <string name="text_area_import_failed">匯入檔案失敗</string>
   <string name="text_area_import_from_file">從檔案匯入</string>
   <string name="text_area_import_success">檔案匯入成功</string>

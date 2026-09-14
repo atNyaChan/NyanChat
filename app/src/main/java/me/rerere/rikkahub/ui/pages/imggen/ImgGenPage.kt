@@ -38,7 +38,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -61,6 +60,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -82,6 +82,8 @@ import coil3.compose.AsyncImage
 import com.dokar.sonner.ToastType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.rerere.ai.provider.ModelType
@@ -102,6 +104,7 @@ import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.files.FileUtils
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.ui.components.ai.ModelSelector
+import me.rerere.rikkahub.ui.components.ui.AppLoadingIndicator
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.FormItem
 import me.rerere.rikkahub.ui.components.ui.ImagePreviewDialog
@@ -258,6 +261,17 @@ private fun ImageGenScreen(
         enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
     )
 
+    val generationStartAt by vm.generationStartAt.collectAsStateWithLifecycle()
+    val elapsedSeconds by produceState(
+        initialValue = if (generationStartAt > 0) (System.currentTimeMillis() - generationStartAt) / 1000 else 0L,
+        key1 = generationStartAt,
+    ) {
+        while (isActive) {
+            value = (System.currentTimeMillis() - generationStartAt) / 1000
+            delay(1000)
+        }
+    }
+
     LaunchedEffect(error) {
         error?.let { errorMessage ->
             toaster.show(message = errorMessage, type = ToastType.Error)
@@ -328,7 +342,18 @@ private fun ImageGenScreen(
                     }
                 }
                 if (isGenerating) {
-                    ContainedLoadingIndicator(modifier = Modifier.align(Alignment.Center))
+                    Column(
+                        modifier = Modifier.align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        AppLoadingIndicator()
+                        Text(
+                            text = stringResource(R.string.imggen_page_generating, elapsedSeconds),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
         }

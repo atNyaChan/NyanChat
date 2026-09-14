@@ -75,6 +75,8 @@ class ImgGenVM(
 
     private val _isGenerating = MutableStateFlow(false)
     val isGenerating: StateFlow<Boolean> = _isGenerating
+    private val _generationStartAt = MutableStateFlow(0L)
+    val generationStartAt: StateFlow<Long> = _generationStartAt
     private var cancelJob: Job? = null
 
     private val _error = MutableStateFlow<String?>(null)
@@ -141,6 +143,7 @@ class ImgGenVM(
         cancelJob = viewModelScope.launch {
             try {
                 _isGenerating.value = true
+                _generationStartAt.value = System.currentTimeMillis()
                 _error.value = null
                 _currentGeneratedImages.value = emptyList()
 
@@ -175,6 +178,7 @@ class ImgGenVM(
                 _error.value = e.message ?: "Unknown error occurred"
             } finally {
                 _isGenerating.value = false
+                _generationStartAt.value = 0L
             }
         }
     }
@@ -185,6 +189,7 @@ class ImgGenVM(
         cancelJob = viewModelScope.launch {
             try {
                 _isGenerating.value = true
+                _generationStartAt.value = System.currentTimeMillis()
                 _error.value = null
                 _currentGeneratedImages.value = emptyList()
 
@@ -223,6 +228,7 @@ class ImgGenVM(
                 _error.value = e.message ?: "Unknown error occurred"
             } finally {
                 _isGenerating.value = false
+                _generationStartAt.value = 0L
             }
         }
     }

@@ -1,35 +1,24 @@
 package me.rerere.rikkahub.ui.components.message.tools
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.intOrNull
-import kotlinx.serialization.json.longOrNull
 import me.rerere.ai.ui.DiffMetadata
+import me.rerere.ai.ui.ToolApprovalState
 import me.rerere.ai.ui.metadataAs
 import me.rerere.common.http.jsonObjectOrNull
-import me.rerere.highlight.CodeHighlightText
 import androidx.compose.ui.res.stringResource
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.ComputerTerminal01
@@ -42,19 +31,15 @@ import me.rerere.rikkahub.ui.components.richtext.DiffRemovedColor
 import me.rerere.rikkahub.ui.components.richtext.DiffView
 import me.rerere.rikkahub.ui.components.richtext.HighlightCodeBlock
 import me.rerere.rikkahub.ui.components.richtext.parseDiffStats
-import me.rerere.rikkahub.ui.context.LocalSettings
-import me.rerere.rikkahub.ui.modifier.shimmer
-import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.utils.generateUnifiedDiff
 import me.rerere.rikkahub.utils.jsonPrimitiveOrNull
 
 /**
- * 工作空间编辑文件: 摘要显示增删统计与精简 diff, 详情为完整 diff view
+ * 工作空间编辑文件: 完整 diff 内联展示在步骤中, 点击步骤展开/收起
  */
 object EditFileToolUI : ToolUIRenderer {
-    private const val SUMMARY_MAX_LINES = 10
-
     override val toolName: String = "workspace_edit_file"
+    override val inlineDetail: Boolean = true
 
     override fun icon(context: ToolUIContext): ImageVector = HugeIcons.FileEdit
 
@@ -102,62 +87,16 @@ object EditFileToolUI : ToolUIRenderer {
         DiffView(
             diff = diff,
             modifier = Modifier.fillMaxWidth(),
-            maxLines = SUMMARY_MAX_LINES,
-            showFileHeader = false,
         )
-    }
-
-    @Composable
-    override fun Preview(context: ToolUIContext, onDismissRequest: () -> Unit) {
-        val diff = remember(context) { diffOf(context) }
-        if (diff == null) {
-            DefaultToolPreview(context = context)
-            return
-        }
-        val stats = remember(diff) { parseDiffStats(diff) }
-        Column(
-            modifier = Modifier
-                .fillMaxHeight(0.8f)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(
-                    text = context.arguments.getStringContent("path") ?: toolName,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f),
-                )
-                Text(
-                    text = "+${stats.additions}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = DiffAddedColor,
-                )
-                Text(
-                    text = "-${stats.deletions}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = DiffRemovedColor,
-                )
-            }
-            DiffView(
-                diff = diff,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
     }
 }
 
 /**
- * 工作空间读取文件: 摘要显示内容首部预览, 详情为带语法高亮的完整内容
+ * 工作空间读取文件: 完整文件内容内联展示在步骤中, 点击步骤展开/收起
  */
 object ReadFileToolUI : ToolUIRenderer {
     override val toolName: String = "workspace_read_file"
+    override val inlineDetail: Boolean = true
 
     override fun icon(context: ToolUIContext): ImageVector = HugeIcons.FileView
 
@@ -176,29 +115,19 @@ object ReadFileToolUI : ToolUIRenderer {
     @Composable
     override fun Summary(context: ToolUIContext) {
         val text = remember(context) { textOf(context) } ?: return
-        FileContentSummary(
-            text = text,
+        FileContentInline(
             path = context.arguments.getStringContent("path"),
-            loading = context.loading,
+            code = text,
         )
-    }
-
-    @Composable
-    override fun Preview(context: ToolUIContext, onDismissRequest: () -> Unit) {
-        val text = remember(context) { textOf(context) }
-        if (text == null) {
-            DefaultToolPreview(context = context)
-            return
-        }
-        FileContentPreview(path = context.arguments.getStringContent("path"), code = text)
     }
 }
 
 /**
- * 工作空间写入文件: 内容取自入参 (未执行也可预览), 摘要为内容首部, 详情为完整内容
+ * 工作空间写入文件: 完整写入内容内联展示在步骤中, 点击步骤展开/收起
  */
 object WriteFileToolUI : ToolUIRenderer {
     override val toolName: String = "workspace_write_file"
+    override val inlineDetail: Boolean = true
 
     override fun icon(context: ToolUIContext): ImageVector = HugeIcons.FileAdd
 
@@ -216,68 +145,27 @@ object WriteFileToolUI : ToolUIRenderer {
     @Composable
     override fun Summary(context: ToolUIContext) {
         val text = remember(context) { textOf(context) } ?: return
-        FileContentSummary(
-            text = text,
+        FileContentInline(
             path = context.arguments.getStringContent("path"),
-            loading = context.loading,
-        )
-    }
-
-    @Composable
-    override fun Preview(context: ToolUIContext, onDismissRequest: () -> Unit) {
-        val text = remember(context) { textOf(context) }
-        if (text == null) {
-            DefaultToolPreview(context = context)
-            return
-        }
-        FileContentPreview(path = context.arguments.getStringContent("path"), code = text)
-    }
-}
-
-/** 内联摘要: 按扩展名语法高亮展示文件内容首部若干行 */
-@Composable
-private fun FileContentSummary(text: String, path: String?, loading: Boolean) {
-    val preview = remember(text) {
-        text.lineSequence().take(FILE_SUMMARY_MAX_LINES).joinToString("\n")
-    }
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(MaterialTheme.shapes.small)
-            .background(MaterialTheme.colorScheme.surfaceContainer)
-            .padding(horizontal = 8.dp, vertical = 6.dp)
-            .shimmer(isLoading = loading),
-    ) {
-        CodeHighlightText(
-            code = preview,
-            language = languageOf(path),
-            fontSize = 11.sp,
-            lineHeight = 14.sp,
-            maxLines = FILE_SUMMARY_MAX_LINES,
-            overflow = TextOverflow.Ellipsis,
-            fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
-            modifier = Modifier.fillMaxWidth(),
+            code = text,
         )
     }
 }
 
-/** BottomSheet 详情: 文件路径 + 按扩展名语法高亮的完整内容 */
+/** 内联文件内容: 路径 + 按扩展名语法高亮的完整内容 */
 @Composable
-private fun FileContentPreview(path: String?, code: String) {
+private fun FileContentInline(path: String?, code: String) {
     Column(
-        modifier = Modifier
-            .fillMaxHeight(0.8f)
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Text(
-            text = path ?: stringResource(R.string.tool_ui_file),
-            style = MaterialTheme.typography.titleMedium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.fillMaxWidth(),
-        )
+        if (!path.isNullOrBlank()) {
+            Text(
+                text = path,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         HighlightCodeBlock(
             code = code,
             language = languageOf(path),
@@ -286,11 +174,12 @@ private fun FileContentPreview(path: String?, code: String) {
     }
 }
 
-/** 工作空间执行 Shell：聊天流不展示输出；点开详情后显示命令、退出状态与 stdout/stderr。 */
+/** 工作空间执行 Shell: 命令、退出状态与 stdout/stderr 内联展示在步骤中, 点击步骤展开/收起 */
 object ShellToolUI : ToolUIRenderer {
     private const val TITLE_MAX_CHARS = 40
 
     override val toolName: String = "workspace_shell"
+    override val inlineDetail: Boolean = true
 
     override fun icon(context: ToolUIContext): ImageVector = HugeIcons.ComputerTerminal01
 
@@ -302,30 +191,24 @@ object ShellToolUI : ToolUIRenderer {
         return stringResource(R.string.tool_ui_shell, truncated)
     }
 
-    override fun hasSummary(context: ToolUIContext): Boolean = false
+    override fun hasSummary(context: ToolUIContext): Boolean =
+        context.content != null || !context.arguments.getStringContent("command").isNullOrBlank()
 
-    @Composable
-    override fun Summary(context: ToolUIContext) {
-        // Intentionally hidden in chat.
+    /** Shell 未执行完成且未被拒绝/回答时视为正在运行, 标题行显示加载渐变 */
+    override fun isRunning(context: ToolUIContext): Boolean {
+        if (context.tool.isExecuted) return false
+        return context.tool.approvalState is ToolApprovalState.Auto ||
+            context.tool.approvalState is ToolApprovalState.Approved
     }
 
     @Composable
-    override fun Preview(context: ToolUIContext, onDismissRequest: () -> Unit) {
-        val content = context.content
-        if (content == null) {
-            DefaultToolPreview(context = context)
-            return
-        }
+    override fun Summary(context: ToolUIContext) {
         val command = context.arguments.getStringContent("command").orEmpty()
         val cwd = context.arguments.getStringContent("cwd")
-        val stdout = content.getStringContent("stdout").orEmpty()
-        val stderr = content.getStringContent("stderr").orEmpty()
+        val content = context.content
         Column(
-            modifier = Modifier
-                .fillMaxHeight(0.8f)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -334,35 +217,41 @@ object ShellToolUI : ToolUIRenderer {
             ) {
                 Text(
                     text = stringResource(R.string.tool_ui_shell_default),
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.weight(1f),
                 )
-                ShellExitStatus(content, MaterialTheme.typography.labelMedium)
+                if (content != null) {
+                    ShellExitStatus(content, MaterialTheme.typography.labelSmall)
+                }
             }
             HighlightCodeBlock(
                 code = if (cwd.isNullOrBlank()) command else "# cwd: $cwd\n$command",
                 language = "bash",
                 modifier = Modifier.fillMaxWidth(),
             )
-            if (stdout.isNotEmpty()) {
-                Text(text = "stdout", style = MaterialTheme.typography.labelMedium)
-                HighlightCodeBlock(
-                    code = stdout,
-                    language = "plaintext",
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-            if (stderr.isNotEmpty()) {
-                Text(
-                    text = "stderr",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.error,
-                )
-                HighlightCodeBlock(
-                    code = stderr,
-                    language = "plaintext",
-                    modifier = Modifier.fillMaxWidth(),
-                )
+            if (content != null) {
+                val stdout = content.getStringContent("stdout").orEmpty()
+                val stderr = content.getStringContent("stderr").orEmpty()
+                if (stdout.isNotEmpty()) {
+                    Text(text = "stdout", style = MaterialTheme.typography.labelSmall)
+                    HighlightCodeBlock(
+                        code = stdout,
+                        language = "plaintext",
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+                if (stderr.isNotEmpty()) {
+                    Text(
+                        text = "stderr",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                    HighlightCodeBlock(
+                        code = stderr,
+                        language = "plaintext",
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
         }
     }
@@ -391,12 +280,6 @@ private fun JsonElement?.boolean(key: String): Boolean? =
 /** 从工具输出 JSON 读取整型字段 */
 private fun JsonElement?.int(key: String): Int? =
     this?.jsonObjectOrNull?.get(key)?.jsonPrimitiveOrNull?.intOrNull
-
-/** 从工具输出 JSON 读取长整型字段 */
-private fun JsonElement?.long(key: String): Long? =
-    this?.jsonObjectOrNull?.get(key)?.jsonPrimitiveOrNull?.longOrNull
-
-private const val FILE_SUMMARY_MAX_LINES = 10
 
 /** 由文件扩展名推断语法高亮语言 */
 private fun languageOf(path: String?): String = when (

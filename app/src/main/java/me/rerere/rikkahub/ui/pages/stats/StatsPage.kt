@@ -31,8 +31,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -287,6 +291,7 @@ private fun HeatmapCell(alpha: Float, sizeDp: Int) {
 
 @Composable
 private fun StatsGrid(stats: AppStats, modifier: Modifier = Modifier) {
+    var tokensExpanded by remember { mutableStateOf(false) }
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -316,13 +321,15 @@ private fun StatsGrid(stats: AppStats, modifier: Modifier = Modifier) {
                 modifier = Modifier.weight(1f),
                 icon = HugeIcons.Cpu,
                 label = stringResource(R.string.stats_page_input_tokens),
-                value = formatTokens(stats.totalPromptTokens),
+                value = formatTokens(stats.totalPromptTokens, tokensExpanded),
+                onClick = { tokensExpanded = !tokensExpanded },
             )
             StatCard(
                 modifier = Modifier.weight(1f),
                 icon = HugeIcons.Cpu,
                 label = stringResource(R.string.stats_page_output_tokens),
-                value = formatTokens(stats.totalCompletionTokens),
+                value = formatTokens(stats.totalCompletionTokens, tokensExpanded),
+                onClick = { tokensExpanded = !tokensExpanded },
             )
         }
         if (stats.totalCachedTokens > 0) {
@@ -330,7 +337,8 @@ private fun StatsGrid(stats: AppStats, modifier: Modifier = Modifier) {
                 modifier = Modifier.fillMaxWidth(),
                 icon = HugeIcons.Zap,
                 label = stringResource(R.string.stats_page_cached_tokens),
-                value = formatTokens(stats.totalCachedTokens),
+                value = formatTokens(stats.totalCachedTokens, tokensExpanded),
+                onClick = { tokensExpanded = !tokensExpanded },
             )
         }
         StatCard(
@@ -348,6 +356,7 @@ private fun StatCard(
     icon: ImageVector,
     label: String,
     value: String,
+    onClick: (() -> Unit)? = null,
 ) {
     Card(
         modifier = modifier,
@@ -355,7 +364,12 @@ private fun StatCard(
         shape = rememberScreenEdgeCornerShape(),
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(
+                    if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
+                )
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(
@@ -387,9 +401,12 @@ private fun formatCount(count: Long): String = when {
     else -> count.toString()
 }
 
-private fun formatTokens(count: Long): String = when {
-    count >= 1_000_000_000 -> "%.1fB".format(count / 1_000_000_000.0)
-    count >= 1_000_000 -> "%.1fM".format(count / 1_000_000.0)
-    count > 10_000 -> "%.1fK".format(count / 1_000.0)
-    else -> count.toString()
+private fun formatTokens(count: Long, expanded: Boolean = false): String {
+    if (expanded) return "%,d".format(count)
+    return when {
+        count >= 1_000_000_000 -> "%.1fB".format(count / 1_000_000_000.0)
+        count >= 1_000_000 -> "%.1fM".format(count / 1_000_000.0)
+        count > 10_000 -> "%.1fK".format(count / 1_000.0)
+        else -> count.toString()
+    }
 }

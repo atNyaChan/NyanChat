@@ -362,6 +362,7 @@
   <string name="imggen_page_cancel_generation_title">Отменить генерацию</string>
   <string name="imggen_page_gallery">Галерея</string>
   <string name="imggen_page_generate_image">Сгенерировать изображение</string>
+  <string name="imggen_page_generating">Генерация изображения (прошло %1$d с)</string>
   <string name="imggen_page_generation_count">Количество генераций</string>
   <string name="imggen_page_generation_count_desc">Количество изображений для генерации за раз</string>
   <string name="imggen_page_image_saved_success">Изображение сохранено в галерею</string>
@@ -1091,7 +1092,8 @@
   <string name="tag_input_dialog_title">Добавить тег</string>
   <string name="take_picture">Сделать фото</string>
   <string name="test_tts">Проверка TTS</string>
-  <string name="text_area_fullscreen_edit">Полноэкранное редактирование</string>
+  <string name="text_area_collapse">Свернуть</string>
+  <string name="text_area_expand">Развернуть</string>
   <string name="text_area_import_failed">Не удалось импортировать файл</string>
   <string name="text_area_import_from_file">Импорт из файла</string>
   <string name="text_area_import_success">Файл успешно импортирован</string>

@@ -362,6 +362,7 @@
   <string name="imggen_page_cancel_generation_title">생성 취소</string>
   <string name="imggen_page_gallery">갤러리</string>
   <string name="imggen_page_generate_image">이미지 생성</string>
+  <string name="imggen_page_generating">이미지 생성 중 (경과 %1$d초)</string>
   <string name="imggen_page_generation_count">생성 개수</string>
   <string name="imggen_page_generation_count_desc">한 번에 생성할 이미지 수</string>
   <string name="imggen_page_image_saved_success">이미지가 갤러리에 저장되었습니다</string>
@@ -1091,7 +1092,8 @@
   <string name="tag_input_dialog_title">태그 추가</string>
   <string name="take_picture">사진 찍기</string>
   <string name="test_tts">TTS 테스트</string>
-  <string name="text_area_fullscreen_edit">전체 화면 편집</string>
+  <string name="text_area_collapse">접기</string>
+  <string name="text_area_expand">펼치기</string>
   <string name="text_area_import_failed">파일을 가져올 수 없습니다</string>
   <string name="text_area_import_from_file">파일에서 가져오기</string>
   <string name="text_area_import_success">파일이 성공적으로 가져왔습니다</string>

@@ -362,6 +362,7 @@
   <string name="imggen_page_cancel_generation_title">生成をキャンセル</string>
   <string name="imggen_page_gallery">ギャラリー</string>
   <string name="imggen_page_generate_image">画像を生成</string>
+  <string name="imggen_page_generating">画像を生成中（経過 %1$d 秒）</string>
   <string name="imggen_page_generation_count">生成数</string>
   <string name="imggen_page_generation_count_desc">一度に生成する画像の数</string>
   <string name="imggen_page_image_saved_success">画像をギャラリーに保存しました</string>
@@ -1091,7 +1092,8 @@
   <string name="tag_input_dialog_title">タグを追加</string>
   <string name="take_picture">写真を撮る</string>
   <string name="test_tts">音声テスト</string>
-  <string name="text_area_fullscreen_edit">全画面編集</string>
+  <string name="text_area_collapse">折りたたむ</string>
+  <string name="text_area_expand">展開</string>
   <string name="text_area_import_failed">ファイルのインポートに失敗しました</string>
   <string name="text_area_import_from_file">ファイルからインポート</string>
   <string name="text_area_import_success">ファイルが正常にインポートされました</string>

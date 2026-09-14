@@ -136,7 +136,8 @@ fun ChainOfThoughtScope.ChatMessageToolStep(
     var showResult by remember { mutableStateOf(false) }
     var showDenyDialog by remember { mutableStateOf(false) }
     var showMemoryDeleteConfirm by remember { mutableStateOf(false) }
-    var expanded by remember { mutableStateOf(true) }
+    // 打开对话时工具结果默认折叠, 点击步骤展开/查看更多
+    var expanded by remember { mutableStateOf(false) }
     val isPending = tool.isPending
     val isDenied = tool.approvalState is ToolApprovalState.Denied
     val images = tool.output.filterIsInstance<UIMessagePart.Image>()
@@ -183,7 +184,7 @@ fun ChainOfThoughtScope.ChatMessageToolStep(
                 text = renderer.title(context),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.shimmer(isLoading = loading),
+                modifier = Modifier.shimmer(isLoading = loading || renderer.isRunning(context)),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -218,7 +219,7 @@ fun ChainOfThoughtScope.ChatMessageToolStep(
         } else {
             null
         },
-        onClick = { showResult = true },
+        onClick = if (renderer.inlineDetail) null else { { showResult = true } },
         content = if (hasExtraContent) {
             {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -315,7 +316,7 @@ fun ChainOfThoughtScope.ChatMessageToolStep(
         )
     }
 
-    if (showResult) {
+    if (showResult && !renderer.inlineDetail) {
         ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
             sheetState = rememberBottomSheetState(
                 initialValue = SheetValue.Hidden,

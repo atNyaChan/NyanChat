@@ -504,7 +504,6 @@ private fun ModeInjectionEditSheet(
                                 minLines = 1,
                                 maxLines = Int.MAX_VALUE,
                                 enableImport = false,
-                                enableFullscreen = false,
                             )
                         },
                         headlineContent = {},
@@ -1370,7 +1369,6 @@ private fun RegexInjectionEditDialog(
                                 minLines = 1,
                                 maxLines = Int.MAX_VALUE,
                                 enableImport = false,
-                                enableFullscreen = false,
                             )
                         },
                         headlineContent = {},

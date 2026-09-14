@@ -221,7 +221,12 @@ fun ChatInput(
 
     var isExpanded by remember { mutableStateOf(false) }
     var collapsedHeightPx by remember { mutableStateOf(0f) }
-    val collapsedHeight = with(density) { collapsedHeightPx.toDp() }
+    // The files panel is measured separately so that collapsing the expanded input only shrinks the
+    // text area and keeps the files panel visible, rather than collapsing the whole container and
+    // then re-expanding it.
+    var filesPanelHeightPx by remember { mutableStateOf(0f) }
+    val collapsedWithPanelPx = collapsedHeightPx + if (filesExpanded) filesPanelHeightPx else 0f
+    val collapsedHeight = with(density) { collapsedWithPanelPx.toDp() }
 
     // The expanded input is pinned at a fixed distance from the top of the screen; only its
     // bottom edge moves (following the IME/build-nav bars), so the top edge never shifts with
@@ -252,6 +257,7 @@ fun ChatInput(
     val lockHeight = isExpanded || expandProgress > 0f
 
     fun sendMessage() {
+        isExpanded = false
         focusManager.clearFocus(force = true)
         keyboardController?.hide()
         if (loading && state.isEmpty()) onCancelClick() else onSendClick()
@@ -308,7 +314,7 @@ fun ChatInput(
                     .fillMaxWidth()
                     .then(if (lockHeight) Modifier.height(animatedHeight) else Modifier)
                     .onSizeChanged {
-                        if (!isExpanded && !lockHeight) {
+                        if (!isExpanded && !lockHeight && !filesExpanded) {
                             collapsedHeightPx = it.height.toFloat()
                         }
                     },
@@ -557,11 +563,17 @@ fun ChatInput(
                         enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
                         exit = shrinkVertically() + fadeOut(),
                     ) {
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                        )
-                        filesPanel()
+                        Column(
+                            modifier = Modifier.onSizeChanged {
+                                filesPanelHeightPx = it.height.toFloat()
+                            },
+                        ) {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                            )
+                            filesPanel()
+                        }
                     }
                 }
             }

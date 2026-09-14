@@ -64,7 +64,7 @@ class BackupManager(
                     ZstdOutputStream(
                         FileOutputStream(compressed).buffered(IO_BUFFER_SIZE),
                         DATABASE_COMPRESSION_LEVEL,
-                    ).setWorkers(ZSTD_WORKERS).use { output ->
+                    ).setLong(ZSTD_LONG_WINDOW_LOG).setWorkers(ZSTD_WORKERS).use { output ->
                         snapshot.inputStream().buffered(IO_BUFFER_SIZE).use { input ->
                             input.copyTo(output, IO_BUFFER_SIZE)
                         }
@@ -249,6 +249,7 @@ class BackupManager(
     companion object {
         private val ZSTD_WORKERS = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
         private const val DATABASE_COMPRESSION_LEVEL = 9
+        private const val ZSTD_LONG_WINDOW_LOG = 27
         private const val IO_BUFFER_SIZE = 128 * 1024
 
         private fun pendingRestore(context: Context) = PendingRestore(

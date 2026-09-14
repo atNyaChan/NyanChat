@@ -193,7 +193,7 @@ private fun AssistantPromptContent(
                     state = systemPromptValue,
                     label = stringResource(R.string.assistant_page_system_prompt),
                     minLines = 5,
-                    maxLines = 10
+                    collapsible = true,
                 )
 
                 Column {
