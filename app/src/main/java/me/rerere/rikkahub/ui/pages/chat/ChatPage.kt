@@ -55,11 +55,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import com.dokar.sonner.ToastType
-import dev.chrisbanes.haze.HazeInput
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.blur.HazeBlurStyle
-import dev.chrisbanes.haze.blur.hazeBlur
-import dev.chrisbanes.haze.blur.material3.Material3
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.CancellationException
@@ -95,9 +91,12 @@ import me.rerere.rikkahub.ui.components.ai.SearchMode
 import me.rerere.rikkahub.ui.components.ai.displayLabel
 import me.rerere.rikkahub.ui.components.ai.completion.WorkspaceCompletionProvider
 import me.rerere.rikkahub.ui.components.ai.useCropLauncher
+import me.rerere.rikkahub.ui.components.hazeBackgroundEffect
+import me.rerere.rikkahub.ui.components.toRoundedCornerShape
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionCamera
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionManager
 import me.rerere.rikkahub.ui.components.ui.permission.rememberPermissionState
+import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.context.Navigator
@@ -920,20 +919,19 @@ private fun TopBar(
     val titleState = useEditState<String> {
         onUpdateTitle(it)
     }
-    val topBarHazeStyle = HazeBlurStyle.Material3 {
-        blurRadius(12.dp)
-    }
+    val topBarShape = rememberScreenEdgeCornerShape(
+        horizontalInset = 0.dp,
+        squareBottom = true,
+    ).toRoundedCornerShape()
 
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
-        modifier = if (settings.displaySetting.enableBlurEffect) {
-            Modifier.hazeBlur(
-                input = HazeInput.Sources(hazeState),
-                style = topBarHazeStyle,
-            )
-        } else {
-            Modifier
-        },
+        modifier = Modifier.hazeBackgroundEffect(
+            effectType = settings.displaySetting.backgroundEffectType,
+            hazeState = hazeState,
+            tintColor = MaterialTheme.colorScheme.surface,
+            shape = topBarShape,
+        ),
         navigationIcon = {
             if (!bigScreen) {
                 IconButton(

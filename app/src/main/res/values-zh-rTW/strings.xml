@@ -497,7 +497,7 @@
   <string name="reasoning_picker_hint">並非所有模型都支援深度調整。請參閱模型與提供者文件。</string>
   <string name="reasoning_picker_title">調整模型思考深度</string>
   <string name="regenerate">重新生成</string>
-  <string name="regenerate_confirm_message">您確定要重新產生這則訊息嗎？</string>
+  <string name="regenerate_confirm_message">您確定要重新生成此訊息嗎？此訊息下方的所有訊息都會被刪除。</string>
   <string name="safe_mode_assistants">助理</string>
   <string name="safe_mode_copy">複製</string>
   <string name="safe_mode_crash_report">當機報告</string>
@@ -656,8 +656,10 @@
   <string name="setting_display_page_use_chat_font_globally_title">全域使用自訂字型</string>
   <string name="setting_display_page_enable_auto_scroll_desc">AI 生成回覆時自動捲動至底部</string>
   <string name="setting_display_page_enable_auto_scroll_title">自動滾動</string>
-  <string name="setting_display_page_enable_blur_effect_desc">為主頁的 UI 元素加上半透明毛玻璃效果</string>
-  <string name="setting_display_page_enable_blur_effect_title">啟用模糊效果</string>
+  <string name="setting_display_page_enable_blur_effect_desc">為主頁的 UI 元素加上模糊或玻璃效果</string>
+  <string name="setting_display_page_enable_blur_effect_title">模糊/玻璃效果</string>
+  <string name="setting_display_page_background_effect_blur">模糊</string>
+  <string name="setting_display_page_background_effect_glass">玻璃</string>
   <string name="setting_display_page_enable_latex_rendering_desc">使用 LaTeX 語法呈現數學表達式與公式</string>
   <string name="setting_display_page_enable_latex_rendering_title">啟用 LaTeX 渲染</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_desc">訊息生成時啟用觸覺回饋效果</string>

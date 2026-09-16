@@ -497,7 +497,7 @@
   <string name="reasoning_picker_hint">Не все модели поддерживают настройку глубины. См. документацию модели и провайдера.</string>
   <string name="reasoning_picker_title">Настроить глубину мышления модели</string>
   <string name="regenerate">Сгенерировать заново</string>
-  <string name="regenerate_confirm_message">Вы уверены, что хотите перегенерировать это сообщение?</string>
+  <string name="regenerate_confirm_message">Вы уверены, что хотите заново сгенерировать это сообщение? Все сообщения ниже этого будут удалены.</string>
   <string name="safe_mode_assistants">Помощники</string>
   <string name="safe_mode_copy">Копировать</string>
   <string name="safe_mode_crash_report">Отчёт о сбое</string>
@@ -656,8 +656,10 @@
   <string name="setting_display_page_use_chat_font_globally_title">Использовать шрифт чата во всём интерфейсе</string>
   <string name="setting_display_page_enable_auto_scroll_desc">Автоматически прокручивать вниз при генерации ответа ИИ</string>
   <string name="setting_display_page_enable_auto_scroll_title">Автопрокрутка</string>
-  <string name="setting_display_page_enable_blur_effect_desc">Добавить полупрозрачный эффект матового стекла элементам главного экрана</string>
-  <string name="setting_display_page_enable_blur_effect_title">Включить эффект размытия</string>
+  <string name="setting_display_page_enable_blur_effect_desc">Добавить эффект размытия или стекла элементам главного экрана</string>
+  <string name="setting_display_page_enable_blur_effect_title">Эффект размытия/стекла</string>
+  <string name="setting_display_page_background_effect_blur">Размытие</string>
+  <string name="setting_display_page_background_effect_glass">Стекло</string>
   <string name="setting_display_page_enable_latex_rendering_desc">Отображать математические выражения и формулы с использованием синтаксиса LaTeX</string>
   <string name="setting_display_page_enable_latex_rendering_title">Включить рендеринг LaTeX</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_desc">Включить виброотклик при генерации сообщений</string>

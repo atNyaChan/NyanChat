@@ -497,7 +497,7 @@
   <string name="reasoning_picker_hint">すべてのモデルが深さ調整に対応しているわけではありません。モデルおよびプロバイダーのドキュメントを参照してください。</string>
   <string name="reasoning_picker_title">モデルの思考深度を調整</string>
   <string name="regenerate">再生成</string>
-  <string name="regenerate_confirm_message">このメッセージを再生成してもよろしいですか？</string>
+  <string name="regenerate_confirm_message">このメッセージを再生成してもよろしいですか？このメッセージより下のメッセージはすべて削除されます。</string>
   <string name="safe_mode_assistants">アシスタント</string>
   <string name="safe_mode_copy">コピー</string>
   <string name="safe_mode_crash_report">クラッシュレポート</string>
@@ -656,8 +656,10 @@
   <string name="setting_display_page_use_chat_font_globally_title">チャットフォントを全体で使用</string>
   <string name="setting_display_page_enable_auto_scroll_desc">AIが返信を生成するとき自動で下までスクロールする</string>
   <string name="setting_display_page_enable_auto_scroll_title">自動スクロール</string>
-  <string name="setting_display_page_enable_blur_effect_desc">ホーム画面のUI要素に半透明のすりガラス風効果を追加</string>
-  <string name="setting_display_page_enable_blur_effect_title">ぼかし効果を有効にする</string>
+  <string name="setting_display_page_enable_blur_effect_desc">ホーム画面のUI要素にぼかしまたはガラス効果を追加</string>
+  <string name="setting_display_page_enable_blur_effect_title">ぼかし/ガラス効果</string>
+  <string name="setting_display_page_background_effect_blur">ぼかし</string>
+  <string name="setting_display_page_background_effect_glass">ガラス</string>
   <string name="setting_display_page_enable_latex_rendering_desc">LaTeX構文を使用して数式や数値表現をレンダリングする</string>
   <string name="setting_display_page_enable_latex_rendering_title">LaTeXレンダリングを有効にする</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_desc">メッセージ生成時に触覚フィードバックを有効にする</string>

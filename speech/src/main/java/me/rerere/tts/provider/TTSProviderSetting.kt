@@ -82,7 +82,7 @@ sealed class TTSProviderSetting {
         override var name: String = "MiniMax TTS",
         val apiKey: String = "",
         val baseUrl: String = "https://api.minimaxi.com/v1",
-        val model: String = "speech-2.6-turbo",
+        val model: String = "speech-2.8-hd",
         val voiceId: String = "female-shaonv",
         val speed: Float = 1.0f
     ) : TTSProviderSetting() {
@@ -283,6 +283,28 @@ sealed class TTSProviderSetting {
         }
     }
 
+    @Serializable
+    @SerialName("volcengine")
+    data class Volcengine(
+        override var id: Uuid = Uuid.random(),
+        override var name: String = "Volcengine TTS",
+        val apiKey: String = "",
+        val baseUrl: String = "https://openspeech.bytedance.com",
+        val resourceId: String = "seed-tts-2.0",
+        val speaker: String = "zh_female_vv_uranus_bigtts",
+        val speechRate: Int = 0,
+    ) : TTSProviderSetting() {
+        override fun copyProvider(
+            id: Uuid,
+            name: String,
+        ): TTSProviderSetting {
+            return this.copy(
+                id = id,
+                name = name,
+            )
+        }
+    }
+
     companion object {
         val Types by lazy {
             listOf(
@@ -297,6 +319,7 @@ sealed class TTSProviderSetting {
                 ElevenLabs::class,
                 Step::class,
                 FishAudio::class,
+                Volcengine::class,
             )
         }
     }

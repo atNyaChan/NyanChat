@@ -67,6 +67,7 @@ import me.rerere.hugeicons.stroke.Search01
 import me.rerere.hugeicons.stroke.Settings03
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.Screen
+import me.rerere.rikkahub.data.datastore.BackgroundEffectType
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.getCurrentAssistant
 import me.rerere.rikkahub.data.model.Assistant
@@ -75,17 +76,14 @@ import me.rerere.rikkahub.data.model.Folder
 import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.ai.core.MessageRole
 import me.rerere.rikkahub.ui.components.ai.AssistantPicker
+import me.rerere.rikkahub.ui.components.hazeBackgroundEffect
 import me.rerere.rikkahub.ui.components.ui.BackupReminderCard
 import me.rerere.rikkahub.ui.components.ui.Greeting
 import me.rerere.rikkahub.ui.components.ui.Tooltip
 import me.rerere.rikkahub.ui.components.ui.UIAvatar
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import dev.chrisbanes.haze.HazeInput
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.blur.HazeBlurStyle
-import dev.chrisbanes.haze.blur.hazeBlur
-import dev.chrisbanes.haze.blur.material3.Material3
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.context.Navigator
 import com.dokar.sonner.ToastType
@@ -188,32 +186,35 @@ fun ChatDrawerContent(
         LocalScreenCornerFallbackRadius.current
     }
 
-    val drawerHazeStyle = HazeBlurStyle.Material3 {
-        blurRadius(12.dp)
-    }
+    val drawerShape = RoundedCornerShape(
+        topEnd = drawerEndCorner,
+        bottomEnd = drawerEndCorner,
+    )
 
     ModalDrawerSheet(
         modifier = Modifier
             .fillMaxWidth(0.9f)
             .then(
-                if (settings.displaySetting.enableBlurEffect) {
-                    Modifier.hazeBlur(
-                        input = HazeInput.Sources(hazeState),
-                        style = drawerHazeStyle,
-                    )
+                Modifier.hazeBackgroundEffect(
+                    effectType = settings.displaySetting.backgroundEffectType,
+                    hazeState = hazeState,
+                    tintColor = MaterialTheme.colorScheme.surface,
+                    shape = drawerShape,
+                )
+            )
+            .then(
+                if (settings.displaySetting.backgroundEffectType != BackgroundEffectType.OFF) {
+                    Modifier.clip(drawerShape)
                 } else {
                     Modifier
                 }
             ),
-        drawerContainerColor = if (settings.displaySetting.enableBlurEffect) {
+        drawerContainerColor = if (settings.displaySetting.backgroundEffectType != BackgroundEffectType.OFF) {
             Color.Transparent
         } else {
             MaterialTheme.colorScheme.surface
         },
-        drawerShape = RoundedCornerShape(
-            topEnd = drawerEndCorner,
-            bottomEnd = drawerEndCorner,
-        ),
+        drawerShape = drawerShape,
     ) {
         Column(
             modifier = Modifier.padding(8.dp),

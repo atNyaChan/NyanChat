@@ -441,7 +441,7 @@ class GenerationLoop(
                     }
                 }
             },
-            sessionId = conversationId?.toString(),
+            sessionId = (conversationId ?: Uuid.random()).toString(),
             includeHistoryReasoning = assistant.includeHistoryReasoning,
         )
         try {

@@ -72,6 +72,7 @@ import me.rerere.hugeicons.stroke.ViewOff
 import me.rerere.rikkahub.BuildConfig
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.ChatFontFamily
+import me.rerere.rikkahub.data.datastore.BackgroundEffectType
 import me.rerere.rikkahub.data.datastore.DisplaySetting
 import me.rerere.rikkahub.data.datastore.ScreenCornerAdaptation
 import me.rerere.rikkahub.data.files.FileFolders
@@ -508,10 +509,24 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                         headlineContent = { Text(stringResource(R.string.setting_display_page_enable_blur_effect_title)) },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_enable_blur_effect_desc)) },
                         trailingContent = {
-                            Switch(
-                                checked = displaySetting.enableBlurEffect,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(enableBlurEffect = it))
+                            Select(
+                                options = BackgroundEffectType.entries,
+                                selectedOption = displaySetting.backgroundEffectType,
+                                onOptionSelected = {
+                                    updateDisplaySetting(
+                                        displaySetting.copy(
+                                            backgroundEffectType = it,
+                                            enableBlurEffect = it != BackgroundEffectType.OFF,
+                                        )
+                                    )
+                                },
+                                fitToOptions = true,
+                                optionToString = {
+                                    when (it) {
+                                        BackgroundEffectType.OFF -> stringResource(R.string.common_off)
+                                        BackgroundEffectType.BLUR -> stringResource(R.string.setting_display_page_background_effect_blur)
+                                        BackgroundEffectType.GLASS -> stringResource(R.string.setting_display_page_background_effect_glass)
+                                    }
                                 },
                             )
                         },

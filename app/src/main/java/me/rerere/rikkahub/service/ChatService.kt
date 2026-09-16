@@ -107,12 +107,14 @@ private const val TAG = "ChatService"
 
 internal fun backgroundTextGenerationParams(
     model: Model,
+    conversationId: Uuid,
     reasoningLevel: ReasoningLevel = ReasoningLevel.AUTO,
 ): TextGenerationParams = TextGenerationParams(
     model = model,
     reasoningLevel = reasoningLevel,
     customHeaders = model.customHeaders,
     customBody = model.customBodies,
+    sessionId = conversationId.toString(),
 )
 
 internal fun createForkConversation(
@@ -1161,7 +1163,7 @@ class ChatService(
                                 .takeLast(4).joinToString("\n\n") { it.summaryAsText(maxLength = 500) })
                     ),
                 ),
-                params = backgroundTextGenerationParams(model, settings.fastModelReasoningLevel),
+                params = backgroundTextGenerationParams(model, conversation.id, settings.fastModelReasoningLevel),
             )
 
             result.message.toText().trim()
@@ -1199,7 +1201,7 @@ class ChatService(
                                 .takeLast(8).joinToString("\n\n") { it.summaryAsText(maxLength = 500) }),
                     )
                 ),
-                params = backgroundTextGenerationParams(model, settings.fastModelReasoningLevel),
+                params = backgroundTextGenerationParams(model, conversationId, settings.fastModelReasoningLevel),
             )
             val suggestions =
                 result.message.toText().split("\n").map { it.trim() }
@@ -1275,7 +1277,7 @@ class ChatService(
             val result = providerHandler.generateText(
                 providerSetting = provider,
                 messages = listOf(UIMessage.user(prompt)),
-                params = backgroundTextGenerationParams(model),
+                params = backgroundTextGenerationParams(model, conversationId),
             )
 
             return result.message.toText().trim().takeIf { it.isNotBlank() }
