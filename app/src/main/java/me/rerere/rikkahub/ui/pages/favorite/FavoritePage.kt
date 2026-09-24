@@ -26,9 +26,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -132,17 +133,21 @@ private fun SwipeableFavoriteCard(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val currentOnDelete by rememberUpdatedState(onDelete)
     val dismissState = rememberSwipeToDismissBoxState(
         initialValue = SwipeToDismissBoxValue.Settled,
     )
-
-    LaunchedEffect(dismissState.currentValue) {
-        when (dismissState.currentValue) {
-            SwipeToDismissBoxValue.EndToStart -> {
-                onDelete()
+    val scope = rememberCoroutineScope()
+    // 用稳定 lambda 承载删除回调，避免重组反复触发 onDismiss；SwipeToDismissBox 只在真正落定到
+    // 已划出方向时调用它（基于 settledValue，而非拖动途中）。删除后立即把状态收回未滑出位置，
+    // 否则撤销恢复该条目时它可能仍带着“已滑出”状态，重新触发 onDismiss 再次删除（表现为收藏
+    // 一闪而过）。使用 snapTo 且不再有基于 currentValue 的 LaunchedEffect + reset，因此不会卡住。
+    val handleDismiss: (SwipeToDismissBoxValue) -> Unit = remember(dismissState, scope) {
+        { value: SwipeToDismissBoxValue ->
+            if (value == SwipeToDismissBoxValue.EndToStart) {
+                currentOnDelete()
             }
-
-            else -> {}
+            scope.launch { dismissState.snapTo(SwipeToDismissBoxValue.Settled) }
         }
     }
 
@@ -167,6 +172,7 @@ private fun SwipeableFavoriteCard(
             }
         },
         enableDismissFromStartToEnd = false,
+        onDismiss = handleDismiss,
         modifier = modifier,
     ) {
         FavoriteCard(
