@@ -32,7 +32,7 @@ merges in git history, but NEVER let git auto-merge file contents.
 
 ### Absolute rules
 - The ONLY allowed merge command is:
-  `git merge -s ours upstream/main --no-commit --no-ff`
+  `git merge -s ours upstream/master --no-commit --no-ff`
   (`-s ours` keeps our tree untouched; it only records ancestry.)
 - NEVER use default `git merge`, `git rebase`, `git cherry-pick`, `git pull`.
 - NEVER resolve conflict markers (`<<<<<<<`). With `-s ours` they cannot appear; if you see any,
@@ -40,9 +40,9 @@ merges in git history, but NEVER let git auto-merge file contents.
 - NEVER copy upstream files wholesale over ours.
 
 ### Workflow: one sync = one merge commit
-1. List unported commits: `git log --oneline HEAD..upstream/main`
+1. List unported commits: `git log --oneline HEAD..upstream/master`
 2. Start the merge (this changes NO files — verify `git diff HEAD` is empty):
-   `git merge -s ours upstream/main --no-commit --no-ff`
+   `git merge -s ours upstream/master --no-commit --no-ff`
 3. Now port EACH upstream commit's changes, oldest first:
    a. `git show <hash>` — read the diff AND the commit message. Understand the *intent*, not just
       the text.
@@ -55,7 +55,7 @@ merges in git history, but NEVER let git auto-merge file contents.
 
    merge(upstream): sync to <newest-hash> (skipped: <hash> <subject>, <hash> <subject>)(if any)
 
-5. Verify `git log HEAD..upstream/main` is now empty.
+5. Verify `git log HEAD..upstream/master` is now empty.
 
 ### Do not commit partway through
 The entire sync lands as ONE merge commit. If the range is too large

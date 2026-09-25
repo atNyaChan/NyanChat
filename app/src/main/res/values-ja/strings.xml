@@ -1027,9 +1027,9 @@
   <string name="setting_tts_page_speech_rate">音声速度</string>
   <string name="setting_tts_page_stability">安定性</string>
   <string name="setting_tts_page_stability_description">音声の安定性を制御（0.0 - 1.0、低いほど表現力豊か）</string>
-  <string name="setting_tts_page_temperature">温度</string>
-  <string name="setting_tts_page_temperature_description">音声のランダム性を調整します（0.0～1.0、高いほど表現豊か）</string>
-  <string name="setting_tts_page_fish_audio_speed_description">音声速度（0.5～2.0、1.0が標準）</string>
+  <string name="setting_tts_page_temperature">Temperature</string>
+  <string name="setting_tts_page_temperature_description">音声のランダム性を制御します（0.0 - 1.0、大きいほど表現豊かになります）</string>
+  <string name="setting_tts_page_fish_audio_speed_description">話速（0.5 - 2.0、1.0が標準）</string>
   <string name="setting_tts_page_speech_rate_description">音声の再生速度を制御 (0.1 - 3.0、1.0が標準)</string>
   <string name="setting_tts_page_speed">速度</string>
   <string name="setting_tts_page_speed_description">音声合成の速度 (0.25 - 4.0)</string>
@@ -1261,6 +1261,7 @@
   <string name="chat_page_delete_folder_generating">フォルダ内の一部の会話がまだ生成中です。削除する前にそれらを停止してください。</string>
   <string name="setting_general_language">言語</string>
   <string name="setting_general_language_system">システムに従う</string>
+  <string name="language_arabic">🇸🇦 アラビア語</string>
   <string name="language_russian">🇷🇺 ロシア語</string>
   <string name="conversation_select_all">すべて選択</string>
   <string name="conversation_cancel_selection">複数選択を解除</string>
@@ -1343,7 +1344,7 @@
   <string name="workspace_detail_load_files_failed">ワークスペースファイルの読み込みに失敗しました</string>
   <string name="workspace_detail_delete_failed">削除に失敗しました</string>
   <string name="workspace_detail_import_failed">ファイルのインポートに失敗しました</string>
-  <string name="workspace_detail_export_file_failed">ワークスペースのエクスポートに失敗しました：%1$s</string>
+  <string name="workspace_detail_export_file_failed">ワークスペースのエクスポートに失敗しました</string>
   <string name="workspace_detail_create_folder_failed">フォルダーの作成に失敗しました</string>
   <string name="image_saving">保存中...</string>
   <string name="image_saved">画像を保存しました</string>

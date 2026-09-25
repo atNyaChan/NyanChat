@@ -504,7 +504,7 @@
   <string name="safe_mode_current_assistant">현재 어시스턴트: %s</string>
   <string name="safe_mode_default_assistant">기본 비서</string>
   <string name="safe_mode_description">앱이 마지막 실행에서 충돌했습니다. 문제를 해결하려면 다른 어시스턴트로 전환할 수 있습니다.</string>
-  <string name="safe_mode_enter_app">앱 열기</string>
+  <string name="safe_mode_enter_app">앱 들어가기</string>
   <string name="safe_mode_switch_assistant">어시스턴트 전환</string>
   <string name="safe_mode_title">안전 모드</string>
   <string name="search_ability_scrape">스크래핑</string>
@@ -1027,9 +1027,9 @@
   <string name="setting_tts_page_speech_rate">말하기 속도</string>
   <string name="setting_tts_page_stability">안정성</string>
   <string name="setting_tts_page_stability_description">음성의 안정성 제어 (0.0 - 1.0, 낮을수록 더 표현력 풍부)</string>
-  <string name="setting_tts_page_temperature">온도</string>
-  <string name="setting_tts_page_temperature_description">음성의 무작위성을 조절합니다(0.0~1.0, 높을수록 표현력이 풍부함)</string>
-  <string name="setting_tts_page_fish_audio_speed_description">음성 속도(0.5~2.0, 1.0은 보통 속도)</string>
+  <string name="setting_tts_page_temperature">Temperature</string>
+  <string name="setting_tts_page_temperature_description">음성의 무작위성을 제어합니다 (0.0 - 1.0, 높을수록 더 표현력이 풍부합니다)</string>
+  <string name="setting_tts_page_fish_audio_speed_description">음성 속도 (0.5 - 2.0, 1.0이 기본)</string>
   <string name="setting_tts_page_speech_rate_description">말하기 속도 제어 (0.1 - 3.0, 1.0은 일반)</string>
   <string name="setting_tts_page_speed">속도</string>
   <string name="setting_tts_page_speed_description">말하기 속도 (0.25 - 4.0)</string>
@@ -1199,7 +1199,7 @@
   <string name="workspace_terminal_tab">터미널 %1$d</string>
   <string name="workspace_terminal_new_tab">새 터미널 탭</string>
   <string name="workspace_terminal_close_tab">터미널 %1$d 닫기</string>
-  <string name="workspace_terminal_no_tabs">열린 터미널 탭이 없음</string>
+  <string name="workspace_terminal_no_tabs">열린 터미널 탭이 없습니다</string>
   <string name="extensions_page_workspace_desc">Agent가 접근할 수 있는 로컬 작업 디렉토리를 관리합니다.</string>
   <string name="workspace_select">워크스페이스 선택</string>
   <string name="workspace_no_binding">바인딩 없음</string>
@@ -1261,6 +1261,7 @@
   <string name="chat_page_delete_folder_generating">이 폴더의 일부 대화가 아직 생성 중입니다. 삭제하기 전에 중지해 주세요.</string>
   <string name="setting_general_language">언어</string>
   <string name="setting_general_language_system">시스템 설정 따르기</string>
+  <string name="language_arabic">🇸🇦 아랍어</string>
   <string name="language_russian">🇷🇺 러시아어</string>
   <string name="conversation_select_all">모두 선택</string>
   <string name="conversation_cancel_selection">다중 선택 취소</string>
@@ -1343,7 +1344,7 @@
   <string name="workspace_detail_load_files_failed">워크스페이스 파일을 불러오지 못했습니다</string>
   <string name="workspace_detail_delete_failed">삭제에 실패했습니다</string>
   <string name="workspace_detail_import_failed">파일 가져오기에 실패했습니다</string>
-  <string name="workspace_detail_export_file_failed">워크스페이스 내보내기 실패: %1$s</string>
+  <string name="workspace_detail_export_file_failed">워크스페이스 내보내기 실패</string>
   <string name="workspace_detail_create_folder_failed">폴더 생성에 실패했습니다</string>
   <string name="image_saving">저장 중...</string>
   <string name="image_saved">이미지가 저장되었습니다</string>

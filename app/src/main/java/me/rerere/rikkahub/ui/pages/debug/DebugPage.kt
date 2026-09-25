@@ -42,11 +42,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dokar.sonner.ToastType
 import kotlinx.coroutines.launch
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.getCurrentAssistant
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.context.LocalSettings
+import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
@@ -73,7 +76,7 @@ fun DebugPage(vm: DebugVM = koinViewModel()) {
             )
         }
     ) { contentPadding ->
-        val state = rememberPagerState { 2 }
+        val state = rememberPagerState { 3 }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -104,6 +107,17 @@ fun DebugPage(vm: DebugVM = koinViewModel()) {
                         Text("Colors")
                     }
                 )
+                Tab(
+                    selected = state.currentPage == 2,
+                    onClick = {
+                        scope.launch {
+                            state.animateScrollToPage(2)
+                        }
+                    },
+                    text = {
+                        Text("Recovery")
+                    }
+                )
             }
             HorizontalPager(
                 state = state,
@@ -114,6 +128,7 @@ fun DebugPage(vm: DebugVM = koinViewModel()) {
                 when (page) {
                     0 -> MainPage(vm)
                     1 -> ColorsPage()
+                    2 -> RecoveryPage(vm)
                 }
             }
         }
@@ -288,6 +303,69 @@ private fun DebugProgressDialog(title: String) {
         },
         confirmButton = {},
     )
+}
+
+@Composable
+private fun RecoveryPage(vm: DebugVM) {
+    val settings = LocalSettings.current
+    val toaster = LocalToaster.current
+    val scope = rememberCoroutineScope()
+    val conversationAssistants by vm.conversationAssistants.collectAsStateWithLifecycle()
+    val existingIds = settings.assistants.map { it.id }.toSet()
+    val missing = conversationAssistants
+        ?.filterKeys { it !in existingIds }
+        ?.entries
+        ?.sortedByDescending { it.value }
+    var recovering by remember { mutableStateOf(false) }
+    Column(
+        modifier = Modifier
+            .padding(8.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            "Scan the assistants referenced by chats and create placeholder assistants for those missing from settings, so the corresponding chats become visible again. Other assistant settings cannot be recovered.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text("Assistants in settings: ${settings.assistants.size}")
+        Text("Assistants in chats: ${conversationAssistants?.size?.toString() ?: "..."}")
+        Text("Missing assistants: ${missing?.size?.toString() ?: "..."}")
+        missing?.forEach { (id, count) ->
+            Text(
+                "$id ($count chats)",
+                style = MaterialTheme.typography.bodySmall,
+                fontFamily = JetbrainsMono,
+            )
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = { vm.scanConversationAssistants() }) {
+                Text("Rescan")
+            }
+            Button(
+                enabled = !recovering && !settings.init && !missing.isNullOrEmpty(),
+                onClick = {
+                    recovering = true
+                    scope.launch {
+                        runCatching { vm.recoverAssistantsFromConversations() }
+                            .onSuccess { count ->
+                                when (count) {
+                                    null -> toaster.show("Settings not loaded", type = ToastType.Error)
+                                    0 -> toaster.show("No assistants to recover")
+                                    else -> toaster.show("Recovered $count assistants")
+                                }
+                            }
+                            .onFailure {
+                                toaster.show("Recovery failed: ${it.message}", type = ToastType.Error)
+                            }
+                        recovering = false
+                    }
+                }
+            ) {
+                Text("Recover")
+            }
+        }
+    }
 }
 
 @Composable

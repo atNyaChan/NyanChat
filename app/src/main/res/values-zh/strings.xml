@@ -1197,9 +1197,9 @@
   <string name="workspace_terminal_loading">正在加载工作区…</string>
   <string name="workspace_terminal_exited">终端已退出</string>
   <string name="workspace_terminal_tab">终端 %1$d</string>
-  <string name="workspace_terminal_new_tab">新建终端标签</string>
+  <string name="workspace_terminal_new_tab">新建终端标签页</string>
   <string name="workspace_terminal_close_tab">关闭终端 %1$d</string>
-  <string name="workspace_terminal_no_tabs">没有打开的终端标签</string>
+  <string name="workspace_terminal_no_tabs">没有打开的终端标签页</string>
   <string name="extensions_page_workspace_desc">管理可由 Agent 访问的本地工作目录</string>
   <string name="workspace_select">选择工作区</string>
   <string name="workspace_no_binding">未绑定</string>
@@ -1261,6 +1261,7 @@
   <string name="chat_page_delete_folder_generating">此文件夹中有对话仍在生成中，请停止后再删除。</string>
   <string name="setting_general_language">语言</string>
   <string name="setting_general_language_system">跟随系统</string>
+  <string name="language_arabic">🇸🇦 阿拉伯语</string>
   <string name="language_russian">🇷🇺 俄语</string>
   <string name="conversation_select_all">全选</string>
   <string name="conversation_cancel_selection">取消多选</string>
@@ -1343,7 +1344,7 @@
   <string name="workspace_detail_load_files_failed">加载工作区文件失败</string>
   <string name="workspace_detail_delete_failed">删除失败</string>
   <string name="workspace_detail_import_failed">导入文件失败</string>
-  <string name="workspace_detail_export_file_failed">工作区导出失败：%1$s</string>
+  <string name="workspace_detail_export_file_failed">工作区导出失败</string>
   <string name="workspace_detail_create_folder_failed">新建文件夹失败</string>
   <string name="image_saving">正在保存</string>
   <string name="image_saved">已保存图片</string>

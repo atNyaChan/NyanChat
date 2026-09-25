@@ -67,6 +67,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.ui.theme.extendColors
+import me.rerere.rikkahub.utils.mirrorForRtl
 import java.time.LocalDate
 import kotlin.uuid.Uuid
 
@@ -186,7 +187,7 @@ fun ColumnScope.ConversationList(
                     onMove(selectedConversations.values.toList(), true)
                     selectedConversations = emptyMap()
                 }) {
-                    Icon(HugeIcons.Forward02, contentDescription = stringResource(R.string.conversation_move_to))
+                    Icon(HugeIcons.Forward02, contentDescription = stringResource(R.string.conversation_move_to), modifier = Modifier.mirrorForRtl())
                 }
                 IconButton(onClick = {
                     onDeleteSelected(selectedConversations.values.toList())
@@ -446,7 +447,7 @@ private fun ConversationItem(
                             showDropdownMenu = false
                             onBatchMove()
                         },
-                        leadingIcon = { Icon(HugeIcons.Forward02, null) },
+                        leadingIcon = { Icon(HugeIcons.Forward02, null, modifier = Modifier.mirrorForRtl()) },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.common_delete)) },
@@ -471,7 +472,7 @@ private fun ConversationItem(
                             onMove(conversation)
                             showDropdownMenu = false
                         },
-                        leadingIcon = { Icon(HugeIcons.Forward02, null) },
+                        leadingIcon = { Icon(HugeIcons.Forward02, null, modifier = Modifier.mirrorForRtl()) },
                     )
                     DropdownMenuItem(
                         text = {

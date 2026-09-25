@@ -1261,6 +1261,7 @@
   <string name="chat_page_delete_folder_generating">Some conversations in this folder are still generating. Please stop them before deleting.</string>
   <string name="setting_general_language">Language</string>
   <string name="setting_general_language_system">Follow system</string>
+  <string name="language_arabic">🇸🇦 العربية</string>
   <string name="language_russian">🇷🇺 Русский</string>
   <string name="conversation_select_all">Select all</string>
   <string name="conversation_cancel_selection">Cancel selection</string>

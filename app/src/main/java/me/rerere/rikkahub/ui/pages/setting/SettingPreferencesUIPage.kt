@@ -1437,4 +1437,5 @@ internal enum class AppLanguage(val tag: String, val labelRes: Int) {
     JAPANESE("ja", R.string.language_japanese),
     KOREAN("ko-KR", R.string.language_korean),
     RUSSIAN("ru", R.string.language_russian),
+    ARABIC("ar", R.string.language_arabic),
 }
