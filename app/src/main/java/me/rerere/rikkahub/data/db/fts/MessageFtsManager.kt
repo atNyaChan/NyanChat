@@ -99,7 +99,7 @@ class MessageFtsManager(private val database: AppDatabase) {
             """
             SELECT node_id, message_id, conversation_id, title, update_at, text
             FROM message_search_cache
-            WHERE instr(text, ?) > 0
+            WHERE instr(lower(text), lower(?)) > 0
             ${assistantFilter(assistantId)}
             ORDER BY $orderBy
             """.trimIndent(),
@@ -295,7 +295,7 @@ class MessageFtsManager(private val database: AppDatabase) {
             val terms = keyword.split(Regex("\\s+")).filter(String::isNotEmpty)
             if (terms.isEmpty()) return@withContext 0
             val cursor = db.query(
-                "SELECT text FROM message_search_cache WHERE instr(text, ?) > 0 ${assistantFilter(assistantId)}",
+                "SELECT text FROM message_search_cache WHERE instr(lower(text), lower(?)) > 0 ${assistantFilter(assistantId)}",
                 sqlArgs(terms.first(), assistantId),
             )
             return@withContext cursor.use {
@@ -473,7 +473,7 @@ internal fun String.findOrderedTerms(terms: List<String>): List<IntRange>? {
         val forwardRanges = mutableListOf<IntRange>()
         var nextSearchStart = searchStart
         for (term in terms) {
-            val start = indexOf(term, startIndex = nextSearchStart)
+            val start = indexOfIgnoreCase(term, startIndex = nextSearchStart)
             if (start < 0) return bestRanges
             forwardRanges += start until start + term.length
             nextSearchStart = start + term.length
@@ -482,7 +482,8 @@ internal fun String.findOrderedTerms(terms: List<String>): List<IntRange>? {
         val compactRanges = forwardRanges.toMutableList()
         for (index in terms.lastIndex - 1 downTo 0) {
             val latestStart = compactRanges[index + 1].first - terms[index].length
-            val start = lastIndexOf(terms[index], startIndex = latestStart)
+            val start = lastIndexOfIgnoreCase(terms[index], startIndex = latestStart)
+            if (start < 0) return bestRanges
             compactRanges[index] = start until start + terms[index].length
         }
         val gapCount = compactRanges.orderedTermGapCount()
@@ -494,6 +495,27 @@ internal fun String.findOrderedTerms(terms: List<String>): List<IntRange>? {
         searchStart = compactRanges.first().first + 1
     }
     return bestRanges
+}
+
+private fun String.indexOfIgnoreCase(term: String, startIndex: Int): Int {
+    if (term.isEmpty()) return startIndex.coerceIn(0, length)
+    val lastPossibleStart = length - term.length
+    var index = startIndex.coerceAtLeast(0)
+    while (index <= lastPossibleStart) {
+        if (regionMatches(index, term, 0, term.length, ignoreCase = true)) return index
+        index++
+    }
+    return -1
+}
+
+private fun String.lastIndexOfIgnoreCase(term: String, startIndex: Int): Int {
+    if (term.isEmpty()) return startIndex.coerceIn(0, length)
+    var index = startIndex.coerceAtMost(length - term.length)
+    while (index >= 0) {
+        if (regionMatches(index, term, 0, term.length, ignoreCase = true)) return index
+        index--
+    }
+    return -1
 }
 
 internal fun List<IntRange>.orderedTermGapCount(): Int =

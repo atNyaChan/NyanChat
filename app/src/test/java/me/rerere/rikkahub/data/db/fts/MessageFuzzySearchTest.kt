@@ -25,6 +25,16 @@ class MessageFuzzySearchTest {
         assertEquals(4, ranges.first().first)
     }
 
+    @Test
+    fun `matching is case insensitive`() {
+        val ranges = "AxBxC".findOrderedTerms(terms)
+
+        assertNotNull(ranges)
+        assertEquals(2, ranges!!.orderedTermGapCount())
+        assertEquals(0, ranges.first().first)
+        assertEquals(4, ranges.last().first)
+    }
+
     private fun gapCount(text: String): Int =
         text.findOrderedTerms(terms)!!.orderedTermGapCount()
 }
