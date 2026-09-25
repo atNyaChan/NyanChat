@@ -679,8 +679,8 @@ private fun SearchResultItem(
             index = end + 1
         }
     }
-    val formattedTime = remember(result.updateAt) {
-        result.updateAt.toLocalDateTime()
+    val formattedTime = remember(result.timeAt) {
+        result.timeAt.toLocalDateTime()
     }
     val displayTitle = result.title.ifBlank { untitled }
     val titleText = if (highlightTitle && result.title.isNotBlank() && query.isNotEmpty()) {

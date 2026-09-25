@@ -230,7 +230,7 @@ data class MessageSearchResultDto(
     val messageId: String,
     val conversationId: String,
     val title: String,
-    val updateAt: Long,
+    val timeAt: Long,
     val snippet: String,
 )
 

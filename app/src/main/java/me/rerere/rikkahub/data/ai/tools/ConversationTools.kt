@@ -101,7 +101,7 @@ fun createConversationTools(
                         put("conversation_id", result.conversationId)
                         put("title", result.title.ifBlank { "Untitled" })
                         put("snippet", result.snippet)
-                        put("date", result.updateAt.toLocalDate())
+                        put("date", result.timeAt.toLocalDate())
                     })
                 }
             }

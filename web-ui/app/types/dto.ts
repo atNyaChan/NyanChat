@@ -126,6 +126,6 @@ export interface MessageSearchResultDto {
   messageId: string;
   conversationId: string;
   title: string;
-  updateAt: number;
+  timeAt: number;
   snippet: string;
 }

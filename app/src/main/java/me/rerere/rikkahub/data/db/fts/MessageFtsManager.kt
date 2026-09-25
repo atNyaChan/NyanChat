@@ -5,12 +5,15 @@ import androidx.core.net.toUri
 import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 import me.rerere.ai.ui.UIMessage
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.rikkahub.data.db.AppDatabase
 import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.utils.JsonInstant
 import java.time.Instant
+import kotlin.time.toJavaInstant
 import kotlin.uuid.Uuid
 
 data class MessageSearchResult(
@@ -18,7 +21,11 @@ data class MessageSearchResult(
     val messageId: String,
     val conversationId: String,
     val title: String,
-    val updateAt: Instant,
+    /**
+     * 搜索结果展示与排序使用的时间。
+     * 消息级结果为消息自身的生成时间；仅匹配标题的结果为对应会话的更新时间。
+     */
+    val timeAt: Instant,
     val snippet: String,
 )
 
@@ -53,8 +60,8 @@ class MessageFtsManager(private val database: AppDatabase) {
                     db.execSQL(
                         """
                         INSERT INTO message_search_cache(
-                            text, node_id, message_id, conversation_id, title, update_at
-                        ) VALUES (?, ?, ?, ?, ?, ?)
+                            text, node_id, message_id, conversation_id, title, message_at, update_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?)
                         """.trimIndent(),
                         arrayOf(
                             text,
@@ -62,6 +69,7 @@ class MessageFtsManager(private val database: AppDatabase) {
                             message.id.toString(),
                             conversationId,
                             conversation.title,
+                            message.createdAtInstant().toEpochMilli().toString(),
                             conversation.updateAt.toEpochMilli().toString(),
                         )
                     )
@@ -91,13 +99,15 @@ class MessageFtsManager(private val database: AppDatabase) {
         }
         val terms = keyword.split(Regex("\\s+")).filter(String::isNotEmpty)
         if (terms.isEmpty()) return@withContext emptyList()
+        // 若缓存由旧版写入（无 message_at），退回该会话的更新时间。
+        val timeExpression = "COALESCE(message_at, update_at)"
         val orderBy = when (sort) {
-            MessageSearchSort.RELEVANCE, MessageSearchSort.NEWEST_FIRST -> "update_at DESC"
-            MessageSearchSort.OLDEST_FIRST -> "update_at ASC"
+            MessageSearchSort.RELEVANCE, MessageSearchSort.NEWEST_FIRST -> "$timeExpression DESC"
+            MessageSearchSort.OLDEST_FIRST -> "$timeExpression ASC"
         }
         val cursor = db.query(
             """
-            SELECT node_id, message_id, conversation_id, title, update_at, text
+            SELECT node_id, message_id, conversation_id, title, $timeExpression, text
             FROM message_search_cache
             WHERE instr(lower(text), lower(?)) > 0
             ${assistantFilter(assistantId)}
@@ -116,7 +126,7 @@ class MessageFtsManager(private val database: AppDatabase) {
                                 messageId = it.getString(1),
                                 conversationId = it.getString(2),
                                 title = it.getString(3),
-                                updateAt = Instant.ofEpochMilli(it.getLong(4)),
+                                timeAt = Instant.ofEpochMilli(it.getLong(4)),
                                 snippet = text.orderedSnippet(ranges),
                             )
                         )
@@ -126,7 +136,7 @@ class MessageFtsManager(private val database: AppDatabase) {
         }
         val ordered = if (sort == MessageSearchSort.RELEVANCE) {
             matches.sortedWith(compareBy<Pair<Int, MessageSearchResult>> { it.first }
-                .thenByDescending { it.second.updateAt })
+                .thenByDescending { it.second.timeAt })
         } else {
             matches
         }
@@ -141,12 +151,13 @@ class MessageFtsManager(private val database: AppDatabase) {
         assistantId: String? = null,
     ): List<MessageSearchResult> = withContext(Dispatchers.IO) {
         val orderBy = when (sort) {
-            MessageSearchSort.RELEVANCE, MessageSearchSort.NEWEST_FIRST -> "c.update_at DESC"
-            MessageSearchSort.OLDEST_FIRST -> "c.update_at ASC"
+            MessageSearchSort.RELEVANCE, MessageSearchSort.NEWEST_FIRST ->
+                "json_extract(j.value, '$.createdAt') DESC"
+            MessageSearchSort.OLDEST_FIRST -> "json_extract(j.value, '$.createdAt') ASC"
         }
         val cursor = db.query(
             """
-            SELECT mn.id, j.value, mn.conversation_id, c.title, c.update_at
+            SELECT mn.id, j.value, mn.conversation_id, c.title
             FROM message_node mn
             JOIN conversationentity c ON c.id = mn.conversation_id,
                  json_each(mn.messages) j
@@ -168,7 +179,7 @@ class MessageFtsManager(private val database: AppDatabase) {
                             messageId = message.id.toString(),
                             conversationId = it.getString(2),
                             title = it.getString(3),
-                            updateAt = Instant.ofEpochMilli(it.getLong(4)),
+                            timeAt = message.createdAtInstant(),
                             snippet = message.extractFtsText(),
                         )
                     )
@@ -222,12 +233,13 @@ class MessageFtsManager(private val database: AppDatabase) {
         assistantId: String? = null,
     ): List<MessageSearchResult> = withContext(Dispatchers.IO) {
         val orderBy = when (sort) {
-            MessageSearchSort.RELEVANCE, MessageSearchSort.NEWEST_FIRST -> "c.update_at DESC"
-            MessageSearchSort.OLDEST_FIRST -> "c.update_at ASC"
+            MessageSearchSort.RELEVANCE, MessageSearchSort.NEWEST_FIRST ->
+                "json_extract(j.value, '$.createdAt') DESC"
+            MessageSearchSort.OLDEST_FIRST -> "json_extract(j.value, '$.createdAt') ASC"
         }
         val cursor = db.query(
             """
-            SELECT mn.id, j.value, mn.conversation_id, c.title, c.update_at
+            SELECT mn.id, j.value, mn.conversation_id, c.title
             FROM message_node mn
             JOIN conversationentity c ON c.id = mn.conversation_id,
                  json_each(mn.messages) j
@@ -249,7 +261,7 @@ class MessageFtsManager(private val database: AppDatabase) {
                             messageId = message.id.toString(),
                             conversationId = it.getString(2),
                             title = it.getString(3),
-                            updateAt = Instant.ofEpochMilli(it.getLong(4)),
+                            timeAt = message.createdAtInstant(),
                             snippet = message.extractFtsText(),
                         )
                     )
@@ -347,19 +359,19 @@ class MessageFtsManager(private val database: AppDatabase) {
         assistantId: String? = null,
     ): List<MessageSearchResult> {
         val titleOnly = mode == MessageSearchMode.TITLE_ONLY
-        val orderBy = when (sort) {
-            MessageSearchSort.RELEVANCE, MessageSearchSort.NEWEST_FIRST -> "update_at DESC"
-            MessageSearchSort.OLDEST_FIRST -> "update_at ASC"
-        }
+        val direction = if (sort == MessageSearchSort.OLDEST_FIRST) "ASC" else "DESC"
+        // 仅匹配标题时每个会话只保留一行，时间沿用该会话的更新时间（忽略消息时间）；
+        // 消息级结果若缓存由旧版写入（无 message_at），退回该会话的更新时间。
+        val timeColumn = if (titleOnly) "update_at" else "COALESCE(message_at, update_at)"
         val groupBy = if (titleOnly) "GROUP BY conversation_id" else ""
         val cursor = db.query(
             """
-            SELECT node_id, message_id, conversation_id, title, update_at, text
+            SELECT node_id, message_id, conversation_id, title, $timeColumn, text
             FROM message_search_cache
             WHERE instr(${if (titleOnly) "title" else "text"}, ?) > 0
             ${assistantFilter(assistantId)}
             $groupBy
-            ORDER BY $orderBy
+            ORDER BY $timeColumn $direction
             LIMIT ? OFFSET ?
             """.trimIndent(),
             sqlArgs(keyword, assistantId, limit, offset),
@@ -373,7 +385,7 @@ class MessageFtsManager(private val database: AppDatabase) {
                             messageId = it.getString(1),
                             conversationId = it.getString(2),
                             title = it.getString(3),
-                            updateAt = Instant.ofEpochMilli(it.getLong(4)),
+                            timeAt = Instant.ofEpochMilli(it.getLong(4)),
                             snippet = if (titleOnly) "" else it.getString(5).exactSnippet(keyword),
                         )
                     )
@@ -388,12 +400,13 @@ class MessageFtsManager(private val database: AppDatabase) {
         assistantId: String? = null,
     ): List<MessageSearchResult> {
         val orderBy = when (sort) {
-            MessageSearchSort.RELEVANCE, MessageSearchSort.NEWEST_FIRST -> "c.update_at DESC"
-            MessageSearchSort.OLDEST_FIRST -> "c.update_at ASC"
+            MessageSearchSort.RELEVANCE, MessageSearchSort.NEWEST_FIRST -> "message_at DESC"
+            MessageSearchSort.OLDEST_FIRST -> "message_at ASC"
         }
         val cursor = db.query(
             """
-            SELECT DISTINCT mn.id, message.value, mn.conversation_id, c.title, c.update_at
+            SELECT DISTINCT mn.id, message.value, mn.conversation_id, c.title,
+                 json_extract(message.value, '$.createdAt') AS message_at
             FROM message_node mn
             JOIN conversationentity c ON c.id = mn.conversation_id,
                  json_each(mn.messages) message,
@@ -436,7 +449,7 @@ class MessageFtsManager(private val database: AppDatabase) {
                                 messageId = message.id.toString(),
                                 conversationId = it.getString(2),
                                 title = it.getString(3),
-                                updateAt = Instant.ofEpochMilli(it.getLong(4)),
+                                timeAt = message.createdAtInstant(),
                                 snippet = message.extractFtsText().ifBlank {
                                     attachments.filterIsInstance<UIMessagePart.Document>()
                                         .joinToString("\n") { document -> document.fileName }
@@ -558,6 +571,10 @@ private fun UIMessage.extractFtsText(): String =
     parts.filterIsInstance<UIMessagePart.Text>()
         .joinToString("\n") { it.text }
 
+/** 消息自身的生成时间，用于搜索结果展示与排序。 */
+private fun UIMessage.createdAtInstant(): Instant =
+    createdAt.toInstant(TimeZone.currentSystemDefault()).toJavaInstant()
+
 internal fun rebuildMessageSearchCache(db: SupportSQLiteDatabase) {
     db.execSQL("DELETE FROM message_search_cache")
     db.query("SELECT id, title, update_at FROM conversationentity").use { conversations ->
@@ -583,8 +600,8 @@ internal fun rebuildMessageSearchCache(db: SupportSQLiteDatabase) {
                             db.execSQL(
                                 """
                                 INSERT INTO message_search_cache(
-                                    text, node_id, message_id, conversation_id, title, update_at
-                                ) VALUES (?, ?, ?, ?, ?, ?)
+                                    text, node_id, message_id, conversation_id, title, message_at, update_at
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?)
                                 """.trimIndent(),
                                 arrayOf(
                                     text,
@@ -592,6 +609,7 @@ internal fun rebuildMessageSearchCache(db: SupportSQLiteDatabase) {
                                     message.id.toString(),
                                     conversationId,
                                     title,
+                                    message.createdAtInstant().toEpochMilli().toString(),
                                     updateAt,
                                 ),
                             )

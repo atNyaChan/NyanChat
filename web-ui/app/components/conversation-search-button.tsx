@@ -48,8 +48,8 @@ function SnippetText({ snippet }: { snippet: string }) {
   return <>{parts}</>;
 }
 
-function formatRelativeTime(updateAt: number, t: (key: string) => string): string {
-  const date = dayjs(updateAt);
+function formatRelativeTime(timeAt: number, t: (key: string) => string): string {
+  const date = dayjs(timeAt);
   const today = dayjs().startOf("day");
   const yesterday = today.subtract(1, "day");
   if (date.isSame(today, "day")) return t("conversation_sidebar.today");
@@ -189,7 +189,7 @@ export function ConversationSearchButton({ onSelect }: ConversationSearchButtonP
                         {item.title || t("conversation_search.unnamed_conversation")}
                       </span>
                       <span className="shrink-0 text-xs text-muted-foreground">
-                        {formatRelativeTime(item.updateAt, t)}
+                        {formatRelativeTime(item.timeAt, t)}
                       </span>
                     </div>
                     <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
