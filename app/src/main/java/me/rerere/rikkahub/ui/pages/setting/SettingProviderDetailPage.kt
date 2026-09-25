@@ -93,6 +93,7 @@ import me.rerere.ai.provider.ModelPrice
 import me.rerere.ai.provider.ModelType
 import me.rerere.ai.provider.ProviderManager
 import me.rerere.ai.provider.ProviderSetting
+import me.rerere.ai.provider.supportedBuiltInTools
 import me.rerere.ai.registry.ModelRegistry
 import me.rerere.common.http.isJsonExprValid
 import me.rerere.rikkahub.R
@@ -134,6 +135,9 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 import kotlin.uuid.Uuid
 
 private val ApiPathRegex = Regex("""^/[^ \t\n\r]*$""")
+
+// OpenAI 仅在 Responses API 下支持的内置工具，切换到 Chat Completions 时需要关闭
+private val ResponsesApiOnlyBuiltInTools = setOf(BuiltInTools.Search, BuiltInTools.ImageGeneration)
 
 private fun String.isValidBaseUrl(): Boolean = this.toHttpUrlOrNull() != null
 
@@ -779,8 +783,20 @@ private fun ProviderConfigTogglesCardGroup(
                     tail = {
                         Switch(
                             checked = provider.useResponseApi,
-                            onCheckedChange = {
-                                onEdit(provider.copy(useResponseApi = it))
+                            onCheckedChange = { enabled ->
+                                if (enabled) {
+                                    onEdit(provider.copy(useResponseApi = true))
+                                } else {
+                                    // 切到 Chat Completions：关闭仅 Responses API 支持的内置工具
+                                    onEdit(
+                                        provider.copy(
+                                            useResponseApi = false,
+                                            models = provider.models.map { model ->
+                                                model.copy(tools = model.tools - ResponsesApiOnlyBuiltInTools)
+                                            }
+                                        )
+                                    )
+                                }
                             }
                         )
                     }
@@ -1180,7 +1196,11 @@ private fun ModelSettingsForm(
     onMigrateModelId: ((Model, Model) -> Unit)? = null,
     onDeleteModel: (() -> Unit)? = null,
 ) {
-    val pagerState = rememberPagerState { 3 }
+    // 内置工具只对部分提供商 API 生效（如 OpenAI 仅 Responses API），均不支持时隐藏整个页签
+    val effectiveProvider = model.providerOverwrite ?: parentProvider
+    val supportedTools = effectiveProvider?.supportedBuiltInTools().orEmpty()
+    val showBuiltInToolsTab = supportedTools.isNotEmpty()
+    val pagerState = rememberPagerState { if (showBuiltInToolsTab) 3 else 2 }
     val scope = rememberCoroutineScope()
     val settingsStore = koinInject<me.rerere.rikkahub.data.datastore.SettingsStore>()
     val settings by settingsStore.settingsFlow.collectAsStateWithLifecycle()
@@ -1198,6 +1218,12 @@ private fun ModelSettingsForm(
     LaunchedEffect(model.id, isEdit) {
         if (isEdit) {
             referencedMessageCount = conversationRepository.countMessagesByModel(model.id)
+        }
+    }
+
+    LaunchedEffect(showBuiltInToolsTab) {
+        if (!showBuiltInToolsTab && pagerState.currentPage > 1) {
+            pagerState.scrollToPage(1)
         }
     }
 
@@ -1248,15 +1274,17 @@ private fun ModelSettingsForm(
                 },
                 text = { Text(stringResource(R.string.setting_provider_page_advanced_settings)) }
             )
-            Tab(
-                selected = pagerState.currentPage == 2,
-                onClick = {
-                    scope.launch {
-                        pagerState.animateScrollToPage(2)
-                    }
-                },
-                text = { Text(stringResource(R.string.setting_page_built_in_tools)) }
-            )
+            if (showBuiltInToolsTab) {
+                Tab(
+                    selected = pagerState.currentPage == 2,
+                    onClick = {
+                        scope.launch {
+                            pagerState.animateScrollToPage(2)
+                        }
+                    },
+                    text = { Text(stringResource(R.string.setting_page_built_in_tools)) }
+                )
+            }
         }
 
         HorizontalPager(
@@ -1498,7 +1526,19 @@ private fun ModelSettingsForm(
                                         ProviderOverrideSettings(
                                             providerOverride = model.providerOverwrite,
                                             onUpdateProviderOverride = { providerOverride ->
-                                                onModelChange(model.copy(providerOverwrite = providerOverride))
+                                                // 覆盖提供商切到 Chat Completions 时，关闭仅 Responses API 支持的内置工具
+                                                val tools =
+                                                    if (providerOverride is ProviderSetting.OpenAI && !providerOverride.useResponseApi) {
+                                                        model.tools - ResponsesApiOnlyBuiltInTools
+                                                    } else {
+                                                        model.tools
+                                                    }
+                                                onModelChange(
+                                                    model.copy(
+                                                        providerOverwrite = providerOverride,
+                                                        tools = tools,
+                                                    )
+                                                )
                                             },
                                             parentProvider = parentProvider
                                         )
@@ -1614,6 +1654,7 @@ private fun ModelSettingsForm(
                     // 内置工具页面
                     BuiltInToolsSettings(
                         tools = model.tools,
+                        supportedTools = supportedTools,
                         onUpdateTools = { tools ->
                             onModelChange(model.copy(tools = tools))
                         }
@@ -2075,6 +2116,7 @@ private fun ModelCard(
 @Composable
 private fun BuiltInToolsSettings(
     tools: Set<BuiltInTools>,
+    supportedTools: Set<BuiltInTools>,
     onUpdateTools: (Set<BuiltInTools>) -> Unit
 ) {
     Column(
@@ -2112,7 +2154,7 @@ private fun BuiltInToolsSettings(
                 stringResource(R.string.setting_page_built_in_tools_image_generation),
                 stringResource(R.string.setting_page_built_in_tools_image_generation_desc)
             )
-        )
+        ).filter { (tool, _) -> tool in supportedTools }
 
         CardGroup(
             modifier = Modifier.fillMaxWidth(),

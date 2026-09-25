@@ -66,14 +66,29 @@ sealed class BuiltInTools {
 }
 
 /**
+ * 当前提供商 API 实际支持（会在请求中序列化）的内置工具，与各提供商的请求构建逻辑保持同步：
+ *   - Claude：仅 [BuiltInTools.Search]
+ *   - Google：[BuiltInTools.Search]、[BuiltInTools.UrlContext]
+ *   - OpenAI：仅使用 Responses API 时支持 [BuiltInTools.Search]、[BuiltInTools.ImageGeneration]；
+ *     使用 Chat Completions 时不支持任何内置工具
+ */
+fun ProviderSetting.supportedBuiltInTools(): Set<BuiltInTools> = when (this) {
+    is ProviderSetting.OpenAI ->
+        if (useResponseApi) {
+            setOf(BuiltInTools.Search, BuiltInTools.ImageGeneration)
+        } else {
+            emptySet()
+        }
+
+    is ProviderSetting.Google -> setOf(BuiltInTools.Search, BuiltInTools.UrlContext)
+    is ProviderSetting.Claude -> setOf(BuiltInTools.Search)
+}
+
+/**
  * 文本生成请求中实际会传给模型的内置工具。
  *
  * - 未开启“模型内置搜索”时移除 [BuiltInTools.Search]（与请求构建一致，见 GenerationHandler）
- * - 只保留当前提供商在实际请求里会真正序列化的内置工具，不同提供商支持情况不同：
- *   - Claude：仅 Search
- *   - Google：Search、UrlContext
- *   - OpenAI：仅使用 Responses API 时不支持 UrlContext（Search、ImageGeneration 会发送）；
- *     使用 Chat Completions 时不发送任何内置工具
+ * - 只保留当前提供商实际支持的内置工具，见 [supportedBuiltInTools]
  *
  * 需要与各提供商的请求构建逻辑保持同步。
  */
@@ -83,18 +98,7 @@ fun chatRequestBuiltInTools(
     useBuiltInSearch: Boolean,
 ): Set<BuiltInTools> {
     val candidate = if (useBuiltInSearch) model.tools else model.tools - BuiltInTools.Search
-    val supported = when (provider) {
-        is ProviderSetting.OpenAI ->
-            if (provider.useResponseApi) {
-                setOf(BuiltInTools.Search, BuiltInTools.ImageGeneration)
-            } else {
-                emptySet()
-            }
-
-        is ProviderSetting.Google -> setOf(BuiltInTools.Search, BuiltInTools.UrlContext)
-        is ProviderSetting.Claude -> setOf(BuiltInTools.Search)
-    }
-    return candidate.intersect(supported)
+    return candidate.intersect(provider.supportedBuiltInTools())
 }
 
 
