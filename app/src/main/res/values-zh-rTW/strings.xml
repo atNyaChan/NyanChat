@@ -61,7 +61,7 @@
   <string name="assistant_page_preset_message_singular">預設聊天訊息</string>
   <string name="assistant_page_regex_singular">正規表示式</string>
   <string name="assistant_page_context_cache">上下文快取</string>
-  <string name="assistant_page_context_cache_desc">僅支援部分模型（例如 Claude）</string>
+  <string name="assistant_page_context_cache_desc">僅支援部分模型（例如 Claude），且僅支援 OpenAI Chat Completions API 和 Anthropic Claude API</string>
   <string name="assistant_page_default_assistant">預設助手</string>
   <string name="assistant_page_delete_body">刪除 Body</string>
   <string name="assistant_page_delete_dialog_text">確定要刪除這個助手嗎？此操作無法撤銷。</string>

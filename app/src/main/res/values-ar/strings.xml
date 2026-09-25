@@ -61,7 +61,7 @@
   <string name="assistant_page_preset_message_singular">رسالة دردشة معدّة مسبقًا</string>
   <string name="assistant_page_regex_singular">تعبير نمطي</string>
   <string name="assistant_page_context_cache">ذاكرة السياق المؤقتة</string>
-  <string name="assistant_page_context_cache_desc">مدعومة من بعض النماذج فقط (مثل Claude)</string>
+  <string name="assistant_page_context_cache_desc">مدعومة من بعض النماذج فقط (مثل Claude)، وتدعم فقط OpenAI Chat Completions API و Anthropic Claude API</string>
   <string name="assistant_page_default_assistant">المساعد الافتراضي</string>
   <string name="assistant_page_delete_body">حذف الجسم</string>
   <string name="assistant_page_delete_dialog_text">هل أنت متأكد من أنك تريد حذف هذا المساعد؟ لا يمكن التراجع عن هذا الإجراء.</string>

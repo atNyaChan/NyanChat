@@ -61,7 +61,7 @@
   <string name="assistant_page_preset_message_singular">предустановленное сообщение чата</string>
   <string name="assistant_page_regex_singular">регулярное выражение</string>
   <string name="assistant_page_context_cache">Кэш контекста</string>
-  <string name="assistant_page_context_cache_desc">Поддерживается только некоторыми моделями (например, Claude)</string>
+  <string name="assistant_page_context_cache_desc">Поддерживается только некоторыми моделями (например, Claude), и поддерживает только OpenAI Chat Completions API и Anthropic Claude API</string>
   <string name="assistant_page_default_assistant">Ассистент по умолчанию</string>
   <string name="assistant_page_delete_body">Удалить текст</string>
   <string name="assistant_page_delete_dialog_text">Вы уверены, что хотите удалить этого ассистента? Это действие нельзя отменить.</string>

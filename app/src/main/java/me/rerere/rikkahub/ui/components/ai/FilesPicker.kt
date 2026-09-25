@@ -93,6 +93,8 @@ internal fun FilesPicker(
 ) {
     val settings = LocalSettings.current
     val provider = settings.getCurrentChatModel()?.findProvider(providers = settings.providers)
+    val showContextCache = provider is ProviderSetting.Claude ||
+        (provider is ProviderSetting.OpenAI && !provider.useResponseApi)
     val navController = LocalNavController.current
     val workspaceRepository: WorkspaceRepository = koinInject()
     val workspaces by workspaceRepository.listFlow().collectAsState(initial = emptyList())
@@ -145,15 +147,17 @@ internal fun FilesPicker(
                 Text(stringResource(R.string.assistant_page_return_thinking))
             }
 
-            item(
-                trailingContent = {
-                    ContextCachePicker(
-                        value = assistant.contextCache,
-                        onValueChange = { onUpdateAssistant(assistant.copy(contextCache = it)) },
-                    )
-                },
-            ) {
-                Text(stringResource(R.string.assistant_page_context_cache))
+            if (showContextCache) {
+                item(
+                    trailingContent = {
+                        ContextCachePicker(
+                            value = assistant.contextCache,
+                            onValueChange = { onUpdateAssistant(assistant.copy(contextCache = it)) },
+                        )
+                    },
+                ) {
+                    Text(stringResource(R.string.assistant_page_context_cache))
+                }
             }
 
             item(

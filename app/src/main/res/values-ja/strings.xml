@@ -61,7 +61,7 @@
   <string name="assistant_page_preset_message_singular">プリセットチャットメッセージ</string>
   <string name="assistant_page_regex_singular">正規表現</string>
   <string name="assistant_page_context_cache">コンテキストキャッシュ</string>
-  <string name="assistant_page_context_cache_desc">一部のモデルでのみサポートされています（例: Claude）</string>
+  <string name="assistant_page_context_cache_desc">一部のモデルでのみサポートされています（例: Claude）、かつ OpenAI Chat Completions API と Anthropic Claude API のみをサポートしています</string>
   <string name="assistant_page_default_assistant">デフォルトアシスタント</string>
   <string name="assistant_page_delete_body">ボディを削除</string>
   <string name="assistant_page_delete_dialog_text">このアシスタントを削除してもよろしいですか？この操作は元に戻せません。</string>
