@@ -21,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -35,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -53,12 +55,14 @@ import kotlinx.serialization.json.longOrNull
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.ArrowDown01
 import me.rerere.hugeicons.stroke.ArrowRight01
+import me.rerere.hugeicons.stroke.Copy01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
+import me.rerere.rikkahub.utils.writeClipboardText
 
 @Composable
 fun JsonTree(
@@ -96,6 +100,7 @@ private fun PreviewStringDialog(
     fontFeatureSettings: String? = null,
 ) {
     var enableMarkdown by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false),
@@ -114,11 +119,27 @@ private fun PreviewStringDialog(
                     .fillMaxWidth()
                     .padding(24.dp)
             ) {
-                Text(
-                    text = stringResource(R.string.log_page_preview_string),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.log_page_preview_string),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f),
+                    )
+                    IconButton(
+                        onClick = { context.writeClipboardText(content) },
+                        modifier = Modifier.size(32.dp),
+                    ) {
+                        Icon(
+                            HugeIcons.Copy01,
+                            contentDescription = stringResource(R.string.copy),
+                            modifier = Modifier.size(16.dp),
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(12.dp))
 

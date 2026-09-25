@@ -1288,6 +1288,7 @@
   <string name="request_intercept_cancel">보내기 취소</string>
   <string name="request_intercept_confirm">보내기</string>
   <string name="log_page_preview_string">문자열 미리 보기</string>
+  <string name="log_page_preview_markdown">미리보기 Markdown</string>
   <string name="log_page_enable_markdown_rendering">Markdown 렌더링 사용</string>
   <string name="backup_page_import_failed_detail">가져오기 실패: %1$s</string>
   <string name="backup_page_export_failed_detail">내보내기 실패: %1$s</string>

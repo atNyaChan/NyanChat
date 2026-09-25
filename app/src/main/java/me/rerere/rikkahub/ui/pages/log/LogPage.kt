@@ -5,7 +5,8 @@ import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.Copy01
 import me.rerere.hugeicons.stroke.ArrowDown01
 import me.rerere.hugeicons.stroke.ArrowRight01
-import me.rerere.hugeicons.stroke.FilterHorizontal
+import me.rerere.hugeicons.stroke.Filter
+import me.rerere.hugeicons.stroke.SourceCodeSquare
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -14,13 +15,20 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -56,6 +64,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.rerere.common.android.LogEntry
@@ -65,6 +75,7 @@ import me.rerere.rikkahub.data.ai.RequestInterceptController
 import me.rerere.rikkahub.data.ai.RequestInterceptMode
 import me.rerere.rikkahub.data.ai.isLlmRequest
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.JsonTree
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
@@ -73,6 +84,7 @@ import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
+import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.utils.JsonInstantPretty
 import me.rerere.rikkahub.utils.writeClipboardText
 import kotlinx.serialization.json.JsonArray
@@ -121,7 +133,7 @@ fun LogPage() {
                             onClick = { filterMenuExpanded = true }
                         ) {
                             Icon(
-                                HugeIcons.FilterHorizontal,
+                                HugeIcons.Filter,
                                 contentDescription = stringResource(R.string.log_page_filter),
                             )
                         }
@@ -425,6 +437,7 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
         log.requestBody?.let(::extractRequestModel)
     }
     val codeFontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings
+    var markdownPreviewContent by remember(log.id) { mutableStateOf<String?>(null) }
 
     SelectionContainer {
         LazyColumn(
@@ -548,13 +561,27 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
                                 readOnly = true,
                                 label = { Text(section.label) },
                                 trailingIcon = {
-                                    IconButton(
-                                        onClick = { context.writeClipboardText(section.content) }
-                                    ) {
-                                        Icon(
-                                            HugeIcons.Copy01,
-                                            contentDescription = stringResource(R.string.copy),
-                                        )
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        IconButton(
+                                            onClick = { context.writeClipboardText(section.content) },
+                                            modifier = Modifier.size(32.dp),
+                                        ) {
+                                            Icon(
+                                                HugeIcons.Copy01,
+                                                contentDescription = stringResource(R.string.copy),
+                                                modifier = Modifier.size(16.dp),
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = { markdownPreviewContent = section.content },
+                                            modifier = Modifier.size(32.dp),
+                                        ) {
+                                            Icon(
+                                                HugeIcons.SourceCodeSquare,
+                                                contentDescription = stringResource(R.string.log_page_preview_markdown),
+                                                modifier = Modifier.size(16.dp),
+                                            )
+                                        }
                                     }
                                 },
                                 modifier = Modifier.fillMaxWidth(),
@@ -567,6 +594,63 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
                             )
                         }
                     }
+                }
+            }
+        }
+    }
+
+    markdownPreviewContent?.let { content ->
+        MarkdownPreviewDialog(
+            content = content,
+            onDismiss = { markdownPreviewContent = null },
+        )
+    }
+}
+
+@Composable
+private fun MarkdownPreviewDialog(
+    content: String,
+    onDismiss: () -> Unit,
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.94f)
+                .padding(16.dp),
+            shape = rememberScreenEdgeCornerShape(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+            ),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.log_page_preview_markdown),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 440.dp)
+                        .verticalScroll(rememberScrollState()),
+                ) {
+                    MarkdownBlock(
+                        content = content,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontSize = 12.sp,
+                            lineHeight = 16.sp,
+                        ),
+                    )
                 }
             }
         }
@@ -748,8 +832,14 @@ private fun appendLlmContent(
             }
             element.forEach { (key, value) ->
                 when {
-                    key == "reasoning" || key == "reasoning_content" || key == "thinking" ->
-                        jsonText(value)?.let { output.appendLabeled(labels.reasoning, it) }
+                    key == "reasoning" || key == "reasoning_content" || key == "thinking" -> when (value) {
+                        is JsonPrimitive -> value.contentOrNull?.let {
+                            output.appendLabeled(labels.reasoning, it)
+                        }
+                        // 有些供应商会把 reasoning/thinking 作为对象下发（如 {"effort":"medium"}），
+                        // 只提取其中的思考正文, 不要把整段 JSON 当作思考内容。
+                        else -> appendLlmContent(value, output, LlmContentKind.REASONING, labels)
+                    }
                     (key == "text" || key == "content" || key == "output_text") && value is JsonPrimitive ->
                         value.contentOrNull?.let {
                             if (kind == LlmContentKind.REASONING) output.appendLabeled(labels.reasoning, it)
@@ -768,23 +858,6 @@ private fun appendLlmContent(
         }
         else -> Unit
     }
-}
-
-private fun jsonText(element: JsonElement): String? = when (element) {
-    JsonNull -> null
-    is JsonPrimitive -> element.contentOrNull
-    else -> element.withoutNulls().toString()
-}
-
-private fun JsonElement.withoutNulls(): JsonElement = when (this) {
-    JsonNull -> JsonNull
-    is JsonArray -> JsonArray(mapNotNull { child ->
-        child.takeUnless { it is JsonNull }?.withoutNulls()
-    })
-    is JsonObject -> JsonObject(mapNotNull { (key, child) ->
-        child.takeUnless { it is JsonNull }?.let { key to it.withoutNulls() }
-    }.toMap())
-    else -> this
 }
 
 private data class LlmLabels(val text: String, val reasoning: String, val tool: String)
@@ -825,26 +898,10 @@ private class LlmTextBuilder(private val labels: LlmLabels) {
         if (value.isEmpty()) return
         val last = sections.lastOrNull()
         if (last?.kind == kind) {
-            sections[sections.lastIndex] = last.copy(content = mergeChunks(last.content, value))
+            sections[sections.lastIndex] = last.copy(content = last.content + value)
         } else {
             sections += LlmContentSection(label = label, content = value, kind = kind)
         }
-    }
-
-    /**
-     * 合并同一 section 的新分块。
-     * 部分供应商或代理/中继会把同一段思考/文本内容以多种方式重复下发：
-     * - 累积式分块（每个分块都包含到目前为止的完整内容）
-     * - 快照事件 + 增量 delta 事件重复
-     * - 结束阶段重发完整内容
-     * 直接拼接会导致日志中思考内容变成两段一样的内容，这里只保留不重叠的新增部分。
-     */
-    private fun mergeChunks(existing: String, incoming: String): String {
-        if (incoming.isEmpty()) return existing
-        if (existing.isEmpty()) return incoming
-        if (incoming.startsWith(existing)) return incoming
-        if (existing.contains(incoming)) return existing
-        return existing + incoming
     }
 
     fun build(): List<LlmContentSection> {

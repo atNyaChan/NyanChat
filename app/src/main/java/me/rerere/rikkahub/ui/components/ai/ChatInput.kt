@@ -252,6 +252,13 @@ fun ChatInput(
     val animatedHeight = collapsedHeight + (fullHeight - collapsedHeight) * expandProgress
     val lockHeight = isExpanded || expandProgress > 0f
 
+    // 输入框处于编辑状态时若退出编辑, 自动收起展开的输入框
+    LaunchedEffect(state.editingMessage) {
+        if (state.editingMessage == null) {
+            isExpanded = false
+        }
+    }
+
     fun sendMessage() {
         isExpanded = false
         focusManager.clearFocus(force = true)

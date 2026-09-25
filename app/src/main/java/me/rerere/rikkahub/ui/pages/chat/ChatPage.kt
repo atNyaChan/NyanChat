@@ -431,6 +431,7 @@ private fun ChatPageContent(
     val workspaceRepository: WorkspaceRepository = koinInject()
     val folderRepository: FolderRepository = koinInject()
     var previewMode by rememberSaveable { mutableStateOf(false) }
+    val generatingMessageId by vm.generatingMessageId.collectAsStateWithLifecycle()
     val assistant = setting.getCurrentAssistant()
     val folders by folderRepository.getFoldersOfAssistant(assistant.id)
         .collectAsStateWithLifecycle(initialValue = emptyList())
@@ -588,6 +589,7 @@ private fun ChatPageContent(
                 conversation = conversation,
                 state = chatListState,
                 loading = loadingJob != null,
+                generatingMessageId = generatingMessageId,
                 processingStatus = processingStatus,
                 previewMode = previewMode,
                 settings = setting,

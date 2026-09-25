@@ -104,6 +104,15 @@ class ConversationSession(
     private val activeJobs = mutableSetOf<Job>()
     val generationJob: StateFlow<Job?> = _generationJob.asStateFlow()
     val isGenerating: Boolean get() = _generationJob.value?.isActive == true
+
+    // 当前正在生成的助手消息 id。界面据此判断哪些消息处于“生成中”，不能依赖 finishedAt，
+    // 因为多轮工具调用每一轮都会写入 finishedAt，而手动编辑的消息则始终没有 finishedAt。
+    private val _generatingMessageId = MutableStateFlow<Uuid?>(null)
+    val generatingMessageId: StateFlow<Uuid?> = _generatingMessageId.asStateFlow()
+
+    fun setGeneratingMessageId(messageId: Uuid?) {
+        _generatingMessageId.value = messageId
+    }
     val isInUse: Boolean
         get() = refCount.get() > 0 || _generationJob.value != null ||
                 messageQueue.state.value.messages.isNotEmpty()
@@ -166,6 +175,7 @@ class ConversationSession(
     @Synchronized
     fun cleanup() {
         _generationJob.value = null
+        _generatingMessageId.value = null
         cancelJobs()
         idleCheckJob?.cancel()
         idleCheckJob = null

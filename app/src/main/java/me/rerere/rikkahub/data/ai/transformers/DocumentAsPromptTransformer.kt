@@ -29,26 +29,32 @@ object DocumentAsPromptTransformer : InputMessageTransformer {
     ): List<UIMessage> {
         return withContext(Dispatchers.IO) {
             messages.map { message ->
-                message.copy(
-                    parts = message.parts.toMutableList().apply {
-                        val documents = filterIsInstance<UIMessagePart.Document>()
-                        if (documents.isNotEmpty()) {
-                            documents.forEach { document ->
-                                val content = readDocumentContent(document)
-                                val path = resolveWorkspacePath(document)
-                                val pathAttr = path?.let { " path=\"$it\"" } ?: ""
-                                val prompt = """
-                                  <UploadFile name="${document.fileName}"$pathAttr>
-                                  ```
-                                  $content
-                                  ```
-                                  </UploadFile>
-                                  """.trimMargin()
-                                add(0, UIMessagePart.Text(prompt))
-                            }
-                        }
+                val documents = message.parts.filterIsInstance<UIMessagePart.Document>()
+                if (documents.isEmpty()) {
+                    message
+                } else {
+                    val filePrompts = documents.map { document ->
+                        val content = readDocumentContent(document)
+                        val path = resolveWorkspacePath(document)
+                        val pathAttr = path?.let { " path=\"$it\"" } ?: ""
+                        val prompt = """
+                          <UploadFile name="${document.fileName}"$pathAttr>
+                          ```
+                          $content
+                          ```
+                          </UploadFile>
+                          """.trimMargin()
+                        UIMessagePart.Text(prompt)
                     }
-                )
+                    // 文件内容放在用户消息之后, 避免解析出的文件正文被排到用户提问前面。
+                    val lastTextIndex = message.parts.indexOfLast { it is UIMessagePart.Text }
+                    val insertIndex = if (lastTextIndex >= 0) lastTextIndex + 1 else message.parts.size
+                    message.copy(
+                        parts = message.parts.toMutableList().apply {
+                            addAll(insertIndex, filePrompts)
+                        }
+                    )
+                }
             }
         }
     }

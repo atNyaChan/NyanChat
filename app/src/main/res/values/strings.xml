@@ -1288,6 +1288,7 @@
   <string name="request_intercept_cancel">Cancel</string>
   <string name="request_intercept_confirm">Send</string>
   <string name="log_page_preview_string">Preview String</string>
+  <string name="log_page_preview_markdown">Preview Markdown</string>
   <string name="log_page_enable_markdown_rendering">Enable Markdown Rendering</string>
   <string name="backup_page_import_failed_detail">Import failed: %1$s</string>
   <string name="backup_page_export_failed_detail">Export failed: %1$s</string>

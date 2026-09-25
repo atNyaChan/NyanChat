@@ -1288,6 +1288,7 @@
   <string name="request_intercept_cancel">إلغاء</string>
   <string name="request_intercept_confirm">إرسال</string>
   <string name="log_page_preview_string">معاينة النص</string>
+  <string name="log_page_preview_markdown">معاينة Markdown</string>
   <string name="log_page_enable_markdown_rendering">تفعيل عرض Markdown</string>
   <string name="backup_page_import_failed_detail">فشل الاستيراد: %1$s</string>
   <string name="backup_page_export_failed_detail">فشل التصدير: %1$s</string>

@@ -277,6 +277,9 @@ class ChatService(
     fun getGenerationJobStateFlow(conversationId: Uuid): Flow<Job?> =
         sessionManager.getGenerationJobStateFlow(conversationId)
 
+    fun getGeneratingMessageIdFlow(conversationId: Uuid): Flow<Uuid?> =
+        sessionManager.getGeneratingMessageIdFlow(conversationId)
+
     fun getProcessingStatusFlow(conversationId: Uuid): StateFlow<String?> =
         sessionManager.getProcessingStatusFlow(conversationId)
 
@@ -760,6 +763,11 @@ class ChatService(
             model.displayName
         }
         val activePendingResponse = pendingResponse ?: UIMessage.assistant("")
+        // 重新生成时占位消息已提前加入会话，必须在构建工具（可能较慢，含 MCP）之前就把它
+        // 标记为生成中，否则界面会在这个窗口里把它当成手动编辑的消息显示 ` (edited)`。
+        sessionManager.getOrCreate(conversationId).setGeneratingMessageId(
+            pendingResponse?.id
+        )
         val useExternalWebSearch = shouldUseExternalWebSearch(assistant, model)
         val conversationBeforeToolBuild = getConversationFlow(conversationId).value
 
@@ -771,7 +779,11 @@ class ChatService(
                 workspaceCwd = conversationBeforeToolBuild.workspaceCwd,
             )
         } catch (error: InvalidMcpServerNamesException) {
-            sessionManager.get(conversationId)?.messageQueue?.pause()
+            sessionManager.get(conversationId)?.apply {
+                messageQueue.pause()
+                // 提前标记的生成中状态需要在放弃生成时清除，否则占位消息会一直显示为生成中
+                setGeneratingMessageId(null)
+            }
             addError(
                 error = IllegalStateException(
                     context.getString(
@@ -817,6 +829,15 @@ class ChatService(
 
             // start generating
             val session = sessionManager.getOrCreate(conversationId)
+            // 记录本轮真正在生成的助手消息 id：工具调用续跑时是已有的那条消息，
+            // 其余情况（新回复、重新生成）是本次占位消息。界面据此判断“生成中”。
+            session.setGeneratingMessageId(
+                if (pendingResponse == null && isToolContinuation) {
+                    conversation.currentMessages.lastOrNull { it.role == MessageRole.ASSISTANT }?.id
+                } else {
+                    activePendingResponse.id
+                }
+            )
             var lastStreamSaveAt = 0L
             var receivedAssistantResponse = false
             val requestMessages = conversation.currentMessages.let {
@@ -883,6 +904,7 @@ class ChatService(
                 ) { conversation ->
                     saveConversation(conversationId, conversation)
                 }
+                session.setGeneratingMessageId(null)
 
                 // 生成结束：取消 Live Update 通知，后台时发送完成通知
                 appEventBus.emit(
@@ -925,6 +947,7 @@ class ChatService(
             }
         }.onFailure {
             // 兜底取消 Live Update 通知（生成开始前失败时 onCompletion 不会执行）
+            sessionManager.get(conversationId)?.setGeneratingMessageId(null)
             appEventBus.tryEmit(AppEvent.ChatGenerationEnded(conversationId, senderName, null))
             if (it is CancellationException) throw it
             sessionManager.get(conversationId)?.messageQueue?.pause()

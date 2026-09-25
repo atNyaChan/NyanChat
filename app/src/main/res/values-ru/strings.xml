@@ -1288,6 +1288,7 @@
   <string name="request_intercept_cancel">Отмена отправки</string>
   <string name="request_intercept_confirm">Отправить</string>
   <string name="log_page_preview_string">Предпросмотр строки</string>
+  <string name="log_page_preview_markdown">Предпросмотр Markdown</string>
   <string name="log_page_enable_markdown_rendering">Включить рендеринг Markdown</string>
   <string name="backup_page_import_failed_detail">Ошибка импорта: %1$s</string>
   <string name="backup_page_export_failed_detail">Ошибка экспорта: %1$s</string>

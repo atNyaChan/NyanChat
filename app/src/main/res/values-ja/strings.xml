@@ -1288,6 +1288,7 @@
   <string name="request_intercept_cancel">送信キャンセル</string>
   <string name="request_intercept_confirm">送信する</string>
   <string name="log_page_preview_string">文字列をプレビュー</string>
+  <string name="log_page_preview_markdown">プレビュー Markdown</string>
   <string name="log_page_enable_markdown_rendering">Markdown レンダリングを有効にする</string>
   <string name="backup_page_import_failed_detail">インポート失敗：%1$s</string>
   <string name="backup_page_export_failed_detail">エクスポート失敗：%1$s</string>

@@ -115,6 +115,7 @@ fun ChatList(
     conversation: Conversation,
     state: LazyListState,
     loading: Boolean,
+    generatingMessageId: Uuid? = null,
     processingStatus: String? = null,
     previewMode: Boolean,
     settings: Settings,
@@ -160,6 +161,7 @@ fun ChatList(
                 conversation = conversation,
                 state = state,
                 loading = loading,
+                generatingMessageId = generatingMessageId,
                 processingStatus = processingStatus,
                 settings = settings,
                 hazeState = hazeState,
@@ -192,6 +194,7 @@ private fun ChatListNormal(
     conversation: Conversation,
     state: LazyListState,
     loading: Boolean,
+    generatingMessageId: Uuid? = null,
     processingStatus: String? = null,
     settings: Settings,
     hazeState: HazeState,
@@ -275,11 +278,14 @@ private fun ChatListNormal(
             .associateBy { it.id }
     }
     val lastMessageIndex = conversation.messageNodes.lastIndex
-    // 正在生成的消息：生成开始前必先创建好待补全的助手消息，它是最后一条尚未结束
-    // （finishedAt 为 null）的助手消息；用户消息 finishAt 恒为 null，需按角色排除
-    val generatingNodeIndex = conversation.messageNodes.indexOfLast { node ->
-        node.currentMessage.role == me.rerere.ai.core.MessageRole.ASSISTANT &&
-            node.currentMessage.finishedAt == null
+    // 正在生成的消息由生成任务显式记录的消息 id 决定。不能用 finishedAt 推断：
+    // 多轮工具调用每一轮都会写入 finishedAt，而手动编辑的消息始终没有 finishedAt。
+    val generatingNodeIndex = if (generatingMessageId == null) {
+        -1
+    } else {
+        conversation.messageNodes.indexOfLast { node ->
+            node.currentMessage.id == generatingMessageId
+        }
     }
 
     Box(
@@ -345,7 +351,7 @@ private fun ChatListNormal(
                             node = node,
                             model = node.currentMessage.modelId?.let(modelById::get),
                             assistant = assistant,
-                            loading = loading && node.currentMessage.finishedAt == null,
+                            loading = loading && node.currentMessage.id == generatingMessageId,
                             generating = loading,
                             onRegenerate = {
                                 onRegenerate(node.currentMessage)

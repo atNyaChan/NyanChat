@@ -158,6 +158,10 @@ class GenerationLoop(
 
             // Skip generation if we have approved/denied tool calls to handle
             if (pendingTools.isEmpty()) {
+                // 一轮助手回复可能包含多次模型调用（多轮工具调用）。每次调用都会返回一份
+                // usage，这里先清空上一轮 usage，让流处理只合并本次调用的用量，最终整条消息
+                // 只保留最后一次模型调用的用量。
+                messages = messages.clearLastAssistantUsage()
                 generateInternal(
                     assistant = assistant,
                     settings = settings,
@@ -611,4 +615,19 @@ class GenerationLoop(
         ) + nonTextParts
     }
 
+}
+
+/**
+ * 清空末尾助手消息的 [UIMessage.usage]，让本次模型调用的流处理从空用量开始合并。
+ * 末尾不是助手消息时原样返回。
+ */
+private fun List<UIMessage>.clearLastAssistantUsage(): List<UIMessage> =
+    updateLastAssistant { it.copy(usage = null) }
+
+private inline fun List<UIMessage>.updateLastAssistant(
+    transform: (UIMessage) -> UIMessage,
+): List<UIMessage> {
+    val last = lastOrNull() ?: return this
+    if (last.role != MessageRole.ASSISTANT) return this
+    return dropLast(1) + transform(last)
 }

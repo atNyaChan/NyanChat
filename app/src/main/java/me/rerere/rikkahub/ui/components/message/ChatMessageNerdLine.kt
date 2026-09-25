@@ -57,6 +57,7 @@ fun ChatMessageNerdLine(
 ) {
     val settings = LocalSettings.current.displaySetting
     var expanded by remember(message.id) { mutableStateOf(false) }
+    // 多轮工具调用时 usage 只代表最后一次模型调用
     val usage = message.usage
     val latestMessage by rememberUpdatedState(message)
     val wordCount by produceState(
@@ -102,14 +103,14 @@ fun ChatMessageNerdLine(
             ) {
                 if (settings.showTokenUsage) {
                     val seconds = elapsedMillis / 1000f
-                    val wordsPerSecond = if (elapsedMillis > 0) {
-                        wordCount.toFloat() / elapsedMillis * 1000
-                    } else {
-                        0f
-                    }
                     val cost = if (!loading && usage != null) calculateCost(usage, model) else null
                     val manuallyEdited = !loading && message.modelId == null
                     val showGenerationStats = loading || message.modelId != null
+                    // 用过工具的消息会经历多次模型调用，此时 token 统计只代表最后一次调用，
+                    // 且整条消息的用时包含工具执行时间，word/s 会失真，因此不显示 word/s。
+                    val usedTools = message.parts.any {
+                        it is UIMessagePart.Tool || it is UIMessagePart.ServerTool
+                    }
 
                     run {
                         FlowRow(
@@ -147,7 +148,8 @@ fun ChatMessageNerdLine(
                                     },
                                     content = { Text(text = "${seconds.toFixed(1)}s") },
                                 )
-                                if (elapsedMillis >= 150 && wordCount > 0) {
+                                if (!usedTools && elapsedMillis >= 150 && wordCount > 0) {
+                                    val wordsPerSecond = wordCount.toFloat() / elapsedMillis * 1000
                                     StatsItem(
                                         icon = {
                                             Icon(
@@ -168,6 +170,9 @@ fun ChatMessageNerdLine(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             itemVerticalAlignment = Alignment.CenterVertically,
                         ) {
+                            if (usedTools) {
+                                Text(text = "Last Message: ")
+                            }
                             StatsItem(
                                 icon = {
                                     Icon(
@@ -194,20 +199,18 @@ fun ChatMessageNerdLine(
                                 },
                                 content = { CountText(usage.completionTokens, expanded, " token") },
                             )
-                            if (elapsedMillis >= 150) {
-                                    StatsItem(
-                                        icon = {
-                                            Icon(
-                                                imageVector = HugeIcons.Zap,
-                                                contentDescription = "Token speed",
-                                                modifier = Modifier.size(12.dp),
-                                            )
-                                        },
-                                        content = {
-                                            val tokensPerSecond = usage.completionTokens.toFloat() / elapsedMillis * 1000
-                                            Text(text = "${tokensPerSecond.toFixed(1)} tok/s")
-                                        },
-                                    )
+                            if (!usedTools && elapsedMillis >= 150) {
+                                val tokensPerSecond = usage.completionTokens.toFloat() / elapsedMillis * 1000
+                                StatsItem(
+                                    icon = {
+                                        Icon(
+                                            imageVector = HugeIcons.Zap,
+                                            contentDescription = "Token speed",
+                                            modifier = Modifier.size(12.dp),
+                                        )
+                                    },
+                                    content = { Text(text = "${tokensPerSecond.toFixed(1)} tok/s") },
+                                )
                             }
                             cost?.let {
                                 Text(text = "\$${formatCost(it)}")

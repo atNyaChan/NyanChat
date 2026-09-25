@@ -77,6 +77,12 @@ class ChatVM(
         chatService
             .getProcessingStatusFlow(_conversationId)
 
+    // 当前正在生成的助手消息 id（多轮工具调用期间保持不变，手动编辑的消息不会命中）
+    val generatingMessageId: StateFlow<Uuid?> =
+        chatService
+            .getGeneratingMessageIdFlow(_conversationId)
+            .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
     val translatingMessageIds: StateFlow<Set<Uuid>> = chatService.translatingMessages
         .map { translating ->
             translating.asSequence()

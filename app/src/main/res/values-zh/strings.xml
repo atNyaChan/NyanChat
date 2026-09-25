@@ -1288,6 +1288,7 @@
   <string name="request_intercept_cancel">取消发送</string>
   <string name="request_intercept_confirm">确认发送</string>
   <string name="log_page_preview_string">预览字符串</string>
+  <string name="log_page_preview_markdown">预览 Markdown</string>
   <string name="log_page_enable_markdown_rendering">启用 Markdown 渲染</string>
   <string name="backup_page_import_failed_detail">导入失败：%1$s</string>
   <string name="backup_page_export_failed_detail">导出失败：%1$s</string>

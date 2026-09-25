@@ -119,7 +119,8 @@ fun ColumnScope.ConversationList(
         }
     }
 
-    // 打开侧栏或列表内容刷新后，尽量把当前会话置于可视区域中间
+    // 打开侧栏或列表内容刷新后：当前会话在列表中时尽量置于可视区域中间；
+    // 当前会话不在列表中（例如切换文件夹或助手后）时回到列表最上面。
     LaunchedEffect(centerCurrent, itemContentKey, current.id, listState) {
         if (!centerCurrent) return@LaunchedEffect
         // 用户正在手动滚动时不打扰（例如浏览时触发的列表变化）
@@ -127,7 +128,12 @@ fun ColumnScope.ConversationList(
         val currentIndex = conversations.indexOfFirst {
             (it as? ConversationListItem.Item)?.conversation?.id == current.id
         }
-        if (currentIndex < 0) return@LaunchedEffect
+        if (currentIndex < 0) {
+            if (listState.firstVisibleItemIndex != 0 || listState.firstVisibleItemScrollOffset != 0) {
+                listState.animateScrollToItem(0)
+            }
+            return@LaunchedEffect
+        }
         // 当前会话已在可视区域内时不额外滚动
         if (listState.layoutInfo.visibleItemsInfo.any { it.index == currentIndex }) {
             return@LaunchedEffect

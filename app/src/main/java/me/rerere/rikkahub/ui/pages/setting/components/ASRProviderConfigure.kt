@@ -14,8 +14,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import me.rerere.asr.ASRProviderSetting
 import me.rerere.rikkahub.R
-import me.rerere.rikkahub.ui.components.ui.FormItem
-import me.rerere.rikkahub.ui.components.ui.FormItemGroup
+import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CardGroupScope
 import me.rerere.rikkahub.ui.components.ui.OutlinedNumberInput
 import me.rerere.rikkahub.ui.components.ui.SelectTextField
 
@@ -32,7 +32,7 @@ fun ASRProviderConfigure(
     ) {
         val providers = remember { ASRProviderSetting.Types }
 
-        FormItemGroup {
+        CardGroup(modifier = Modifier.fillMaxWidth()) {
             FormItem(
                 label = { Text(stringResource(R.string.setting_asr_configure_provider_type)) },
                 description = { Text(stringResource(R.string.setting_asr_configure_provider_type_desc)) }
@@ -105,8 +105,7 @@ fun ASRProviderConfigure(
     }
 }
 
-@Composable
-private fun OpenAIRealtimeASRConfiguration(
+private fun CardGroupScope.OpenAIRealtimeASRConfiguration(
     setting: ASRProviderSetting.OpenAIRealtime,
     onValueChange: (ASRProviderSetting) -> Unit
 ) {
@@ -220,8 +219,7 @@ private fun OpenAIRealtimeASRConfiguration(
     }
 }
 
-@Composable
-private fun DashScopeASRConfiguration(
+private fun CardGroupScope.DashScopeASRConfiguration(
     setting: ASRProviderSetting.DashScope,
     onValueChange: (ASRProviderSetting) -> Unit
 ) {
@@ -306,8 +304,7 @@ private fun DashScopeASRConfiguration(
     }
 }
 
-@Composable
-private fun VolcengineASRConfiguration(
+private fun CardGroupScope.VolcengineASRConfiguration(
     setting: ASRProviderSetting.Volcengine,
     onValueChange: (ASRProviderSetting) -> Unit
 ) {
@@ -374,8 +371,7 @@ private fun VolcengineASRConfiguration(
 
 }
 
-@Composable
-private fun MiMoASRConfiguration(
+private fun CardGroupScope.MiMoASRConfiguration(
     setting: ASRProviderSetting.MiMo,
     onValueChange: (ASRProviderSetting) -> Unit
 ) {
@@ -460,8 +456,7 @@ private fun MiMoASRConfiguration(
     }
 }
 
-@Composable
-private fun StepASRConfiguration(
+private fun CardGroupScope.StepASRConfiguration(
     setting: ASRProviderSetting.Step,
     onValueChange: (ASRProviderSetting) -> Unit
 ) {

@@ -1,5 +1,10 @@
 package me.rerere.rikkahub.ui.components.ui
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -8,6 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,8 +31,9 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import coil3.compose.rememberAsyncImagePainter
 import com.dokar.sonner.ToastType
-import com.jvziyaoyao.scale.image.pager.ImagePager
-import com.jvziyaoyao.scale.zoomable.pager.rememberZoomablePagerState
+import com.jvziyaoyao.scale.image.previewer.ImagePreviewer
+import com.jvziyaoyao.scale.zoomable.pager.PagerGestureScope
+import com.jvziyaoyao.scale.zoomable.previewer.rememberPreviewerState
 import kotlinx.coroutines.launch
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Download01
@@ -37,9 +49,28 @@ fun ImagePreviewDialog(
 ) {
     val context = LocalContext.current
     val filesManager: FilesManager = koinInject()
-    val state = rememberZoomablePagerState { images.size }
     val toaster = LocalToaster.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val scope = rememberCoroutineScope()
+    val state = rememberPreviewerState(
+        defaultAnimationSpec = tween(180),
+        pageCount = { images.size },
+    ) { it }
+    var opened by remember { mutableStateOf(false) }
+
+    // 打开预览组件
+    LaunchedEffect(Unit) {
+        state.open()
+        opened = true
+    }
+
+    // 单击图片或向下拖动图片关闭后, 等关闭动画结束再通知调用方移除组件
+    LaunchedEffect(state.visible, state.animating) {
+        if (opened && !state.visible && !state.animating) {
+            onDismissRequest()
+        }
+    }
+
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(
@@ -47,13 +78,17 @@ fun ImagePreviewDialog(
             usePlatformDefaultWidth = false
         )
     ) {
-        Box {
-            ImagePager(
-                modifier = Modifier.fillMaxSize(),
-                pagerState = state,
-                imageLoader = { index ->
-                    val painter = rememberAsyncImagePainter(images[index])
-                    return@ImagePager Pair(painter, painter.intrinsicSize)
+        Box(modifier = Modifier.fillMaxSize()) {
+            ImagePreviewer(
+                state = state,
+                enter = scaleIn(tween(120)) + fadeIn(tween(120)),
+                exit = scaleOut(tween(140)) + fadeOut(tween(110)),
+                detectGesture = PagerGestureScope(
+                    onTap = { scope.launch { state.close() } },
+                ),
+                imageLoader = { page ->
+                    val painter = rememberAsyncImagePainter(images[page])
+                    Pair(painter, painter.intrinsicSize)
                 },
             )
 

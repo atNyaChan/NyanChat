@@ -23,8 +23,8 @@ import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.View
 import me.rerere.hugeicons.stroke.ViewOff
 import me.rerere.rikkahub.R
-import me.rerere.rikkahub.ui.components.ui.FormItem
-import me.rerere.rikkahub.ui.components.ui.FormItemGroup
+import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CardGroupScope
 import me.rerere.rikkahub.ui.components.ui.OutlinedNumberInput
 import me.rerere.rikkahub.ui.components.ui.SelectTextField
 import me.rerere.tts.provider.TTSProviderSetting
@@ -43,7 +43,7 @@ fun TTSProviderConfigure(
         // Provider type selector
         val providers = remember { TTSProviderSetting.Types }
 
-        FormItemGroup {
+        CardGroup(modifier = Modifier.fillMaxWidth()) {
             FormItem(
                 label = { Text(stringResource(R.string.setting_tts_page_provider_type)) },
                 description = { Text(stringResource(R.string.setting_tts_page_provider_type_description)) },
@@ -182,8 +182,7 @@ fun TTSProviderConfigure(
     }
 }
 
-@Composable
-private fun OpenAITTSConfiguration(
+private fun CardGroupScope.OpenAITTSConfiguration(
     setting: TTSProviderSetting.OpenAI,
     onValueChange: (TTSProviderSetting) -> Unit
 ) {
@@ -253,8 +252,7 @@ private fun OpenAITTSConfiguration(
     }
 }
 
-@Composable
-private fun MiMoTTSConfiguration(
+private fun CardGroupScope.MiMoTTSConfiguration(
     setting: TTSProviderSetting.MiMo,
     onValueChange: (TTSProviderSetting) -> Unit
 ) {
@@ -337,8 +335,7 @@ private fun MiMoTTSConfiguration(
     }
 }
 
-@Composable
-private fun MiniMaxTTSConfiguration(
+private fun CardGroupScope.MiniMaxTTSConfiguration(
     setting: TTSProviderSetting.MiniMax,
     onValueChange: (TTSProviderSetting) -> Unit
 ) {
@@ -436,8 +433,7 @@ private fun MiniMaxTTSConfiguration(
     }
 }
 
-@Composable
-private fun GeminiTTSConfiguration(
+private fun CardGroupScope.GeminiTTSConfiguration(
     setting: TTSProviderSetting.Gemini,
     onValueChange: (TTSProviderSetting) -> Unit
 ) {
@@ -502,8 +498,7 @@ private fun GeminiTTSConfiguration(
     }
 }
 
-@Composable
-private fun SystemTTSConfiguration(
+private fun CardGroupScope.SystemTTSConfiguration(
     setting: TTSProviderSetting.SystemTTS,
     onValueChange: (TTSProviderSetting) -> Unit
 ) {
@@ -542,8 +537,7 @@ private fun SystemTTSConfiguration(
     }
 }
 
-@Composable
-private fun QwenTTSConfiguration(
+private fun CardGroupScope.QwenTTSConfiguration(
     setting: TTSProviderSetting.Qwen,
     onValueChange: (TTSProviderSetting) -> Unit
 ) {
@@ -673,8 +667,7 @@ private fun QwenTTSConfiguration(
     }
 }
 
-@Composable
-private fun GroqTTSConfiguration(
+private fun CardGroupScope.GroqTTSConfiguration(
     setting: TTSProviderSetting.Groq,
     onValueChange: (TTSProviderSetting) -> Unit
 ) {
@@ -744,8 +737,7 @@ private fun GroqTTSConfiguration(
     }
 }
 
-@Composable
-private fun XAITTSConfiguration(
+private fun CardGroupScope.XAITTSConfiguration(
     setting: TTSProviderSetting.XAI,
     onValueChange: (TTSProviderSetting) -> Unit
 ) {
@@ -847,8 +839,7 @@ private fun XAITTSConfiguration(
     }
 }
 
-@Composable
-private fun ElevenLabsTTSConfiguration(
+private fun CardGroupScope.ElevenLabsTTSConfiguration(
     setting: TTSProviderSetting.ElevenLabs,
     onValueChange: (TTSProviderSetting) -> Unit
 ) {
@@ -953,8 +944,7 @@ private fun ElevenLabsTTSConfiguration(
     }
 }
 
-@Composable
-private fun FishAudioTTSConfiguration(
+private fun CardGroupScope.FishAudioTTSConfiguration(
     setting: TTSProviderSetting.FishAudio,
     onValueChange: (TTSProviderSetting) -> Unit
 ) {
@@ -989,19 +979,18 @@ private fun FishAudioTTSConfiguration(
     }
 
     // Model (下拉选择框 + 文本输入框，完全同 ElevenLabs 格式)
-    val recommended = stringResource(R.string.setting_tts_page_model_recommended)
-    val free = stringResource(R.string.setting_tts_page_model_free)
-    val models = listOf(
-        "s2.1-pro" to "S2.1-Pro ($recommended)",
-        "s2.1-pro-free" to "S2.1-Pro Free ($free)",
-        "s2-pro" to "S2-Pro",
-        "s1" to "S1"
-    )
-
     FormItem(
         label = { Text(stringResource(R.string.setting_tts_page_model)) },
         description = { Text(stringResource(R.string.setting_tts_page_model_description)) }
     ) {
+        val recommended = stringResource(R.string.setting_tts_page_model_recommended)
+        val free = stringResource(R.string.setting_tts_page_model_free)
+        val models = listOf(
+            "s2.1-pro" to "S2.1-Pro ($recommended)",
+            "s2.1-pro-free" to "S2.1-Pro Free ($free)",
+            "s2-pro" to "S2-Pro",
+            "s1" to "S1"
+        )
         SelectTextField(
             value = setting.model,
             options = models,
@@ -1062,8 +1051,7 @@ private fun FishAudioTTSConfiguration(
     }
 }
 
-@Composable
-private fun StepTTSConfiguration(
+private fun CardGroupScope.StepTTSConfiguration(
     setting: TTSProviderSetting.Step,
     onValueChange: (TTSProviderSetting) -> Unit
 ) {
@@ -1247,17 +1235,15 @@ private fun StepTTSConfiguration(
     }
 }
 
-@Composable
-private fun VolcengineTTSConfiguration(
+private fun CardGroupScope.VolcengineTTSConfiguration(
     setting: TTSProviderSetting.Volcengine,
     onValueChange: (TTSProviderSetting) -> Unit
 ) {
-    var keyVisible by remember(setting.id) { mutableStateOf(false) }
-
     FormItem(
         label = { Text("API Key") },
         description = { Text("请填写豆包语音控制台的 API Key，不是火山方舟控制台的 API Key。") }
     ) {
+        var keyVisible by remember(setting.id) { mutableStateOf(false) }
         OutlinedTextField(
             value = setting.apiKey,
             onValueChange = { onValueChange(setting.copy(apiKey = it)) },
