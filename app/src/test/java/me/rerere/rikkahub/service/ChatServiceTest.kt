@@ -36,7 +36,7 @@ class ChatServiceTest {
         assertEquals(source.assistantId, fork.assistantId)
         assertEquals(source.workspaceCwd, fork.workspaceCwd)
         assertEquals(source.folderId, fork.folderId)
-        assertEquals("Source conversation(1)", fork.title)
+        assertEquals("Source conversation (1)", fork.title)
         assertFalse(fork.isPinned)
     }
 

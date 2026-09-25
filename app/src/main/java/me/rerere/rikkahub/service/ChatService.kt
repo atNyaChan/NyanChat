@@ -119,7 +119,7 @@ internal fun createForkConversation(
     id = Uuid.random(),
     assistantId = source.assistantId,
     title = generateSequence(1) { it + 1 }
-        .map { "${source.title}($it)" }
+        .map { "${source.title} ($it)" }
         .first { it !in existingTitles },
     messageNodes = messageNodes,
     customSystemPrompt = source.customSystemPrompt,

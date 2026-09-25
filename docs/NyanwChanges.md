@@ -144,6 +144,7 @@
 - 删除“使用 App 风格指示器”开关，并永久禁用该样式，并删除兔子动画资源。加载状态恢复使用 RikkaHub 1.x 的无底板 Material 3 `LoadingIndicator`。
 - DeepSeek 余额读取 `balance_infos` 中的 CNY 与 USD 总余额，并按 `x.xxCNY+x.xxUSD` 显示。
 - 创建聊天分支时继承原会话文件夹；新聊天跟随当前所选文件夹。
+- 创建聊天分支时，在原标题后先加一个空格再加编号，如 `聊天 (1)`；若标题重复则编号递增（`聊天 (2)` 等）。
 - 聊天消息显示本地附件前检查文件是否仍存在；缺失的图片、文档、音频和视频左侧以红色小字标注“附件已被删除”。
 - 消息数据库中的本地附件统一使用当前生产端生成的标准 `file:///…` URI；正常读取、统计、OCR、复制和清理链路不再兼容不会被写入数据库的旧式 `file:/…`，备份导入重写仍可识别旧 URI 并转换为当前格式。
 - 长按模型选择面板中的模型时，按压反馈覆盖整张描边卡片，不再只覆盖中间内容区域。长按聊天页模型选择项会直接进入所属提供商的模型页，滚动到对应模型并打开该模型的编辑面板。
@@ -521,6 +522,7 @@
 - 紧凑数字/密码输入框的填充容器色由 `surfaceContainerHighest` 改为 `surfaceContainer`。
 - “聊天文件”页文件卡片底部的操作按钮条（引用/删除）背景由 `surfaceContainerHighest` 改为 `surfaceContainer`。
 - 聊天消息三点菜单里的按钮背景色由 `surfaceContainerHighest` 改为 `surfaceContainerHigh`。
+- 消息三点菜单里「翻译」打开的语言选择面板中，每个语言选项卡片的背景色由默认的 `surfaceContainerHighest` 改为 `surfaceContainerHigh`。
 - 思考块背景色由 `surfaceContainerHigh` 改为 `surfaceContainer`。
 - 卡片填充色（`CustomColors.cardColorsOnSurfaceContainer`，用于统计、翻译、图像生成、工作区文件、助手记忆与提示词等卡片）由 `surfaceBright` 改为 `surfaceContainerLow`。
 - 默认头像（`Avatar.Dummy`）背景色由 `secondaryContainer` 改为 `primaryContainer`。

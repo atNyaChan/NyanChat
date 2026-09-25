@@ -112,7 +112,10 @@ fun LanguageSelectionDialog(
                         onClick = {
                             onLanguageSelected(language)
                         },
-                        shape = MaterialTheme.shapes.medium
+                        shape = MaterialTheme.shapes.medium,
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                        )
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
