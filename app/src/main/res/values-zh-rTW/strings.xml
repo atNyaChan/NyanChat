@@ -294,7 +294,6 @@
   <string name="chat_page_menu_image_generation">圖像生成</string>
   <string name="chat_page_message_count">%d 則訊息</string>
   <string name="chat_page_new_chat">新聊天</string>
-  <string name="chat_page_new_message">新訊息</string>
   <string name="chat_page_nickname_placeholder">請輸入暱稱</string>
   <string name="chat_page_no_conversations">沒有對話記錄</string>
   <string name="chat_page_scroll_to_bottom">滾動到底部</string>
@@ -355,7 +354,6 @@
   <string name="favorite_page_no_favorites">尚無收藏</string>
   <string name="favorite_page_removed">已移除最愛</string>
   <string name="favorite_page_title">收藏</string>
-  <string name="favorite_page_untitled_conversation">未命名對話</string>
   <string name="history_page_search">搜尋</string>
   <string name="history_page_undo">撤銷</string>
   <string name="imggen_page_cancel_generation_message">您確定要取消圖片生成嗎？</string>
@@ -563,7 +561,6 @@
   <string name="search_page_no_deleted_models">沒有已刪除的模型</string>
   <string name="search_page_deleted_model_selected">已刪除模型：%1$s</string>
   <string name="search_page_manually_edited_selected">手動編輯的訊息</string>
-  <string name="search_page_untitled">無標題</string>
   <string name="search_picker_title">搜尋設定</string>
   <string name="send">發送</string>
   <string name="setting_asr_configure_api_key">API 金鑰</string>
@@ -1267,6 +1264,7 @@
   <string name="conversation_cancel_selection">取消多選</string>
   <string name="conversation_multi_select">多選</string>
   <string name="conversation_move_to">移動到…</string>
+  <string name="conversation_untitled">（沒有名字的聊天）</string>
   <string name="translator_page_error">翻譯失敗</string>
   <string name="translator_page_paste">貼上文字</string>
   <string name="translator_page_copy_result">複製翻譯結果</string>

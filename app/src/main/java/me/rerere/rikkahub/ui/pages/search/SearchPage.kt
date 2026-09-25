@@ -650,7 +650,7 @@ private fun SearchResultItem(
     onClick: () -> Unit,
 ) {
     val highlightColor = MaterialTheme.colorScheme.tertiaryContainer
-    val untitled = stringResource(R.string.search_page_untitled)
+    val untitled = stringResource(R.string.conversation_untitled)
     val snippetText = buildAnnotatedString {
         val snippet = if (limitToFiveSourceLines) {
             result.snippet.split('\n').take(5).joinToString("\n")

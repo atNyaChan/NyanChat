@@ -294,7 +294,6 @@
   <string name="chat_page_menu_image_generation">توليد الصور</string>
   <string name="chat_page_message_count">%d رسالة</string>
   <string name="chat_page_new_chat">دردشة جديدة</string>
-  <string name="chat_page_new_message">رسالة جديدة</string>
   <string name="chat_page_nickname_placeholder">يرجى إدخال الاسم المستعار</string>
   <string name="chat_page_no_conversations">لا توجد محادثات</string>
   <string name="chat_page_scroll_to_bottom">التمرير إلى الأسفل</string>
@@ -355,7 +354,6 @@
   <string name="favorite_page_no_favorites">لا توجد مفضلات بعد</string>
   <string name="favorite_page_removed">تمت إزالة المفضلة</string>
   <string name="favorite_page_title">المفضلة</string>
-  <string name="favorite_page_untitled_conversation">محادثة بدون عنوان</string>
   <string name="history_page_search">بحث</string>
   <string name="history_page_undo">تراجع</string>
   <string name="imggen_page_cancel_generation_message">هل أنت متأكد من أنك تريد إلغاء توليد الصورة؟</string>
@@ -563,7 +561,6 @@
   <string name="search_page_no_deleted_models">لا توجد نماذج محذوفة</string>
   <string name="search_page_deleted_model_selected">النموذج المحذوف: %1$s</string>
   <string name="search_page_manually_edited_selected">الرسائل المحرّرة يدويًا</string>
-  <string name="search_page_untitled">بدون عنوان</string>
   <string name="search_picker_title">إعدادات البحث</string>
   <string name="send">إرسال</string>
   <string name="setting_asr_configure_api_key">مفتاح API</string>
@@ -1267,6 +1264,7 @@
   <string name="conversation_cancel_selection">إلغاء التحديد</string>
   <string name="conversation_multi_select">تحديد متعدد</string>
   <string name="conversation_move_to">نقل إلى…</string>
+  <string name="conversation_untitled">(دردشة بلا اسم)</string>
   <string name="translator_page_error">فشلت الترجمة</string>
   <string name="translator_page_paste">لصق النص</string>
   <string name="translator_page_copy_result">نسخ الترجمة</string>

@@ -294,7 +294,6 @@
   <string name="chat_page_menu_image_generation">图像生成</string>
   <string name="chat_page_message_count">%d 条消息</string>
   <string name="chat_page_new_chat">新聊天</string>
-  <string name="chat_page_new_message">新消息</string>
   <string name="chat_page_nickname_placeholder">请输入昵称</string>
   <string name="chat_page_no_conversations">没有对话记录</string>
   <string name="chat_page_scroll_to_bottom">滚动到底部</string>
@@ -355,7 +354,6 @@
   <string name="favorite_page_no_favorites">暂无收藏</string>
   <string name="favorite_page_removed">收藏已移除</string>
   <string name="favorite_page_title">收藏</string>
-  <string name="favorite_page_untitled_conversation">未命名对话</string>
   <string name="history_page_search">搜索</string>
   <string name="history_page_undo">撤销</string>
   <string name="imggen_page_cancel_generation_message">您确定要取消图片生成吗？</string>
@@ -563,7 +561,6 @@
   <string name="search_page_no_deleted_models">没有已被删除的模型</string>
   <string name="search_page_deleted_model_selected">已删除模型：%1$s</string>
   <string name="search_page_manually_edited_selected">手动编辑的消息</string>
-  <string name="search_page_untitled">无标题</string>
   <string name="search_picker_title">搜索设置</string>
   <string name="send">发送</string>
   <string name="setting_asr_configure_api_key">API 密钥</string>
@@ -1267,6 +1264,7 @@
   <string name="conversation_cancel_selection">取消多选</string>
   <string name="conversation_multi_select">多选</string>
   <string name="conversation_move_to">移动到…</string>
+  <string name="conversation_untitled">（没有名字的聊天）</string>
   <string name="translator_page_error">翻译失败</string>
   <string name="translator_page_paste">粘贴文本</string>
   <string name="translator_page_copy_result">复制翻译结果</string>

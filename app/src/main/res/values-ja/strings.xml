@@ -294,7 +294,6 @@
   <string name="chat_page_menu_image_generation">画像生成</string>
   <string name="chat_page_message_count">%d件のメッセージ</string>
   <string name="chat_page_new_chat">新しいチャット</string>
-  <string name="chat_page_new_message">新しいメッセージ</string>
   <string name="chat_page_nickname_placeholder">ニックネームを入力してください</string>
   <string name="chat_page_no_conversations">会話がありません</string>
   <string name="chat_page_scroll_to_bottom">一番下へスクロール</string>
@@ -355,7 +354,6 @@
   <string name="favorite_page_no_favorites">お気に入りはまだありません</string>
   <string name="favorite_page_removed">お気に入りを削除しました</string>
   <string name="favorite_page_title">お気に入り</string>
-  <string name="favorite_page_untitled_conversation">無題の会話</string>
   <string name="history_page_search">検索</string>
   <string name="history_page_undo">元に戻す</string>
   <string name="imggen_page_cancel_generation_message">画像生成をキャンセルしますか？</string>
@@ -563,7 +561,6 @@
   <string name="search_page_no_deleted_models">削除済みモデルはありません</string>
   <string name="search_page_deleted_model_selected">削除済みモデル：%1$s</string>
   <string name="search_page_manually_edited_selected">手動編集されたメッセージ</string>
-  <string name="search_page_untitled">無題</string>
   <string name="search_picker_title">検索設定</string>
   <string name="send">送信</string>
   <string name="setting_asr_configure_api_key">APIキー</string>
@@ -1267,6 +1264,7 @@
   <string name="conversation_cancel_selection">複数選択を解除</string>
   <string name="conversation_multi_select">複数選択</string>
   <string name="conversation_move_to">移動先…</string>
+  <string name="conversation_untitled">（名前のないチャット）</string>
   <string name="translator_page_error">翻訳に失敗しました</string>
   <string name="translator_page_paste">テキストを貼り付け</string>
   <string name="translator_page_copy_result">翻訳結果をコピー</string>

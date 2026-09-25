@@ -324,8 +324,12 @@ class ChatService(
                         id = conversationId,
                         assistantId = assistant.id,
                         newConversation = true,
-                    ).copy(folderId = folderId)
-                        .updateCurrentMessages(assistant.presetMessages)
+                    ).copy(
+                        // 新聊天在发送消息前就把默认标题写入会话数据，
+                        // 而不是依赖标题栏的空标题兜底渲染
+                        title = defaultConversationTitle(),
+                        folderId = folderId,
+                    ).updateCurrentMessages(assistant.presetMessages)
                 }
             }
             // 保留 fork 行为：新建的对话立即落库，返回活跃会话时不覆盖内存态。
@@ -451,8 +455,9 @@ class ChatService(
                     ?: settings.getCurrentAssistant()
                 val processedContent = preprocessUserInputParts(content, assistant)
 
-                // 添加消息到列表
+                // 兜底：若会话标题仍为空则写入默认标题，避免标题模型返回前显示空标题
                 val newConversation = currentConversation.copy(
+                    title = currentConversation.title.ifBlank { defaultConversationTitle() },
                     messageNodes = currentConversation.messageNodes + UIMessage(
                         role = MessageRole.USER,
                         parts = processedContent,
@@ -1077,6 +1082,13 @@ class ChatService(
 
     // ---- 生成标题 ----
 
+    /** 新建对话的默认标题（本地化“新聊天”），也用于判断标题是否仍待标题模型生成。 */
+    private fun defaultConversationTitle(): String =
+        context.getString(R.string.chat_page_new_chat)
+
+    private fun Conversation.hasPendingGeneratedTitle(): Boolean =
+        title.isBlank() || title == defaultConversationTitle()
+
     suspend fun generateTitle(
         conversationId: Uuid,
         conversation: Conversation,
@@ -1084,7 +1096,7 @@ class ChatService(
     ) = withContext(Dispatchers.IO) {
         val shouldGenerate = when {
             force -> true
-            conversation.title.isBlank() -> true
+            conversation.hasPendingGeneratedTitle() -> true
             else -> false
         }
         if (!shouldGenerate) return@withContext
@@ -1407,7 +1419,9 @@ class ChatService(
         mutex.withLock {
             val conversation = sessionManager.get(conversationId)?.state?.value ?: return@withLock
             val exists = conversationRepo.existsConversationById(conversation.id)
-            if (!exists && conversation.title.isBlank() && conversation.messageNodes.isEmpty()) {
+            // 只按是否有消息判断是否落库：新建对话会预置默认标题，但不代表产生了内容，
+            // 避免空的“新聊天”出现在会话列表里。
+            if (!exists && conversation.messageNodes.isEmpty()) {
                 return@withLock
             }
             if (!exists) {

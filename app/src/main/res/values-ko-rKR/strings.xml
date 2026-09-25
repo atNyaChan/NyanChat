@@ -294,7 +294,6 @@
   <string name="chat_page_menu_image_generation">이미지 생성</string>
   <string name="chat_page_message_count">%d개 메시지</string>
   <string name="chat_page_new_chat">새 채팅</string>
-  <string name="chat_page_new_message">새 메시지</string>
   <string name="chat_page_nickname_placeholder">이름을 입력하세요</string>
   <string name="chat_page_no_conversations">대화 없음</string>
   <string name="chat_page_scroll_to_bottom">맨 아래로 스크롤</string>
@@ -355,7 +354,6 @@
   <string name="favorite_page_no_favorites">즐겨찾기 없음</string>
   <string name="favorite_page_removed">즐겨찾기에서 제거됨</string>
   <string name="favorite_page_title">즐겨찾기</string>
-  <string name="favorite_page_untitled_conversation">제목 없는 대화</string>
   <string name="history_page_search">검색</string>
   <string name="history_page_undo">실행 취소</string>
   <string name="imggen_page_cancel_generation_message">이미지 생성을 취소하시겠습니까?</string>
@@ -563,7 +561,6 @@
   <string name="search_page_no_deleted_models">삭제된 모델이 없습니다</string>
   <string name="search_page_deleted_model_selected">삭제된 모델: %1$s</string>
   <string name="search_page_manually_edited_selected">수동 편집 메시지</string>
-  <string name="search_page_untitled">제목 없음</string>
   <string name="search_picker_title">검색 설정</string>
   <string name="send">전송</string>
   <string name="setting_asr_configure_api_key">API 키</string>
@@ -1267,6 +1264,7 @@
   <string name="conversation_cancel_selection">다중 선택 취소</string>
   <string name="conversation_multi_select">다중 선택</string>
   <string name="conversation_move_to">이동…</string>
+  <string name="conversation_untitled">(이름 없는 채팅)</string>
   <string name="translator_page_error">번역 실패</string>
   <string name="translator_page_paste">텍스트 붙여넣기</string>
   <string name="translator_page_copy_result">번역 결과 복사</string>

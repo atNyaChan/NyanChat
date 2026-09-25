@@ -341,7 +341,7 @@ fun ChatDrawerContent(
                         Text(
                             stringResource(
                                 R.string.chat_page_delete_conversation_confirm,
-                                conversation.title.ifBlank { stringResource(R.string.chat_page_new_message) }
+                                conversation.title.ifBlank { stringResource(R.string.conversation_untitled) }
                             )
                         )
                     },
@@ -802,8 +802,8 @@ fun ChatDrawerContent(
                             R.string.chat_page_confirm_single_move_desc,
                             conversationsToMove.firstOrNull()
                                 ?.title
-                                ?.ifBlank { stringResource(R.string.chat_page_new_message) }
-                                ?: stringResource(R.string.chat_page_new_message),
+                                ?.ifBlank { stringResource(R.string.conversation_untitled) }
+                                ?: stringResource(R.string.conversation_untitled),
                             target.label,
                         )
                     }

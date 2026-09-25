@@ -962,7 +962,7 @@ private fun TopBar(
                     val assistant = settings.getCurrentAssistant()
                     val model = settings.getCurrentChatModel()
                     Text(
-                        text = conversation.title.ifBlank { stringResource(R.string.chat_page_new_chat) },
+                        text = conversation.title.ifBlank { stringResource(R.string.conversation_untitled) },
                         maxLines = 1,
                         style = MaterialTheme.typography.bodyMedium,
                         overflow = TextOverflow.Ellipsis,

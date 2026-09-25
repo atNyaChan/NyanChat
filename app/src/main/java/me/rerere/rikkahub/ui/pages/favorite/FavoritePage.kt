@@ -198,7 +198,7 @@ private fun FavoriteCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(
-                    text = item.conversationTitle.ifBlank { stringResource(R.string.favorite_page_untitled_conversation) },
+                    text = item.conversationTitle.ifBlank { stringResource(R.string.conversation_untitled) },
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.titleMedium,

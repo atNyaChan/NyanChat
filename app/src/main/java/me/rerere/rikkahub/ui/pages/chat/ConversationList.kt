@@ -408,7 +408,7 @@ private fun ConversationItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
             Text(
-                text = conversation.title.ifBlank { stringResource(id = R.string.chat_page_new_message) },
+                text = conversation.title.ifBlank { stringResource(id = R.string.conversation_untitled) },
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

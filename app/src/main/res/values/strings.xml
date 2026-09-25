@@ -294,7 +294,6 @@
   <string name="chat_page_menu_image_generation">Image Generation</string>
   <string name="chat_page_message_count">%d messages</string>
   <string name="chat_page_new_chat">New Chat</string>
-  <string name="chat_page_new_message">New message</string>
   <string name="chat_page_nickname_placeholder">Please enter nickname</string>
   <string name="chat_page_no_conversations">No conversations</string>
   <string name="chat_page_scroll_to_bottom">Scroll to bottom</string>
@@ -355,7 +354,6 @@
   <string name="favorite_page_no_favorites">No favorites yet</string>
   <string name="favorite_page_removed">Favorite removed</string>
   <string name="favorite_page_title">Favorites</string>
-  <string name="favorite_page_untitled_conversation">Untitled Conversation</string>
   <string name="history_page_search">Search</string>
   <string name="history_page_undo">Undo</string>
   <string name="imggen_page_cancel_generation_message">Are you sure you want to cancel image generation?</string>
@@ -563,7 +561,6 @@
   <string name="search_page_no_deleted_models">No deleted models</string>
   <string name="search_page_deleted_model_selected">Deleted model: %1$s</string>
   <string name="search_page_manually_edited_selected">Manually edited messages</string>
-  <string name="search_page_untitled">Untitled</string>
   <string name="search_picker_title">Search Settings</string>
   <string name="send">Send</string>
   <string name="setting_asr_configure_api_key">API Key</string>
@@ -1267,6 +1264,7 @@
   <string name="conversation_cancel_selection">Cancel selection</string>
   <string name="conversation_multi_select">Select multiple</string>
   <string name="conversation_move_to">Move to…</string>
+  <string name="conversation_untitled">(Unnamed Chat)</string>
   <string name="translator_page_error">Translation failed</string>
   <string name="translator_page_paste">Paste text</string>
   <string name="translator_page_copy_result">Copy translation</string>

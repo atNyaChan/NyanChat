@@ -294,7 +294,6 @@
   <string name="chat_page_menu_image_generation">Генерация изображений</string>
   <string name="chat_page_message_count">%d сообщений</string>
   <string name="chat_page_new_chat">Новый чат</string>
-  <string name="chat_page_new_message">Новое сообщение</string>
   <string name="chat_page_nickname_placeholder">Введите никнейм</string>
   <string name="chat_page_no_conversations">Нет бесед</string>
   <string name="chat_page_scroll_to_bottom">Прокрутить вниз</string>
@@ -355,7 +354,6 @@
   <string name="favorite_page_no_favorites">Пока нет избранного</string>
   <string name="favorite_page_removed">Избранное удалено</string>
   <string name="favorite_page_title">Избранное</string>
-  <string name="favorite_page_untitled_conversation">Безымянный разговор</string>
   <string name="history_page_search">Поиск</string>
   <string name="history_page_undo">Отменить</string>
   <string name="imggen_page_cancel_generation_message">Вы уверены, что хотите отменить генерацию изображения?</string>
@@ -563,7 +561,6 @@
   <string name="search_page_no_deleted_models">Удалённых моделей нет</string>
   <string name="search_page_deleted_model_selected">Удалённая модель: %1$s</string>
   <string name="search_page_manually_edited_selected">Сообщения, изменённые вручную</string>
-  <string name="search_page_untitled">Без названия</string>
   <string name="search_picker_title">Поиск настроек</string>
   <string name="send">Отправить</string>
   <string name="setting_asr_configure_api_key">Ключ API</string>
@@ -1267,6 +1264,7 @@
   <string name="conversation_cancel_selection">Отменить выбор</string>
   <string name="conversation_multi_select">Выбрать несколько</string>
   <string name="conversation_move_to">Переместить…</string>
+  <string name="conversation_untitled">(Чат без названия)</string>
   <string name="translator_page_error">Ошибка перевода</string>
   <string name="translator_page_paste">Вставить текст</string>
   <string name="translator_page_copy_result">Копировать перевод</string>
