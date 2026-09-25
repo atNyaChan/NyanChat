@@ -269,7 +269,7 @@ class BackupManager(
                 runCatching { RestoredAttachmentUrlRewriter.rewrite(context, json) }
                     .onFailure { Log.w(TAG, "Failed to rewrite restored attachment URLs", it) }
                 if (needsWorkspaceReset) {
-                    runCatching { RestoredZipWorkspaceStatusResetter.resetAfterCompatibleZipRestore(context) }
+                    runCatching { RestoredWorkspaceStatusResetter.resetAfterRestore(context) }
                         .onFailure { Log.w(TAG, "Failed to reset workspace status after restore", it) }
                 }
             }
