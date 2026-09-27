@@ -54,6 +54,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.dokar.sonner.ToastType
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
+import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Add01
 import me.rerere.hugeicons.stroke.Download01
@@ -174,11 +175,11 @@ fun SkillsPage() {
             }
 
             items(skills, key = { it.skillDir.absolutePath }) { skill ->
-                ReorderableItem(reorderableState, key = skill.skillDir.absolutePath) {
+                ReorderableItem(reorderableState, key = skill.skillDir.absolutePath) { isDragging ->
                     SkillCard(
                         skill = skill,
                         onClick = { navController.navigate(Screen.SkillDetail(skill.name)) },
-                        modifier = Modifier.longPressDraggableHandle(),
+                        modifier = longPressReorder(isDragging),
                     )
                 }
             }

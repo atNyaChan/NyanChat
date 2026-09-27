@@ -39,10 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
@@ -55,6 +52,7 @@ import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ai.AssistantListItemContent
 import me.rerere.rikkahub.ui.components.ui.FormItem
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
+import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.hooks.EditState
 import me.rerere.rikkahub.ui.hooks.EditStateContent
@@ -132,7 +130,6 @@ fun AssistantPage(vm: AssistantVM = koinViewModel()) {
                     vm.updateSettings(settings.copy(assistants = newAssistants))
                 }
             }
-            val haptic = LocalHapticFeedback.current
 
             // 标签过滤器
             AssistantTagsFilterRow(
@@ -164,23 +161,9 @@ fun AssistantPage(vm: AssistantVM = koinViewModel()) {
                                 navController.navigate(Screen.AssistantDetail(id = assistant.id.toString()))
                             },
                             modifier = Modifier
-                                .scale(if (isDragging) 0.95f else 1f)
                                 .fillMaxWidth()
                                 .animateItem()
-                                .then(
-                                    if (!isFiltering) {
-                                        Modifier.longPressDraggableHandle(
-                                            onDragStarted = {
-                                                haptic.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
-                                            },
-                                            onDragStopped = {
-                                                haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
-                                            }
-                                        )
-                                    } else {
-                                        Modifier
-                                    }
-                                )
+                                .then(longPressReorder(isDragging, enabled = !isFiltering))
                         )
                     }
                 }
@@ -198,7 +181,6 @@ private fun AssistantTagsFilterRow(
     selectedTagIds: Set<Uuid>,
     onUpdateSelectedTagIds: (Set<Uuid>) -> Unit
 ) {
-    val haptic = LocalHapticFeedback.current
     if (settings.assistantTags.isNotEmpty()) {
         val tagsListState = rememberLazyListState()
         val tagsReorderableState = rememberReorderableLazyListState(tagsListState) { from, to ->
@@ -236,16 +218,7 @@ private fun AssistantTagsFilterRow(
                             },
                             selected = tag.id in selectedTagIds,
                             shape = RoundedCornerShape(50),
-                            modifier = Modifier
-                                .scale(if (isDragging) 0.95f else 1f)
-                                .longPressDraggableHandle(
-                                    onDragStarted = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
-                                    },
-                                    onDragStopped = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
-                                    },
-                                )
+                            modifier = longPressReorder(isDragging)
                         )
                     }
                 }

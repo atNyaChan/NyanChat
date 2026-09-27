@@ -45,6 +45,7 @@ import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
 import androidx.compose.ui.res.stringResource
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
+import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.theme.CustomColors
@@ -112,11 +113,11 @@ fun WorkspacePage(vm: WorkspaceVM = koinViewModel()) {
             }
 
             items(orderedWorkspaces, key = { it.id }) { workspace ->
-                ReorderableItem(reorderableState, key = workspace.id) {
+                ReorderableItem(reorderableState, key = workspace.id) { isDragging ->
                     WorkspaceCard(
                         workspace = workspace,
                         onOpen = { navController.navigate(Screen.WorkspaceDetail(workspace.id)) },
-                        modifier = Modifier.longPressDraggableHandle(),
+                        modifier = longPressReorder(isDragging),
                     )
                 }
             }

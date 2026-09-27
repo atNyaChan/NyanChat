@@ -53,6 +53,7 @@ import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.ExportDialog
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
+import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.plus
 import org.koin.androidx.compose.koinViewModel
@@ -126,11 +127,11 @@ fun QuickMessagesPage(vm: QuickMessagesVM = koinViewModel()) {
             }
 
             items(settings.quickMessages, key = { it.id }) { quickMessage ->
-                ReorderableItem(reorderableState, key = quickMessage.id) {
+                ReorderableItem(reorderableState, key = quickMessage.id) { isDragging ->
                     QuickMessageCard(
                         quickMessage = quickMessage,
                         onEdit = { editTarget = quickMessage },
-                        modifier = Modifier.longPressDraggableHandle(),
+                        modifier = longPressReorder(isDragging),
                     )
                 }
             }

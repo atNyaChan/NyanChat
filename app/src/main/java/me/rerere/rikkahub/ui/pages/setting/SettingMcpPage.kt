@@ -100,6 +100,7 @@ import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.rikkahub.ui.components.ui.Switch
 import me.rerere.rikkahub.ui.components.ui.SwitchSize
 import me.rerere.rikkahub.ui.components.ui.Tag
@@ -209,7 +210,7 @@ fun SettingMcpPage(vm: SettingVM = koinViewModel()) {
                 )
             ) {
                 items(mcpConfigs, key = { it.id }) { mcpConfig ->
-                    ReorderableItem(reorderableState, key = mcpConfig.id) {
+                    ReorderableItem(reorderableState, key = mcpConfig.id) { isDragging ->
                         McpServerItem(
                             item = mcpConfig,
                             onEdit = {
@@ -217,7 +218,7 @@ fun SettingMcpPage(vm: SettingVM = koinViewModel()) {
                             },
                             modifier = Modifier
                                 .animateItem()
-                                .longPressDraggableHandle()
+                                .then(longPressReorder(isDragging))
                         )
                     }
                 }

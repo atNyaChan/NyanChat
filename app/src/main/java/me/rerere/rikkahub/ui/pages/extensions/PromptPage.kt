@@ -63,7 +63,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -86,6 +85,7 @@ import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.ExportDialog
 import me.rerere.rikkahub.ui.components.ui.FormItem
+import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.components.ui.Tag
@@ -235,14 +235,7 @@ private fun ModeInjectionTab(
                     ) { isDragging ->
                         ModeInjectionCard(
                             injection = injection,
-                            modifier = Modifier
-                                .longPressDraggableHandle()
-                                .graphicsLayer {
-                                    if (isDragging) {
-                                        scaleX = 1.05f
-                                        scaleY = 1.05f
-                                    }
-                            },
+                            modifier = longPressReorder(isDragging),
                             onEdit = { editState.open(injection) },
                         )
                     }
@@ -704,14 +697,7 @@ private fun LorebookTab(
                     ) { isDragging ->
                         LorebookCard(
                             book = book,
-                            modifier = Modifier
-                                .longPressDraggableHandle()
-                                .graphicsLayer {
-                                    if (isDragging) {
-                                        scaleX = 1.05f
-                                        scaleY = 1.05f
-                                    }
-                            },
+                            modifier = longPressReorder(isDragging),
                             onEdit = { editState.open(book) },
                         )
                     }
@@ -955,14 +941,7 @@ private fun LorebookEditSheet(
                             RegexInjectionEntryCard(
                                 entry = entry,
                                 onEdit = { entryEditState.open(entry) },
-                                modifier = Modifier
-                                    .longPressDraggableHandle()
-                                    .graphicsLayer {
-                                        if (isDragging) {
-                                            scaleX = 1.05f
-                                            scaleY = 1.05f
-                                        }
-                                    },
+                                modifier = longPressReorder(isDragging),
                             )
                         }
                     }

@@ -51,7 +51,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -64,6 +63,7 @@ import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.rikkahub.ui.context.LocalTTSState
 import me.rerere.rikkahub.ui.pages.setting.components.ASRProviderConfigure
 import me.rerere.rikkahub.ui.pages.setting.components.TTSProviderConfigure
@@ -417,9 +417,8 @@ private fun TTSProviderList(
             ReorderableItem(reorderableState, key = provider.id) { isDragging ->
                 TTSProviderItem(
                     modifier = Modifier
-                        .scale(if (isDragging) 0.95f else 1f)
                         .fillMaxWidth()
-                        .longPressDraggableHandle(),
+                        .then(longPressReorder(isDragging)),
                     provider = provider,
                     isSelected = settings.selectedTTSProviderId == provider.id,
                     onSelect = {
@@ -462,9 +461,8 @@ private fun ASRProviderList(
             ) { isDragging ->
                 ASRProviderItem(
                     modifier = Modifier
-                        .scale(if (isDragging) 0.95f else 1f)
                         .fillMaxWidth()
-                        .longPressDraggableHandle(),
+                        .then(longPressReorder(isDragging)),
                     provider = provider,
                     isSelected = settings.selectedASRProviderId == provider.id,
                     onSelect = {

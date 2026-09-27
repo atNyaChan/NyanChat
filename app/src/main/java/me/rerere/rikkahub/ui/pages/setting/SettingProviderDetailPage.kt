@@ -65,7 +65,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
@@ -106,6 +105,7 @@ import me.rerere.rikkahub.ui.components.ai.ModelTypeTag
 import me.rerere.rikkahub.ui.components.ai.ProviderBalanceText
 import me.rerere.rikkahub.ui.components.ai.rememberModelListState
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
+import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupScope
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
@@ -377,17 +377,7 @@ fun SettingProviderDetailSheet(
                                         }
                                     }
                                 },
-                                modifier = Modifier
-                                    .longPressDraggableHandle()
-                                    .graphicsLayer {
-                                        if (isDragging) {
-                                            scaleX = 1.05f
-                                            scaleY = 1.05f
-                                        } else {
-                                            scaleX = 1f
-                                            scaleY = 1f
-                                        }
-                                    },
+                                modifier = longPressReorder(isDragging),
                             )
                         }
                     }
