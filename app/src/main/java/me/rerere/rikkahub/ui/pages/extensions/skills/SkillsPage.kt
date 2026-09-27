@@ -19,6 +19,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.LocalTextStyle
@@ -46,6 +47,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.Lifecycle
@@ -54,12 +56,15 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.dokar.sonner.ToastType
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
+import me.rerere.rikkahub.ui.components.ui.SearchFieldShape
 import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Add01
+import me.rerere.hugeicons.stroke.Cancel01
 import me.rerere.hugeicons.stroke.Download01
 import me.rerere.hugeicons.stroke.FileImport
 import me.rerere.hugeicons.stroke.Puzzle
+import me.rerere.hugeicons.stroke.Search01
 import me.rerere.rikkahub.data.files.SkillFrontmatterParser
 import me.rerere.rikkahub.data.files.SkillMetadata
 import me.rerere.rikkahub.Screen
@@ -86,6 +91,17 @@ fun SkillsPage() {
     var showImportSheet by rememberSaveable { mutableStateOf(false) }
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
     var showImportDialog by rememberSaveable { mutableStateOf(false) }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+    val filteredSkills = remember(skills, searchQuery) {
+        if (searchQuery.isBlank()) {
+            skills
+        } else {
+            skills.filter { skill ->
+                skill.name.contains(searchQuery, ignoreCase = true) ||
+                    skill.description.contains(searchQuery, ignoreCase = true)
+            }
+        }
+    }
     val lazyListState = rememberLazyListState()
     DisposableEffect(lifecycleOwner, vm) {
         val observer = LifecycleEventObserver { _, event ->
@@ -97,8 +113,16 @@ fun SkillsPage() {
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
+        // 列表头部有搜索框等非技能项，按 key 定位而不是用 index，避免拖拽错位
+        val fromSkill = skills.firstOrNull { it.skillDir.absolutePath == from.key }
+            ?: return@rememberReorderableLazyListState
+        val toSkill = skills.firstOrNull { it.skillDir.absolutePath == to.key }
+            ?: return@rememberReorderableLazyListState
+        val fromIndex = skills.indexOf(fromSkill)
+        val toIndex = skills.indexOf(toSkill)
+        if (fromIndex < 0 || toIndex < 0) return@rememberReorderableLazyListState
         vm.reorderSkills(skills.toMutableList().apply {
-            add(to.index, removeAt(from.index))
+            add(toIndex, removeAt(fromIndex))
         })
     }
     val fileImportLauncher = rememberLauncherForActivityResult(
@@ -174,12 +198,57 @@ fun SkillsPage() {
                 }
             }
 
-            items(skills, key = { it.skillDir.absolutePath }) { skill ->
-                ReorderableItem(reorderableState, key = skill.skillDir.absolutePath) { isDragging ->
+            if (skills.isNotEmpty()) {
+                item(key = "search") {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text(stringResource(R.string.skills_page_search_placeholder)) },
+                        leadingIcon = {
+                            Icon(HugeIcons.Search01, contentDescription = null)
+                        },
+                        trailingIcon = {
+                            if (searchQuery.isNotEmpty()) {
+                                IconButton(onClick = { searchQuery = "" }) {
+                                    Icon(HugeIcons.Cancel01, contentDescription = "Clear")
+                                }
+                            }
+                        },
+                        singleLine = true,
+                        shape = SearchFieldShape,
+                    )
+                }
+            }
+
+            if (skills.isNotEmpty() && filteredSkills.isEmpty()) {
+                item(key = "no_result") {
+                    Text(
+                        text = stringResource(R.string.skills_page_search_no_result),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 32.dp),
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
+
+            items(filteredSkills, key = { it.skillDir.absolutePath }) { skill ->
+                // 搜索状态下禁用拖拽排序，避免筛选后的顺序与完整列表不一致
+                if (searchQuery.isBlank()) {
+                    ReorderableItem(reorderableState, key = skill.skillDir.absolutePath) { isDragging ->
+                        SkillCard(
+                            skill = skill,
+                            onClick = { navController.navigate(Screen.SkillDetail(skill.name)) },
+                            modifier = longPressReorder(isDragging),
+                        )
+                    }
+                } else {
                     SkillCard(
                         skill = skill,
                         onClick = { navController.navigate(Screen.SkillDetail(skill.name)) },
-                        modifier = longPressReorder(isDragging),
                     )
                 }
             }
@@ -262,7 +331,7 @@ private fun SkillCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, top = 8.dp, bottom = 8.dp, end = 4.dp),
+                .padding(start = 16.dp, top = 8.dp, bottom = 8.dp, end = if (skill.builtin) 16.dp else 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
@@ -287,6 +356,13 @@ private fun SkillCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                 )
+                if (skill.builtin) {
+                    Text(
+                        text = "Built-in",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.secondary,
+                    )
+                }
                 if (!skill.compatibility.isNullOrBlank()) {
                     Text(
                         text = skill.compatibility,

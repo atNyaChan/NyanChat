@@ -1448,5 +1448,10 @@
   <string name="chat_page_queue_edit_title">送信待ちメッセージを編集</string>
   <string name="chat_page_queue_paused_count">送信一時停止中 · %1$d</string>
   <string name="chat_page_queue_pending_count">送信待ち · %1$d</string>
+  <string name="skills_page_search_placeholder">スキルを検索</string>
+  <string name="skills_page_search_no_result">一致するスキルがありません</string>
+  <string name="error_skill_github_rate_limit">GitHub API のリクエスト上限に達しました。しばらくしてから再試行してください</string>
+  <string name="error_skill_builtin_read_only">組み込みスキルは変更できません</string>
+  <string name="common_close">閉じる</string>
 </resources>
 

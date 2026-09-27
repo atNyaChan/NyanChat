@@ -75,6 +75,7 @@ fun SkillDetailPage(skillName: String) {
     LaunchedEffect(skillName) { vm.init(skillName) }
 
     val tree by vm.tree.collectAsStateWithLifecycle()
+    val readOnly by vm.readOnly.collectAsStateWithLifecycle()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val toaster = LocalToaster.current
     val navController = me.rerere.rikkahub.ui.context.LocalNavController.current
@@ -101,12 +102,14 @@ fun SkillDetailPage(skillName: String) {
                 title = { Text(skillName) },
                 navigationIcon = { BackButton() },
                 actions = {
-                    IconButton(onClick = { showDeleteSkillConfirm = true }) {
-                        Icon(
-                            Lucide.Trash2,
-                            contentDescription = stringResource(R.string.common_delete),
-                            tint = MaterialTheme.colorScheme.onSurface,
-                        )
+                    if (!readOnly) {
+                        IconButton(onClick = { showDeleteSkillConfirm = true }) {
+                            Icon(
+                                Lucide.Trash2,
+                                contentDescription = stringResource(R.string.common_delete),
+                                tint = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -115,7 +118,7 @@ fun SkillDetailPage(skillName: String) {
         },
         floatingActionButton = {
             AnimatedVisibility(
-                visible = fabVisible,
+                visible = fabVisible && !readOnly,
                 enter = fadeIn() + scaleIn(),
                 exit = fadeOut() + scaleOut(),
             ) {
@@ -136,6 +139,7 @@ fun SkillDetailPage(skillName: String) {
             FileTree(
                 nodes = tree,
                 depth = 0,
+                readOnly = readOnly,
                 onEdit = { editingFile = it },
                 onDelete = { deleteTarget = it },
             )
@@ -145,6 +149,7 @@ fun SkillDetailPage(skillName: String) {
     editingFile?.let { skillFile ->
         EditFileDialog(
             skillFile = skillFile,
+            readOnly = readOnly,
             initialContent = remember(skillFile.relativePath) { vm.readFile(skillFile) },
             onDismiss = { editingFile = null },
             onConfirm = { content ->
@@ -211,6 +216,7 @@ fun SkillDetailPage(skillName: String) {
 private fun FileTree(
     nodes: List<SkillFileNode>,
     depth: Int,
+    readOnly: Boolean,
     onEdit: (SkillFile) -> Unit,
     onDelete: (SkillFile) -> Unit,
 ) {
@@ -219,6 +225,7 @@ private fun FileTree(
             is SkillFileNode.FileNode -> FileItem(
                 skillFile = node.skillFile,
                 depth = depth,
+                readOnly = readOnly,
                 onEdit = { onEdit(node.skillFile) },
                 onDelete = { onDelete(node.skillFile) },
             )
@@ -226,6 +233,7 @@ private fun FileTree(
             is SkillFileNode.DirNode -> DirItem(
                 node = node,
                 depth = depth,
+                readOnly = readOnly,
                 onEdit = onEdit,
                 onDelete = onDelete,
             )
@@ -237,6 +245,7 @@ private fun FileTree(
 private fun FileItem(
     skillFile: SkillFile,
     depth: Int,
+    readOnly: Boolean,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -262,7 +271,7 @@ private fun FileItem(
                 tint = MaterialTheme.colorScheme.primary,
             )
             Text(
-                text = skillFile.file.name,
+                text = skillFile.name,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
                 ),
@@ -272,11 +281,11 @@ private fun FileItem(
                     .padding(start = 8.dp),
             )
             Text(
-                text = "${skillFile.file.length()} B",
+                text = "${skillFile.size} B",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            if (skillFile.relativePath != "SKILL.md") {
+            if (!readOnly && skillFile.relativePath != "SKILL.md") {
                 IconButton(onClick = onDelete, modifier = Modifier.size(36.dp)) {
                     Icon(
                         imageVector = Lucide.Trash2,
@@ -294,6 +303,7 @@ private fun FileItem(
 private fun DirItem(
     node: SkillFileNode.DirNode,
     depth: Int,
+    readOnly: Boolean,
     onEdit: (SkillFile) -> Unit,
     onDelete: (SkillFile) -> Unit,
 ) {
@@ -339,6 +349,7 @@ private fun DirItem(
                     FileTree(
                         nodes = node.children,
                         depth = depth + 1,
+                        readOnly = readOnly,
                         onEdit = onEdit,
                         onDelete = onDelete,
                     )
@@ -351,11 +362,12 @@ private fun DirItem(
 @Composable
 private fun EditFileDialog(
     skillFile: SkillFile,
+    readOnly: Boolean,
     initialContent: String,
     onDismiss: () -> Unit,
     onConfirm: (content: String) -> Unit,
 ) {
-    var content by rememberSaveable(skillFile.relativePath) { mutableStateOf(initialContent) }
+    var content by remember(skillFile.relativePath) { mutableStateOf(initialContent) }
 
     AlertDialog(
         containerColor = MaterialTheme.colorScheme.surface,
@@ -365,6 +377,7 @@ private fun EditFileDialog(
             OutlinedTextField(
                 value = content,
                 onValueChange = { content = it },
+                readOnly = readOnly,
                 label = { Text(stringResource(R.string.skill_detail_page_content)) },
                 minLines = 10,
                 maxLines = 20,
@@ -376,10 +389,16 @@ private fun EditFileDialog(
             )
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(content) }) { Text(stringResource(R.string.common_save)) }
+            if (readOnly) {
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_close)) }
+            } else {
+                TextButton(onClick = { onConfirm(content) }) { Text(stringResource(R.string.common_save)) }
+            }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) }
+            if (!readOnly) {
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) }
+            }
         },
     )
 }

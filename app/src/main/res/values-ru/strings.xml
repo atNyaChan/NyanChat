@@ -1448,5 +1448,10 @@
   <string name="chat_page_queue_edit_title">Редактировать сообщение в очереди</string>
   <string name="chat_page_queue_paused_count">Очередь приостановлена · %1$d</string>
   <string name="chat_page_queue_pending_count">В очереди · %1$d</string>
+  <string name="skills_page_search_placeholder">Поиск навыков</string>
+  <string name="skills_page_search_no_result">Нет подходящих навыков</string>
+  <string name="error_skill_github_rate_limit">Достигнут лимит запросов GitHub API, попробуйте позже</string>
+  <string name="error_skill_builtin_read_only">Встроенные навыки нельзя изменить</string>
+  <string name="common_close">Закрыть</string>
 </resources>
 

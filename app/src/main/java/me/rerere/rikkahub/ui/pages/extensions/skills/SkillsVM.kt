@@ -128,21 +128,22 @@ class SkillsVM(
                     return@launch
                 }
 
-                val skillMdContent = downloadText(skillMdEntry.second) ?: run {
+                val skillMdBytes = downloadBytes(skillMdEntry.second) ?: run {
                     withContext(Dispatchers.Main) { onResult(false, context.getString(R.string.error_skill_download_skill_md)) }
                     return@launch
                 }
 
-                val frontmatter = SkillFrontmatterParser.parse(skillMdContent)
+                val frontmatter = SkillFrontmatterParser.parse(skillMdBytes.toString(Charsets.UTF_8))
                 val name = frontmatter["name"]
                 if (name.isNullOrBlank()) {
                     withContext(Dispatchers.Main) { onResult(false, context.getString(R.string.error_skill_missing_name)) }
                     return@launch
                 }
 
-                val fileContents = LinkedHashMap<String, String>()
+                // 按字节下载保存，避免图片等二进制附属文件被当作 UTF-8 文本解码而损坏
+                val fileContents = LinkedHashMap<String, ByteArray>()
                 for ((relativePath, downloadUrl) in files) {
-                    val content = downloadText(downloadUrl)
+                    val content = if (relativePath == "SKILL.md") skillMdBytes else downloadBytes(downloadUrl)
                     if (content == null) {
                         withContext(Dispatchers.Main) { onResult(false, context.getString(R.string.error_skill_download_file, relativePath)) }
                         return@launch
@@ -150,7 +151,7 @@ class SkillsVM(
                     fileContents[relativePath] = content
                 }
 
-                val saved = skillManager.saveSkillFilesAtomically(name, fileContents)
+                val saved = skillManager.saveSkillFileBytesAtomically(name, fileContents)
                 if (!saved) {
                     withContext(Dispatchers.Main) { onResult(false, context.getString(R.string.common_error_save_failed)) }
                     return@launch
@@ -290,7 +291,7 @@ class SkillsVM(
         result: MutableList<Pair<String, String>>,
     ): Boolean {
         val apiUrl = "https://api.github.com/repos/$owner/$repo/contents/$dirPath?ref=$branch"
-        val json = downloadText(apiUrl) ?: return false
+        val json = downloadBytes(apiUrl)?.toString(Charsets.UTF_8) ?: return false
         val array = JSONArray(json)
         for (i in 0 until array.length()) {
             val item = array.getJSONObject(i)
@@ -334,14 +335,18 @@ class SkillsVM(
         return GitHubRepoInfo(owner, repo, branch, subPath)
     }
 
-    private fun downloadText(url: String): String? {
+    private fun downloadBytes(url: String): ByteArray? {
         val connection = URL(url).openConnection() as HttpURLConnection
         connection.connectTimeout = 10_000
         connection.readTimeout = 30_000
         connection.setRequestProperty("Accept", "application/vnd.github+json")
         return try {
-            if (connection.responseCode == 200) connection.inputStream.bufferedReader().readText()
-            else null
+            val code = connection.responseCode
+            // 未登录的 GitHub API 每小时仅 60 次，超限时给出明确提示而不是笼统的"读取失败"
+            if ((code == 403 || code == 429) && connection.getHeaderField("X-RateLimit-Remaining") == "0") {
+                error(context.getString(R.string.error_skill_github_rate_limit))
+            }
+            if (code == 200) connection.inputStream.use { it.readBytes() } else null
         } finally {
             connection.disconnect()
         }

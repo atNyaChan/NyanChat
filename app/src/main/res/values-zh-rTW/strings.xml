@@ -1448,5 +1448,10 @@
   <string name="chat_page_queue_edit_title">編輯佇列中的訊息</string>
   <string name="chat_page_queue_paused_count">佇列已暫停 · %1$d</string>
   <string name="chat_page_queue_pending_count">佇列中 · %1$d</string>
+  <string name="skills_page_search_placeholder">搜尋技能</string>
+  <string name="skills_page_search_no_result">找不到符合的技能</string>
+  <string name="error_skill_github_rate_limit">GitHub API 請求次數已達上限，請稍後再試</string>
+  <string name="error_skill_builtin_read_only">內建技能不可修改</string>
+  <string name="common_close">關閉</string>
 </resources>
 

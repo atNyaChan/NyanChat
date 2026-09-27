@@ -1448,5 +1448,10 @@
   <string name="chat_page_queue_edit_title">Edit queued message</string>
   <string name="chat_page_queue_paused_count">Queue paused · %1$d</string>
   <string name="chat_page_queue_pending_count">Queued · %1$d</string>
+  <string name="skills_page_search_placeholder">Search skills</string>
+  <string name="skills_page_search_no_result">No matching skills</string>
+  <string name="error_skill_github_rate_limit">GitHub API rate limit reached; please try again later</string>
+  <string name="error_skill_builtin_read_only">Built-in skills cannot be modified</string>
+  <string name="common_close">Close</string>
 </resources>
 

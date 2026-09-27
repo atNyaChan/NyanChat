@@ -42,7 +42,7 @@ fun Modifier.hazeBackgroundEffect(
         input = HazeInput.Sources(hazeState),
         style = GlassStyle.GlassMaterial3(
             containerColor = tintColor,
-            tint = tintColor.copy(alpha = 0.72f),
+            tint = tintColor.copy(alpha = 0.3f),
         ) {
             optics(
                 GlassDefaults.optics.copy(

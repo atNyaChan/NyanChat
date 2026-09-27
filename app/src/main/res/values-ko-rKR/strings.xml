@@ -1448,5 +1448,10 @@
   <string name="chat_page_queue_edit_title">대기 중인 메시지 편집</string>
   <string name="chat_page_queue_paused_count">대기열 일시 중지 · %1$d</string>
   <string name="chat_page_queue_pending_count">대기 중 · %1$d</string>
+  <string name="skills_page_search_placeholder">스킬 검색</string>
+  <string name="skills_page_search_no_result">일치하는 스킬 없음</string>
+  <string name="error_skill_github_rate_limit">GitHub API 요청 한도에 도달했습니다. 나중에 다시 시도해 주세요</string>
+  <string name="error_skill_builtin_read_only">내장 스킬은 수정할 수 없습니다</string>
+  <string name="common_close">닫기</string>
 </resources>
 

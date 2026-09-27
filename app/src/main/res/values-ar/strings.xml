@@ -1448,5 +1448,10 @@
   <string name="chat_page_queue_edit_title">تعديل الرسالة في قائمة الانتظار</string>
   <string name="chat_page_queue_paused_count">قائمة الانتظار متوقفة مؤقتًا · %1$d</string>
   <string name="chat_page_queue_pending_count">في قائمة الانتظار · %1$d</string>
+  <string name="skills_page_search_placeholder">البحث في المهارات</string>
+  <string name="skills_page_search_no_result">لا توجد مهارات مطابقة</string>
+  <string name="error_skill_github_rate_limit">تم الوصول إلى حد طلبات GitHub API، يرجى المحاولة لاحقًا</string>
+  <string name="error_skill_builtin_read_only">لا يمكن تعديل المهارات المدمجة</string>
+  <string name="common_close">إغلاق</string>
 </resources>
 
