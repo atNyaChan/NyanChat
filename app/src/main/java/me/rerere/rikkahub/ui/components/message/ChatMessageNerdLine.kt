@@ -35,6 +35,7 @@ import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Clock02
 import me.rerere.hugeicons.stroke.Download04
 import me.rerere.hugeicons.stroke.Message01
+import me.rerere.hugeicons.stroke.Repeat
 import me.rerere.hugeicons.stroke.Upload02
 import me.rerere.hugeicons.stroke.Zap
 import me.rerere.rikkahub.ui.context.LocalSettings
@@ -54,6 +55,7 @@ fun ChatMessageNerdLine(
     model: Model?,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
+    round: Int? = null,
 ) {
     val settings = LocalSettings.current.displaySetting
     var expanded by remember(message.id) { mutableStateOf(false) }
@@ -161,6 +163,18 @@ fun ChatMessageNerdLine(
                                         content = { Text(text = "${wordsPerSecond.toFixed(1)} word/s") },
                                     )
                                 }
+                            }
+                            if (!loading && round != null) {
+                                StatsItem(
+                                    icon = {
+                                        Icon(
+                                            imageVector = HugeIcons.Repeat,
+                                            contentDescription = "Round",
+                                            modifier = Modifier.size(12.dp),
+                                        )
+                                    },
+                                    content = { Text(text = "round #$round") },
+                                )
                             }
                         }
                     }

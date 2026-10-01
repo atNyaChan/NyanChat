@@ -87,6 +87,7 @@ import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import me.rerere.ai.core.MessageRole
 import me.rerere.ai.ui.UIMessage
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
@@ -278,6 +279,13 @@ private fun ChatListNormal(
             .associateBy { it.id }
     }
     val lastMessageIndex = conversation.messageNodes.lastIndex
+    // 每条助手消息在会话中的序号（第几条助手消息），用于统计行显示 round #n
+    val assistantRounds = remember(conversation.messageNodes) {
+        var count = 0
+        conversation.messageNodes.map { node ->
+            if (node.currentMessage.role == MessageRole.ASSISTANT) ++count else null
+        }
+    }
     // 正在生成的消息由生成任务显式记录的消息 id 决定。不能用 finishedAt 推断：
     // 多轮工具调用每一轮都会写入 finishedAt，而手动编辑的消息始终没有 finishedAt。
     val generatingNodeIndex = if (generatingMessageId == null) {
@@ -385,6 +393,7 @@ private fun ChatListNormal(
                             onToolApproval = onToolApproval,
                             onToolAnswer = onToolAnswer,
                             lastMessage = index == lastMessageIndex,
+                            round = assistantRounds.getOrNull(index),
                         )
                     }
                     // 重新生成中间消息时，加载指示器紧随正在生成的消息之后展示
