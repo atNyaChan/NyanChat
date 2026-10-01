@@ -1453,5 +1453,13 @@
   <string name="error_skill_github_rate_limit">GitHub API 请求次数已达上限，请稍后再试</string>
   <string name="error_skill_builtin_read_only">内置技能不可修改</string>
   <string name="common_close">关闭</string>
+  <string name="assistant_page_local_tools_chart_display_title">图表显示</string>
+  <string name="assistant_page_local_tools_chart_display_desc">让 AI 显示折线图、柱状图和散点图</string>
+  <string name="chat_message_tool_chart_display">显示图表</string>
+  <string name="chat_message_tool_chart_display_with_title">显示图表：%1$s</string>
+  <string name="chart_mode_chart">图表</string>
+  <string name="chart_mode_table">表格</string>
+  <string name="chart_series">系列</string>
+  <string name="chart_series_name">系列 %1$d</string>
 </resources>
 

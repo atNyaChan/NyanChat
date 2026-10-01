@@ -90,6 +90,8 @@ import me.rerere.rikkahub.ui.components.message.groupMessageParts
 import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
 import me.rerere.rikkahub.ui.components.ui.BitmapComposer
+import me.rerere.rikkahub.ui.components.charts.ChartCard
+import me.rerere.rikkahub.ui.components.charts.ChartSpec
 import me.rerere.rikkahub.ui.components.ui.ChainOfThought
 import me.rerere.rikkahub.ui.components.ui.ChainOfThoughtScope
 import me.rerere.rikkahub.ui.context.LocalNavController
@@ -574,6 +576,11 @@ private fun ExportedChatMessage(
                                 }
                             }
                         }
+                    }
+
+                    is MessagePartBlock.ChartBlock -> {
+                        val spec = remember(block.tool.input) { ChartSpec.fromJson(block.tool.inputAsJson()) }
+                        spec?.let { ChartCard(spec = it) }
                     }
 
                     is MessagePartBlock.ContentBlock -> {

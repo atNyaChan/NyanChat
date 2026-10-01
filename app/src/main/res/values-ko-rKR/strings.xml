@@ -1453,5 +1453,13 @@
   <string name="error_skill_github_rate_limit">GitHub API 요청 한도에 도달했습니다. 나중에 다시 시도해 주세요</string>
   <string name="error_skill_builtin_read_only">내장 스킬은 수정할 수 없습니다</string>
   <string name="common_close">닫기</string>
+  <string name="assistant_page_local_tools_chart_display_title">차트 표시</string>
+  <string name="assistant_page_local_tools_chart_display_desc">AI가 꺾은선형, 막대형, 산점도 차트를 표시하도록 허용</string>
+  <string name="chat_message_tool_chart_display">차트 표시</string>
+  <string name="chat_message_tool_chart_display_with_title">차트 표시: %1$s</string>
+  <string name="chart_mode_chart">차트</string>
+  <string name="chart_mode_table">표</string>
+  <string name="chart_series">계열</string>
+  <string name="chart_series_name">계열 %1$d</string>
 </resources>
 

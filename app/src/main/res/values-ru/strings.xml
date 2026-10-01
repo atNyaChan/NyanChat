@@ -1453,5 +1453,13 @@
   <string name="error_skill_github_rate_limit">Достигнут лимит запросов GitHub API, попробуйте позже</string>
   <string name="error_skill_builtin_read_only">Встроенные навыки нельзя изменить</string>
   <string name="common_close">Закрыть</string>
+  <string name="assistant_page_local_tools_chart_display_title">Отображение диаграмм</string>
+  <string name="assistant_page_local_tools_chart_display_desc">Разрешить ИИ отображать линейные, столбчатые и точечные диаграммы</string>
+  <string name="chat_message_tool_chart_display">Показать диаграмму</string>
+  <string name="chat_message_tool_chart_display_with_title">Показать диаграмму: %1$s</string>
+  <string name="chart_mode_chart">Диаграмма</string>
+  <string name="chart_mode_table">Таблица</string>
+  <string name="chart_series">Ряд</string>
+  <string name="chart_series_name">Ряд %1$d</string>
 </resources>
 

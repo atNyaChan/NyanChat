@@ -40,4 +40,8 @@ sealed class LocalToolOption {
     @Serializable
     @SerialName("calendar")
     data object Calendar : LocalToolOption()
+
+    @Serializable
+    @SerialName("chart_display")
+    data object ChartDisplay : LocalToolOption()
 }

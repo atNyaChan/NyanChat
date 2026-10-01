@@ -1453,5 +1453,13 @@
   <string name="error_skill_github_rate_limit">GitHub API のリクエスト上限に達しました。しばらくしてから再試行してください</string>
   <string name="error_skill_builtin_read_only">組み込みスキルは変更できません</string>
   <string name="common_close">閉じる</string>
+  <string name="assistant_page_local_tools_chart_display_title">チャート表示</string>
+  <string name="assistant_page_local_tools_chart_display_desc">AIに折れ線グラフ、棒グラフ、散布図を表示させる</string>
+  <string name="chat_message_tool_chart_display">グラフを表示</string>
+  <string name="chat_message_tool_chart_display_with_title">グラフを表示: %1$s</string>
+  <string name="chart_mode_chart">チャート</string>
+  <string name="chart_mode_table">表</string>
+  <string name="chart_series">系列</string>
+  <string name="chart_series_name">系列 %1$d</string>
 </resources>
 

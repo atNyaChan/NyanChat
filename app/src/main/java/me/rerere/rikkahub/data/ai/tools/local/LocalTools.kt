@@ -42,6 +42,8 @@ class LocalTools(
 
     val calendarCreateTool by lazy { buildCalendarCreateTool(context) }
 
+    val chartDisplayTool by lazy { buildChartDisplayTool() }
+
     fun getTools(
         options: List<LocalToolOption>,
         manualAuthorizationTools: Set<LocalToolOption> = emptySet(),
@@ -74,6 +76,9 @@ class LocalTools(
         add(LocalToolOption.ScreenTime, screenTimeTool)
         add(LocalToolOption.Calendar, calendarQueryTool)
         add(LocalToolOption.Calendar, calendarCreateTool)
+        if (options.contains(LocalToolOption.ChartDisplay)) {
+            tools.add(chartDisplayTool)
+        }
         return tools
     }
 

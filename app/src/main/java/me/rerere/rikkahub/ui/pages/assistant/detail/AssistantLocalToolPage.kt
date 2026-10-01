@@ -283,6 +283,11 @@ private fun AssistantLocalToolContent(
                 R.string.assistant_page_local_tools_javascript_engine_title,
                 R.string.assistant_page_local_tools_javascript_engine_desc,
             )
+            toolItem(
+                LocalToolOption.ChartDisplay,
+                R.string.assistant_page_local_tools_chart_display_title,
+                R.string.assistant_page_local_tools_chart_display_desc,
+            )
             item(
                 onClick = { showSearchPicker = true },
                 headlineContent = { Text(stringResource(R.string.search_ability_search)) },
