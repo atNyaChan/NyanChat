@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.BasicTextField
@@ -94,6 +95,7 @@ fun SearchPage(initialModelId: String? = null, vm: SearchVM = koinViewModel()) {
         type = null,
     )
     val focusRequester = remember { FocusRequester() }
+    val listState = rememberLazyListState()
     var showRebuildDialog by remember { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -269,6 +271,13 @@ fun SearchPage(initialModelId: String? = null, vm: SearchVM = koinViewModel()) {
                 ),
                 )
 
+                // 翻页后回到列表顶部
+                LaunchedEffect(vm.currentPage) {
+                    if (vm.results.isNotEmpty()) {
+                        listState.scrollToItem(0)
+                    }
+                }
+
                 if (vm.resultCount > 20) {
                     SearchPagination(
                         currentPage = vm.currentPage,
@@ -311,6 +320,7 @@ fun SearchPage(initialModelId: String? = null, vm: SearchVM = koinViewModel()) {
 
                     else -> {
                         LazyColumn(
+                            state = listState,
                             contentPadding = PaddingValues(8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.fillMaxSize(),

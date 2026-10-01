@@ -171,7 +171,7 @@ fun ChatMessageNerdLine(
                             itemVerticalAlignment = Alignment.CenterVertically,
                         ) {
                             if (usedTools) {
-                                Text(text = "Last Message: ")
+                                Text(text = "Last LLM Call: ")
                             }
                             StatsItem(
                                 icon = {

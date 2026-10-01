@@ -243,8 +243,8 @@ sealed class ProviderSetting {
         val Types by lazy {
             listOf(
                 OpenAI::class,
-                Google::class,
                 Claude::class,
+                Google::class,
             )
         }
     }

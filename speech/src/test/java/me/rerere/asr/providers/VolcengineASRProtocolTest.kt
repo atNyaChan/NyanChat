@@ -57,7 +57,7 @@ class VolcengineASRProtocolTest {
     @Test fun `compressed server errors retain code and message`() {
         val response = VolcengineASRProtocol.decode(serverFrame("invalid key", type = 15, compressed = true))
         assertTrue(response.error!!.contains("45000001"))
-        assertTrue(response.error!!.contains("invalid key"))
+        assertTrue(response.error.contains("invalid key"))
     }
 
     @Test fun `rejects truncated headers sequences and payloads`() {

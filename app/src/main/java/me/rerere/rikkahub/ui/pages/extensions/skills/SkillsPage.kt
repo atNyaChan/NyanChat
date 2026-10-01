@@ -22,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -424,6 +425,9 @@ private fun SkillImportSheetItem(
 ) {
     ListItem(
         leadingContent = icon,
+        colors = ListItemDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        ),
         modifier = Modifier
             .clip(MaterialTheme.shapes.large)
             .clickable(onClick = onClick),

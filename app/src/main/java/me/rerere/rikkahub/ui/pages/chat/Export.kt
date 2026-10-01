@@ -136,11 +136,14 @@ fun ChatExportSheet(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 32.dp),
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(text = stringResource(id = R.string.chat_page_export_format))
+                Text(
+                    text = stringResource(id = R.string.chat_page_export_format),
+                    style = MaterialTheme.typography.titleLarge,
+                )
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),

@@ -1,9 +1,6 @@
 package me.rerere.rikkahub.ui.components.ai
 
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -697,27 +694,22 @@ private fun ModelItem(
     longPressToEdit: Boolean = true,
 ) {
     val navController = LocalNavController.current
-    val interactionSource = remember { MutableInteractionSource() }
     OutlinedItemCard(
-        modifier = modifier.combinedClickable(
-            enabled = true,
-            onLongClick = if (longPressToEdit) {
-                {
-                    onDismiss()
-                    navController.navigate(
-                        Screen.SettingProviderDetail(
-                            providerId = providerSetting.id.toString(),
-                            modelId = model.id.toString(),
-                        )
+        modifier = modifier,
+        onClick = { onSelect(model) },
+        onLongClick = if (longPressToEdit) {
+            {
+                onDismiss()
+                navController.navigate(
+                    Screen.SettingProviderDetail(
+                        providerId = providerSetting.id.toString(),
+                        modelId = model.id.toString(),
                     )
-                }
-            } else {
-                null
-            },
-            onClick = { onSelect(model) },
-            interactionSource = interactionSource,
-            indication = LocalIndication.current
-        ),
+                )
+            }
+        } else {
+            null
+        },
         colors = CardDefaults.cardColors(
             containerColor = if (select) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
             contentColor = if (select) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
