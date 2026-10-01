@@ -219,7 +219,6 @@
   <string name="backup_page_restore_success">Восстановление выполнено успешно</string>
   <string name="backup_page_restore_warning_title">Перезаписать существующие данные?</string>
   <string name="backup_page_restore_warning_desc">Восстановление перезапишет существующие настройки и данные.</string>
-  <string name="backup_page_restore_warning_confirm">ОК</string>
   <string name="backup_page_restoring">Восстановление...</string>
   <string name="backup_page_s3_access_key_id">Идентификатор ключа доступа</string>
   <string name="backup_page_s3_backup">Резервное копирование S3</string>
@@ -318,7 +317,7 @@
   <string name="emoji_picker_search_placeholder">Поиск эмодзи...</string>
   <string name="emoji_picker_select_skin_tone">Выберите тон кожи</string>
   <string name="error_title_compress_conversation">Сжатие переписки не удалось</string>
-  <string name="error_title_generate_title">Не удалось автоматически сгенерировать заголовок</string>
+  <string name="error_title_generate_title">Не удалось сгенерировать заголовок</string>
   <string name="error_title_generation">Ошибка генерации сообщения</string>
   <string name="error_title_operation">Операция не выполнена</string>
   <string name="error_title_regenerate_message">Не удалось повторно сгенерировать сообщение</string>
@@ -1221,6 +1220,8 @@
   <string name="common_off">Выключено</string>
   <string name="common_add">Добавить</string>
   <string name="common_confirm_action">Подтвердить</string>
+  <string name="common_no">Нет</string>
+  <string name="common_yes">Хорошо</string>
   <string name="tool_ui_edit_file">Редактировать: %s</string>
   <string name="tool_ui_edit_file_default">Редактировать файл</string>
   <string name="tool_ui_read_file">Чтение: %s</string>
@@ -1327,6 +1328,8 @@
   <string name="translation_delete_result">Удалить результат перевода</string>
   <string name="translation_delete_result_confirm">Удалить результат перевода этого сообщения?</string>
   <string name="assistant_page_copy_existing">Копировать существующего ассистента</string>
+  <string name="assistant_page_copy_memories_confirm">Также скопировать память этого ассистента?</string>
+  <string name="assistant_page_cancel_copy">Отменить копирование ассистента</string>
   <string name="assistant_page_copy_picker_tag_count">Тегов: %1$d</string>
   <string name="assistant_page_delete_assistant">Удалить ассистента</string>
   <string name="setting_page_search_delete_confirm">Удалить поисковый сервис «%1$s»?</string>
@@ -1461,5 +1464,7 @@
   <string name="chart_mode_table">Таблица</string>
   <string name="chart_series">Ряд</string>
   <string name="chart_series_name">Ряд %1$d</string>
+  <string name="error_fast_model_not_found">Быстрая модель не найдена. Пожалуйста, выберите её в настройках.</string>
+  <string name="error_fast_model_provider_not_found">Провайдер быстрой модели не найден</string>
 </resources>
 

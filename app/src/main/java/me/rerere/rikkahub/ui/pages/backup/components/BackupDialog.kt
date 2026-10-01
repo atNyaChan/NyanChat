@@ -66,7 +66,7 @@ fun RestoreWarningDialog(
         text = { Text(stringResource(R.string.backup_page_restore_warning_desc)) },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text(stringResource(R.string.backup_page_restore_warning_confirm))
+                Text(stringResource(R.string.common_yes))
             }
         },
         dismissButton = {

@@ -282,6 +282,22 @@ fun SettingProviderDetailSheet(
                 }
 
                 item {
+                    Text(
+                        text = stringResource(R.string.setting_provider_page_advanced_settings),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                }
+
+                item {
+                    CustomHeaders(
+                        headers = internalProvider.customHeaders,
+                        onUpdate = { headers ->
+                            internalProvider = internalProvider.copyProvider(customHeaders = headers)
+                        },
+                    )
+                }
+
+                item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,

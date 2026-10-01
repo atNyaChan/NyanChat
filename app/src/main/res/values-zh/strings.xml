@@ -219,7 +219,6 @@
   <string name="backup_page_restore_success">恢复成功</string>
   <string name="backup_page_restore_warning_title">覆盖现有数据？</string>
   <string name="backup_page_restore_warning_desc">还原会覆盖现有配置和数据。</string>
-  <string name="backup_page_restore_warning_confirm">好</string>
   <string name="backup_page_restoring">恢复中...</string>
   <string name="backup_page_s3_access_key_id">访问密钥 ID</string>
   <string name="backup_page_s3_backup">S3备份</string>
@@ -318,7 +317,7 @@
   <string name="emoji_picker_search_placeholder">搜索表情符号...</string>
   <string name="emoji_picker_select_skin_tone">选择肤色</string>
   <string name="error_title_compress_conversation">对话压缩失败</string>
-  <string name="error_title_generate_title">自动生成标题失败</string>
+  <string name="error_title_generate_title">生成标题失败</string>
   <string name="error_title_generation">消息生成失败</string>
   <string name="error_title_operation">操作失败</string>
   <string name="error_title_regenerate_message">消息重新生成失败</string>
@@ -1221,6 +1220,8 @@
   <string name="common_off">关闭</string>
   <string name="common_add">添加</string>
   <string name="common_confirm_action">确认</string>
+  <string name="common_no">不要</string>
+  <string name="common_yes">好</string>
   <string name="tool_ui_edit_file">编辑：%s</string>
   <string name="tool_ui_edit_file_default">编辑文件</string>
   <string name="tool_ui_read_file">读取: %s</string>
@@ -1327,6 +1328,8 @@
   <string name="translation_delete_result">删除翻译结果</string>
   <string name="translation_delete_result_confirm">确定删除这条消息的翻译结果吗？</string>
   <string name="assistant_page_copy_existing">复制已有助手</string>
+  <string name="assistant_page_copy_memories_confirm">是否同时复制该助手的记忆</string>
+  <string name="assistant_page_cancel_copy">取消复制助手</string>
   <string name="assistant_page_copy_picker_tag_count">%1$d 个标签</string>
   <string name="assistant_page_delete_assistant">删除助手</string>
   <string name="setting_page_search_delete_confirm">确定删除搜索服务“%1$s”吗？</string>
@@ -1461,5 +1464,7 @@
   <string name="chart_mode_table">表格</string>
   <string name="chart_series">系列</string>
   <string name="chart_series_name">系列 %1$d</string>
+  <string name="error_fast_model_not_found">未找到快速模型。请在设置中选择一个。</string>
+  <string name="error_fast_model_provider_not_found">未找到快速模型的提供商</string>
 </resources>
 

@@ -36,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,6 +62,7 @@ import me.rerere.rikkahub.ui.hooks.useEditState
 import me.rerere.rikkahub.ui.modifier.onClick
 import me.rerere.rikkahub.ui.pages.assistant.detail.AssistantImporter
 import me.rerere.rikkahub.ui.theme.CustomColors
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -171,7 +173,7 @@ fun AssistantPage(vm: AssistantVM = koinViewModel()) {
         }
     }
 
-    AssistantCreationSheet(createState, settings.assistants)
+    AssistantCreationSheet(createState, settings.assistants, vm)
 }
 
 @Composable
@@ -231,8 +233,11 @@ private fun AssistantTagsFilterRow(
 private fun AssistantCreationSheet(
     state: EditState<Assistant>,
     existingAssistants: List<Assistant>,
+    vm: AssistantVM,
 ) {
     var showCopyPicker by remember { mutableStateOf(false) }
+    var pendingMemoryCopy by remember { mutableStateOf<Pair<Assistant, Assistant>?>(null) }
+    val scope = rememberCoroutineScope()
     state.EditStateContent { assistant, update ->
         ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {
@@ -320,7 +325,7 @@ private fun AssistantCreationSheet(
                         OutlinedItemCard(
                             onClick = {
                                 val currentName = state.currentState?.name.orEmpty()
-                                state.currentState = source.copy(
+                                val draft = source.copy(
                                     id = Uuid.random(),
                                     name = currentName,
                                     avatar = if (source.avatar is me.rerere.rikkahub.data.model.Avatar.Image) {
@@ -329,8 +334,16 @@ private fun AssistantCreationSheet(
                                         source.avatar
                                     },
                                 )
+                                state.currentState = draft
                                 showCopyPicker = false
-                                state.confirm()
+                                // 只要源助手有自己的记忆条目就询问是否一并复制（不看记忆开关）
+                                scope.launch {
+                                    if (vm.hasMemories(source.id.toString())) {
+                                        pendingMemoryCopy = source to draft
+                                    } else {
+                                        state.confirm()
+                                    }
+                                }
                             },
                         ) {
                             AssistantListItemContent(
@@ -361,6 +374,43 @@ private fun AssistantCreationSheet(
             dismissButton = {
                 TextButton(onClick = { showCopyPicker = false }) {
                     Text(stringResource(R.string.common_cancel))
+                }
+            },
+        )
+    }
+
+    pendingMemoryCopy?.let { (source, draft) ->
+        AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
+            onDismissRequest = {
+                state.dismiss()
+                pendingMemoryCopy = null
+            },
+            title = { Text(stringResource(R.string.assistant_page_copy_memories_confirm)) },
+            confirmButton = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    TextButton(onClick = {
+                        state.dismiss()
+                        pendingMemoryCopy = null
+                    }) {
+                        Text(stringResource(R.string.assistant_page_cancel_copy))
+                    }
+                    TextButton(onClick = {
+                        state.confirm()
+                        pendingMemoryCopy = null
+                    }) {
+                        Text(stringResource(R.string.common_no))
+                    }
+                    TextButton(onClick = {
+                        state.confirm()
+                        vm.copyMemories(source.id.toString(), draft.id.toString())
+                        pendingMemoryCopy = null
+                    }) {
+                        Text(stringResource(R.string.common_yes))
+                    }
                 }
             },
         )

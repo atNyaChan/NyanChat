@@ -37,6 +37,7 @@ import me.rerere.rikkahub.data.model.NodeFavoriteTarget
 import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.rikkahub.data.repository.FavoriteRepository
 import me.rerere.rikkahub.service.ChatError
+import me.rerere.rikkahub.service.ChatErrorSolution
 import me.rerere.rikkahub.service.ChatService
 import me.rerere.rikkahub.service.RequestContextStats
 import me.rerere.rikkahub.ui.hooks.writeStringPreference
@@ -324,7 +325,17 @@ class ChatVM(
     fun generateTitleCandidate(conversation: Conversation, onResult: (String) -> Unit) {
         viewModelScope.launch {
             val full = conversationRepo.getConversationById(conversation.id) ?: return@launch
-            chatService.generateTitleCandidate(full)?.let(onResult)
+            runCatching {
+                chatService.generateTitleCandidate(full)
+            }.onSuccess(onResult).onFailure { error ->
+                error.printStackTrace()
+                chatService.addError(
+                    error = error,
+                    conversationId = _conversationId,
+                    title = context.getString(R.string.error_title_generate_title),
+                    solution = ChatErrorSolution.CheckFastModelSettings,
+                )
+            }
         }
     }
 

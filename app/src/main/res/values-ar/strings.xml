@@ -219,7 +219,6 @@
   <string name="backup_page_restore_success">تمت الاستعادة بنجاح</string>
   <string name="backup_page_restore_warning_title">هل تريد استبدال البيانات الحالية؟</string>
   <string name="backup_page_restore_warning_desc">ستؤدي الاستعادة إلى استبدال الإعدادات والبيانات الحالية.</string>
-  <string name="backup_page_restore_warning_confirm">موافق</string>
   <string name="backup_page_restoring">جارٍ الاستعادة...</string>
   <string name="backup_page_s3_access_key_id">معرّف مفتاح الوصول</string>
   <string name="backup_page_s3_backup">النسخ الاحتياطي S3</string>
@@ -318,7 +317,7 @@
   <string name="emoji_picker_search_placeholder">ابحث عن الرموز التعبيرية...</string>
   <string name="emoji_picker_select_skin_tone">اختر لون البشرة</string>
   <string name="error_title_compress_conversation">فشل ضغط المحادثة</string>
-  <string name="error_title_generate_title">فشل توليد العنوان التلقائي</string>
+  <string name="error_title_generate_title">فشل توليد العنوان</string>
   <string name="error_title_generation">فشل توليد الرسالة</string>
   <string name="error_title_operation">فشلت العملية</string>
   <string name="error_title_regenerate_message">فشل إعادة توليد الرسالة</string>
@@ -1221,6 +1220,8 @@
   <string name="common_off">إيقاف</string>
   <string name="common_add">إضافة</string>
   <string name="common_confirm_action">تأكيد</string>
+  <string name="common_no">لا</string>
+  <string name="common_yes">حسنًا</string>
   <string name="tool_ui_edit_file">تعديل: %s</string>
   <string name="tool_ui_edit_file_default">تعديل ملف</string>
   <string name="tool_ui_read_file">قراءة: %s</string>
@@ -1327,6 +1328,8 @@
   <string name="translation_delete_result">حذف نتيجة الترجمة</string>
   <string name="translation_delete_result_confirm">حذف نتيجة ترجمة هذه الرسالة؟</string>
   <string name="assistant_page_copy_existing">نسخ مساعد موجود</string>
+  <string name="assistant_page_copy_memories_confirm">هل تريد أيضًا نسخ ذكريات هذا المساعد؟</string>
+  <string name="assistant_page_cancel_copy">إلغاء نسخ المساعد</string>
   <string name="assistant_page_copy_picker_tag_count">%1$d وسم</string>
   <string name="assistant_page_delete_assistant">حذف المساعد</string>
   <string name="setting_page_search_delete_confirm">حذف خدمة البحث "%1$s"؟</string>
@@ -1461,5 +1464,7 @@
   <string name="chart_mode_table">جدول</string>
   <string name="chart_series">سلسلة</string>
   <string name="chart_series_name">سلسلة %1$d</string>
+  <string name="error_fast_model_not_found">لم يتم العثور على النموذج السريع. يرجى اختيار واحد في الإعدادات.</string>
+  <string name="error_fast_model_provider_not_found">لم يتم العثور على مزوّد النموذج السريع</string>
 </resources>
 

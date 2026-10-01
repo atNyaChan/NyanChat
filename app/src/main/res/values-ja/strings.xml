@@ -219,7 +219,6 @@
   <string name="backup_page_restore_success">復元成功</string>
   <string name="backup_page_restore_warning_title">既存のデータを上書きしますか？</string>
   <string name="backup_page_restore_warning_desc">復元すると既存の設定とデータが上書きされます。</string>
-  <string name="backup_page_restore_warning_confirm">OK</string>
   <string name="backup_page_restoring">復元中...</string>
   <string name="backup_page_s3_access_key_id">アクセスキーID</string>
   <string name="backup_page_s3_backup">S3バックアップ</string>
@@ -318,7 +317,7 @@
   <string name="emoji_picker_search_placeholder">絵文字を検索...</string>
   <string name="emoji_picker_select_skin_tone">肌の色を選択</string>
   <string name="error_title_compress_conversation">会話の圧縮に失敗しました</string>
-  <string name="error_title_generate_title">自動タイトル生成に失敗しました</string>
+  <string name="error_title_generate_title">タイトル生成に失敗しました</string>
   <string name="error_title_generation">メッセージ生成に失敗しました</string>
   <string name="error_title_operation">操作に失敗しました</string>
   <string name="error_title_regenerate_message">メッセージの再生成に失敗しました</string>
@@ -1221,6 +1220,8 @@
   <string name="common_off">オフ</string>
   <string name="common_add">追加</string>
   <string name="common_confirm_action">確認</string>
+  <string name="common_no">いいえ</string>
+  <string name="common_yes">はい</string>
   <string name="tool_ui_edit_file">編集: %s</string>
   <string name="tool_ui_edit_file_default">ファイル編集</string>
   <string name="tool_ui_read_file">読み取り: %s</string>
@@ -1327,6 +1328,8 @@
   <string name="translation_delete_result">翻訳結果を削除</string>
   <string name="translation_delete_result_confirm">このメッセージの翻訳結果を削除しますか？</string>
   <string name="assistant_page_copy_existing">既存のアシスタントをコピー</string>
+  <string name="assistant_page_copy_memories_confirm">このアシスタントの記憶もコピーしますか？</string>
+  <string name="assistant_page_cancel_copy">アシスタントのコピーをキャンセル</string>
   <string name="assistant_page_copy_picker_tag_count">%1$d 個のタグ</string>
   <string name="assistant_page_delete_assistant">アシスタントを削除</string>
   <string name="setting_page_search_delete_confirm">検索サービス「%1$s」を削除しますか？</string>
@@ -1461,5 +1464,7 @@
   <string name="chart_mode_table">表</string>
   <string name="chart_series">系列</string>
   <string name="chart_series_name">系列 %1$d</string>
+  <string name="error_fast_model_not_found">高速モデルが見つかりません。設定で選択してください。</string>
+  <string name="error_fast_model_provider_not_found">高速モデルのプロバイダーが見つかりません</string>
 </resources>
 

@@ -31,6 +31,7 @@ import me.rerere.ai.provider.CustomHeader
 import me.rerere.highlight.LocalCodeHighlighter
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.SelectTextField
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.components.richtext.HighlightCodeVisualTransformation
 import me.rerere.rikkahub.ui.context.LocalSettings
@@ -44,45 +45,42 @@ private val jsonLenient = Json {
     prettyPrint = true
 }
 
+private val COMMON_HEADER_NAMES = listOf(
+    "User-Agent",
+    "HTTP-Referer",
+    "X-Title",
+    "Referer",
+    "Origin",
+    "Accept-Language",
+    "Cookie",
+    "anthropic-beta",
+    "OpenAI-Organization",
+    "OpenAI-Project",
+)
+
+// 按已输入内容过滤常用请求头，没有匹配(或已完整输入)时展示全部
+private fun commonHeaderNames(input: String): List<String> {
+    val keyword = input.trim()
+    val matched = COMMON_HEADER_NAMES.filter {
+        it.contains(keyword, ignoreCase = true) && !it.equals(keyword, ignoreCase = true)
+    }
+    return matched.ifEmpty { COMMON_HEADER_NAMES }
+}
+
 @Composable
 fun CustomHeaders(headers: List<CustomHeader>, onUpdate: (List<CustomHeader>) -> Unit) {
     var pendingDeleteIndex by remember { mutableStateOf<Int?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        headers.forEachIndexed { index, header ->
-            var headerName by remember(header.name) { mutableStateOf(header.name) }
-            var headerValue by remember(header.value) { mutableStateOf(header.value) }
-
-            CardGroup {
+        CardGroup {
+            headers.forEachIndexed { index, header ->
                 item(
                     supportingContent = {
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            OutlinedTextField(
-                                value = headerName,
-                                onValueChange = {
-                                    headerName = it
-                                    val updatedHeaders = headers.toMutableList()
-                                    updatedHeaders[index] = updatedHeaders[index].copy(name = it.trim())
-                                    onUpdate(updatedHeaders)
-                                },
-                                label = { Text(stringResource(R.string.assistant_page_header_name)) },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            OutlinedTextField(
-                                value = headerValue,
-                                onValueChange = {
-                                    headerValue = it
-                                    val updatedHeaders = headers.toMutableList()
-                                    updatedHeaders[index] =
-                                        updatedHeaders[index].copy(value = it.trim())
-                                    onUpdate(updatedHeaders)
-                                },
-                                label = { Text(stringResource(R.string.assistant_page_header_value)) },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
+                        HeaderFields(
+                            index = index,
+                            header = header,
+                            headers = headers,
+                            onUpdate = onUpdate,
+                        )
                     },
                     trailingContent = {
                         IconButton(onClick = { pendingDeleteIndex = index }) {
@@ -133,6 +131,47 @@ fun CustomHeaders(headers: List<CustomHeader>, onUpdate: (List<CustomHeader>) ->
                 R.string.assistant_page_delete_custom_confirm,
                 stringResource(R.string.assistant_page_custom_header_singular),
             )
+        )
+    }
+}
+
+@Composable
+private fun HeaderFields(
+    index: Int,
+    header: CustomHeader,
+    headers: List<CustomHeader>,
+    onUpdate: (List<CustomHeader>) -> Unit,
+) {
+    var headerName by remember(header.name) { mutableStateOf(header.name) }
+    var headerValue by remember(header.value) { mutableStateOf(header.value) }
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        val updateHeaderName = { name: String ->
+            headerName = name
+            val updatedHeaders = headers.toMutableList()
+            updatedHeaders[index] = updatedHeaders[index].copy(name = name.trim())
+            onUpdate(updatedHeaders)
+        }
+        SelectTextField(
+            value = headerName,
+            options = commonHeaderNames(headerName),
+            onValueChange = updateHeaderName,
+            onOptionSelected = updateHeaderName,
+            label = { Text(stringResource(R.string.assistant_page_header_name)) },
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = headerValue,
+            onValueChange = {
+                headerValue = it
+                val updatedHeaders = headers.toMutableList()
+                updatedHeaders[index] = updatedHeaders[index].copy(value = it.trim())
+                onUpdate(updatedHeaders)
+            },
+            label = { Text(stringResource(R.string.assistant_page_header_value)) },
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }

@@ -1112,7 +1112,7 @@ class ChatService(
         if (!shouldGenerate) return@withContext
 
         runCatching {
-            val title = generateTitleCandidate(conversation) ?: return@withContext
+            val title = generateTitleCandidate(conversation)
             val persistedConversation = conversationRepo.getConversationById(conversationId) ?: return@withContext
             val latestConversation = sessionManager.get(conversationId)?.state?.value ?: persistedConversation
             val updatedConversation = latestConversation.copy(title = title)
@@ -1129,29 +1129,28 @@ class ChatService(
         }
     }
 
-    suspend fun generateTitleCandidate(conversation: Conversation): String? {
-        return runCatching {
-            val settings = settingsStore.settingsFlow.first()
-            val model = settings.findModelById(settings.fastModelId)
-                ?: return null
-            val provider = model.findProvider(settings.providers) ?: return null
+    suspend fun generateTitleCandidate(conversation: Conversation): String {
+        val settings = settingsStore.settingsFlow.first()
+        val model = settings.findModelById(settings.fastModelId)
+            ?: throw IllegalStateException(context.getString(R.string.error_fast_model_not_found))
+        val provider = model.findProvider(settings.providers)
+            ?: throw IllegalStateException(context.getString(R.string.error_fast_model_provider_not_found))
 
-            val providerHandler = providerManager.getProviderByType(provider)
-            val result = providerHandler.generateText(
-                providerSetting = provider,
-                messages = listOf(
-                    UIMessage.user(
-                        prompt = settings.titlePrompt.applyPlaceholders(
-                            "locale" to Locale.getDefault().displayName,
-                            "content" to conversation.currentMessages
-                                .takeLast(4).joinToString("\n\n") { it.summaryAsText(maxLength = 500) })
-                    ),
+        val providerHandler = providerManager.getProviderByType(provider)
+        val result = providerHandler.generateText(
+            providerSetting = provider,
+            messages = listOf(
+                UIMessage.user(
+                    prompt = settings.titlePrompt.applyPlaceholders(
+                        "locale" to Locale.getDefault().displayName,
+                        "content" to conversation.currentMessages
+                            .takeLast(4).joinToString("\n\n") { it.summaryAsText(maxLength = 500) })
                 ),
-                params = backgroundTextGenerationParams(model, conversation.id, settings.fastModelReasoningLevel),
-            )
+            ),
+            params = backgroundTextGenerationParams(model, conversation.id, settings.fastModelReasoningLevel),
+        )
 
-            result.message.toText().trim()
-        }.getOrNull()
+        return result.message.toText().trim()
     }
 
     // ---- 生成建议 ----

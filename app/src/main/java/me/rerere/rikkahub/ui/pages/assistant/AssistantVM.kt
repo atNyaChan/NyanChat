@@ -86,4 +86,13 @@ class AssistantVM(
         } else {
             memoryRepository.getMemoriesOfAssistantFlow(assistant.id.toString())
         }
+
+    fun copyMemories(fromAssistantId: String, toAssistantId: String) {
+        viewModelScope.launch {
+            memoryRepository.copyMemories(fromAssistantId, toAssistantId)
+        }
+    }
+
+    suspend fun hasMemories(assistantId: String): Boolean =
+        memoryRepository.getMemoriesOfAssistant(assistantId).isNotEmpty()
 }
