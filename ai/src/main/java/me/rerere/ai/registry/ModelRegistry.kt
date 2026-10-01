@@ -93,12 +93,6 @@ object ModelRegistry {
         toolReasoningAbility()
     }
 
-    private val GEMINI_20_FLASH = defineModel {
-        tokens("gemini", "2", "0", "flash")
-        visionInput()
-        toolAbility()
-    }
-
     val GEMINI_2_5_FLASH = defineModel {
         tokens("gemini", "2", "5", "flash")
         notTokens("image")
@@ -194,17 +188,11 @@ object ModelRegistry {
     }
 
     val GEMINI_SERIES = defineGroup {
-        add(GEMINI_20_FLASH, GEMINI_2_5_FLASH, GEMINI_2_5_PRO, GEMINI_3_SERIES, GEMINI_4, GEMINI_LATEST)
+        add(GEMINI_2_5_FLASH, GEMINI_2_5_PRO, GEMINI_3_SERIES, GEMINI_4, GEMINI_LATEST)
     }
 
-    private val CLAUDE_4 = defineModel {
-        tokens("claude", "4")
-        visionInput()
-        toolReasoningAbility()
-    }
-
-    val CLAUDE_4_5 = defineModel {
-        tokens("claude", "4", "5")
+    val CLAUDE_SONNET_4_5 = defineModel {
+        tokens("claude", "sonnet", "4", "5")
         visionInput()
         toolReasoningAbility()
     }
@@ -215,22 +203,11 @@ object ModelRegistry {
         toolReasoningAbility()
     }
 
-    private val CLAUDE_OPUS_4_6 = defineModel {
-        tokens("claude", "opus", "4", "6")
+    private val CLAUDE_OPUS_4_5_TO_4_8 = defineModel {
+        tokens("claude", "opus", "4", "5|6|7|8")
         visionInput()
         toolReasoningAbility()
-    }
-
-    private val CLAUDE_OPUS_4_7 = defineModel {
-        tokens("claude", "opus", "4", "7")
-        visionInput()
-        toolReasoningAbility()
-    }
-
-    private val CLAUDE_OPUS_4_8 = defineModel {
-        tokens("claude", "opus", "4", "8")
-        visionInput()
-        toolReasoningAbility()
+        contextLength(1.m)
     }
 
     private val CLAUDE_SONNET_5 = defineModel {
@@ -265,18 +242,22 @@ object ModelRegistry {
         contextLength(1.m)
     }
 
+    private val CLAUDE_FABLE_5 = defineModel {
+        tokens("claude", "fable", "5")
+        visionInput()
+        toolReasoningAbility()
+    }
+
     val CLAUDE_SERIES = defineGroup {
         add(
-            CLAUDE_4,
-            CLAUDE_4_5,
+            CLAUDE_SONNET_4_5,
             CLAUDE_SONNET_4_6,
-            CLAUDE_OPUS_4_6,
-            CLAUDE_OPUS_4_7,
-            CLAUDE_OPUS_4_8,
+            CLAUDE_OPUS_4_5_TO_4_8,
             CLAUDE_SONNET_5,
             CLAUDE_OPUS_5,
             CLAUDE_SONNET_5_5,
-            CLAUDE_OPUS_5_5
+            CLAUDE_OPUS_5_5,
+            CLAUDE_FABLE_5
         )
     }
 
@@ -615,12 +596,6 @@ object ModelRegistry {
         tokens("qwen", "mt")
     }
 
-    val FABLE = defineModel {
-        tokens("fable")
-        visionInput()
-        toolReasoningAbility()
-    }
-
     private val ALL_MODELS = listOf(
         GPT4O,
         GPT_4_1,
@@ -636,7 +611,6 @@ object ModelRegistry {
         GPT_5_5,
         GPT_5_6,
         GPT_6,
-        GEMINI_20_FLASH,
         GEMINI_2_5_FLASH,
         GEMINI_2_5_PRO,
         GEMINI_2_5_IMAGE,
@@ -651,16 +625,14 @@ object ModelRegistry {
         GEMINI_4,
         GEMINI_FLASH_LATEST,
         GEMINI_PRO_LATEST,
-        CLAUDE_4,
-        CLAUDE_4_5,
+        CLAUDE_SONNET_4_5,
         CLAUDE_SONNET_4_6,
-        CLAUDE_OPUS_4_6,
-        CLAUDE_OPUS_4_7,
-        CLAUDE_OPUS_4_8,
+        CLAUDE_OPUS_4_5_TO_4_8,
         CLAUDE_SONNET_5,
         CLAUDE_OPUS_5,
         CLAUDE_SONNET_5_5,
         CLAUDE_OPUS_5_5,
+        CLAUDE_FABLE_5,
         DEEPSEEK_V3_MODEL,
         DEEPSEEK_CHAT,
         DEEPSEEK_R1_MODEL,
@@ -719,8 +691,7 @@ object ModelRegistry {
         LONGCAT_2,
         MUSE_SPARK,
         MUSE_GLIMMER,
-        QWEN_MT,
-        FABLE
+        QWEN_MT
     )
 
     val MODEL_INPUT_MODALITIES = ModelData { modelId ->

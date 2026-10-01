@@ -374,7 +374,11 @@
 - 内置的 DeepSeek 提供商默认启用 Responses API。
 - 模型提供商配置中“Response API”开关下方始终显示“可能不兼容”灰色小字提示（不再弹出 toast）；官方 OpenAI、DeepSeek（`api.deepseek.com`）与 OpenRouter（`openrouter.ai`）地址不显示该提示。
 - 模型搜索/筛选输入框的示例文案由“GPT-3.5”改为“gpt-6”。
-- 模型能力注册表新增 Fable 系列：模型 ID 含 `fable`（如 `claude-fable-5`、`fable-5.1`）时自动启用文字+图片输入（视觉）以及工具与推理能力。
+- 模型能力注册表新增 Claude Fable 5 系列（`CLAUDE_FABLE_5`）：模型 ID 含 `claude`、`fable`、`5`（如 `claude-fable-5`、`claude-fable-5.1`）时自动启用文字+图片输入（视觉）以及工具与推理能力；并加入 `CLAUDE_SERIES` 分组。
+- 模型能力注册表移除 Gemini 2.0 Flash（`GEMINI_20_FLASH`）。
+- 模型能力注册表移除 Claude 4（`CLAUDE_4`）：`claude-4-*` 与 `claude-*-4`（Sonnet/Opus 4）不再被识别为内置模型能力。
+- 模型能力注册表将 Claude Opus 4.6/4.7/4.8 合并为单条 `CLAUDE_OPUS_4_5_TO_4_8`（`tokens("claude", "opus", "4", "5|6|7|8")`），顺带新增 Opus 4.5 支持并统一补上 1M 上下文。
+- 模型能力注册表将 `CLAUDE_4_5` 重命名为 `CLAUDE_SONNET_4_5`，`tokens` 同步改为 `("claude", "sonnet", "4", "5")`。
 
 - 提供商“模型”页底部操作改为两行：第一行“自定义模型”，第二行高亮的“选择模型”；两个按钮按照较宽者统一宽度。
 - 提供商页完整移除“推荐提供商”入口、推荐列表及其预置数据。
