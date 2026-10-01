@@ -139,6 +139,18 @@ fun ChatDrawerContent(
     )
     val conversationCount by drawerVm.conversationCount.collectAsStateWithLifecycle()
 
+    // 拉开侧栏时，如果当前会话不在所展示的列表里（助手 / 文件夹筛选不匹配），
+    // 自动切换到该会话所属的助手与文件夹，保证当前会话可见。
+    LaunchedEffect(drawerVisible, current.id) {
+        if (!drawerVisible) return@LaunchedEffect
+        val currentVisible = conversations.any {
+            it is ConversationListItem.Item && it.conversation.id == current.id
+        }
+        if (!currentVisible) {
+            drawerVm.revealConversation(current.assistantId, current.folderId)
+        }
+    }
+
     LaunchedEffect(conversationListState) {
         snapshotFlow {
             conversationListState.firstVisibleItemIndex to

@@ -131,6 +131,20 @@ class ChatDrawerVM(
         }
     }
 
+    /**
+     * 让侧栏列表展示指定会话：切换到它所属的助手与文件夹。
+     * 用于打开侧栏时，当前会话不在所展示的列表里的情况。
+     */
+    fun revealConversation(assistantId: Uuid, folderId: Uuid?) {
+        viewModelScope.launch {
+            if (assistantIdFlow.first() != assistantId) {
+                settingsStore.updateAssistant(assistantId)
+            }
+            // 复用既有逻辑：等助手切换完成后（init 里的文件夹重置也会先执行）再设置文件夹
+            selectFolderAfterAssistantChange(assistantId, folderId)
+        }
+    }
+
     fun createFolder(name: String) {
         val trimmed = name.trim()
         if (trimmed.isEmpty()) return
