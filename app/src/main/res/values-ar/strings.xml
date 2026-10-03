@@ -954,7 +954,6 @@
   <string name="setting_provider_page_models_format">النماذج (%1$d)</string>
   <string name="setting_provider_page_name">الاسم</string>
   <string name="setting_provider_page_no_models">لا توجد نماذج</string>
-  <string name="setting_provider_page_no_permission">لا توجد صلاحية</string>
   <string name="setting_provider_page_no_qr_found">لم يتم العثور على رمز QR صالح</string>
   <string name="setting_provider_page_output_modality">وسائط الإخراج</string>
   <string name="setting_provider_page_private_key">المفتاح الخاص</string>
@@ -965,7 +964,6 @@
   <string name="setting_provider_page_reasoning">الاستدلال</string>
   <string name="setting_provider_page_response_api">Response API</string>
   <string name="setting_provider_page_response_api_not_compatible">قد تكون غير متوافقة</string>
-  <string name="setting_provider_page_scan_error">خطأ: %s</string>
   <string name="setting_provider_page_scan_qr_code">مسح رمز QR</string>
   <string name="setting_provider_page_select_all">تحديد الكل (%1$d)</string>
   <string name="setting_provider_page_select_from_gallery">اختيار من المعرض</string>

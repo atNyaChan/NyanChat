@@ -406,6 +406,7 @@
 - 模型高级设置的“提供商重写”中已配置的提供商卡片由普通 `OutlinedCard` 改为与“模型”列表同款的公共描边卡片（`OutlinedItemCard`）；移除卡片内单独的编辑按钮，改为点击整项卡片进入提供商配置编辑，卡片内仅保留移除按钮。
 - “请求设定”里 Body 值的 JSON 输入框在无解析错误时不再预留 supporting text 占位，使其下边缘到“添加 Body”按钮的间距与 Header 一致；Header 与 Body 各列表项之间的纵向间隔由 8dp 收窄到 4dp。
 - 提供商编辑抽屉在“模型”列表上方新增“高级设置”区，复用模型请求设定的自定义 Headers 编辑组件（请求头名称输入框提供常用请求头下拉候选）；提供商级请求头优先级最低，会被助手/模型级同名请求头覆盖，并随对话、嵌入、图像、模型列表与余额请求一同发送。
+- 提供商导入的扫码入口改为应用内自实现的 CameraX + `zxing-core` 全屏扫码对话框（`QrCodeScannerDialog`）。
 
 ### 备份与恢复
 - 描述改为“备份或覆盖还原整个 NyanChat”；本地“导出旧版格式”的描述补充“不包含工作区环境”。
@@ -564,9 +565,12 @@
 - 移除未使用的 Google Sans Flex 字体。
 - 删除未使用的反编译工具二进制 `gradle/vineflower.jar`。
 - 删除 `app/src/main/assets/banner/banner-{1,2,3}.png` 三张死资源。
+- 删除未被任何代码引用的 `app/src/main/assets/html/mark.html` 及其加载函数 `buildMarkdownPreviewHtml()`（`MarkdownWeb.kt`），该模板内部从 CDN 加载 mermaid 10.6.1。
 - 聊天消息图片占位图 `placeholder` 与 `placeholder_dark` 由 PNG 改为 WebP（质量 95），资源名不变。
 - `web-ui/copy.ts` 拷贝前端产物时跳过 KaTeX 的 `.woff`/`.ttf` 兜底字体，仅保留 `.woff2`。
 - 在 `androidResources` 中新增 `localeFilters`（en/ar/ja/ko/ko-rKR/ru/zh/zh-rTW），只保留应用实际支持的语言，避免把依赖库的近百种翻译打进未压缩的 `resources.arsc`。
+- web-ui 的 Shiki 高亮不再从 `shiki` 完整入口导入；`code-block.tsx` 改用 `shiki/core` 并只显式引入 catppuccin-latte/mocha 两个主题，从而避免把上游全部 65 个主题 chunk 打进前端产物。
+- web-ui 工作台预览 mermaid 的 CDN 地址由 `https://esm.sh/mermaid@11` 固定为 `https://esm.sh/mermaid@11.16.0`，与 Android 端内置的 `app/src/main/assets/html/mermaid.min.js`（11.16.0）版本统一。
 - 收藏列表的侧滑删除改用 Material 3 的 `SwipeToDismissBox(onDismiss = ...)` 回调（基于 `settledValue`，仅在真正划出落定时触发，替代已弃用的 `confirmValueChange`），并在触发删除后用 `snapTo(Settled)` 立即把状态收回未滑出位置。
 
 ## 尚待验证或长期观察

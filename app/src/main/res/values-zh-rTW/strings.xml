@@ -954,7 +954,6 @@
   <string name="setting_provider_page_models_format">模型（%1$d）</string>
   <string name="setting_provider_page_name">名稱</string>
   <string name="setting_provider_page_no_models">暫無模型</string>
-  <string name="setting_provider_page_no_permission">沒有權限</string>
   <string name="setting_provider_page_no_qr_found">未找到有效的二維碼</string>
   <string name="setting_provider_page_output_modality">輸出模態</string>
   <string name="setting_provider_page_private_key">私鑰</string>
@@ -965,7 +964,6 @@
   <string name="setting_provider_page_reasoning">推理</string>
   <string name="setting_provider_page_response_api">Response API</string>
   <string name="setting_provider_page_response_api_not_compatible">可能不相容</string>
-  <string name="setting_provider_page_scan_error">錯誤: %s</string>
   <string name="setting_provider_page_scan_qr_code">掃描二維碼</string>
   <string name="setting_provider_page_select_all">全選 (%1$d)</string>
   <string name="setting_provider_page_select_from_gallery">從相簿選擇</string>

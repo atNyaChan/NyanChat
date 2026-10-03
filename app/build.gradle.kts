@@ -238,10 +238,13 @@ dependencies {
     // zxing
     implementation(libs.zxing.core)
 
-    // quickie (qrcode scanner)
-    implementation(libs.quickie.bundled)
-    implementation(libs.barcode.scanning)
+    // CameraX (QR 扫码预览/分析)；二维码解码使用 zxing-core
     implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    // camera-core 仅以 runtime 作用域引入 exifinterface，需显式声明以供编译期使用
+    implementation(libs.androidx.exifinterface)
 
     // Room
     implementation(libs.androidx.room.runtime)

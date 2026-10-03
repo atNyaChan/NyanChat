@@ -954,7 +954,6 @@
   <string name="setting_provider_page_models_format">モデル（%1$d）</string>
   <string name="setting_provider_page_name">名前</string>
   <string name="setting_provider_page_no_models">モデルがありません</string>
-  <string name="setting_provider_page_no_permission">権限がありません</string>
   <string name="setting_provider_page_no_qr_found">有効なQRコードが見つかりません</string>
   <string name="setting_provider_page_output_modality">出力モダリティ</string>
   <string name="setting_provider_page_private_key">秘密鍵</string>
@@ -965,7 +964,6 @@
   <string name="setting_provider_page_reasoning">推論</string>
   <string name="setting_provider_page_response_api">Response API</string>
   <string name="setting_provider_page_response_api_not_compatible">非対応の可能性があります</string>
-  <string name="setting_provider_page_scan_error">エラー: %s</string>
   <string name="setting_provider_page_scan_qr_code">QRコードをスキャン</string>
   <string name="setting_provider_page_select_all">すべて選択 (%1$d)</string>
   <string name="setting_provider_page_select_from_gallery">ギャラリーから選択</string>

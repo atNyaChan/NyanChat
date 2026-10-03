@@ -954,7 +954,6 @@
   <string name="setting_provider_page_models_format">模型（%1$d）</string>
   <string name="setting_provider_page_name">名称</string>
   <string name="setting_provider_page_no_models">暂无模型</string>
-  <string name="setting_provider_page_no_permission">没有权限</string>
   <string name="setting_provider_page_no_qr_found">未找到有效的二维码</string>
   <string name="setting_provider_page_output_modality">输出模态</string>
   <string name="setting_provider_page_private_key">私钥</string>
@@ -965,7 +964,6 @@
   <string name="setting_provider_page_reasoning">推理</string>
   <string name="setting_provider_page_response_api">Response API</string>
   <string name="setting_provider_page_response_api_not_compatible">可能不兼容</string>
-  <string name="setting_provider_page_scan_error">错误: %s</string>
   <string name="setting_provider_page_scan_qr_code">扫描二维码</string>
   <string name="setting_provider_page_select_all">全选（%1$d）</string>
   <string name="setting_provider_page_select_from_gallery">从相册选择</string>

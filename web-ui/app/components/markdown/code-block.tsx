@@ -3,14 +3,11 @@ import type { ComponentProps, CSSProperties, HTMLAttributes } from "react";
 
 import { Check, Copy, Download } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import {
-  bundledLanguages,
-  createHighlighter,
-  type BundledLanguage,
-  type BundledTheme,
-  type HighlighterGeneric,
-  type ThemedToken,
-} from "shiki";
+import { createHighlighterCore, type HighlighterCore, type ThemedToken } from "shiki/core";
+import { createOnigurumaEngine } from "shiki/engine/oniguruma";
+import { bundledLanguages, type BundledLanguage } from "shiki/langs";
+import catppuccinLatte from "shiki/themes/catppuccin-latte.mjs";
+import catppuccinMocha from "shiki/themes/catppuccin-mocha.mjs";
 
 import { getCodePreviewLanguage } from "~/components/workbench/code-preview-language";
 import { Button } from "~/components/ui/button";
@@ -26,8 +23,8 @@ import { cn } from "~/lib/utils";
 
 const MAX_SHIKI_CODE_LENGTH = 12000;
 const SHIKI_CACHE_LIMIT = 200;
-const SHIKI_THEME_LIGHT = "catppuccin-latte";
-const SHIKI_THEME_DARK = "catppuccin-mocha";
+const SHIKI_THEME_LIGHT = catppuccinLatte;
+const SHIKI_THEME_DARK = catppuccinMocha;
 
 interface KeyedToken {
   key: string;
@@ -102,14 +99,8 @@ function toDownloadFileName(language: string): string {
   return `code.${safeExtension}`;
 }
 
-const highlighterCache = new Map<
-  BundledLanguage,
-  Promise<HighlighterGeneric<BundledLanguage, BundledTheme>>
->();
-const resolvedHighlighters = new Map<
-  BundledLanguage,
-  HighlighterGeneric<BundledLanguage, BundledTheme>
->();
+const highlighterCache = new Map<BundledLanguage, Promise<HighlighterCore>>();
+const resolvedHighlighters = new Map<BundledLanguage, HighlighterCore>();
 const tokensCache = new Map<string, TokenizedCode>();
 const subscribers = new Map<string, Set<(result: TokenizedCode) => void>>();
 
@@ -152,17 +143,17 @@ function writeTokensToCache(cacheKey: string, tokenized: TokenizedCode): void {
   tokensCache.set(cacheKey, tokenized);
 }
 
-function getHighlighter(
-  language: BundledLanguage,
-): Promise<HighlighterGeneric<BundledLanguage, BundledTheme>> {
+function getHighlighter(language: BundledLanguage): Promise<HighlighterCore> {
   const cached = highlighterCache.get(language);
   if (cached) {
     return cached;
   }
 
-  const highlighterPromise = createHighlighter({
-    langs: [language],
+  // 只显式引入两个主题，避免把上游全部主题 chunk 打进产物；语言仍使用完整列表。
+  const highlighterPromise = createHighlighterCore({
+    langs: [bundledLanguages[language]],
     themes: [SHIKI_THEME_LIGHT, SHIKI_THEME_DARK],
+    engine: createOnigurumaEngine(import("shiki/wasm")),
   });
   highlighterCache.set(language, highlighterPromise);
   return highlighterPromise;

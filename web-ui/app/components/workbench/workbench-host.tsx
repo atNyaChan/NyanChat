@@ -96,7 +96,8 @@ function CodePreviewPanel({ panel }: { panel: WorkbenchPanel }) {
       <pre id="error"></pre>
     </div>
     <script type="module">
-      import mermaid from "https://esm.sh/mermaid@11";
+      // 版本需与 Android 端本地内置的 app/src/main/assets/html/mermaid.min.js 保持一致。
+      import mermaid from "https://esm.sh/mermaid@11.16.0";
 
       const source = decodeURIComponent("${encodedCode}");
       const diagram = document.getElementById("diagram");

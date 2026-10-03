@@ -954,7 +954,6 @@
   <string name="setting_provider_page_models_format">Models (%1$d)</string>
   <string name="setting_provider_page_name">Name</string>
   <string name="setting_provider_page_no_models">No models</string>
-  <string name="setting_provider_page_no_permission">No permission</string>
   <string name="setting_provider_page_no_qr_found">No valid QR code found</string>
   <string name="setting_provider_page_output_modality">Output Modality</string>
   <string name="setting_provider_page_private_key">Private Key</string>
@@ -965,7 +964,6 @@
   <string name="setting_provider_page_reasoning">Reasoning</string>
   <string name="setting_provider_page_response_api">Response API</string>
   <string name="setting_provider_page_response_api_not_compatible">May be incompatible</string>
-  <string name="setting_provider_page_scan_error">Error: %s</string>
   <string name="setting_provider_page_scan_qr_code">Scan QR Code</string>
   <string name="setting_provider_page_select_all">Select All (%1$d)</string>
   <string name="setting_provider_page_select_from_gallery">Select from Gallery</string>
