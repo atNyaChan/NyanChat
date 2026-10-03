@@ -1382,7 +1382,7 @@
   <string name="common_error_save_failed">Save failed</string>
   <string name="error_mcp_reconnect_limit">Connection lost; maximum reconnect attempts reached</string>
   <string name="error_mcp_server_url_blank">Server URL is empty; cannot authorize</string>
-  <string name="error_mcp_no_authorization_server">Protected resource does not declare an authorization server</string>
+  <string name="error_mcp_unknown_authorization_server">Cannot determine the authorization server</string>
   <string name="error_mcp_missing_authorization_endpoint">Authorization server is missing authorization_endpoint</string>
   <string name="error_mcp_missing_token_endpoint">Authorization server is missing token_endpoint</string>
   <string name="error_mcp_no_dynamic_registration">Authorization server does not support dynamic registration and no client_id is preconfigured</string>

@@ -1382,7 +1382,7 @@
   <string name="common_error_save_failed">Не удалось сохранить</string>
   <string name="error_mcp_reconnect_limit">Соединение потеряно; достигнут максимум попыток переподключения</string>
   <string name="error_mcp_server_url_blank">URL сервера пуст; невозможно авторизовать</string>
-  <string name="error_mcp_no_authorization_server">Защищённый ресурс не объявляет сервер авторизации</string>
+  <string name="error_mcp_unknown_authorization_server">Не удалось определить сервер авторизации</string>
   <string name="error_mcp_missing_authorization_endpoint">Сервер авторизации не содержит authorization_endpoint</string>
   <string name="error_mcp_missing_token_endpoint">Сервер авторизации не содержит token_endpoint</string>
   <string name="error_mcp_no_dynamic_registration">Сервер авторизации не поддерживает динамическую регистрацию, а client_id не задан</string>

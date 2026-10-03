@@ -1382,7 +1382,7 @@
   <string name="common_error_save_failed">保存に失敗しました</string>
   <string name="error_mcp_reconnect_limit">接続が切断され、再接続試行回数が上限に達しました</string>
   <string name="error_mcp_server_url_blank">Server URLが空のため、認可できません</string>
-  <string name="error_mcp_no_authorization_server">保護リソースが認可サーバーを宣言していません</string>
+  <string name="error_mcp_unknown_authorization_server">認可サーバーを特定できません</string>
   <string name="error_mcp_missing_authorization_endpoint">認可サーバーに authorization_endpoint がありません</string>
   <string name="error_mcp_missing_token_endpoint">認可サーバーに token_endpoint がありません</string>
   <string name="error_mcp_no_dynamic_registration">認可サーバーが動的登録に対応しておらず、client_id も事前設定されていません</string>

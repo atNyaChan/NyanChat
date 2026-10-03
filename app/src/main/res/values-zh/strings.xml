@@ -1382,7 +1382,7 @@
   <string name="common_error_save_failed">保存失败</string>
   <string name="error_mcp_reconnect_limit">连接断开，已达最大重连次数</string>
   <string name="error_mcp_server_url_blank">Server URL 为空，无法授权</string>
-  <string name="error_mcp_no_authorization_server">受保护资源未声明授权服务器</string>
+  <string name="error_mcp_unknown_authorization_server">无法确定授权服务器</string>
   <string name="error_mcp_missing_authorization_endpoint">授权服务器缺少 authorization_endpoint</string>
   <string name="error_mcp_missing_token_endpoint">授权服务器缺少 token_endpoint</string>
   <string name="error_mcp_no_dynamic_registration">授权服务器不支持动态注册，且未预配置 client_id</string>

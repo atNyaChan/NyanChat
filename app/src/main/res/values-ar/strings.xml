@@ -1382,7 +1382,7 @@
   <string name="common_error_save_failed">فشل الحفظ</string>
   <string name="error_mcp_reconnect_limit">انقطع الاتصال؛ تم بلوغ الحد الأقصى لمحاولات إعادة الاتصال</string>
   <string name="error_mcp_server_url_blank">عنوان URL للخادم فارغ؛ لا يمكن التفويض</string>
-  <string name="error_mcp_no_authorization_server">المورد المحمي لا يعلن عن خادم تفويض</string>
+  <string name="error_mcp_unknown_authorization_server">تعذّر تحديد خادم التفويض</string>
   <string name="error_mcp_missing_authorization_endpoint">خادم التفويض يفتقد authorization_endpoint</string>
   <string name="error_mcp_missing_token_endpoint">خادم التفويض يفتقد token_endpoint</string>
   <string name="error_mcp_no_dynamic_registration">خادم التفويض لا يدعم التسجيل الديناميكي ولا يوجد client_id مُهيّأ مسبقًا</string>
