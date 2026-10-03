@@ -1163,8 +1163,6 @@
   <string name="workspace_detail_rootfs">Rootfs</string>
   <string name="workspace_detail_reinstall_rootfs_desc">Переустановка Rootfs сбросит окружение этой рабочей области</string>
   <string name="workspace_detail_enable_shell_desc">Разрешить этой рабочей области запускать терминальное окружение, используя локальный Rootfs</string>
-  <string name="workspace_detail_broken_rootfs_desc">Эта рабочая область повреждена. Переустановите Rootfs, чтобы продолжить работу</string>
-  <string name="workspace_detail_reinstall_warning">Переустановка Rootfs удалит все существующие файлы. Сначала рассмотрите возможность экспорта рабочей области для резервного копирования файлов</string>
   <string name="workspace_detail_tool_approval">Подтверждение инструментов</string>
   <string name="workspace_detail_tool_approval_desc">Если включено, перед вызовом этого инструмента ИИ требуется подтверждение пользователя.</string>
   <string name="workspace_detail_compatibility_mode">Режим совместимости</string>
@@ -1187,8 +1185,6 @@
   <string name="workspace_detail_install_complete">Установка завершена</string>
   <string name="workspace_detail_export_success">Рабочая область экспортирована</string>
   <string name="workspace_detail_export_failed">Workspace export failed: %1$s</string>
-  <string name="workspace_terminal_title">Терминал</string>
-  <string name="workspace_terminal_title_with_name">%s · Терминал</string>
   <string name="workspace_terminal_not_installed">Пожалуйста, сначала установите Rootfs</string>
   <string name="workspace_terminal_loading">Загрузка рабочего пространства…</string>
   <string name="workspace_terminal_exited">Терминал завершен</string>
@@ -1235,7 +1231,6 @@
   <string name="tool_ui_speaking">Говорит: %s</string>
   <string name="tool_ui_replay">Повторить</string>
   <string name="tool_ui_delete_memory">Удалить память</string>
-  <string name="tool_ui_file">файл</string>
   <string name="workspace_page_name_duplicate">Такое имя уже существует</string>
   <string name="setting_mcp_page_name_invalid">Имя может содержать только латинские буквы и цифры</string>
   <string name="chat_message_tool_recent_chats">Посмотреть недавние чаты</string>

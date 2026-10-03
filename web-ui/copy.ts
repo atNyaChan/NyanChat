@@ -5,10 +5,14 @@ import {
   rmSync,
   statSync,
 } from "node:fs";
-import { join, dirname } from "node:path";
+import { join, dirname, extname } from "node:path";
 
 const SOURCE_DIR = "./build/client";
 const TARGET_DIR = "../web/src/main/resources/static";
+
+// KaTeX 的 @font-face 依次提供 woff2/woff/ttf 三种格式，而 Android WebView 等现代浏览器
+// 只取首个受支持的 woff2，因此跳过体积更大的 woff/ttf 兜底字体，避免 APK 内重复打包。
+const SKIPPED_FONT_EXTENSIONS = new Set([".woff", ".ttf"]);
 
 function copyDirectory(src: string, dest: string) {
   // 确保目标目录存在
@@ -23,6 +27,9 @@ function copyDirectory(src: string, dest: string) {
     if (entry.isDirectory()) {
       copyDirectory(srcPath, destPath);
     } else {
+      if (SKIPPED_FONT_EXTENSIONS.has(extname(entry.name).toLowerCase())) {
+        continue;
+      }
       // 确保父目录存在
       mkdirSync(dirname(destPath), { recursive: true });
       copyFileSync(srcPath, destPath);

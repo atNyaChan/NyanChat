@@ -1163,8 +1163,6 @@
   <string name="workspace_detail_rootfs">Rootfs</string>
   <string name="workspace_detail_reinstall_rootfs_desc">Rootfs を再インストールすると、このワークスペースの環境はリセットされます</string>
   <string name="workspace_detail_enable_shell_desc">このワークスペースでローカルのRootfsを使用したターミナル環境の実行を許可します</string>
-  <string name="workspace_detail_broken_rootfs_desc">このワークスペースは破損しています。続行するには Rootfs を再インストールしてください</string>
-  <string name="workspace_detail_reinstall_warning">Rootfs を再インストールすると既存のファイルがすべて削除されます。先にワークスペースをエクスポートしてバックアップすることを検討してください</string>
   <string name="workspace_detail_tool_approval">ツール承認</string>
   <string name="workspace_detail_tool_approval_desc">有効にすると、AIがこのツールを呼び出す前にユーザーの確認が必要です</string>
   <string name="workspace_detail_compatibility_mode">互換モード</string>
@@ -1187,8 +1185,6 @@
   <string name="workspace_detail_install_complete">インストール完了</string>
   <string name="workspace_detail_export_success">ワークスペースをエクスポートしました</string>
   <string name="workspace_detail_export_failed">Workspace export failed: %1$s</string>
-  <string name="workspace_terminal_title">ターミナル</string>
-  <string name="workspace_terminal_title_with_name">%s・ターミナル</string>
   <string name="workspace_terminal_not_installed">最初にRootfsをインストールしてください。</string>
   <string name="workspace_terminal_loading">ワークスペース読み込み中…</string>
   <string name="workspace_terminal_exited">ターミナル終了</string>
@@ -1235,7 +1231,6 @@
   <string name="tool_ui_speaking">発話中: %s</string>
   <string name="tool_ui_replay">リプレイ</string>
   <string name="tool_ui_delete_memory">メモリを削除</string>
-  <string name="tool_ui_file">ファイル</string>
   <string name="workspace_page_name_duplicate">名前は既に存在します</string>
   <string name="setting_mcp_page_name_invalid">名前は英数字のみ使用可能です。</string>
   <string name="chat_message_tool_recent_chats">最近のチャットを表示</string>

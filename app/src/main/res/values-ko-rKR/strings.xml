@@ -1163,8 +1163,6 @@
   <string name="workspace_detail_rootfs">Rootfs</string>
   <string name="workspace_detail_reinstall_rootfs_desc">Rootfs를 재설치하면 이 워크스페이스의 환경이 초기화됩니다</string>
   <string name="workspace_detail_enable_shell_desc">이 워크스페이스에서 로컬 Rootfs를 사용하여 터미널 환경을 실행할 수 있도록 허용합니다.</string>
-  <string name="workspace_detail_broken_rootfs_desc">이 작업 공간이 손상되었습니다. 계속 사용하려면 Rootfs를 재설치하세요</string>
-  <string name="workspace_detail_reinstall_warning">Rootfs를 재설치하면 기존 파일이 모두 삭제됩니다. 먼저 작업 공간을 내보내 파일을 백업하는 것을 고려하세요</string>
   <string name="workspace_detail_tool_approval">도구 승인</string>
   <string name="workspace_detail_tool_approval_desc">활성화되면 AI가 이 도구를 호출하기 전에 사용자 확인이 필요합니다.</string>
   <string name="workspace_detail_compatibility_mode">호환 모드</string>
@@ -1187,8 +1185,6 @@
   <string name="workspace_detail_install_complete">설치 완료</string>
   <string name="workspace_detail_export_success">워크스페이스를 내보냈습니다</string>
   <string name="workspace_detail_export_failed">Workspace export failed: %1$s</string>
-  <string name="workspace_terminal_title">터미널</string>
-  <string name="workspace_terminal_title_with_name">%s · 터미널</string>
   <string name="workspace_terminal_not_installed">먼저 Rootfs를 설치해 주세요.</string>
   <string name="workspace_terminal_loading">워크스페이스 불러오는 중…</string>
   <string name="workspace_terminal_exited">터미널 종료됨</string>
@@ -1235,7 +1231,6 @@
   <string name="tool_ui_speaking">말하는 중: %s</string>
   <string name="tool_ui_replay">재생</string>
   <string name="tool_ui_delete_memory">메모리 삭제</string>
-  <string name="tool_ui_file">파일</string>
   <string name="workspace_page_name_duplicate">이름이 이미 존재합니다</string>
   <string name="setting_mcp_page_name_invalid">이름은 영어 문자와 숫자만 포함할 수 있습니다.</string>
   <string name="chat_message_tool_recent_chats">최근 채팅 보기</string>

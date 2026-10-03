@@ -1163,8 +1163,6 @@
   <string name="workspace_detail_rootfs">Rootfs</string>
   <string name="workspace_detail_reinstall_rootfs_desc">ستؤدي إعادة تثبيت Rootfs إلى إعادة تعيين بيئة مساحة العمل هذه</string>
   <string name="workspace_detail_enable_shell_desc">السماح لمساحة العمل هذه بتشغيل بيئة طرفية باستخدام Rootfs المحلي</string>
-  <string name="workspace_detail_broken_rootfs_desc">مساحة العمل هذه تالفة. أعد تثبيت Rootfs لمواصلة استخدامها</string>
-  <string name="workspace_detail_reinstall_warning">ستؤدي إعادة تثبيت Rootfs إلى حذف جميع الملفات الحالية. فكّر في تصدير مساحة العمل أولًا للاحتفاظ بنسخة احتياطية من ملفاتك</string>
   <string name="workspace_detail_tool_approval">الموافقة على الأداة</string>
   <string name="workspace_detail_tool_approval_desc">عند التفعيل، يلزم تأكيد المستخدم قبل أن يستدعي الذكاء الاصطناعي هذه الأداة</string>
   <string name="workspace_detail_compatibility_mode">وضع التوافق</string>
@@ -1187,8 +1185,6 @@
   <string name="workspace_detail_install_complete">اكتمل التثبيت</string>
   <string name="workspace_detail_export_success">تم تصدير مساحة العمل</string>
   <string name="workspace_detail_export_failed">فشل تصدير مساحة العمل: %1$s</string>
-  <string name="workspace_terminal_title">الطرفية</string>
-  <string name="workspace_terminal_title_with_name">%s · الطرفية</string>
   <string name="workspace_terminal_not_installed">يرجى تثبيت Rootfs أولاً</string>
   <string name="workspace_terminal_loading">جارٍ تحميل مساحة العمل…</string>
   <string name="workspace_terminal_exited">تم الخروج من الطرفية</string>
@@ -1235,7 +1231,6 @@
   <string name="tool_ui_speaking">جارٍ التحدث: %s</string>
   <string name="tool_ui_replay">إعادة التشغيل</string>
   <string name="tool_ui_delete_memory">حذف الذاكرة</string>
-  <string name="tool_ui_file">ملف</string>
   <string name="workspace_page_name_duplicate">الاسم موجود بالفعل</string>
   <string name="setting_mcp_page_name_invalid">يمكن أن يحتوي الاسم على أحرف إنجليزية وأرقام فقط</string>
   <string name="chat_message_tool_recent_chats">عرض المحادثات الأخيرة</string>

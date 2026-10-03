@@ -1163,8 +1163,6 @@
   <string name="workspace_detail_rootfs">Rootfs</string>
   <string name="workspace_detail_reinstall_rootfs_desc">Reinstalling Rootfs will reset this workspace\'s environment</string>
   <string name="workspace_detail_enable_shell_desc">Allow this workspace to run a terminal environment using local Rootfs</string>
-  <string name="workspace_detail_broken_rootfs_desc">This workspace is damaged. Reinstall Rootfs to continue using it</string>
-  <string name="workspace_detail_reinstall_warning">Reinstalling Rootfs will delete all existing files. Consider exporting the workspace first to back up your files</string>
   <string name="workspace_detail_tool_approval">Tool Approval</string>
   <string name="workspace_detail_tool_approval_desc">When enabled, user confirmation is required before AI calls this tool</string>
   <string name="workspace_detail_compatibility_mode">Compatibility mode</string>
@@ -1187,8 +1185,6 @@
   <string name="workspace_detail_install_complete">Installation complete</string>
   <string name="workspace_detail_export_success">Workspace exported</string>
   <string name="workspace_detail_export_failed">Workspace export failed: %1$s</string>
-  <string name="workspace_terminal_title">Terminal</string>
-  <string name="workspace_terminal_title_with_name">%s · Terminal</string>
   <string name="workspace_terminal_not_installed">Please install Rootfs first</string>
   <string name="workspace_terminal_loading">Loading workspace…</string>
   <string name="workspace_terminal_exited">Terminal exited</string>
@@ -1235,7 +1231,6 @@
   <string name="tool_ui_speaking">Speaking: %s</string>
   <string name="tool_ui_replay">Replay</string>
   <string name="tool_ui_delete_memory">Delete memory</string>
-  <string name="tool_ui_file">file</string>
   <string name="workspace_page_name_duplicate">Name already exists</string>
   <string name="setting_mcp_page_name_invalid">Name can only contain English letters and numbers</string>
   <string name="chat_message_tool_recent_chats">View recent chats</string>

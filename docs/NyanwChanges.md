@@ -562,6 +562,11 @@
 - 清理各网络服务对新版 OkHttp 非空响应体的冗余安全调用、密封类型 `when` 的多余 `else`，并移除低于项目最低 API 26 的废弃 Locale 兼容分支；仍有实际用途的旧 TTS 回调与消息序列化迁移类型继续保留，并仅在对应兼容代码中抑制弃用警告。
 - V3 设置迁移不再于全新安装时写入空助手数组；首次安装、迁移异常或损坏设置产生空助手列表时也会自动补回默认助手，当前助手读取另有独立兜底，避免主界面与安全模式在启动阶段循环闪退。
 - 移除未使用的 Google Sans Flex 字体。
+- 删除未使用的反编译工具二进制 `gradle/vineflower.jar`。
+- 删除 `app/src/main/assets/banner/banner-{1,2,3}.png` 三张死资源。
+- 聊天消息图片占位图 `placeholder` 与 `placeholder_dark` 由 PNG 改为 WebP（质量 95），资源名不变。
+- `web-ui/copy.ts` 拷贝前端产物时跳过 KaTeX 的 `.woff`/`.ttf` 兜底字体，仅保留 `.woff2`。
+- 在 `androidResources` 中新增 `localeFilters`（en/ar/ja/ko/ko-rKR/ru/zh/zh-rTW），只保留应用实际支持的语言，避免把依赖库的近百种翻译打进未压缩的 `resources.arsc`。
 - 收藏列表的侧滑删除改用 Material 3 的 `SwipeToDismissBox(onDismiss = ...)` 回调（基于 `settledValue`，仅在真正划出落定时触发，替代已弃用的 `confirmValueChange`），并在触发删除后用 `snapTo(Settled)` 立即把状态收回未滑出位置。
 
 ## 尚待验证或长期观察

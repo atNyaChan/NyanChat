@@ -1163,8 +1163,6 @@
   <string name="workspace_detail_rootfs">Rootfs</string>
   <string name="workspace_detail_reinstall_rootfs_desc">重新安裝 Rootfs 將會重置此工作區的環境</string>
   <string name="workspace_detail_enable_shell_desc">允許此工作區使用本地 Rootfs 來執行終端環境</string>
-  <string name="workspace_detail_broken_rootfs_desc">此工作區已損壞，請重新安裝 Rootfs 以繼續使用</string>
-  <string name="workspace_detail_reinstall_warning">重新安裝 Rootfs 會刪除所有原有檔案，請考慮先匯出工作區以備份檔案</string>
   <string name="workspace_detail_tool_approval">工具核准</string>
   <string name="workspace_detail_tool_approval_desc">啟用後，AI 調用此工具前需要用戶確認。</string>
   <string name="workspace_detail_compatibility_mode">相容模式</string>
@@ -1187,8 +1185,6 @@
   <string name="workspace_detail_install_complete">安裝完成</string>
   <string name="workspace_detail_export_success">工作區匯出成功</string>
   <string name="workspace_detail_export_failed">Workspace export failed: %1$s</string>
-  <string name="workspace_terminal_title">終端</string>
-  <string name="workspace_terminal_title_with_name">%s · 終端機</string>
   <string name="workspace_terminal_not_installed">請先安裝 Rootfs</string>
   <string name="workspace_terminal_loading">正在載入工作區…</string>
   <string name="workspace_terminal_exited">終端已退出</string>
@@ -1235,7 +1231,6 @@
   <string name="tool_ui_speaking">說話：%s</string>
   <string name="tool_ui_replay">重播</string>
   <string name="tool_ui_delete_memory">刪除記憶</string>
-  <string name="tool_ui_file">文件</string>
   <string name="workspace_page_name_duplicate">名稱已存在</string>
   <string name="setting_mcp_page_name_invalid">名稱只能包含英文字母和數字</string>
   <string name="chat_message_tool_recent_chats">查看最近聊天</string>
