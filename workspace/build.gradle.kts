@@ -1,30 +1,17 @@
 plugins {
-    alias(libs.plugins.android.library)
+    id("rikkahub.android.library")
     alias(libs.plugins.kotlin.serialization)
 }
 
 android {
     namespace = "me.rerere.workspace"
-    compileSdk {
-        version = release(37) {
-            minorApiLevel = 2
-        }
-    }
 
     defaultConfig {
-        minSdk = 26
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
         externalNativeBuild {
             cmake {
                 cppFlags += ""
             }
         }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
     }
     externalNativeBuild {
         cmake {

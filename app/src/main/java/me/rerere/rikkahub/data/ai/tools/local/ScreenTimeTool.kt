@@ -196,7 +196,7 @@ private const val LOOKBACK_MS = 12L * 60 * 60 * 1000
  * - [excludedPackages] 中的包(如桌面 launcher)不计入结果, 其停留时间视为"无 App 前台".
  */
 @Suppress(
-    "DEPRECATION", // MOVE_TO_FOREGROUND/BACKGROUND 与 API29 的 ACTIVITY_RESUMED/PAUSED 值相同, 兼容 minSdk 26
+    "DEPRECATION", // MOVE_TO_FOREGROUND/BACKGROUND 与 API29 的 ACTIVITY_RESUMED/PAUSED 值相同, 兼容 minSdk 28
     "NewApi" // SCREEN_NON_INTERACTIVE 是编译期常量, 低版本设备不会产生该事件, 引用安全
 )
 private fun computeForegroundTime(

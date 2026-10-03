@@ -25,7 +25,7 @@ android {
 
     defaultConfig {
         applicationId = "moe.nyanw.nyanchat"
-        minSdk = 26
+        minSdk = 28
         targetSdk = 37
         versionCode = 1
         versionName = "${buildDate()}+2.5.6"
@@ -65,12 +65,9 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            optimization {
+                enable = true
+            }
             buildConfigField("String", "VERSION_NAME", "\"${android.defaultConfig.versionName}\"")
             buildConfigField("String", "VERSION_CODE", "\"${android.defaultConfig.versionCode}\"")
         }
@@ -95,6 +92,9 @@ android {
         generateLocaleConfig = true
     }
     packaging {
+        dex {
+            useLegacyPackaging = true
+        }
         jniLibs {
             useLegacyPackaging = true
             pickFirsts += "lib/*/libtermux.so"

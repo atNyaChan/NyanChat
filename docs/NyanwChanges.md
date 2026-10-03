@@ -556,6 +556,8 @@
 - 整个项目、Gradle Daemon toolchain、CI 与本地构建文档统一使用 JDK 21；各 Android 模块的 Java source/target compatibility 也统一为 21。
 - 统一 compileSdk/targetSdk 至 37，并在根构建脚本为所有 Android 模块显式固定 Build-Tools 为 37.0.0，避免 AGP 按需下载默认的 Build-Tools 36。
 - 所有 Android 模块统一使用 `compileSdk { version = release(37) { minorApiLevel = 2 } }`（即 Android SDK Platform 37.2）。
+- 各 library 模块的共享构建配置改由 `build-logic` 的 `rikkahub.android.library` / `rikkahub.android.library.compose` convention plugin 统一提供（compileSdk 37.2、minSdk 28、Java 21、Kotlin jvmTarget 21、Compose）；应用级 keep 规则集中在 `app/src/main/keepRules/rikkahub.keep`，其中保留 fork 特有的 zstd-jni `-keep` 规则。
+- 在 `app` 的 `packaging` 中显式设置 `dex { useLegacyPackaging = true }`（与已有的 `jniLibs { useLegacyPackaging = true }` 一致），让 dex 继续以 deflate 压缩进 APK。因为 `minSdk` 提升到 28 后，AGP 的 `DexPackagingOptionsImpl` 默认 `useLegacyPackaging = (minSdk < 28)` 变为 false，会把 `classes*.dex` 以不压缩（STORED）方式存入 APK，使 release APK 由约 34MB 涨到约 47MB、debug APK 约翻倍；该默认与内容无关，只影响 zip 压缩方式和安装时的 dex2oat。
 - 清理 Firebase 移除后的残留引用：删除 `AGENTS.md` 中关于 `google-services.json` 的过时说明，删除 CI workflow 中写入 `google-services.json` 的步骤。
 - 清理各网络服务对新版 OkHttp 非空响应体的冗余安全调用、密封类型 `when` 的多余 `else`，并移除低于项目最低 API 26 的废弃 Locale 兼容分支；仍有实际用途的旧 TTS 回调与消息序列化迁移类型继续保留，并仅在对应兼容代码中抑制弃用警告。
 - V3 设置迁移不再于全新安装时写入空助手数组；首次安装、迁移异常或损坏设置产生空助手列表时也会自动补回默认助手，当前助手读取另有独立兜底，避免主界面与安全模式在启动阶段循环闪退。

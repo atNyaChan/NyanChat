@@ -29,3 +29,6 @@
 
 # Keep JlatexMath
 -keep class org.scilab.forge.jlatexmath.** { *; }
+
+# zstd-jni resolves its native methods and fields by their original names.
+-keep class com.github.luben.zstd.** { *; }
