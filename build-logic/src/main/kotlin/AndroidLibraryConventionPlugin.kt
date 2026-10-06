@@ -12,21 +12,25 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
         pluginManager.apply("com.android.library")
 
         extensions.configure<LibraryExtension> {
-            compileSdk = 37
+            compileSdk {
+                version = release(37) {
+                    minorApiLevel = 2
+                }
+            }
 
             defaultConfig {
-                minSdk = 26
+                minSdk = 28
                 testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
             }
 
             compileOptions {
-                sourceCompatibility = JavaVersion.VERSION_17
-                targetCompatibility = JavaVersion.VERSION_17
+                sourceCompatibility = JavaVersion.VERSION_21
+                targetCompatibility = JavaVersion.VERSION_21
             }
         }
 
         tasks.withType<KotlinCompile>().configureEach {
-            compilerOptions.jvmTarget.set(JvmTarget.JVM_17)
+            compilerOptions.jvmTarget.set(JvmTarget.JVM_21)
         }
     }
 }

@@ -35,10 +35,6 @@ val buildWebUi = tasks.register<Exec>("buildWebUi") {
 
 android {
     namespace = "me.rerere.rikkahub.web"
-
-    defaultConfig {
-        minSdk = 24
-    }
 }
 
 tasks.named("preBuild") {

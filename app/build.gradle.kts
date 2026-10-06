@@ -9,8 +9,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.google.services)
-    alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.baselineprofile)
 }
 
@@ -24,7 +22,7 @@ android {
 
     defaultConfig {
         applicationId = "me.rerere.rikkahub"
-        minSdk = 26
+        minSdk = 28
         targetSdk = 37
         versionCode = 191
         versionName = "2.5.6"
@@ -32,19 +30,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         ndk {
-            abiFilters += listOf("arm64-v8a", "x86_64")
-        }
-    }
-
-    splits {
-        abi {
-            // AppBundle tasks usually contain "bundle" in their name
-            //noinspection WrongGradleMethod
-            val isBuildingBundle = gradle.startParameter.taskNames.any { it.lowercase().contains("bundle") }
-            isEnable = !isBuildingBundle
-            reset()
-            include("arm64-v8a", "x86_64")
-            isUniversalApk = true
+            abiFilters += "arm64-v8a"
         }
     }
 
@@ -89,8 +75,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     buildFeatures {
         compose = true
@@ -140,7 +126,7 @@ ksp {
 
 kotlin {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
+        jvmTarget.set(JvmTarget.JVM_21)
     }
 }
 
@@ -178,11 +164,6 @@ dependencies {
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.androidx.material3.adaptive.navigation3)
-
-    // Firebase
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics)
-    implementation(libs.firebase.crashlytics)
 
     // DataStore
     implementation(libs.androidx.datastore.preferences)
