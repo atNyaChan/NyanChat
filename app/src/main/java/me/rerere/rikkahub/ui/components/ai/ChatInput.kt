@@ -69,11 +69,13 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -303,8 +305,19 @@ fun ChatInput(
         }
     }
 
+    // 底部渐变遮罩：从输入区顶部一直过渡到屏幕底部（键盘弹出时到键盘上沿），避免消息透到系统导航栏
+    val scrimColor = MaterialTheme.colorScheme.background
+    val imeInsets = WindowInsets.ime
     Surface(
         color = Color.Transparent,
+        modifier = Modifier.drawWithCache {
+            val brush = Brush.verticalGradient(
+                colors = listOf(scrimColor.copy(alpha = 0f), scrimColor),
+                startY = 0f,
+                endY = (size.height - imeInsets.getBottom(this)).coerceAtLeast(1f),
+            )
+            onDrawBehind { drawRect(brush) }
+        },
     ) {
         Column(
             modifier = modifier

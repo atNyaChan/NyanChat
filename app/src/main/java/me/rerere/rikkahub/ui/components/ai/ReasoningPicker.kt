@@ -1,25 +1,23 @@
 package me.rerere.rikkahub.ui.components.ai
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SliderState
 import androidx.compose.material3.Text
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,14 +25,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.graphics.shapes.RoundedPolygon
+import kotlinx.coroutines.flow.drop
 import me.rerere.ai.core.ReasoningLevel
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Idea
@@ -48,6 +52,7 @@ import kotlin.math.roundToInt
 
 private val levels = ReasoningLevel.entries
 private val levelCount = levels.size
+private val levelShapes = levels.map { it.shape() }
 
 @Composable
 fun ReasoningButton(
@@ -80,7 +85,7 @@ fun ReasoningButton(
                 modifier = Modifier.size(24.dp),
                 contentAlignment = Alignment.Center
             ) {
-                ReasoningIcon(reasoningLevel)
+                Icon(reasoningLevel.icon(), null)
             }
             if (!onlyIcon) Text(stringResource(R.string.setting_provider_page_reasoning))
         }
@@ -101,9 +106,19 @@ fun ReasoningPicker(
             steps = levelCount - 2,
         )
     }
+    val interactionSource = remember { MutableInteractionSource() }
+    val hapticFeedback = LocalHapticFeedback.current
+    // 拖动过程中就跟随滑块预览，松手后才真正提交
+    val previewLevel = levels[sliderState.value.roundToInt().coerceIn(0, levelCount - 1)]
 
     LaunchedEffect(currentIndex) {
         sliderState.value = currentIndex.toFloat()
+    }
+
+    LaunchedEffect(sliderState) {
+        snapshotFlow { sliderState.value.roundToInt() }
+            .drop(1)
+            .collect { hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick) }
     }
 
     ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
@@ -115,140 +130,75 @@ fun ReasoningPicker(
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
-            // 标题
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+            PickerHeader(
+                title = stringResource(R.string.reasoning_picker_title),
+                hint = stringResource(R.string.reasoning_picker_hint),
             ) {
-                Text(
-                    text = stringResource(R.string.reasoning_picker_title),
-                    style = MaterialTheme.typography.titleLarge,
-                )
-                Text(
-                    text = stringResource(R.string.reasoning_picker_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                )
-            }
-
-            Spacer(Modifier.height(6.dp))
-
-            // 当前等级展示
-            val previewIndex = sliderState.value.roundToInt().coerceIn(0, levelCount - 1)
-            val previewLevel = levels[previewIndex]
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                val iconColor by animateColorAsState(
-                    if (previewLevel.isEnabled) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onSurface
-                )
-                Icon(
-                    imageVector = when (previewLevel) {
-                        ReasoningLevel.OFF -> HugeIcons.Idea
-                        ReasoningLevel.AUTO -> HugeIcons.Idea01
-                        ReasoningLevel.LOW -> ReasoningLow
-                        ReasoningLevel.MEDIUM -> ReasoningMedium
-                        ReasoningLevel.HIGH -> ReasoningHigh
-                        ReasoningLevel.XHIGH -> ReasoningHigh
-                        ReasoningLevel.MAX -> ReasoningHigh
+                // 等级越高形状越「激烈」
+                PickerHero(
+                    shapes = levelShapes,
+                    index = levels.indexOf(previewLevel),
+                    icon = previewLevel.icon(),
+                    containerColor = when {
+                        !previewLevel.isEnabled -> MaterialTheme.colorScheme.surfaceContainerHighest
+                        previewLevel >= ReasoningLevel.HIGH -> MaterialTheme.colorScheme.primary
+                        else -> MaterialTheme.colorScheme.primaryContainer
                     },
-                    contentDescription = null,
-                    modifier = Modifier.size(32.dp),
-                    tint = iconColor,
-                )
-                Text(
-                    text = previewLevel.label(),
-                    style = MaterialTheme.typography.titleLarge,
+                    contentColor = when {
+                        !previewLevel.isEnabled -> MaterialTheme.colorScheme.onSurfaceVariant
+                        previewLevel >= ReasoningLevel.HIGH -> MaterialTheme.colorScheme.onPrimary
+                        else -> MaterialTheme.colorScheme.onPrimaryContainer
+                    },
                 )
             }
 
-            Spacer(Modifier.height(16.dp))
-
-            // 上方标签（下标为奇数的等级）
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                levels.forEachIndexed { index, level ->
-                    if (index % 2 == 1) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                PickerValueLabel(value = previewLevel) { it.label() }
+                Slider(
+                    state = sliderState,
+                    onValueChange = { sliderState.value = it },
+                    onValueChangeFinished = {
+                        val snappedIndex = sliderState.value.roundToInt().coerceIn(0, levelCount - 1)
+                        sliderState.value = snappedIndex.toFloat()
+                        onUpdateReasoningLevel(levels[snappedIndex])
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    interactionSource = interactionSource,
+                    thumb = {
+                        SliderDefaults.Thumb(
+                            interactionSource = interactionSource,
+                            isVertical = false,
+                            thumbSize = DpSize(4.dp, 52.dp),
+                        )
+                    },
+                    track = { sliderState ->
+                        SliderDefaults.Track(
+                            sliderState = sliderState,
+                            trackCornerSize = 12.dp,
+                            modifier = Modifier.height(40.dp),
+                        )
+                    }
+                )
+                // 拖动条下方的强度缩写，与七个刻度一一对应
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    levels.forEach { level ->
+                        val selected = level == previewLevel
                         Text(
-                            text = level.label(),
+                            text = level.abbreviation(),
                             style = MaterialTheme.typography.labelMedium,
-                            fontWeight = if (index == previewIndex) FontWeight.Bold else FontWeight.Normal,
-                            color = if (index == previewIndex) {
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                            color = if (selected) {
                                 MaterialTheme.colorScheme.primary
                             } else {
                                 MaterialTheme.colorScheme.onSurfaceVariant
                             },
-                            textAlign = TextAlign.Center,
                         )
-                    } else {
-                        Spacer(Modifier.weight(1f))
-                    }
-                }
-            }
-
-            Slider(
-                state = sliderState,
-                onValueChange = { sliderState.value = it },
-                onValueChangeFinished = {
-                    val snappedIndex = sliderState.value.roundToInt().coerceIn(0, levelCount - 1)
-                    sliderState.value = snappedIndex.toFloat()
-                    onUpdateReasoningLevel(levels[snappedIndex])
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(32.dp),
-                thumb = {
-                    Box(
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(10.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.onPrimary)
-                        )
-                    }
-                },
-                track = { sliderState ->
-                    SliderDefaults.Track(
-                        sliderState = sliderState,
-                        drawStopIndicator = null,
-                        thumbTrackGapSize = 0.dp,
-                    )
-                }
-            )
-
-            // 下方标签（下标为偶数的等级）
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                levels.forEachIndexed { index, level ->
-                    if (index % 2 == 0) {
-                        Text(
-                            text = level.label(),
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = if (index == previewIndex) FontWeight.Bold else FontWeight.Normal,
-                            color = if (index == previewIndex) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            },
-                            textAlign = TextAlign.Center,
-                        )
-                    } else {
-                        Spacer(Modifier.weight(1f))
                     }
                 }
             }
@@ -256,17 +206,35 @@ fun ReasoningPicker(
     }
 }
 
-@Composable
-private fun ReasoningIcon(level: ReasoningLevel) {
-    when (level) {
-        ReasoningLevel.OFF -> Icon(HugeIcons.Idea, null)
-        ReasoningLevel.AUTO -> Icon(HugeIcons.Idea01, null)
-        ReasoningLevel.LOW -> Icon(ReasoningLow, null)
-        ReasoningLevel.MEDIUM -> Icon(ReasoningMedium, null)
-        ReasoningLevel.HIGH -> Icon(ReasoningHigh, null)
-        ReasoningLevel.XHIGH -> Icon(ReasoningHigh, null)
-        ReasoningLevel.MAX -> Icon(ReasoningHigh, null)
-    }
+private fun ReasoningLevel.icon(): ImageVector = when (this) {
+    ReasoningLevel.OFF -> HugeIcons.Idea
+    ReasoningLevel.AUTO -> HugeIcons.Idea01
+    ReasoningLevel.LOW -> ReasoningLow
+    ReasoningLevel.MEDIUM -> ReasoningMedium
+    ReasoningLevel.HIGH -> ReasoningHigh
+    ReasoningLevel.XHIGH -> ReasoningHigh
+    ReasoningLevel.MAX -> ReasoningHigh
+}
+
+private fun ReasoningLevel.shape(): RoundedPolygon = when (this) {
+    ReasoningLevel.OFF -> MaterialShapes.Circle
+    ReasoningLevel.AUTO -> MaterialShapes.Cookie4Sided
+    ReasoningLevel.LOW -> MaterialShapes.Cookie6Sided
+    ReasoningLevel.MEDIUM -> MaterialShapes.Cookie7Sided
+    ReasoningLevel.HIGH -> MaterialShapes.Cookie9Sided
+    ReasoningLevel.XHIGH -> MaterialShapes.Cookie12Sided
+    ReasoningLevel.MAX -> MaterialShapes.SoftBurst
+}
+
+// 拖动条下方显示的强度缩写
+private fun ReasoningLevel.abbreviation(): String = when (this) {
+    ReasoningLevel.OFF -> "No"
+    ReasoningLevel.AUTO -> "Au"
+    ReasoningLevel.LOW -> "Lo"
+    ReasoningLevel.MEDIUM -> "Mi"
+    ReasoningLevel.HIGH -> "Hi"
+    ReasoningLevel.XHIGH -> "xH"
+    ReasoningLevel.MAX -> "Ma"
 }
 
 fun ReasoningLevel.displayLabel(): String = when (this) {

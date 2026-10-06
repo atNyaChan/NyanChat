@@ -274,7 +274,6 @@
   <string name="chat_page_compress_keep_recent">保留最近訊息</string>
   <string name="chat_page_compress_not_enough_messages">訊息不足，無法壓縮。請減少要保留的訊息數量，或新增更多訊息。</string>
   <string name="chat_page_compress_target_tokens">目標 Token 大小</string>
-  <string name="chat_page_compress_warning">⚠️ 壓縮上下文將重設目前對話中的所有訊息</string>
   <string name="chat_page_compressing">正在壓縮...</string>
   <string name="chat_page_conversation_system_prompt">對話系統提示</string>
   <string name="chat_page_conversation_system_prompt_clear">清除</string>
@@ -492,7 +491,7 @@
   <string name="quick_messages_page_empty_title">無快速訊息</string>
   <string name="quick_messages_page_untitled">未命名</string>
   <string name="reasoning_picker_hint">並非所有模型都支援深度調整。請參閱模型與提供者文件。</string>
-  <string name="reasoning_picker_title">調整模型思考深度</string>
+  <string name="reasoning_picker_title">調整思考深度</string>
   <string name="regenerate">重新生成</string>
   <string name="regenerate_confirm_message">您確定要重新生成此訊息嗎？此訊息下方的所有訊息都會被刪除。</string>
   <string name="safe_mode_assistants">助理</string>
@@ -1459,5 +1458,10 @@
   <string name="chart_series_name">數列 %1$d</string>
   <string name="error_fast_model_not_found">找不到快速模型。請在設定中選擇一個。</string>
   <string name="error_fast_model_provider_not_found">找不到快速模型的供應商</string>
+  <string name="chat_page_compress_checkpoint_title">先前的訊息已壓縮為摘要</string>
+  <string name="chat_page_compress_checkpoint_hint">此線以上的訊息將不再傳送給模型；此摘要會取代它們。刪除摘要即可再次傳送完整歷史記錄。</string>
+  <string name="chat_page_compress_blocked_generating">請先停止生成，再壓縮上下文</string>
+  <string name="chat_page_compress_conversation_changed">對話在壓縮期間已變更。請再試一次。</string>
+  <string name="chat_page_compress_pending_tools">請先處理待處理的工具呼叫，或保留包含這些呼叫的近期訊息</string>
 </resources>
 

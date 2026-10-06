@@ -2,6 +2,7 @@ package me.rerere.workspace
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -83,6 +84,30 @@ class RootfsInstallerTest {
         val applet = File(target, "bin/applet")
         assertEquals(true, Files.isSymbolicLink(applet.toPath()))
         assertEquals("busybox", applet.readText())
+    }
+
+    @Test
+    fun `extract handles alpine style rootfs`() {
+        // Alpine minirootfs 以根目录条目 "./" 开头, 且 /bin/sh 是指向 /bin/busybox 的绝对路径软链
+        val archive = tmp.newFile("rootfs.tar.gz")
+        GZIPOutputStream(archive.outputStream()).use { out ->
+            out.writeTarEntry("./", '5', ByteArray(0))
+            out.writeTarEntry("./bin/", '5', ByteArray(0))
+            out.writeTarEntry("./bin/busybox", '0', "busybox".toByteArray())
+            out.writeTarEntry("./bin/sh", '2', ByteArray(0), linkName = "/bin/busybox")
+            out.write(ByteArray(TAR_BLOCK * 2))
+        }
+
+        val target = tmp.newFolder("out")
+        createInstaller().extractTar(archive, target) {}
+
+        assertEquals("busybox", File(target, "bin/busybox").readText())
+        assertEquals("/bin/busybox", Files.readSymbolicLink(File(target, "bin/sh").toPath()).toString())
+        assertTrue(WorkspaceManager.isUsableRootfs(target))
+        assertEquals("/bin/sh", WorkspaceManager.rootfsShell(target))
+
+        File(target, "bin/bash").writeText("bash")
+        assertEquals("/bin/bash", WorkspaceManager.rootfsShell(target))
     }
 
     private fun createInstaller() = RootfsInstaller(WorkspaceManager(tmp.newFolder()))

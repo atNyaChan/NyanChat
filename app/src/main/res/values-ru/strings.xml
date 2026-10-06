@@ -274,7 +274,6 @@
   <string name="chat_page_compress_keep_recent">Сохранять недавние сообщения</string>
   <string name="chat_page_compress_not_enough_messages">Недостаточно сообщений для сжатия. Уменьшите количество сохраняемых сообщений или добавьте больше сообщений.</string>
   <string name="chat_page_compress_target_tokens">Целевой размер токенов</string>
-  <string name="chat_page_compress_warning">⚠️ Сжатие контекста приведёт к сбросу всех сообщений в текущем диалоге</string>
   <string name="chat_page_compressing">Сжатие...</string>
   <string name="chat_page_conversation_system_prompt">Системный запрос для беседы</string>
   <string name="chat_page_conversation_system_prompt_clear">Очистить</string>
@@ -492,7 +491,7 @@
   <string name="quick_messages_page_empty_title">Нет быстрых сообщений</string>
   <string name="quick_messages_page_untitled">Без названия</string>
   <string name="reasoning_picker_hint">Не все модели поддерживают настройку глубины. См. документацию модели и провайдера.</string>
-  <string name="reasoning_picker_title">Настроить глубину мышления модели</string>
+  <string name="reasoning_picker_title">Настройка глубины мышления</string>
   <string name="regenerate">Сгенерировать заново</string>
   <string name="regenerate_confirm_message">Вы уверены, что хотите заново сгенерировать это сообщение? Все сообщения ниже этого будут удалены.</string>
   <string name="safe_mode_assistants">Помощники</string>
@@ -1459,5 +1458,10 @@
   <string name="chart_series_name">Ряд %1$d</string>
   <string name="error_fast_model_not_found">Быстрая модель не найдена. Пожалуйста, выберите её в настройках.</string>
   <string name="error_fast_model_provider_not_found">Провайдер быстрой модели не найден</string>
+  <string name="chat_page_compress_checkpoint_title">Ранние сообщения сжаты в сводку</string>
+  <string name="chat_page_compress_checkpoint_hint">Сообщения над этой линией больше не отправляются модели; эта сводка заменяет их. Удалите сводку, чтобы снова отправлять всю историю.</string>
+  <string name="chat_page_compress_blocked_generating">Остановите генерацию перед сжатием контекста</string>
+  <string name="chat_page_compress_conversation_changed">Диалог изменился во время сжатия. Повторите попытку.</string>
+  <string name="chat_page_compress_pending_tools">Сначала обработайте ожидающие вызовы инструментов или сохраните последние сообщения, содержащие их</string>
 </resources>
 

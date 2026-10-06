@@ -3,6 +3,7 @@ package me.rerere.rikkahub.data.sync
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import java.io.File
+import me.rerere.workspace.WorkspaceManager
 import me.rerere.workspace.WorkspaceShellStatus
 
 internal object RestoredWorkspaceStatusResetter {
@@ -63,7 +64,7 @@ internal object RestoredWorkspaceStatusResetter {
 
     private fun hasLocalRootfs(workspacesDir: File, root: String): Boolean {
         if (root == "." || root == ".." || !root.matches(ROOT_PATTERN)) return false
-        return File(File(workspacesDir, root), "linux/bin/sh").isFile
+        return WorkspaceManager.isUsableRootfs(File(File(workspacesDir, root), "linux"))
     }
 
     private data class WorkspaceRow(

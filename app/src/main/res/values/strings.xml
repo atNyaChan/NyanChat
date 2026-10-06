@@ -274,7 +274,6 @@
   <string name="chat_page_compress_keep_recent">Keep recent messages</string>
   <string name="chat_page_compress_not_enough_messages">Not enough messages to compress. Reduce the number of messages to keep or add more messages.</string>
   <string name="chat_page_compress_target_tokens">Target Token Size</string>
-  <string name="chat_page_compress_warning">⚠️ Compressing context will reset all messages in the current conversation</string>
   <string name="chat_page_compressing">Compressing...</string>
   <string name="chat_page_conversation_system_prompt">Conversation System Prompt</string>
   <string name="chat_page_conversation_system_prompt_clear">Clear</string>
@@ -492,7 +491,7 @@
   <string name="quick_messages_page_empty_title">No Quick Messages</string>
   <string name="quick_messages_page_untitled">Untitled</string>
   <string name="reasoning_picker_hint">Not all models support depth adjustment. Refer to the model and provider documentation.</string>
-  <string name="reasoning_picker_title">Adjust Model Thinking Depth</string>
+  <string name="reasoning_picker_title">Adjust Thinking Depth</string>
   <string name="regenerate">Regenerate</string>
   <string name="regenerate_confirm_message">Are you sure you want to regenerate this message? All messages below this message will be deleted.</string>
   <string name="safe_mode_assistants">Assistants</string>
@@ -1459,5 +1458,10 @@
   <string name="chart_series_name">Series %1$d</string>
   <string name="error_fast_model_not_found">Fast model not found. Please select one in settings.</string>
   <string name="error_fast_model_provider_not_found">Provider of the fast model not found</string>
+  <string name="chat_page_compress_checkpoint_title">Earlier messages compressed into a summary</string>
+  <string name="chat_page_compress_checkpoint_hint">Messages above this line are no longer sent to the model; this summary replaces them. Delete the summary to send the full history again.</string>
+  <string name="chat_page_compress_blocked_generating">Stop the generation before compressing the context</string>
+  <string name="chat_page_compress_conversation_changed">The conversation changed during compression. Please try again.</string>
+  <string name="chat_page_compress_pending_tools">Handle the pending tool calls first, or keep the recent messages that contain them</string>
 </resources>
 
