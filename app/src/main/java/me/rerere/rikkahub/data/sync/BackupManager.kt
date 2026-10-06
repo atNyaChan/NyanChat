@@ -18,6 +18,7 @@ import me.rerere.rikkahub.data.db.AppDatabase
 import me.rerere.rikkahub.data.db.AppDatabaseFactory
 import me.rerere.rikkahub.data.db.SQLiteConfiguration
 import me.rerere.rikkahub.data.files.FileFolders
+import me.rerere.rikkahub.data.files.MediaCreationFiles
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.workspace.RootfsInstaller
 import me.rerere.workspace.WorkspaceShellStatus
@@ -72,7 +73,7 @@ class BackupManager(
                     addFile(tar, compressed, "rikka_hub.db.zst")
                 }
                 if (includeFiles) {
-                    for (folder in listOf(FileFolders.UPLOAD, FileFolders.SKILLS, FileFolders.FONTS)) {
+                    for (folder in ATTACHMENT_FOLDERS) {
                         val directory = File(context.filesDir, folder)
                         if (directory.isDirectory) addDirectory(tar, directory, folder)
                     }
@@ -218,15 +219,19 @@ class BackupManager(
 
     private fun isAttachment(name: String): Boolean {
         val folder = name.substringBefore('/')
-        if (folder !in listOf(FileFolders.UPLOAD, FileFolders.SKILLS, FileFolders.FONTS) || '/' !in name) return false
+        if (folder !in ATTACHMENT_FOLDERS || '/' !in name) return false
         val relative = name.substringAfter('/')
         require(relative.isNotBlank()) { "Invalid backup attachment: $name" }
-        require(folder == FileFolders.SKILLS || '/' !in relative) { "Invalid backup attachment: $name" }
+        require(folder in NESTED_ATTACHMENT_FOLDERS || '/' !in relative) { "Invalid backup attachment: $name" }
         return true
     }
 
     private fun addDirectory(tar: TarArchiveOutputStream, root: File, prefix: String) {
         root.walkTopDown().filter(File::isFile).forEach { file ->
+            // A media result still being downloaded is incomplete and gets renamed when it finishes.
+            if (prefix == FileFolders.MEDIA_CREATION && file.name.endsWith(MediaCreationFiles.PARTIAL_SUFFIX)) {
+                return@forEach
+            }
             val relative = file.relativeTo(root).invariantSeparatorsPath
             addFile(tar, file, "$prefix/$relative")
         }
@@ -247,6 +252,12 @@ class BackupManager(
     }
 
     companion object {
+        private val ATTACHMENT_FOLDERS =
+            listOf(FileFolders.UPLOAD, FileFolders.SKILLS, FileFolders.FONTS, FileFolders.MEDIA_CREATION)
+
+        /** Backed up with their subdirectories; the other folders only contain top-level files. */
+        private val NESTED_ATTACHMENT_FOLDERS = setOf(FileFolders.SKILLS, FileFolders.MEDIA_CREATION)
+
         private val ZSTD_WORKERS = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
         private const val DATABASE_COMPRESSION_LEVEL = 9
         private const val ZSTD_LONG_WINDOW_LOG = 27

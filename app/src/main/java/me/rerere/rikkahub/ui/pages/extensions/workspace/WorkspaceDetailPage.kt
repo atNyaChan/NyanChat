@@ -72,7 +72,7 @@ import me.rerere.hugeicons.stroke.ArrowTurnBackward
 import me.rerere.hugeicons.stroke.Bash
 import me.rerere.hugeicons.stroke.ComputerTerminal01
 import me.rerere.hugeicons.stroke.Delete01
-import me.rerere.hugeicons.stroke.Edit01
+import me.rerere.hugeicons.stroke.PencilEdit01
 import me.rerere.hugeicons.stroke.File02
 import me.rerere.hugeicons.stroke.FileImport
 import me.rerere.hugeicons.stroke.Folder01
@@ -290,7 +290,7 @@ fun WorkspaceDetailPage(id: String) {
                             }
                         }
                         IconButton(onClick = { showRenameDialog = true }) {
-                            Icon(HugeIcons.Edit01, contentDescription = stringResource(R.string.common_rename))
+                            Icon(HugeIcons.PencilEdit01, contentDescription = stringResource(R.string.common_rename))
                         }
                         IconButton(onClick = { showDeleteWorkspaceConfirm = true }) {
                             Icon(
@@ -659,7 +659,12 @@ private fun WorkspaceBasicPage(
         else stringResource(R.string.workspace_detail_enable_shell_desc)
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(
+            start = 16.dp,
+            top = 8.dp,
+            end = 16.dp,
+            bottom = 16.dp,
+        ),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
@@ -897,7 +902,12 @@ private fun WorkspaceFilesPage(
     }
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = contentPadding + PaddingValues(16.dp),
+        contentPadding = contentPadding + PaddingValues(
+            start = 16.dp,
+            top = 8.dp,
+            end = 16.dp,
+            bottom = 16.dp,
+        ),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
