@@ -44,8 +44,6 @@
   <string name="assistant_page_add_header">添加 Header</string>
   <string name="assistant_page_allow_conversation_system_prompt">獨立對話系統提示</string>
   <string name="assistant_page_allow_conversation_system_prompt_desc">允許每個對話單獨設定系統提示詞</string>
-  <string name="assistant_page_allow_conversation_prompt_injection">獨立對話提示詞注入</string>
-  <string name="assistant_page_allow_conversation_prompt_injection_desc">允許每個對話單獨綁定提示詞注入和世界書</string>
   <string name="assistant_page_available_variables">"可用變數: "</string>
   <string name="assistant_page_background_opacity">背景透明度</string>
   <string name="assistant_page_background_opacity_desc">調整聊天背景圖片顯示透明度</string>
@@ -1393,10 +1391,6 @@
   <string name="assistant_page_local_tools_chart_display_desc">讓 AI 顯示折線圖、長條圖和散佈圖</string>
   <string name="chat_message_tool_chart_display">顯示圖表</string>
   <string name="chat_message_tool_chart_display_with_title">顯示圖表：%1$s</string>
-  <string name="chart_mode_chart">圖表</string>
-  <string name="chart_mode_table">表格</string>
-  <string name="chart_series">數列</string>
-  <string name="chart_series_name">數列 %1$d</string>
   <string name="error_fast_model_not_found">找不到快速模型。請在設定中選擇一個。</string>
   <string name="error_fast_model_provider_not_found">找不到快速模型的供應商</string>
   <string name="assistant_page_clone_with_memories">同時複製記憶</string>
@@ -1561,4 +1555,10 @@
   <string name="chat_page_compress_blocked_generating">請先停止生成，再壓縮上下文</string>
   <string name="chat_page_compress_conversation_changed">對話在壓縮期間已變更。請再試一次。</string>
   <string name="chat_page_compress_pending_tools">請先處理待處理的工具呼叫，或保留包含這些呼叫的近期訊息</string>
+  <string name="sketch">草圖</string>
+  <string name="sketch_draw_on_image">在圖片上繪圖</string>
+  <string name="imggen_page_deprecated_warning">此功能已棄用，將在未來版本中移除。請改用 %1$s</string>
+  <string name="chat_page_sort_conversations">排序方式</string>
+  <string name="chat_page_sort_by_update_time">依更新時間</string>
+  <string name="chat_page_sort_by_create_time">依建立時間</string>
 </resources>

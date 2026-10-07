@@ -44,8 +44,6 @@
   <string name="assistant_page_add_header">Add Header</string>
   <string name="assistant_page_allow_conversation_system_prompt">Per-Conversation System Prompt</string>
   <string name="assistant_page_allow_conversation_system_prompt_desc">Allow each conversation to override the assistant\'s system prompt</string>
-  <string name="assistant_page_allow_conversation_prompt_injection">Per-Conversation Prompt Injections</string>
-  <string name="assistant_page_allow_conversation_prompt_injection_desc">Allow each conversation to bind its own prompt injections and lorebooks</string>
   <string name="assistant_page_available_variables">"Available variables: "</string>
   <string name="assistant_page_background_opacity">Background Opacity</string>
   <string name="assistant_page_background_opacity_desc">Adjust chat background image visibility</string>
@@ -1395,10 +1393,6 @@
   <string name="assistant_page_local_tools_chart_display_desc">Let the AI display line, bar, and scatter charts</string>
   <string name="chat_message_tool_chart_display">Display chart</string>
   <string name="chat_message_tool_chart_display_with_title">Display chart: %1$s</string>
-  <string name="chart_mode_chart">Chart</string>
-  <string name="chart_mode_table">Table</string>
-  <string name="chart_series">Series</string>
-  <string name="chart_series_name">Series %1$d</string>
   <string name="error_fast_model_not_found">Fast model not found. Please select one in settings.</string>
   <string name="error_fast_model_provider_not_found">Provider of the fast model not found</string>
   <string name="assistant_page_clone_with_memories">Also copy memories</string>
@@ -1561,4 +1555,10 @@
   <string name="chat_page_compress_blocked_generating">Stop the generation before compressing the context</string>
   <string name="chat_page_compress_conversation_changed">The conversation changed during compression. Please try again.</string>
   <string name="chat_page_compress_pending_tools">Handle the pending tool calls first, or keep the recent messages that contain them</string>
+  <string name="sketch">Sketch</string>
+  <string name="sketch_draw_on_image">Draw on image</string>
+  <string name="imggen_page_deprecated_warning">This feature is deprecated and will be removed in a future version. Use %1$s instead</string>
+  <string name="chat_page_sort_conversations">Sort chats</string>
+  <string name="chat_page_sort_by_update_time">By last updated</string>
+  <string name="chat_page_sort_by_create_time">By date created</string>
 </resources>

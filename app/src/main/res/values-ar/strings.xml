@@ -42,8 +42,6 @@
   <string name="assistant_page_add">إضافة</string>
   <string name="assistant_page_add_body">إضافة جسم</string>
   <string name="assistant_page_add_header">إضافة ترويسة</string>
-  <string name="assistant_page_allow_conversation_prompt_injection">حقن المطالبات لكل محادثة</string>
-  <string name="assistant_page_allow_conversation_prompt_injection_desc">السماح لكل محادثة بربط حقن المطالبات وكتب المعرفة الخاصة بها</string>
   <string name="assistant_page_allow_conversation_system_prompt">مطالبة النظام لكل محادثة</string>
   <string name="assistant_page_allow_conversation_system_prompt_desc">السماح لكل محادثة بتجاوز مطالبة النظام الخاصة بالمساعد</string>
   <string name="assistant_page_available_variables">\"المتغيرات المتاحة: \"</string>
@@ -1393,10 +1391,6 @@
   <string name="assistant_page_local_tools_chart_display_desc">السماح للذكاء الاصطناعي بعرض المخططات الخطية والشريطية والمبعثرة</string>
   <string name="chat_message_tool_chart_display">عرض المخطط</string>
   <string name="chat_message_tool_chart_display_with_title">عرض المخطط: %1$s</string>
-  <string name="chart_mode_chart">مخطط</string>
-  <string name="chart_mode_table">جدول</string>
-  <string name="chart_series">سلسلة</string>
-  <string name="chart_series_name">سلسلة %1$d</string>
   <string name="error_fast_model_not_found">لم يتم العثور على النموذج السريع. يرجى اختيار واحد في الإعدادات.</string>
   <string name="error_fast_model_provider_not_found">لم يتم العثور على مزوّد النموذج السريع</string>
   <string name="assistant_page_clone_with_memories">نسخ الذاكرة أيضًا</string>
@@ -1561,4 +1555,10 @@
   <string name="chat_page_compress_blocked_generating">أوقف التوليد قبل ضغط السياق</string>
   <string name="chat_page_compress_conversation_changed">تغيّرت المحادثة أثناء الضغط. يرجى المحاولة مرة أخرى.</string>
   <string name="chat_page_compress_pending_tools">تعامل مع استدعاءات الأدوات المعلّقة أولًا، أو احتفظ بالرسائل الحديثة التي تحتوي عليها</string>
+  <string name="sketch">رسم</string>
+  <string name="sketch_draw_on_image">ارسم على الصورة</string>
+  <string name="imggen_page_deprecated_warning">هذه الميزة مهملة وستُزال في إصدار مستقبلي. استخدم %1$s بدلاً من ذلك</string>
+  <string name="chat_page_sort_conversations">ترتيب المحادثات</string>
+  <string name="chat_page_sort_by_update_time">حسب آخر تحديث</string>
+  <string name="chat_page_sort_by_create_time">حسب تاريخ الإنشاء</string>
 </resources>

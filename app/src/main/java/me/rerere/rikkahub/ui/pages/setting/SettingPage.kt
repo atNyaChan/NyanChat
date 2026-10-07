@@ -71,9 +71,6 @@ import me.rerere.rikkahub.data.datastore.isNotConfigured
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
-import me.rerere.rikkahub.ui.components.ui.Select
-import me.rerere.rikkahub.ui.components.ui.icons.DiscordIcon
-import me.rerere.rikkahub.ui.components.ui.icons.TencentQQIcon
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.Navigator
 import me.rerere.rikkahub.ui.hooks.rememberColorMode
@@ -83,6 +80,9 @@ import me.rerere.rikkahub.utils.joinQQGroup
 import me.rerere.rikkahub.utils.openUrl
 import me.rerere.rikkahub.utils.plus
 import me.rerere.rikkahub.utils.writeClipboardText
+import me.rerere.ui.components.Select
+import me.rerere.ui.icons.DiscordIcon
+import me.rerere.ui.icons.TencentQQIcon
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
@@ -91,19 +91,20 @@ fun SettingPage(vm: SettingVM = koinViewModel()) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val navController = LocalNavController.current
     val settings by vm.settings.collectAsStateWithLifecycle()
+    val launchCount by vm.launchCount.collectAsStateWithLifecycle()
     val filesManager: FilesManager = koinInject()
 
-    if (settings.launchCount > 100 && (settings.launchCount - settings.sponsorAlertDismissedAt) >= 50) {
+    if (!settings.init && launchCount > 100 && (launchCount - settings.sponsorAlertDismissedAt) >= 50) {
         AlertDialog(
             onDismissRequest = {
-                vm.updateSettings(settings.copy(sponsorAlertDismissedAt = settings.launchCount))
+                vm.updateSettings(settings.copy(sponsorAlertDismissedAt = launchCount))
             },
             icon = { Icon(HugeIcons.WavingHand01, null) },
             title = { Text(stringResource(R.string.setting_page_sponsor_alert_title)) },
             text = { Text(stringResource(R.string.setting_page_sponsor_alert_desc)) },
             confirmButton = {
                 Button(onClick = {
-                    vm.updateSettings(settings.copy(sponsorAlertDismissedAt = settings.launchCount))
+                    vm.updateSettings(settings.copy(sponsorAlertDismissedAt = launchCount))
                     navController.navigate(Screen.SettingDonate)
                 }) {
                     Text(stringResource(R.string.setting_page_sponsor_alert_confirm))
@@ -111,7 +112,7 @@ fun SettingPage(vm: SettingVM = koinViewModel()) {
             },
             dismissButton = {
                 TextButton(onClick = {
-                    vm.updateSettings(settings.copy(sponsorAlertDismissedAt = settings.launchCount))
+                    vm.updateSettings(settings.copy(sponsorAlertDismissedAt = launchCount))
                 }) {
                     Text(stringResource(R.string.setting_page_sponsor_alert_dismiss))
                 }

@@ -22,6 +22,7 @@ Built with Jetpack Compose, Kotlin, and follows Material Design 3 principles.
 - **document**: Document parsing module for handling PDF, DOCX, PPTX, and EPUB files
 - **highlight**: Code syntax highlighting implementation
 - **material3**: Material color utility extensions used by the app UI
+- **ui**: Reusable Compose UI components that do not depend on app logic
 - **search**: Search functionality SDK for multiple providers (Exa, Tavily, Zhipu, Bing, Brave, SearXNG, and others)
 - **speech**: Speech module for TTS and ASR implementations
 - **web**: Embedded web server module that provides Ktor server startup function and hosts static frontend build files (
@@ -37,8 +38,13 @@ Built with Jetpack Compose, Kotlin, and follows Material Design 3 principles.
 
 - **Conversation**: A persistent conversation thread between the user and an assistant. Each conversation maintains a
   list of MessageNodes in a tree structure to support message branching, along with metadata like title, creation time,
-  update time, pin status, chat suggestions, optional conversation-level system prompt, and prompt injection bindings. (
-  app/src/main/java/me/rerere/rikkahub/data/model/Conversation.kt)
+  update time, pin status, chat suggestions, optional conversation-level system prompt, and prompt injection bindings.
+  Once a conversation is persisted it also holds a `ConversationConfig` snapshot (chat model, reasoning level, search,
+  MCP servers, workspace, skills) taken from the assistant; from then on chat-page changes to those settings stay on
+  the conversation, and code should read them through `Settings.getAssistantOf(conversation)` /
+  `Settings.getChatModelOf(conversation)` instead of the assistant directly. (
+  app/src/main/java/me/rerere/rikkahub/data/model/Conversation.kt,
+  app/src/main/java/me/rerere/rikkahub/data/model/ConversationConfig.kt)
 
 - **UIMessage**: A platform-agnostic message abstraction that encapsulates chat messages with different types of content
   parts (text, images, documents, reasoning, tool calls/results, etc.). Each message has a role (USER, ASSISTANT,

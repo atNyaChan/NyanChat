@@ -93,15 +93,16 @@ import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.getAssistantById
 import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.data.model.MessageNode
+import me.rerere.rikkahub.data.model.withConversation
 import me.rerere.rikkahub.service.ChatError
 import me.rerere.rikkahub.ui.components.message.ChatMessage
 import me.rerere.rikkahub.ui.components.ui.ErrorCardsDisplay
-import me.rerere.rikkahub.ui.components.ui.ListSelectableItem
 import me.rerere.rikkahub.ui.components.ui.RabbitLoadingIndicator
-import me.rerere.rikkahub.ui.components.ui.Tooltip
 import me.rerere.rikkahub.ui.hooks.ImeLazyListAutoScroller
 import me.rerere.rikkahub.ui.theme.ChatFontProvider
 import me.rerere.rikkahub.utils.plus
+import me.rerere.ui.components.ListSelectableItem
+import me.rerere.ui.components.Tooltip
 import kotlin.math.roundToInt
 import kotlin.uuid.Uuid
 
@@ -260,8 +261,15 @@ private fun ChatListNormal(
         )
     }
 
-    val assistant = remember(settings.assistants, conversation.assistantId) {
-        settings.getAssistantById(conversation.assistantId)
+    val assistant = remember(
+        settings.assistants,
+        conversation.assistantId,
+        conversation.config,
+        conversation.modeInjectionIds,
+        conversation.lorebookIds,
+    ) {
+        // 工作区等配置在会话开始后以会话上固定的为准
+        settings.getAssistantById(conversation.assistantId)?.withConversation(conversation)
     }
     val modelById = remember(settings.providers) {
         settings.providers
@@ -331,7 +339,8 @@ private fun ChatListNormal(
                     ) {
                         ChatMessage(
                             node = node,
-                            model = node.currentMessage.modelId?.let(modelById::get),
+                            model = node.currentMessage.modelId?.let(modelById::get)
+                                ?: node.currentMessage.snapshotModel(),
                             assistant = assistant,
                             loading = loading && index == lastMessageIndex,
                             onRegenerate = {

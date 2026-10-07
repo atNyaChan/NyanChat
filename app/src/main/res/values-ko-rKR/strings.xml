@@ -44,8 +44,6 @@
   <string name="assistant_page_add_header">헤더 추가</string>
   <string name="assistant_page_allow_conversation_system_prompt">대화별 시스템 프롬프트</string>
   <string name="assistant_page_allow_conversation_system_prompt_desc">각 대화에서 어시스턴트의 시스템 프롬프트를 재정의할 수 있도록 허용</string>
-  <string name="assistant_page_allow_conversation_prompt_injection">대화별 프롬프트 주입</string>
-  <string name="assistant_page_allow_conversation_prompt_injection_desc">각 대화가 자체 프롬프트 주입 및 로어북을 바인딩할 수 있도록 허용</string>
   <string name="assistant_page_available_variables">사용 가능한 변수: </string>
   <string name="assistant_page_background_opacity">배경 투명도</string>
   <string name="assistant_page_background_opacity_desc">채팅 배경 이미지의 표시 투명도를 조절합니다</string>
@@ -1395,10 +1393,6 @@ mDNS 주소: .local 호스트네임을 사용하며, IP를 몰라도 같은 네�
   <string name="assistant_page_local_tools_chart_display_desc">AI가 꺾은선형, 막대형, 산점도 차트를 표시하도록 허용</string>
   <string name="chat_message_tool_chart_display">차트 표시</string>
   <string name="chat_message_tool_chart_display_with_title">차트 표시: %1$s</string>
-  <string name="chart_mode_chart">차트</string>
-  <string name="chart_mode_table">표</string>
-  <string name="chart_series">계열</string>
-  <string name="chart_series_name">계열 %1$d</string>
   <string name="error_fast_model_not_found">빠른 모델을 찾을 수 없습니다. 설정에서 하나를 선택해 주세요.</string>
   <string name="error_fast_model_provider_not_found">빠른 모델의 제공자를 찾을 수 없습니다</string>
   <string name="assistant_page_clone_with_memories">기억도 함께 복사</string>
@@ -1563,4 +1557,10 @@ mDNS 주소: .local 호스트네임을 사용하며, IP를 몰라도 같은 네�
   <string name="chat_page_compress_blocked_generating">컨텍스트를 압축하기 전에 생성을 중지하세요</string>
   <string name="chat_page_compress_conversation_changed">압축 중에 대화가 변경되었습니다. 다시 시도해 주세요.</string>
   <string name="chat_page_compress_pending_tools">대기 중인 도구 호출을 먼저 처리하거나, 해당 호출이 포함된 최근 메시지를 유지하세요</string>
+  <string name="sketch">스케치</string>
+  <string name="sketch_draw_on_image">이미지에 그리기</string>
+  <string name="imggen_page_deprecated_warning">이 기능은 더 이상 사용되지 않으며 향후 버전에서 제거될 예정입니다. 대신 %1$s을(를) 사용하세요.</string>
+  <string name="chat_page_sort_conversations">채팅 정렬</string>
+  <string name="chat_page_sort_by_update_time">최근 업데이트순</string>
+  <string name="chat_page_sort_by_create_time">생성 날짜순</string>
 </resources>
