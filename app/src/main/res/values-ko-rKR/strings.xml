@@ -1610,5 +1610,7 @@
   <string name="media_creation_page_active_count">%1$d개 생성 중</string>
   <string name="media_creation_page_rename_session">세션 이름 바꾸기</string>
   <string name="media_creation_page_files_unreadable">%1$d개 파일을 읽을 수 없습니다</string>
+  <string name="sketch">스케치</string>
+  <string name="sketch_draw_on_image">이미지에 그리기</string>
 </resources>
 

@@ -1610,5 +1610,7 @@
   <string name="media_creation_page_active_count">%1$d قيد التوليد</string>
   <string name="media_creation_page_rename_session">إعادة تسمية الجلسة</string>
   <string name="media_creation_page_files_unreadable">تعذّرت قراءة %1$d من الملفات</string>
+  <string name="sketch">رسم</string>
+  <string name="sketch_draw_on_image">ارسم على الصورة</string>
 </resources>
 

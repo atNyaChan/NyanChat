@@ -1610,5 +1610,7 @@
   <string name="media_creation_page_active_count">%1$d в процессе</string>
   <string name="media_creation_page_rename_session">Переименовать сессию</string>
   <string name="media_creation_page_files_unreadable">Не удалось прочитать файлов: %1$d</string>
+  <string name="sketch">Эскиз</string>
+  <string name="sketch_draw_on_image">Рисовать на изображении</string>
 </resources>
 

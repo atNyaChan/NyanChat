@@ -549,6 +549,7 @@
 - 媒体创作详情页生成结果卡片底部的操作按钮背景色由 `surfaceContainerHighest` 改为 `surfaceContainer`。
 - 媒体创作详情页输入区显示参数摘要的「参数」按钮（`ComposerChip`）背景色由 `secondaryContainer` 改为 `surfaceContainer`。
 - 媒体创作详情页输入区弹出的各选择面板（模型/参数/素材，`ComposerSheet`）背景由 `surfaceContainerLow` 改为 `surface`。
+- 画板（Sketch）页面背景由 `surfaceContainer` 改为 `surface`；画纸（`SketchCanvas`）四周增加 1dp 的 `outlineVariant` 描边。
 - 消息三点菜单里「翻译」打开的语言选择面板中，每个语言选项卡片的背景色由默认的 `surfaceContainerHighest` 改为 `surfaceContainerHigh`。
 - 思考块背景色由 `surfaceContainerHigh` 改为 `surfaceContainer`。
 - 压缩检查点展开后的摘要卡片：Android 背景色由 `surfaceContainerHigh` 改为 `surfaceContainer`，web-ui 对应由 `bg-muted` 改为 `bg-card`；摘要正文改用 `bodyMedium`（比默认正文小一档）。

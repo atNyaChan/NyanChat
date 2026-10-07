@@ -49,6 +49,7 @@ import me.rerere.hugeicons.stroke.Image02
 import me.rerere.hugeicons.stroke.MusicNote03
 import me.rerere.hugeicons.stroke.Package
 import me.rerere.hugeicons.stroke.Package01
+import me.rerere.hugeicons.stroke.PaintBoard
 import me.rerere.hugeicons.stroke.Settings02
 import me.rerere.hugeicons.stroke.Video01
 import me.rerere.hugeicons.stroke.Voice
@@ -97,6 +98,7 @@ internal fun FilesPicker(
     onPickVideo: () -> Unit,
     onPickAudio: () -> Unit,
     onPickFile: () -> Unit,
+    onSketch: () -> Unit,
     onStartVoiceMode: (() -> Unit)? = null,
 ) {
     val settings = LocalSettings.current
@@ -166,6 +168,7 @@ internal fun FilesPicker(
                 onPickVideo = onPickVideo,
                 onPickAudio = onPickAudio,
                 onPickFile = onPickFile,
+                onSketch = onSketch,
                 onStartVoiceMode = onStartVoiceMode,
             )
         }
@@ -540,6 +543,7 @@ private fun CardGroupScope.photoButtonItems(
     onPickVideo: () -> Unit,
     onPickAudio: () -> Unit,
     onPickFile: () -> Unit,
+    onSketch: () -> Unit,
     onStartVoiceMode: (() -> Unit)? = null,
 ) {
     item(onClick = onTakePic) {
@@ -552,6 +556,12 @@ private fun CardGroupScope.photoButtonItems(
         BigIconTextButton(
             icon = { Icon(HugeIcons.Image02, null) },
             text = { Text(stringResource(R.string.photo)) },
+        )
+    }
+    item(onClick = onSketch) {
+        BigIconTextButton(
+            icon = { Icon(HugeIcons.PaintBoard, null) },
+            text = { Text(stringResource(R.string.sketch)) },
         )
     }
     if (provider != null && provider is ProviderSetting.Google) {

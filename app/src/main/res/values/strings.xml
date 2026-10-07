@@ -1610,5 +1610,7 @@
   <string name="setting_media_page_delete_unnamed_provider_confirm">Are you sure you want to delete this media provider? This action cannot be undone.</string>
   <string name="video_player_error">Unable to play this video</string>
   <string name="video_player_open_with">Open with another app</string>
+  <string name="sketch">Sketch</string>
+  <string name="sketch_draw_on_image">Draw on image</string>
 </resources>
 

@@ -1610,5 +1610,7 @@
   <string name="media_creation_page_active_count">%1$d 個生成中</string>
   <string name="media_creation_page_rename_session">重新命名工作階段</string>
   <string name="media_creation_page_files_unreadable">%1$d 個檔案無法讀取</string>
+  <string name="sketch">草圖</string>
+  <string name="sketch_draw_on_image">在圖片上繪圖</string>
 </resources>
 

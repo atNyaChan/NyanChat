@@ -22,7 +22,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import androidx.core.net.toUri
 import coil3.compose.AsyncImage
+import kotlinx.coroutines.launch
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Cancel01
@@ -42,6 +46,7 @@ import me.rerere.hugeicons.stroke.Video01
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.ui.hooks.ChatInputState
 import me.rerere.rikkahub.utils.formatNumber
+import me.rerere.ui.sketch.SketchDialog
 import org.koin.compose.koinInject
 
 @Composable
@@ -63,6 +68,33 @@ internal fun MediaFileInputRow(
         if (state.shouldDeleteFileOnRemove(part)) {
             filesManager.deleteChatFiles(listOf(url.toUri()))
         }
+    }
+
+    // 正在哪张图片上画，非空时显示画板
+    val scope = rememberCoroutineScope()
+    var drawingOn by remember { mutableStateOf<UIMessagePart.Image?>(null) }
+    drawingOn?.let { part ->
+        SketchDialog(
+            image = part.url.toUri(),
+            onDismiss = { drawingOn = null },
+            onConfirm = { result ->
+                drawingOn = null
+                scope.launch {
+                    val uri = filesManager.createChatFileBySketch(result) ?: return@launch
+                    // 画好的图换掉原来那张，位置不变；等保存的这会儿原图已经被移走的话就不加了
+                    if (part !in state.messageContent) {
+                        filesManager.deleteChatFiles(listOf(uri))
+                        return@launch
+                    }
+                    state.messageContent = state.messageContent.map {
+                        if (it == part) UIMessagePart.Image(uri.toString()) else it
+                    }
+                    if (state.shouldDeleteFileOnRemove(part)) {
+                        filesManager.deleteChatFiles(listOf(part.url.toUri()))
+                    }
+                }
+            },
+        )
     }
 
     Row(
@@ -96,7 +128,8 @@ internal fun MediaFileInputRow(
                                 )
                             }
                         },
-                        onRemove = { removePart(part, part.url) }
+                        onRemove = { removePart(part, part.url) },
+                        onClick = { drawingOn = part },
                     )
                 }
 
@@ -152,12 +185,16 @@ private fun AttachmentChip(
     detail: String? = null,
     leading: @Composable () -> Unit,
     onRemove: () -> Unit,
+    onClick: (() -> Unit)? = null,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Surface(
+            modifier = Modifier
+                .clip(RoundedCornerShape(18.dp))
+                .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
             shape = RoundedCornerShape(18.dp),
             tonalElevation = 1.dp,
             shadowElevation = 0.dp,

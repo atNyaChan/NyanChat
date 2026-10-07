@@ -1610,5 +1610,7 @@
   <string name="setting_media_page_delete_unnamed_provider_confirm">确定删除这个媒体生成提供商吗？此操作无法撤销。</string>
   <string name="video_player_error">无法播放这个视频</string>
   <string name="video_player_open_with">用其他应用打开</string>
+  <string name="sketch">草图</string>
+  <string name="sketch_draw_on_image">在图片上绘制</string>
 </resources>
 

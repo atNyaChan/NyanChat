@@ -74,6 +74,7 @@ to port safely in one session, STOP and ask the user before starting.
 - **document**: Document parsing module for handling PDF, DOCX, PPTX, and EPUB files
 - **highlight**: Code syntax highlighting implementation
 - **material3**: Material color utility extensions used by the app UI
+- **ui**: Reusable Compose UI components that do not depend on app logic
 - **search**: Search functionality SDK for multiple providers (Exa, Tavily, Zhipu, Bing, Brave, SearXNG, and others)
 - **speech**: Speech module for TTS and ASR implementations
 - **web**: Embedded web server module that provides Ktor server startup function and hosts static frontend build files (
