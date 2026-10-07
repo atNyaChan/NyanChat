@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -270,7 +270,7 @@ fun ModelListSheet(
             modifier = Modifier
                 .padding(horizontal = 8.dp)
                 .padding(bottom = 8.dp)
-                .fillMaxHeight(0.95f)
+                .bottomSheetMaxHeight()
                 .imePadding(),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
@@ -473,7 +473,7 @@ private fun ColumnScope.ModelList(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = PaddingValues(8.dp),
         modifier = Modifier
-            .weight(1f)
+            .weight(1f, fill = false)
             .fillMaxWidth(),
     ) {
         if (providers.isEmpty()) {

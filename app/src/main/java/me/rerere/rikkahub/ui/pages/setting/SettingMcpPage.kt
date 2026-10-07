@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -432,7 +432,7 @@ private fun McpServerConfigModal(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(0.95f)
+                    .bottomSheetMaxHeight()
                     .padding(horizontal = 8.dp).padding(bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -466,7 +466,7 @@ private fun McpServerConfigModal(
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier
-                        .weight(1f)
+                        .weight(1f, fill = false)
                         .fillMaxWidth()
                 ) { page ->
                     when (page) {
@@ -536,7 +536,7 @@ private fun McpCommonOptionsConfigure(
 ) {
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 16.dp)
             .verticalScroll(rememberScrollState())
             .imePadding(),
@@ -849,7 +849,7 @@ private fun McpToolsConfigure(
 ) {
     val mcpManager = koinInject<McpManager>()
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -1044,7 +1044,7 @@ private fun McpImportModal(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.95f)
+                .bottomSheetMaxHeight()
                 .padding(horizontal = 16.dp).padding(bottom = 8.dp)
                 .imePadding(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -1063,7 +1063,8 @@ private fun McpImportModal(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
+                    .heightIn(min = 200.dp)
+                    .weight(1f, fill = false),
                 placeholder = { Text("{ \"mcpServers\": { ... } }") },
                 isError = errorMessage != null,
                 supportingText = errorMessage?.let { msg -> { Text(msg, color = MaterialTheme.colorScheme.error) } }

@@ -6,8 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -120,7 +119,7 @@ fun McpPickerButton(
             Column(
                 modifier = Modifier.Companion
                     .fillMaxWidth()
-                    .fillMaxHeight(0.95f)
+                    .bottomSheetMaxHeight()
                     .padding(horizontal = 16.dp).padding(bottom = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -152,7 +151,7 @@ fun McpPickerButton(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f)
+                        .weight(1f, fill = false)
                 )
             }
         }
@@ -207,7 +206,7 @@ internal fun McpPickerPage(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .fillMaxHeight(0.7f)
+            .bottomSheetMaxHeight()
             .padding(horizontal = 16.dp),
     ) {
         SheetHeader(
@@ -240,7 +239,7 @@ internal fun McpPickerPage(
             onUpdateAssistant = onUpdateAssistant,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f),
+                .weight(1f, fill = false),
             contentPadding = PaddingValues(bottom = 16.dp),
         )
     }
@@ -256,7 +255,7 @@ fun McpPicker(
 ) {
     val mcpManager = koinInject<McpManager>()
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxWidth(),
         contentPadding = contentPadding,
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {

@@ -117,6 +117,7 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import java.io.File
 import kotlin.uuid.Uuid
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 @Composable
 fun ImageGenPage(
@@ -895,6 +896,7 @@ private fun SettingsBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .bottomSheetMaxHeight()
                 .padding(horizontal = 16.dp).padding(bottom = 16.dp)
                 .imePadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp)

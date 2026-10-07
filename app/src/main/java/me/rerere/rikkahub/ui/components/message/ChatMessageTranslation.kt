@@ -47,6 +47,7 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import java.util.Locale
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 @Composable
 fun LanguageSelectionDialog(
@@ -92,6 +93,7 @@ fun LanguageSelectionDialog(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .bottomSheetMaxHeight()
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),

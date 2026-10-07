@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -72,6 +73,7 @@ private enum class ExtensionTab(val icon: ImageVector, @param:StringRes val labe
 @Composable
 fun ExtensionSelector(
     modifier: Modifier = Modifier,
+    fillHeight: Boolean = true,
     assistant: Assistant,
     settings: Settings,
     onUpdate: (Assistant) -> Unit,
@@ -105,6 +107,8 @@ fun ExtensionSelector(
     }
 
     val pagerState = rememberPagerState { ExtensionTab.entries.size }
+    // 在固定高度的容器中（如助手详情页卡片）需要填满，在底部抽屉中则随内容收缩
+    val contentModifier = if (fillHeight) Modifier.fillMaxSize() else Modifier.fillMaxWidth()
 
     Column(
         modifier = modifier
@@ -118,7 +122,7 @@ fun ExtensionSelector(
             state = pagerState,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
+                .weight(1f, fill = fillHeight)
         ) { page ->
             val tab = ExtensionTab.entries[page]
             val manageText = stringResource(R.string.extension_selector_manage, stringResource(tab.label))
@@ -126,6 +130,7 @@ fun ExtensionSelector(
                 ExtensionTab.QUICK_MESSAGES -> {
                     if (settings.quickMessages.isNotEmpty()) {
                         QuickMessagesContent(
+                            modifier = contentModifier,
                             quickMessages = settings.quickMessages,
                             selectedIds = assistant.quickMessageIds,
                             onToggle = { id, checked ->
@@ -152,6 +157,7 @@ fun ExtensionSelector(
                 ExtensionTab.MODE_INJECTIONS -> {
                     if (settings.modeInjections.isNotEmpty()) {
                         ModeInjectionsContent(
+                            modifier = contentModifier,
                             modeInjections = settings.modeInjections,
                             selectedIds = selectedModeInjectionIds,
                             onToggle = { id, checked ->
@@ -182,6 +188,7 @@ fun ExtensionSelector(
                 ExtensionTab.LOREBOOKS -> {
                     if (settings.lorebooks.isNotEmpty()) {
                         LorebooksContent(
+                            modifier = contentModifier,
                             lorebooks = settings.lorebooks,
                             selectedIds = selectedLorebookIds,
                             onToggle = { id, checked ->
@@ -212,6 +219,7 @@ fun ExtensionSelector(
                 ExtensionTab.SKILLS -> {
                     if (skills.isNotEmpty()) {
                         SkillsContent(
+                            modifier = contentModifier,
                             skills = skills,
                             enabledSkills = assistant.enabledSkills,
                             onToggle = { name, checked ->

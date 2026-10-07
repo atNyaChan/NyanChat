@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -597,7 +597,7 @@ private fun ScreenTimePreview(content: JsonElement, apps: List<JsonElement>) {
     val maxAppMs = apps.maxOfOrNull { it.appMs() }?.takeIf { it > 0 } ?: 1L
     LazyColumn(
         modifier = Modifier
-            .fillMaxHeight(0.95f)
+            .bottomSheetMaxHeight()
             .padding(horizontal = 16.dp)
             .padding(bottom = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -714,7 +714,7 @@ private fun SearchWebPreview(
 
     LazyColumn(
         modifier = Modifier
-            .fillMaxHeight(0.95f)
+            .bottomSheetMaxHeight()
             .padding(horizontal = 16.dp)
             .padding(bottom = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -871,7 +871,7 @@ private fun ScrapeWebPreview(content: JsonElement) {
 
     LazyColumn(
         modifier = Modifier
-            .fillMaxHeight(0.95f)
+            .bottomSheetMaxHeight()
             .padding(horizontal = 16.dp)
             .padding(bottom = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)

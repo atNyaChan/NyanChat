@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -44,6 +43,7 @@ import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.workspace.WorkspaceFileEntry
 import me.rerere.workspace.WorkspaceStorageArea
 import org.koin.compose.koinInject
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 @Composable
 fun WorkspaceCwdPickerSheet(
@@ -78,6 +78,7 @@ fun WorkspaceCwdPickerSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .bottomSheetMaxHeight()
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -119,8 +120,7 @@ fun WorkspaceCwdPickerSheet(
 
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 350.dp),
+                    .fillMaxWidth(),
             ) {
                 val dirs = entries.filter { it.isDirectory }
                 items(dirs, key = { it.path }) { entry ->

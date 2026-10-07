@@ -56,6 +56,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.launch
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 @Composable
 fun PermissionLogPage() {
@@ -198,6 +199,7 @@ internal fun PermissionToolDetailContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .bottomSheetMaxHeight()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp).padding(bottom = 8.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),

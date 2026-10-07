@@ -46,6 +46,7 @@ import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.workspace.WorkspaceStorageArea
 import org.koin.compose.koinInject
 import java.io.File
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 private const val DEFAULT_VISIBLE_COUNT = 3
 private val WORKSPACE_FILE_TOOL_NAMES = setOf("workspace_write_file", "workspace_edit_file")
@@ -132,6 +133,7 @@ internal fun EditedFilesList(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .bottomSheetMaxHeight()
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),

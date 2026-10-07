@@ -18,8 +18,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -234,7 +233,7 @@ fun SettingProviderDetailSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.95f)
+                .bottomSheetMaxHeight()
                 .padding(bottom = 8.dp)
                 .imePadding(),
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -251,7 +250,7 @@ fun SettingProviderDetailSheet(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
+                    .weight(1f, fill = false),
                 state = lazyListState,
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -521,7 +520,7 @@ fun SettingProviderDetailSheet(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight(0.95f)
+                        .bottomSheetMaxHeight()
                         .padding(bottom = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
@@ -536,7 +535,7 @@ fun SettingProviderDetailSheet(
                     Column(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier
-                            .weight(1f)
+                            .weight(1f, fill = false)
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
                     ) {
@@ -1042,7 +1041,7 @@ private fun ModelPickerSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.95f)
+                .bottomSheetMaxHeight()
                 .padding(horizontal = 8.dp)
                 .padding(bottom = 8.dp)
                 .imePadding(),
@@ -1086,7 +1085,7 @@ private fun ModelPickerSheet(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
+                    .weight(1f, fill = false),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(8.dp),
             ) {
@@ -1286,7 +1285,7 @@ private fun ModelSettingsForm(
                     Column(
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier
-                            .fillMaxSize()
+                            .fillMaxWidth()
                             .padding(vertical = 16.dp)
                             .verticalScroll(rememberScrollState())
                     ) {
@@ -1497,7 +1496,7 @@ private fun ModelSettingsForm(
                     // 高级设置页面
                     Column(
                         modifier = Modifier
-                            .fillMaxSize()
+                            .fillMaxWidth()
                             .verticalScroll(rememberScrollState())
                             .padding(vertical = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -1981,7 +1980,7 @@ private fun ModelCard(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight(0.95f)
+                        .bottomSheetMaxHeight()
                         .padding(bottom = 8.dp)
                         .imePadding(),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -1997,7 +1996,7 @@ private fun ModelCard(
                     Column(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier
-                            .weight(1f)
+                            .weight(1f, fill = false)
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
                     ) {
@@ -2101,7 +2100,7 @@ private fun BuiltInToolsSettings(
 ) {
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .verticalScroll(rememberScrollState())
             .padding(vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -2253,6 +2252,7 @@ private fun ProviderOverrideSettings(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .bottomSheetMaxHeight()
                         .padding(horizontal = 16.dp)
                         .padding(bottom = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)

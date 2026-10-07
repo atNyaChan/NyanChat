@@ -49,6 +49,7 @@ import me.rerere.rikkahub.ui.components.ui.icons.ReasoningHigh
 import me.rerere.rikkahub.ui.components.ui.icons.ReasoningLow
 import me.rerere.rikkahub.ui.components.ui.icons.ReasoningMedium
 import kotlin.math.roundToInt
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 private val levels = ReasoningLevel.entries
 private val levelCount = levels.size
@@ -128,6 +129,7 @@ fun ReasoningPicker(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .bottomSheetMaxHeight()
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),

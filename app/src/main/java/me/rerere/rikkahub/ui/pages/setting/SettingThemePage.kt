@@ -88,6 +88,7 @@ import me.rerere.rikkahub.utils.plus
 import me.rerere.ui.common.ColorPicker
 import org.koin.androidx.compose.koinViewModel
 import kotlin.uuid.Uuid
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 private val themeJson = Json {
     ignoreUnknownKeys = true
@@ -435,6 +436,7 @@ private fun CustomThemeEditSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .bottomSheetMaxHeight()
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 8.dp),
         ) {

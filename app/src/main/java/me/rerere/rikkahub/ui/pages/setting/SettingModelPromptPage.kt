@@ -28,6 +28,7 @@ import me.rerere.rikkahub.data.ai.prompts.DEFAULT_TITLE_PROMPT
 import me.rerere.rikkahub.data.ai.prompts.DEFAULT_TRANSLATION_PROMPT
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.ui.components.ui.CardGroupScope
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 internal fun CardGroupScope.promptSettingItem(type: PromptType, onClick: () -> Unit) {
     item(
@@ -63,6 +64,8 @@ internal fun PromptEditor(
         ) {
             Column(
                 modifier = Modifier
+                    .fillMaxWidth()
+                    .bottomSheetMaxHeight()
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 8.dp)
                     .imePadding(),

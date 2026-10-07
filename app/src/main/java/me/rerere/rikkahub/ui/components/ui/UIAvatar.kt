@@ -320,6 +320,7 @@ fun UIAvatar(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
+                    .bottomSheetMaxHeight()
                     .wrapContentHeight()
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 8.dp)

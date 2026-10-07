@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -39,6 +38,7 @@ import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.pages.setting.SearchAbilityTagLine
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 enum class SearchMode {
     OFF,
@@ -129,6 +129,7 @@ private fun SearchPicker(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .bottomSheetMaxHeight()
             .padding(horizontal = 16.dp)
             .padding(bottom = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -156,7 +157,6 @@ private fun SearchPicker(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(max = 400.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {

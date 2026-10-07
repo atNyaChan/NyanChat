@@ -96,6 +96,7 @@ import kotlinx.serialization.json.contentOrNull
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 private enum class LogFilter { ALL, LLM_ONLY, NON_LLM_ONLY }
 
@@ -441,7 +442,9 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
 
     SelectionContainer {
         LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .bottomSheetMaxHeight(),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {

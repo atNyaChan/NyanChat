@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -185,7 +185,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp).padding(bottom = 8.dp)
-                    .fillMaxHeight(0.95f),
+                    .bottomSheetMaxHeight(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
@@ -198,7 +198,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                     onValueChange = { newState ->
                         currentProvider = newState
                     },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f, fill = false),
                     footer = if (provider.id != DEFAULT_SYSTEM_TTS_ID) {
                         {
                             Button(
@@ -298,7 +298,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp).padding(bottom = 8.dp)
-                    .fillMaxHeight(0.95f),
+                    .bottomSheetMaxHeight(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
@@ -311,7 +311,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                     onValueChange = { newState ->
                         currentProvider = newState
                     },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f, fill = false),
                     footer = {
                         Button(
                             onClick = { showDeleteConfirm = true },
@@ -506,7 +506,7 @@ private fun AddTTSProviderButton(onAdd: (TTSProviderSetting) -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp).padding(bottom = 8.dp)
-                    .fillMaxHeight(0.95f),
+                    .bottomSheetMaxHeight(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
@@ -519,7 +519,7 @@ private fun AddTTSProviderButton(onAdd: (TTSProviderSetting) -> Unit) {
                     onValueChange = { newState ->
                         currentProvider = newState
                     },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f, fill = false)
                 )
 
                 Row(
@@ -577,7 +577,7 @@ private fun AddASRProviderButton(onAdd: (ASRProviderSetting) -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp).padding(bottom = 8.dp)
-                    .fillMaxHeight(0.95f),
+                    .bottomSheetMaxHeight(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
@@ -590,7 +590,7 @@ private fun AddASRProviderButton(onAdd: (ASRProviderSetting) -> Unit) {
                     onValueChange = { newState ->
                         currentProvider = newState
                     },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f, fill = false)
                 )
 
                 Row(

@@ -134,6 +134,7 @@ import me.rerere.rikkahub.ui.pages.setting.components.typeName
 import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import java.io.File
 import kotlin.uuid.Uuid
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 private const val MAX_PICKED_IMAGES = 8
 
@@ -1261,6 +1262,7 @@ private fun ComposerSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .bottomSheetMaxHeight()
                 .padding(horizontal = 16.dp)
                 .padding(bottom = bottomPadding)
                 .imePadding(),

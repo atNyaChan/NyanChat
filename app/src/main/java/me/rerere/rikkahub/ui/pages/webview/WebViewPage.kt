@@ -44,6 +44,7 @@ import me.rerere.rikkahub.ui.components.webview.rememberWebViewState
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -162,6 +163,7 @@ fun WebViewPage(url: String, contentId: String) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .bottomSheetMaxHeight()
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 8.dp)
             ) {

@@ -109,6 +109,7 @@ import java.io.FileOutputStream
 import java.time.LocalDateTime
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 @Composable
 fun ChatExportSheet(
@@ -136,6 +137,7 @@ fun ChatExportSheet(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .bottomSheetMaxHeight()
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),

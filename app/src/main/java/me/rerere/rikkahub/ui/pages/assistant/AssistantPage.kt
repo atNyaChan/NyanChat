@@ -69,6 +69,7 @@ import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import kotlin.uuid.Uuid
 import androidx.compose.foundation.lazy.items as lazyItems
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 @Composable
 fun AssistantPage(vm: AssistantVM = koinViewModel()) {
@@ -252,6 +253,7 @@ private fun AssistantCreationSheet(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .bottomSheetMaxHeight()
                     .padding(horizontal = 16.dp).padding(bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {

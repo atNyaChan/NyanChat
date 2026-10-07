@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -323,7 +323,7 @@ fun WebDavTab(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(0.95f)
+                    .bottomSheetMaxHeight()
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -335,7 +335,7 @@ fun WebDavTab(
                 )
                 backupItemsState.onSuccess {
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxWidth(),
                         contentPadding = PaddingValues(bottom = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
@@ -352,7 +352,7 @@ fun WebDavTab(
                     }
                 }.onError {
                     Box(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -362,7 +362,7 @@ fun WebDavTab(
                     }
                 }.onLoading {
                     Box(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
                         CircularWavyProgressIndicator()

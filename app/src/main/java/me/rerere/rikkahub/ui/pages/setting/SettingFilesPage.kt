@@ -85,6 +85,7 @@ import org.koin.compose.koinInject
 import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.uuid.Uuid
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 private const val UNUSED_ATTACHMENTS = "unused_attachments"
 
@@ -386,6 +387,7 @@ private fun CleanFilesSheet(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .bottomSheetMaxHeight()
             .padding(horizontal = 24.dp)
             .padding(bottom = 8.dp),
     ) {
