@@ -686,11 +686,9 @@ private fun ChatFilesPanel(
     val voiceState by vm.voiceSession.state.collectAsStateWithLifecycle()
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    var showInjectionSheet by remember { mutableStateOf(false) }
     var showCompressDialog by remember { mutableStateOf(false) }
 
     fun dismissAll() {
-        showInjectionSheet = false
         showCompressDialog = false
         onCollapse()
     }
@@ -878,8 +876,6 @@ private fun ChatFilesPanel(
             vm.updateConversation(it)
             onRequestStatsRefresh()
         },
-        showInjectionSheet = showInjectionSheet,
-        onShowInjectionSheetChange = { showInjectionSheet = it },
         showCompressDialog = showCompressDialog,
         onShowCompressDialogChange = { showCompressDialog = it },
         onDismiss = { dismissAll() },

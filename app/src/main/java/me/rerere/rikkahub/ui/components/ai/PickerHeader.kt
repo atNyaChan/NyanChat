@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Icon
@@ -44,7 +46,7 @@ import androidx.compose.ui.unit.sp
 import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.RoundedPolygon
 
-// 选择器 sheet 的头部：左侧标题与说明，右侧放随选项变形的形状
+// sheet 的头部：左侧标题与说明，右侧放操作
 @Composable
 internal fun PickerHeader(
     title: String,
@@ -83,6 +85,41 @@ internal fun PickerHeader(
     }
 }
 
+// 选择器 sheet 的紧凑头部：左侧依次是小标题、当前选项和说明，右侧放随选项变形的形状
+@Composable
+internal fun <T : Comparable<T>> PickerValueHeader(
+    title: String,
+    value: T,
+    hint: String,
+    modifier: Modifier = Modifier,
+    label: @Composable (T) -> String,
+    hero: @Composable () -> Unit,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            PickerValueLabel(value = value, label = label)
+            Text(
+                text = hint,
+                modifier = Modifier.padding(top = 4.dp),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        hero()
+    }
+}
+
 // 形状随 index 切换，相邻形状之间用 Morph 连续过渡
 @Composable
 internal fun PickerHero(
@@ -112,7 +149,7 @@ internal fun PickerHero(
 
     Box(
         modifier = modifier
-            .size(96.dp)
+            .size(72.dp)
             .drawBehind {
                 // 弹簧会过冲，position 可能略微越界
                 val segment = position.toInt().coerceIn(0, morphs.lastIndex)
@@ -140,7 +177,7 @@ internal fun PickerHero(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(40.dp),
+                modifier = Modifier.size(32.dp),
                 tint = animatedContentColor,
             )
         }
@@ -149,7 +186,7 @@ internal fun PickerHero(
 
 // 当前选项的名称，切换时上下滚动
 @Composable
-internal fun <T : Comparable<T>> PickerValueLabel(
+private fun <T : Comparable<T>> PickerValueLabel(
     value: T,
     modifier: Modifier = Modifier,
     label: @Composable (T) -> String,
@@ -169,11 +206,43 @@ internal fun <T : Comparable<T>> PickerValueLabel(
     ) {
         Text(
             text = label(it),
+            // 个别语言的选项名很长，放不下两行时自动缩小字号
+            autoSize = TextAutoSize.StepBased(minFontSize = 18.sp, maxFontSize = 24.sp),
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
             // 强度名称保持英语并使用加粗等宽字体
             style = MaterialTheme.typography.headlineSmallEmphasized.copy(
                 fontFamily = FontFamily.Monospace,
                 fontWeight = FontWeight.Bold,
+                lineHeight = 1.2.em,
+                lineBreak = LineBreak.Heading,
             ),
         )
+    }
+}
+
+// sheet 内子页面的头部：返回按钮加标题
+@Composable
+internal fun SheetHeader(
+    title: String,
+    navigationIcon: (@Composable () -> Unit)? = null,
+    actions: @Composable () -> Unit = {},
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .padding(bottom = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        navigationIcon?.invoke()
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = if (navigationIcon == null) 8.dp else 4.dp),
+        )
+        actions()
     }
 }

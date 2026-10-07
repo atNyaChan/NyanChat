@@ -3,6 +3,7 @@ package me.rerere.rikkahub.ui.pages.mediacreation
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -29,7 +30,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.union
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -37,16 +38,18 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -54,13 +57,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SheetValue
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonDefaults
+import androidx.compose.material3.ToggleButtonSize
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -71,6 +76,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -79,6 +85,9 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -101,6 +110,7 @@ import me.rerere.mediagen.provider.MediaGenerationParameter
 import me.rerere.mediagen.provider.MediaGenerationProviderSetting
 import me.rerere.mediagen.provider.capabilities
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.data.datastore.ScreenCornerAdaptation
 import me.rerere.rikkahub.data.model.MediaCreationAsset
 import me.rerere.rikkahub.data.model.MediaCreationAssetType
 import me.rerere.rikkahub.data.model.MediaCreationDraft
@@ -109,11 +119,15 @@ import me.rerere.rikkahub.data.model.MediaCreationParams
 import me.rerere.rikkahub.data.model.canSubmit
 import me.rerere.rikkahub.data.model.mixesFramesWithReferences
 import me.rerere.rikkahub.data.model.withRequired
+import me.rerere.rikkahub.ui.components.ai.PickerHeader
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
-import me.rerere.rikkahub.ui.components.ui.FormItem
+import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CardGroupScope
 import me.rerere.rikkahub.ui.components.ui.Tag
+import me.rerere.rikkahub.ui.components.ui.Tooltip
 import me.rerere.rikkahub.ui.pages.setting.components.label
 import me.rerere.rikkahub.ui.pages.setting.components.typeName
+import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import java.io.File
 import kotlin.uuid.Uuid
 
@@ -130,6 +144,7 @@ internal fun MediaCreationComposer(
     providers: List<MediaGenerationProviderSetting>,
     recentOutputs: List<MediaCreationRecentOutput>,
     uploadConfigured: Boolean,
+    screenCornerAdaptation: ScreenCornerAdaptation,
     onOpenMediaSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -158,36 +173,68 @@ internal fun MediaCreationComposer(
     val canSubmit = capabilities != null &&
         draft.copy(prompt = vm.promptState.text.toString()).canSubmit(capabilities)
 
+    // 分槽位（首帧、尾帧）的模型一直显示素材行，槽位本身就是提示；只有参考素材的模型没放素材时把这一行
+    // 收起来，从输入框左边的加号添加
+    val hasFrameSlots = capabilities != null && capabilities.frameRoles.isNotEmpty()
+    val showAssets = capabilities != null && capabilities.acceptsAssets &&
+        (hasFrameSlots || draft.assets.isNotEmpty())
+    val showAddButton = capabilities != null && capabilities.acceptsAssets && !hasFrameSlots
+
+    // 和聊天页的输入框一样，是一个悬浮在页面底部的圆角容器，并按设置复用屏幕圆角
+    val containerShape = rememberScreenEdgeCornerShape(
+        horizontalInset = 8.dp,
+        bottomInset = 8.dp,
+        enabled = screenCornerAdaptation == ScreenCornerAdaptation.INPUT_ONLY ||
+            screenCornerAdaptation == ScreenCornerAdaptation.ALL,
+    )
     Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+        modifier = modifier
+            .windowInsetsPadding(
+                WindowInsets.ime.union(WindowInsets.navigationBars).only(WindowInsetsSides.Bottom)
+            )
+            .padding(horizontal = 8.dp)
+            .padding(bottom = 8.dp)
+            .fillMaxWidth()
+            .shadow(
+                elevation = 6.dp,
+                shape = containerShape,
+                clip = false,
+                spotColor = Color.Transparent,
+            ),
+        color = MaterialTheme.colorScheme.surface,
+        shape = containerShape,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
     ) {
         Column(
-            modifier = Modifier
-                .windowInsetsPadding(
-                    WindowInsets.ime.union(WindowInsets.navigationBars).only(WindowInsetsSides.Bottom)
-                )
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             if (draft.editingNodeId != null) {
-                EditingBar(onStop = vm::stopEditing)
+                EditingBar(
+                    onStop = vm::stopEditing,
+                    modifier = Modifier.padding(start = 8.dp, end = 4.dp, top = 6.dp),
+                )
+            }
+            AnimatedVisibility(visible = showAssets) {
+                if (capabilities != null) {
+                    AssetRow(
+                        assets = draft.assets,
+                        capabilities = capabilities,
+                        resolve = vm::resolve,
+                        onPick = { pickingRole = it },
+                        onRemove = vm::removeAsset,
+                        onSetRole = vm::setAssetRole,
+                        modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp),
+                    )
+                }
             }
             if (capabilities != null && capabilities.acceptsAssets) {
-                AssetRow(
-                    assets = draft.assets,
-                    capabilities = capabilities,
-                    resolve = vm::resolve,
-                    onPick = { pickingRole = it },
-                    onRemove = vm::removeAsset,
-                    onSetRole = vm::setAssetRole,
-                )
                 if (draft.assets.mixesFramesWithReferences(capabilities)) {
                     Text(
                         text = stringResource(R.string.media_creation_page_frames_with_references),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 4.dp),
                     )
                 }
                 if (capabilities.requiresRemoteInputs && draft.assets.isNotEmpty() && !uploadConfigured) {
@@ -195,32 +242,50 @@ internal fun MediaCreationComposer(
                         text = stringResource(R.string.media_creation_page_upload_not_configured_hint),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.clickable(onClick = onOpenMediaSettings),
+                        modifier = Modifier
+                            .padding(start = 8.dp, end = 8.dp, top = 4.dp)
+                            .clickable(onClick = onOpenMediaSettings),
                     )
                 }
             }
 
-            OutlinedTextField(
+            TextField(
                 state = vm.promptState,
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text(stringResource(R.string.media_creation_page_prompt_placeholder)) },
                 lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 1, maxHeightInLines = 5),
-                shape = MaterialTheme.shapes.large,
+                shape = MaterialTheme.shapes.largeIncreased,
                 textStyle = MaterialTheme.typography.bodyMedium,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                ),
+                leadingIcon = if (showAddButton) {
+                    {
+                        IconButton(onClick = { pickingRole = ImageRole.REFERENCE }) {
+                            Icon(
+                                imageVector = HugeIcons.Add01,
+                                contentDescription = stringResource(
+                                    R.string.media_creation_page_add_reference_asset
+                                ),
+                            )
+                        }
+                    }
+                } else null,
             )
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.padding(horizontal = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Row(
                     modifier = Modifier.weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    ComposerChip(
-                        icon = if (selection?.model?.kind == MediaKind.VIDEO) HugeIcons.Video01 else HugeIcons.Image02,
-                        text = selection?.model?.name ?: stringResource(R.string.media_creation_page_select_model),
-                        onClick = { showModels = true },
-                        modifier = Modifier.weight(1f, fill = false),
-                    )
+                    ModelButton(model = selection?.model, onClick = { showModels = true })
                     if (selection != null && capabilities != null && capabilities.parameters.isNotEmpty()) {
                         val summary = draft.params
                             .withRequired(capabilities, selection.provider.presets(selection.model.kind).defaults)
@@ -230,7 +295,7 @@ internal fun MediaCreationComposer(
                             text = summary.take(3).joinToString(" · ")
                                 .ifEmpty { stringResource(R.string.media_creation_page_params) },
                             onClick = { showParams = true },
-                            modifier = Modifier.widthIn(max = 160.dp),
+                            modifier = Modifier.weight(1f, fill = false),
                         )
                     }
                 }
@@ -305,8 +370,9 @@ internal fun MediaCreationComposer(
  * 输入区的内容是从时间线上的一条记录填回来的：生成的结果会成为它的新版本。退出后内容保留，生成时另起一条。
  */
 @Composable
-private fun EditingBar(onStop: () -> Unit) {
+private fun EditingBar(onStop: () -> Unit, modifier: Modifier = Modifier) {
     Row(
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -338,8 +404,37 @@ private fun EditingBar(onStop: () -> Unit) {
 private val MediaGenerationCapabilities.acceptsAssets: Boolean
     get() = imageRoles.isNotEmpty() || videoInput
 
+/** 模型区分的槽位：首帧、尾帧各放一张图。 */
+private val MediaGenerationCapabilities.frameRoles: List<ImageRole>
+    get() = listOf(ImageRole.FIRST_FRAME, ImageRole.LAST_FRAME).filter { it in imageRoles }
+
 private val MediaGenerationModel.name: String
     get() = displayName.ifBlank { modelId }
+
+/**
+ * 和聊天输入框一样只显示模型的图标，长按显示名称。
+ */
+@Composable
+private fun ModelButton(model: MediaGenerationModel?, onClick: () -> Unit) {
+    val selectModel = stringResource(R.string.media_creation_page_select_model)
+    Tooltip(tooltip = { Text(model?.name ?: selectModel) }) {
+        IconButton(onClick = onClick) {
+            if (model != null) {
+                AutoAIIcon(
+                    name = model.modelId,
+                    modifier = Modifier.size(36.dp),
+                    color = Color.Transparent,
+                )
+            } else {
+                Icon(
+                    imageVector = HugeIcons.Image02,
+                    contentDescription = selectModel,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        }
+    }
+}
 
 @Composable
 private fun ComposerChip(
@@ -348,57 +443,68 @@ private fun ComposerChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
+    FilledTonalButton(
         onClick = onClick,
+        // 按下时圆角收紧
+        shapes = ButtonDefaults.shapes(),
         modifier = modifier,
-        shape = CircleShape,
-        color = MaterialTheme.colorScheme.secondaryContainer,
-        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        colors = ButtonDefaults.filledTonalButtonColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        ),
+        contentPadding = ButtonDefaults.contentPaddingFor(ButtonDefaults.MinHeight, hasStartIcon = true),
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(16.dp))
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelLarge,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
+        Icon(icon, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
+        Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+        Text(
+            text = text,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            // 文字放不下时省略，图标保持完整
+            modifier = Modifier.weight(1f, fill = false),
+        )
     }
 }
 
 @Composable
 private fun GenerateButton(enabled: Boolean, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = Modifier.size(40.dp),
-        shape = CircleShape,
-        color = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHighest,
+    // 和聊天页的发送键同款：圆形、按可用状态切换配色
+    val containerColor = if (enabled) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.surfaceContainer
+    }
+    val contentColor = if (enabled) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+    }
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(30.dp)
+            .clip(CircleShape)
+            .clickable(enabled = enabled, onClick = onClick),
     ) {
-        Box(contentAlignment = Alignment.Center) {
-            Icon(
-                imageVector = HugeIcons.ArrowUp02,
-                contentDescription = stringResource(R.string.media_creation_page_generate),
-                tint = if (enabled) {
-                    MaterialTheme.colorScheme.onPrimary
-                } else {
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                },
-                modifier = Modifier.size(20.dp),
-            )
-        }
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            shape = CircleShape,
+            color = containerColor,
+            content = {},
+        )
+        Icon(
+            imageVector = HugeIcons.ArrowUp02,
+            contentDescription = stringResource(R.string.media_creation_page_generate),
+            tint = contentColor,
+            modifier = Modifier.size(18.dp),
+        )
     }
 }
 
 // ---- 素材 ----
 
 /**
- * 视频模型按用途分槽位：首帧、尾帧各一张，其后是任意数量的参考素材。图像模型只有参考图。
+ * 视频模型按用途分槽位：首帧、尾帧各一张，其后是任意数量的参考素材。图像模型只有参考图，
+ * 这时添加入口在输入框左边，这一行只列出已经放进来的素材。
  */
 @Composable
 private fun AssetRow(
@@ -408,8 +514,9 @@ private fun AssetRow(
     onPick: (ImageRole) -> Unit,
     onRemove: (MediaCreationAsset) -> Unit,
     onSetRole: (MediaCreationAsset, ImageRole) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    val frameRoles = listOf(ImageRole.FIRST_FRAME, ImageRole.LAST_FRAME).filter { it in capabilities.imageRoles }
+    val frameRoles = capabilities.frameRoles
     val showLabels = frameRoles.isNotEmpty()
 
     @Composable
@@ -427,7 +534,7 @@ private fun AssetRow(
     }
 
     Row(
-        modifier = Modifier.horizontalScroll(rememberScrollState()),
+        modifier = modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         frameRoles.forEach { role ->
@@ -437,15 +544,8 @@ private fun AssetRow(
         assets
             .filter { it.type == MediaCreationAssetType.VIDEO || it.role == ImageRole.REFERENCE }
             .forEach { Tile(it) }
-        if (ImageRole.REFERENCE in capabilities.imageRoles || capabilities.videoInput) {
-            EmptyAssetTile(
-                label = if (showLabels) {
-                    ImageRole.REFERENCE.label
-                } else {
-                    stringResource(R.string.media_creation_page_reference_image)
-                },
-                onClick = { onPick(ImageRole.REFERENCE) },
-            )
+        if (showLabels && (ImageRole.REFERENCE in capabilities.imageRoles || capabilities.videoInput)) {
+            EmptyAssetTile(label = ImageRole.REFERENCE.label, onClick = { onPick(ImageRole.REFERENCE) })
         }
     }
 }
@@ -753,66 +853,83 @@ private fun ParamsSheet(
     val presets = remember(selection.provider, kind) { selection.provider.presets(kind) }
     val defaults = presets.defaults
 
+    // CardGroup 的内容块不是 @Composable，参数文案先在这里取好
+    val aspectRatioLabel = stringResource(R.string.media_creation_page_param_aspect_ratio)
+    val aspectRatioHint = stringResource(R.string.media_creation_page_param_aspect_ratio_hint)
+    val resolutionLabel = stringResource(R.string.media_creation_page_param_resolution)
+    val resolutionHint = stringResource(
+        if (kind == MediaKind.VIDEO) {
+            R.string.media_creation_page_param_resolution_hint_video
+        } else {
+            R.string.media_creation_page_param_resolution_hint_image
+        }
+    )
+    val durationLabel = stringResource(R.string.media_creation_page_param_duration)
+    val durationAutoLabel = stringResource(R.string.media_creation_page_param_duration_auto)
+    val countLabel = stringResource(R.string.media_creation_page_param_count)
+    val audioLabel = stringResource(R.string.media_creation_page_param_audio)
+    val watermarkLabel = stringResource(R.string.media_creation_page_param_watermark)
+    val promptEnhancementLabel = stringResource(R.string.media_creation_page_param_prompt_enhancement)
+    val seedLabel = stringResource(R.string.media_creation_page_param_seed)
+
     ComposerSheet(onDismiss = onDismiss) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = stringResource(R.string.media_creation_page_params_title),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f),
-            )
-            TextButton(onClick = { update(MediaCreationParams()) }) {
+        // 改过的参数，和输入区按钮上显示的是同一份
+        val changed = current.summary(kind)
+        PickerHeader(
+            title = stringResource(R.string.media_creation_page_params_title),
+            hint = changed.joinToString(" · ")
+                .ifEmpty { stringResource(R.string.media_creation_page_param_default) },
+            modifier = Modifier.padding(start = 8.dp, bottom = 8.dp),
+        ) {
+            // 这里不放形状，参数多的时候要把高度留给下面的列表
+            TextButton(
+                onClick = { update(MediaCreationParams()) },
+                enabled = changed.isNotEmpty(),
+            ) {
                 Text(stringResource(R.string.media_creation_page_params_reset))
             }
         }
 
-        Column(
+        CardGroup(
             modifier = Modifier
                 .weight(1f, fill = false)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             if (MediaGenerationParameter.ASPECT_RATIO in supported) {
                 TextParam(
-                    label = stringResource(R.string.media_creation_page_param_aspect_ratio),
+                    label = aspectRatioLabel,
                     value = current.aspectRatio,
                     presets = presets.aspectRatios,
                     default = defaults.aspectRatio.takeIf { MediaGenerationParameter.ASPECT_RATIO in required },
-                    placeholder = stringResource(R.string.media_creation_page_param_aspect_ratio_hint),
+                    placeholder = aspectRatioHint,
                     presetIcon = { AspectRatioIcon(it) },
                     onValueChange = { update(current.copy(aspectRatio = it)) },
                 )
             }
             if (MediaGenerationParameter.RESOLUTION in supported) {
                 TextParam(
-                    label = stringResource(R.string.media_creation_page_param_resolution),
+                    label = resolutionLabel,
                     value = current.resolution,
                     presets = presets.resolutions,
                     default = defaults.resolution.takeIf { MediaGenerationParameter.RESOLUTION in required },
-                    placeholder = stringResource(
-                        if (kind == MediaKind.VIDEO) {
-                            R.string.media_creation_page_param_resolution_hint_video
-                        } else {
-                            R.string.media_creation_page_param_resolution_hint_image
-                        }
-                    ),
+                    placeholder = resolutionHint,
                     onValueChange = { update(current.copy(resolution = it)) },
                 )
             }
             if (MediaGenerationParameter.DURATION in supported) {
                 NumberParam(
-                    label = stringResource(R.string.media_creation_page_param_duration),
+                    label = durationLabel,
                     value = current.durationSeconds?.toLong(),
                     presets = presets.durations.map { it.toLong() },
                     default = defaults.durationSeconds?.toLong()
                         .takeIf { MediaGenerationParameter.DURATION in required },
-                    special = AUTO_DURATION.toLong() to
-                        stringResource(R.string.media_creation_page_param_duration_auto),
+                    special = AUTO_DURATION.toLong() to durationAutoLabel,
                     onValueChange = { update(current.copy(durationSeconds = it?.toInt())) },
                 )
             }
             if (MediaGenerationParameter.COUNT in supported) {
                 NumberParam(
-                    label = stringResource(R.string.media_creation_page_param_count),
+                    label = countLabel,
                     value = current.count?.toLong(),
                     presets = presets.counts.map { it.toLong() },
                     default = defaults.count?.toLong().takeIf { MediaGenerationParameter.COUNT in required },
@@ -821,28 +938,28 @@ private fun ParamsSheet(
             }
             if (MediaGenerationParameter.GENERATE_AUDIO in supported) {
                 ToggleParam(
-                    label = stringResource(R.string.media_creation_page_param_audio),
+                    label = audioLabel,
                     value = current.generateAudio,
                     onValueChange = { update(current.copy(generateAudio = it)) },
                 )
             }
             if (MediaGenerationParameter.WATERMARK in supported) {
                 ToggleParam(
-                    label = stringResource(R.string.media_creation_page_param_watermark),
+                    label = watermarkLabel,
                     value = current.watermark,
                     onValueChange = { update(current.copy(watermark = it)) },
                 )
             }
             if (MediaGenerationParameter.PROMPT_ENHANCEMENT in supported) {
                 ToggleParam(
-                    label = stringResource(R.string.media_creation_page_param_prompt_enhancement),
+                    label = promptEnhancementLabel,
                     value = current.promptEnhancement,
                     onValueChange = { update(current.copy(promptEnhancement = it)) },
                 )
             }
             if (MediaGenerationParameter.SEED in supported) {
                 NumberParam(
-                    label = stringResource(R.string.media_creation_page_param_seed),
+                    label = seedLabel,
                     value = current.seed,
                     presets = emptyList(),
                     allowZero = true,
@@ -865,22 +982,48 @@ private fun <T> PresetChips(
     label: (T) -> String = { it.toString() },
     icon: (@Composable (T) -> Unit)? = null,
 ) {
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    FlowRow(
+        modifier = Modifier.selectableGroup(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
         if (default == null) {
-            FilterChip(
+            PresetButton(
                 selected = value == null,
                 onClick = { onValueChange(null) },
-                label = { Text(stringResource(R.string.media_creation_page_param_default)) },
+                text = stringResource(R.string.media_creation_page_param_default),
             )
         }
         presets.forEach { preset ->
-            FilterChip(
+            PresetButton(
                 selected = (value ?: default) == preset,
                 onClick = { onValueChange(preset) },
-                label = { Text(label(preset)) },
-                leadingIcon = icon?.let { { it(preset) } },
+                text = label(preset),
+                icon = icon?.let { { it(preset) } },
             )
         }
+    }
+}
+
+// 选中时从胶囊变成方角
+@Composable
+private fun PresetButton(
+    selected: Boolean,
+    onClick: () -> Unit,
+    text: String,
+    icon: (@Composable () -> Unit)? = null,
+) {
+    ToggleButton(
+        checked = selected,
+        // 再点一次已经选中的不会取消
+        onCheckedChange = { onClick() },
+        modifier = Modifier.semantics { role = Role.RadioButton },
+        buttonSize = ToggleButtonSize.ExtraSmall,
+        icon = icon,
+        colors = ToggleButtonDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+        ),
+    ) {
+        Text(text)
     }
 }
 
@@ -891,7 +1034,7 @@ private fun <T> PresetChips(
 private fun AspectRatioIcon(value: String) {
     val ratio = remember(value) { parseAspectRatio(value) }
     val color = LocalContentColor.current
-    Canvas(modifier = Modifier.size(FilterChipDefaults.IconSize)) {
+    Canvas(modifier = Modifier.size(18.dp)) {
         val strokeWidth = 1.5.dp.toPx()
         // 描边压在边线两侧，留出一个线宽才不会被裁掉
         val box = size.minDimension - strokeWidth
@@ -923,8 +1066,7 @@ private fun parseAspectRatio(value: String): Float? {
     return if (width > 0 && height > 0) width / height else null
 }
 
-@Composable
-private fun TextParam(
+private fun CardGroupScope.TextParam(
     label: String,
     value: String?,
     presets: List<String>,
@@ -947,6 +1089,7 @@ private fun TextParam(
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text(default ?: placeholder) },
             singleLine = true,
+            shape = MaterialTheme.shapes.large,
             textStyle = MaterialTheme.typography.bodyMedium,
         )
     }
@@ -954,8 +1097,7 @@ private fun TextParam(
 
 // 只接受正整数（[allowZero] 时含 0）；清空输入框等于回到默认。
 // [special] 是额外接受的一个负数取值和它在快捷选项上的名字，输入框里打出负号就算选中它
-@Composable
-private fun NumberParam(
+private fun CardGroupScope.NumberParam(
     label: String,
     value: Long?,
     presets: List<Long>,
@@ -991,31 +1133,47 @@ private fun NumberParam(
             placeholder = { Text(default?.toString() ?: stringResource(R.string.media_creation_page_param_default)) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            shape = MaterialTheme.shapes.large,
             textStyle = MaterialTheme.typography.bodyMedium,
         )
     }
 }
 
-@Composable
-private fun ToggleParam(
+private fun CardGroupScope.ToggleParam(
     label: String,
     value: Boolean?,
     onValueChange: (Boolean?) -> Unit,
 ) {
-    val options = listOf<Pair<Boolean?, String>>(
-        null to stringResource(R.string.media_creation_page_param_default),
-        true to stringResource(R.string.media_creation_page_param_on),
-        false to stringResource(R.string.media_creation_page_param_off),
-    )
     FormItem(label = { Text(label) }) {
-        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+        val options = listOf<Pair<Boolean?, String>>(
+            null to stringResource(R.string.media_creation_page_param_default),
+            true to stringResource(R.string.media_creation_page_param_on),
+            false to stringResource(R.string.media_creation_page_param_off),
+        )
+        // 连接式按钮组
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .selectableGroup(),
+            horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
+        ) {
             options.forEachIndexed { index, (option, text) ->
-                SegmentedButton(
-                    shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
-                    selected = value == option,
-                    onClick = { onValueChange(option) },
+                ToggleButton(
+                    checked = value == option,
+                    onCheckedChange = { onValueChange(option) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .semantics { role = Role.RadioButton },
+                    shapes = when (index) {
+                        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                        options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                        else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                    },
+                    colors = ToggleButtonDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    ),
                 ) {
-                    Text(text)
+                    Text(text = text, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
         }
@@ -1034,6 +1192,7 @@ private fun ComposerSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surface,
         dragHandle = { BottomSheetDefaults.DragHandle() },
     ) {
         Column(

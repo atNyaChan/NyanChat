@@ -1,5 +1,6 @@
 package me.rerere.rikkahub.ui.pages.mediacreation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,13 +11,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -24,6 +29,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,7 +51,9 @@ import androidx.paging.compose.itemKey
 import com.dokar.sonner.ToastType
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Delete01
+import me.rerere.hugeicons.stroke.ImageToVideo
 import me.rerere.hugeicons.stroke.PencilEdit01
+import me.rerere.hugeicons.stroke.Settings03
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.model.MediaCreationNode
@@ -148,6 +156,7 @@ fun MediaCreationPage(id: String) {
                 providers = settings.mediaGenerationProviders,
                 recentOutputs = recentOutputs,
                 uploadConfigured = uploadConfigured,
+                screenCornerAdaptation = settings.displaySetting.screenCornerAdaptation,
                 onOpenMediaSettings = { navController.navigate(Screen.SettingMedia) },
             )
         }
@@ -287,7 +296,7 @@ private fun MediaCreationTimeline(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(160.dp),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = MaterialTheme.shapes.extraLarge,
                     color = MaterialTheme.colorScheme.surfaceContainer,
                 ) {}
             }
@@ -306,25 +315,54 @@ private fun TimelineEmpty(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            // 键盘弹出后高度不够时可以滚动，不至于被裁掉
+            .verticalScroll(rememberScrollState())
             .padding(32.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        Box(
+            modifier = Modifier
+                .padding(bottom = 12.dp)
+                .size(112.dp)
+                .background(
+                    color = if (hasModels) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.surfaceContainerHighest
+                    },
+                    shape = (if (hasModels) MaterialShapes.Flower else MaterialShapes.Cookie4Sided).toShape(),
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = if (hasModels) HugeIcons.ImageToVideo else HugeIcons.Settings03,
+                contentDescription = null,
+                modifier = Modifier.size(48.dp),
+                tint = if (hasModels) {
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+            )
+        }
         if (hasModels) {
             Text(
                 text = stringResource(R.string.media_creation_page_empty_hint),
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
         } else {
             Text(
                 text = stringResource(R.string.media_creation_page_no_providers),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.titleMediumEmphasized,
                 textAlign = TextAlign.Center,
             )
-            Button(onClick = onOpenMediaSettings) {
+            Button(
+                onClick = onOpenMediaSettings,
+                shapes = ButtonDefaults.shapes(),
+            ) {
                 Text(stringResource(R.string.media_creation_page_go_configure))
             }
         }

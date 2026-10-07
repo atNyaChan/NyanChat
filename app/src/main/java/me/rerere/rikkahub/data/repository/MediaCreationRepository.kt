@@ -20,6 +20,7 @@ import me.rerere.rikkahub.data.db.entity.MediaCreationSessionEntity
 import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.model.MediaCreationDraft
 import me.rerere.rikkahub.data.model.MediaCreationNode
+import me.rerere.rikkahub.data.model.MediaCreationOutput
 import me.rerere.rikkahub.data.model.MediaCreationParams
 import me.rerere.rikkahub.data.model.MediaCreationRecord
 import me.rerere.rikkahub.data.model.MediaCreationSession
@@ -59,15 +60,27 @@ class MediaCreationRepository(
     // ---- 会话 ----
 
     fun observeSessions(): Flow<List<MediaCreationSession>> =
-        dao.observeSessions(activeStatuses).map { sessions ->
+        dao.observeSessions(activeStatuses, MediaCreationStatus.SUCCEEDED.name).map { sessions ->
             sessions.map {
-                it.session.toSession().copy(nodeCount = it.nodeCount, activeCount = it.activeCount)
+                it.session.toSession().copy(
+                    nodeCount = it.nodeCount,
+                    activeCount = it.activeCount,
+                    cover = it.coverOutputs
+                        ?.let { outputs -> decodeOrDefault<List<MediaCreationOutput>>(outputs, emptyList()) }
+                        ?.firstOrNull(),
+                )
             }
         }
 
     fun observeSession(id: Uuid): Flow<MediaCreationSession?> =
-        dao.observeSession(id.toString(), activeStatuses).map {
-            it?.session?.toSession()?.copy(nodeCount = it.nodeCount, activeCount = it.activeCount)
+        dao.observeSession(id.toString(), activeStatuses, MediaCreationStatus.SUCCEEDED.name).map {
+            it?.session?.toSession()?.copy(
+                nodeCount = it.nodeCount,
+                activeCount = it.activeCount,
+                cover = it.coverOutputs
+                    ?.let { outputs -> decodeOrDefault<List<MediaCreationOutput>>(outputs, emptyList()) }
+                    ?.firstOrNull(),
+            )
         }
 
     suspend fun getSession(id: Uuid): MediaCreationSession? = dao.getSession(id.toString())?.toSession()

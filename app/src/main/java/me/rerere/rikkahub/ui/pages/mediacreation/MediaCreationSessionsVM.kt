@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import me.rerere.rikkahub.data.model.MediaCreationSession
 import me.rerere.rikkahub.data.repository.MediaCreationRepository
+import java.io.File
 import kotlin.uuid.Uuid
 
 class MediaCreationSessionsVM(
@@ -21,4 +22,6 @@ class MediaCreationSessionsVM(
     fun newSession(onReady: (Uuid) -> Unit) {
         viewModelScope.launch { onReady(repository.newSession().id) }
     }
+
+    fun resolve(path: String): File = repository.resolve(path)
 }

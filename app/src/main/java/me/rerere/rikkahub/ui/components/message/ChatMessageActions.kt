@@ -1,21 +1,19 @@
 package me.rerere.rikkahub.ui.components.message
 
-import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.IconToggleButton
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ProvideTextStyle
@@ -23,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,7 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -56,6 +55,7 @@ import me.rerere.hugeicons.stroke.Translate
 import me.rerere.hugeicons.stroke.VolumeHigh
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.model.MessageNode
+import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
@@ -88,10 +88,9 @@ fun ColumnScope.ChatMessageActionButtons(
     }
 
     FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
         itemVerticalAlignment = Alignment.CenterVertically,
     ) {
-        val actionIconColor = MaterialTheme.colorScheme.onSurfaceVariant
         val statsColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
 
         if (
@@ -124,90 +123,73 @@ fun ColumnScope.ChatMessageActionButtons(
                 )
             }
         }
-        Icon(
-            imageVector = HugeIcons.Copy01,
+
+        ChatMessageActionButton(
+            icon = HugeIcons.Copy01,
             contentDescription = stringResource(R.string.copy),
-            modifier = Modifier
-                .clip(CircleShape)
-                .clickable { context.copyMessageToClipboard(message) }
-                .padding(8.dp)
-                .size(16.dp),
-            tint = actionIconColor
+            onClick = { context.copyMessageToClipboard(message) },
         )
 
         // 单个对话同时只允许一条消息在生成，生成期间禁用所有消息的重试
         val regenEnabled = !generating
-        Icon(
-            imageVector = HugeIcons.Refresh03,
+        ChatMessageActionButton(
+            icon = HugeIcons.Refresh03,
             contentDescription = stringResource(R.string.regenerate),
-            modifier = Modifier
-                .clip(CircleShape)
-                .clickable(
-                    enabled = regenEnabled,
-                    onClick = {
-                        if (message.role == MessageRole.USER) {
-                            showRegenerateConfirm = true
-                        } else {
-                            onRegenerate()
-                        }
-                    }
-                )
-                .padding(8.dp)
-                .size(16.dp),
-            tint = if (regenEnabled) actionIconColor else actionIconColor.copy(alpha = 0.38f)
+            enabled = regenEnabled,
+            onClick = {
+                if (message.role == MessageRole.USER) {
+                    showRegenerateConfirm = true
+                } else {
+                    onRegenerate()
+                }
+            },
         )
 
         if (message.role == MessageRole.ASSISTANT) {
             val tts = LocalTTSState.current
             val isSpeaking by tts.isSpeaking.collectAsState()
             val isAvailable by tts.isAvailable.collectAsState()
-            Icon(
-                imageVector = if (isSpeaking) HugeIcons.StopCircle else HugeIcons.VolumeHigh,
-                contentDescription = stringResource(R.string.tts),
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .clickable(
-                        enabled = isAvailable,
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = LocalIndication.current,
-                        onClick = {
-                            if (!isSpeaking) {
-                                val text = message.toText()
-                                var textToSpeak = text
-                                if (settings.displaySetting.ttsOnlyReadQuoted) {
-                                    textToSpeak = textToSpeak.extractQuotedContentAsText() ?: textToSpeak
-                                }
-                                if (settings.displaySetting.ttsOnlyReadOutsideBrackets) {
-                                    textToSpeak = textToSpeak.removeBracketedContent() ?: textToSpeak
-                                }
-                                tts.speak(textToSpeak)
-                            } else {
-                                tts.stop()
+            // 朗读中换成带底色的方角按钮
+            CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+                IconToggleButton(
+                    checked = isSpeaking,
+                    onCheckedChange = { speak ->
+                        if (speak) {
+                            val text = message.toText()
+                            var textToSpeak = text
+                            if (settings.displaySetting.ttsOnlyReadQuoted) {
+                                textToSpeak = textToSpeak.extractQuotedContentAsText() ?: textToSpeak
                             }
+                            if (settings.displaySetting.ttsOnlyReadOutsideBrackets) {
+                                textToSpeak = textToSpeak.removeBracketedContent() ?: textToSpeak
+                            }
+                            tts.speak(textToSpeak)
+                        } else {
+                            tts.stop()
                         }
+                    },
+                    shapes = IconButtonDefaults.toggleableShapes(),
+                    modifier = Modifier.size(IconButtonDefaults.extraSmallContainerSize()),
+                    enabled = isAvailable,
+                    colors = IconButtonDefaults.iconToggleButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        checkedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        checkedContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    ),
+                ) {
+                    Icon(
+                        imageVector = if (isSpeaking) HugeIcons.StopCircle else HugeIcons.VolumeHigh,
+                        contentDescription = stringResource(R.string.tts),
+                        modifier = Modifier.size(ActionIconSize),
                     )
-                    .padding(8.dp)
-                    .size(16.dp),
-                tint = if (isAvailable) actionIconColor else actionIconColor.copy(alpha = 0.38f)
-            )
-
+                }
+            }
         }
 
-        Icon(
-            imageVector = HugeIcons.MoreVertical,
+        ChatMessageActionButton(
+            icon = HugeIcons.MoreVertical,
             contentDescription = stringResource(R.string.more_options),
-            modifier = Modifier
-                .clip(CircleShape)
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = LocalIndication.current,
-                    onClick = {
-                        onOpenActionSheet()
-                    }
-                )
-                .padding(8.dp)
-                .size(16.dp),
-            tint = actionIconColor
+            onClick = onOpenActionSheet,
         )
 
         ChatMessageBranchSelector(
@@ -247,6 +229,45 @@ fun ColumnScope.ChatMessageActionButtons(
     )
 }
 
+private val ActionIconSize = 18.dp
+
+// 消息下方的小号图标按钮，按下时圆形收成方角
+@Composable
+internal fun ChatMessageActionButton(
+    icon: ImageVector,
+    contentDescription: String?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    // 按钮排得密，不让 48dp 的最小触控尺寸把间距撑开
+    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+        IconButton(
+            onClick = onClick,
+            shapes = IconButtonDefaults.shapes(),
+            modifier = modifier.size(IconButtonDefaults.extraSmallContainerSize()),
+            enabled = enabled,
+            colors = IconButtonDefaults.iconButtonColors(
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                modifier = Modifier.size(ActionIconSize),
+            )
+        }
+    }
+}
+
+private class MessageSheetAction(
+    val icon: ImageVector,
+    val label: String,
+    val destructive: Boolean = false,
+    val enabled: Boolean = true,
+    val onClick: () -> Unit,
+)
+
 @Suppress("DEPRECATION")
 private val UIMessage.containsToolCall: Boolean
     get() = parts.any { part ->
@@ -277,190 +298,107 @@ fun ChatMessageActionsSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // Edit
             val canEdit = !message.containsToolCall
-            Card(
-                onClick = {
-                    if (canEdit) {
-                        onDismissRequest()
-                        onEdit()
-                    } else {
-                        toaster.show(context.getString(R.string.chat_message_cannot_edit_tool_call))
-                    }
-                },
-                shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
-                colors = if (canEdit) {
-                    CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)
-                } else {
-                    CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.4f),
-                        contentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-                    )
-                },
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = HugeIcons.Edit01,
-                        contentDescription = null,
-                        modifier = Modifier.padding(4.dp)
-                    )
-                    Text(
-                        text = stringResource(R.string.edit),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                }
-            }
-
-            // Translation
-            if (message.role == MessageRole.ASSISTANT && onTranslateRequest != null) {
-                Card(
-                    onClick = {
-                        onDismissRequest()
-                        onTranslateRequest()
-                    },
-                    shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            val actions = buildList {
+                add(
+                    MessageSheetAction(
+                        icon = HugeIcons.Edit01,
+                        label = stringResource(R.string.edit),
+                        enabled = canEdit,
                     ) {
-                        Icon(HugeIcons.Translate, contentDescription = null, modifier = Modifier.padding(4.dp))
-                        Text(stringResource(R.string.translate), style = MaterialTheme.typography.titleMedium)
+                        if (canEdit) {
+                            onDismissRequest()
+                            onEdit()
+                        } else {
+                            toaster.show(context.getString(R.string.chat_message_cannot_edit_tool_call))
+                        }
                     }
-                }
-            }
-
-            // Share
-            Card(
-                onClick = {
-                    onDismissRequest()
-                    onShare()
-                },
-                shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = HugeIcons.Share04,
-                        contentDescription = null,
-                        modifier = Modifier.padding(4.dp)
-                    )
-                    Text(
-                        text = stringResource(R.string.common_share),
-                        style = MaterialTheme.typography.titleMedium,
+                )
+                if (message.role == MessageRole.ASSISTANT && onTranslateRequest != null) {
+                    add(
+                        MessageSheetAction(HugeIcons.Translate, stringResource(R.string.translate)) {
+                            onDismissRequest()
+                            onTranslateRequest()
+                        }
                     )
                 }
-            }
-
-            // Create a Fork
-            Card(
-                onClick = {
-                    onDismissRequest()
-                    onFork()
-                },
-                shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = HugeIcons.GitFork,
-                        contentDescription = null,
-                        modifier = Modifier.padding(4.dp)
-                    )
-                    Text(
-                        text = stringResource(R.string.create_fork),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                }
-            }
-
-            if (onToggleFavorite != null) {
-                Card(
-                    onClick = {
+                add(
+                    MessageSheetAction(HugeIcons.Share04, stringResource(R.string.common_share)) {
                         onDismissRequest()
-                        onToggleFavorite()
-                    },
-                    shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth()
-                    ) {
-                        Icon(
-                            imageVector = HugeIcons.FavouriteCircle,
-                            contentDescription = null,
-                            modifier = Modifier.padding(4.dp)
-                        )
-                        Text(
-                            text = stringResource(
+                        onShare()
+                    }
+                )
+                add(
+                    MessageSheetAction(HugeIcons.GitFork, stringResource(R.string.create_fork)) {
+                        onDismissRequest()
+                        onFork()
+                    }
+                )
+                if (onToggleFavorite != null) {
+                    add(
+                        MessageSheetAction(
+                            icon = HugeIcons.FavouriteCircle,
+                            label = stringResource(
                                 if (isFavorite) R.string.chat_message_remove_favorite
                                 else R.string.chat_message_add_favorite
                             ),
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                    }
+                        ) {
+                            onDismissRequest()
+                            onToggleFavorite()
+                        }
+                    )
                 }
+                add(
+                    MessageSheetAction(HugeIcons.Delete01, stringResource(R.string.common_delete), destructive = true) {
+                        // 删除还要再确认一次，先让 sheet 留着
+                        showDeleteConfirm = true
+                    }
+                )
             }
 
-            // Delete
-            Card(
-                onClick = { showDeleteConfirm = true },
-                shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer
-                )
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = HugeIcons.Delete01,
-                        contentDescription = null,
-                        modifier = Modifier.padding(4.dp)
-                    )
-                    Text(
-                        text = stringResource(R.string.common_delete),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
+            // CardGroup 的 content 不是 @Composable，颜色需在进入前计算
+            val destructiveItemColors = ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.errorContainer,
+                contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                leadingContentColor = MaterialTheme.colorScheme.onErrorContainer,
+            )
+            // 禁用项（如含工具调用的消息的「编辑」）用 disabled 色呈现，但点击仍提示原因
+            val disabledItemColors = ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                contentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                leadingContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+            )
+            CardGroup(modifier = Modifier.fillMaxWidth()) {
+                actions.forEach { action ->
+                    item(
+                        onClick = action.onClick,
+                        leadingContent = {
+                            Icon(
+                                imageVector = action.icon,
+                                contentDescription = null,
+                            )
+                        },
+                        colors = when {
+                            action.destructive -> destructiveItemColors
+                            !action.enabled -> disabledItemColors
+                            else -> null
+                        },
+                    ) {
+                        Text(action.label)
+                    }
                 }
             }
 
             // Message Info
-            ProvideTextStyle(MaterialTheme.typography.labelSmall) {
-                Text(message.createdAt.toJavaLocalDateTime().toLocalString())
-                if (model != null) {
-                    Text(model.displayName)
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                ProvideTextStyle(MaterialTheme.typography.labelSmall) {
+                    Text(message.createdAt.toJavaLocalDateTime().toLocalString())
+                    if (model != null) {
+                        Text(model.displayName)
+                    }
                 }
             }
         }

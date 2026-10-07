@@ -18,6 +18,7 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -40,6 +41,7 @@ import androidx.compose.ui.util.fastFilter
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Alert01
+import me.rerere.hugeicons.stroke.ArrowLeft01
 import me.rerere.hugeicons.stroke.Icon1stBracket
 import me.rerere.hugeicons.stroke.McpServer
 import me.rerere.rikkahub.R
@@ -183,67 +185,64 @@ fun CardGroupScope.mcpItem(
                 it.commonOptions.enable && assistant.mcpServers.contains(it.id)
             }
             if (enabledServers.isNotEmpty()) {
-                Text(
-                    text = enabledServers.size.toString(),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                )
+                CountBadge(count = enabledServers.size)
             }
         },
         onClick = onClick,
     ) { Text(stringResource(R.string.mcp_picker_title)) }
 }
 
+// MCP 选择页，作为子页面嵌在加号 sheet 里
 @Composable
-internal fun McpPickerSheet(
+internal fun McpPickerPage(
     assistant: Assistant,
     servers: List<McpServerConfig>,
-    loading: Boolean,
+    mcpManager: McpManager,
     onUpdateAssistant: (Assistant) -> Unit,
-    onDismiss: () -> Unit,
+    onBack: () -> Unit,
 ) {
-    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
-        onDismissRequest = onDismiss,
-        sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
+    val status by mcpManager.syncingStatus.collectAsStateWithLifecycle()
+    val loading = status.values.any { it == McpStatus.Connecting }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.7f)
+            .padding(horizontal = 16.dp),
     ) {
-        Column(
+        SheetHeader(
+            title = stringResource(R.string.mcp_picker_title),
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(HugeIcons.ArrowLeft01, contentDescription = stringResource(R.string.back))
+                }
+            },
+        )
+        AnimatedVisibility(
+            visible = loading,
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.padding(bottom = 16.dp)
+            ) {
+                LinearWavyProgressIndicator()
+                Text(
+                    text = stringResource(id = R.string.mcp_picker_syncing),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+        McpPicker(
+            assistant = assistant,
+            servers = servers,
+            onUpdateAssistant = onUpdateAssistant,
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.7f)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(
-                text = stringResource(id = R.string.mcp_picker_title),
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold
-                )
-            )
-            AnimatedVisibility(loading) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.padding(vertical = 4.dp)
-                ) {
-                    LinearWavyProgressIndicator()
-                    Text(
-                        text = stringResource(id = R.string.mcp_picker_syncing),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            }
-            McpPicker(
-                assistant = assistant,
-                servers = servers,
-                onUpdateAssistant = {
-                    onUpdateAssistant(it)
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            )
-        }
+                .weight(1f),
+            contentPadding = PaddingValues(bottom = 16.dp),
+        )
     }
 }
 

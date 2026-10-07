@@ -38,7 +38,7 @@
 - 保存编辑后的助手消息时，将 `<think>` 标签重新解析为独立思考块。支持一条编辑文本中出现多个 `<think>` 块。
 - 新增设置“解析中途思考”（默认：开启），开启时消息开头以外的 `<think>` 标签也会被解析为思考块，流式生成与手动编辑消息均受此开关影响。
 - 思考完成并展开思考块后，顶部右侧显示思考词数和复制按钮（点击即可复制思考 Markdown 原文）。
-- 展开或收起思考与工具步骤时，标题行的按压反馈左右各保留 4dp 空白。
+- 展开或收起思考与工具步骤时，标题行的按压反馈左右各保留 4dp 空白，圆角半径比思考块卡片小 4dp（内缩距离）以保持共圆心。
 - 设置里的“生成时显示思考”可以选“收起”、“预览”和“展开”。思考中点击思考块标题即可在收起与展开（设置值=“收起”）或预览与展开（设置值=“预览/展开”）之间切换。
 - 渲染思考块时去掉思考块结尾的换行，避免末尾残留多余空行。
 - 缩短思考块内文字与思考块下边缘的间距。
@@ -82,6 +82,13 @@
 - 重建搜索索引时清空页面内容，仅保留标题栏及右上角按钮，并在内容区域中央显示圆形加载指示器。
 - “当前助手”/“全部助手”搜索选项移到右上角“搜索选项”与“排序方式”按钮之间，默认“全部助手”；“已被删除的模型”列表同样跟随范围。
 - 消息级搜索结果显示与排序均使用消息自身的生成时间（`UIMessage.createdAt`），不再使用对话的最后更新时间；“仅匹配标题”的结果仍使用对话更新时间。`message_search_cache` 新增 `message_at` 列存放消息时间，原 `update_at` 列保留并继续写入对话时间以兼容旧版；打开旧数据库时若缺少 `message_at` 列会补列并全量重建；若整表 `message_at` 全为空（例如数据库被旧版重建过索引），打开时也会静默全量重建补回消息时间。
+
+#### 媒体生成
+- 媒体创作功能沿用 Fork 的通用操作字符串与带“今天/昨天”的 `toMessageTimeString(todayLabel, yesterdayLabel)`；通知小图标沿用 `ic_launcher_foreground`；抽出的 `s3ConnectionItems` 共用组件改为 Fork 的输入框内 label 布局（文本项 `headlineContent` 留空，label 放进 `OutlinedTextField`），备份页 `S3Tab` 与媒体设置页共用。
+- 媒体创作的时间线记录卡片、媒体创作会话列表项与媒体提供商列表的卡片改用 `OutlinedItemCard`：媒体创作会话项的次要操作（重命名/删除）移到会话详情页顶栏，并以两个分立的图标按钮呈现（参考工作区详情页顶栏）。
+- 媒体设置页提供商项的删除移入编辑弹层底部的错误色按钮，右上角加号直接弹出新建弹层，厂商类型改为 `SelectTextField` 下拉框（参考 TTS），配置表单整体包进 `CardGroup`，编辑/新建弹层背景色改为 `surface`（与 TTS 一致），除厂商类型外的文本项改用输入框内 label（API Key 额外带隐藏/显示开关，全部文本项去掉 `singleLine`、内容过长时自动换行）；模型数量标签并入类型同一行（类型后面）。
+- 媒体创作页底部的输入区改为与聊天页输入框一致，并复用屏幕圆角。
+- 媒体创作详情页「生成参数」面板的各参数项合并为一个复用屏幕圆角的 Material 3 `CardGroup`，不再各自为一张卡片。
 
 #### 其它
 - 长按聊天菜单的项目：
@@ -163,13 +170,14 @@
 - 聊天流中的工作区工具（读取/写入/编辑文件、Shell）将完整结果内联显示在合并的思考/工具块中，点击工具步骤即可展开/收起详情，不再弹出单独的底部详情页。所有工具结果始终默认折叠；Shell 未执行完成（运行中或被中断）时也在工具块内联展示，仅显示命令。
 - Shell 正在运行时，其工具标题行显示与思考一致的加载渐变特效。
 - 编辑文件的 diff 使用与代码块一致的描边与圆角样式。
-- 思考强度选择器强度文案使用英语 `Off, Auto, Low, Medium, High, xHigh, Max`（不使用本地化资源）；拖动条下方新增一行与七个刻度一一对应的缩写 `No, Au, Lo, Mi, Hi, xH, Ma`（等宽字体，当前项用主色加粗）。
+- 思考强度选择器强度文案使用英语 `Off, Auto, Low, Medium, High, xHigh, Max`（不使用本地化资源）；拖动条下方新增一行与七个刻度一一对应的缩写 `No, Au, Lo, Mi, Hi, xH, Ma`（等宽字体，当前项用主色加重加粗）。
 - 聊天输入框添加 6dp 的四周均匀的阴影。
 - 主页最上方助手/文件夹与模型名之间用 ` / ` 分隔，末尾按顺序追加“ · {思考强度}”（思考未关闭时）与“ · {5min/1h}”（开启上下文缓存时），如 `Assistant · Folder / DeepSeek · Medium · 5min`。
 - 单个对话同时只允许一条消息在生成，生成期间禁用所有消息的重试按钮并降低透明度，避免并发触发多处重新生成。
 - 编辑待发送消息的弹窗输入框改用 `OutlinedTextField`。
 - 删除聊天中的消息后，重新扫描该聊天现存的所有消息（含分支），把聊天在聊天列表中的排序时间改为现存消息中时间最晚的那条的时间。
 - 助手消息若包含工具调用，禁用三点操作面板中的“编辑”键；此时点击“编辑”键出现系统 Toast 提示“无法编辑含有工具调用的消息”。
+- 用户消息气泡的最大宽度占满整行。
 - 使用 ask_user 工具提问多个问题时，往问题之间加入分割线。
 - 助手流式生成期间，用户消息气泡仍支持长按选中并复制文字。
 
@@ -537,7 +545,9 @@
 - 聊天输入框的发送按钮为 Disabled 时背景色由 `surfaceContainerHigh` 改为 `surfaceContainer`。
 - 紧凑数字/密码输入框的填充容器色由 `surfaceContainerHighest` 改为 `surfaceContainer`。
 - “聊天文件”页文件卡片底部的操作按钮条（引用/删除）背景由 `surfaceContainerHighest` 改为 `surfaceContainer`。
-- 聊天消息三点菜单里的按钮背景色由 `surfaceContainerHighest` 改为 `surfaceContainerHigh`。
+- 媒体创作详情页生成结果卡片底部的操作按钮背景色由 `surfaceContainerHighest` 改为 `surfaceContainer`。
+- 媒体创作详情页输入区显示参数摘要的「参数」按钮（`ComposerChip`）背景色由 `secondaryContainer` 改为 `surfaceContainer`。
+- 媒体创作详情页输入区弹出的各选择面板（模型/参数/素材，`ComposerSheet`）背景由 `surfaceContainerLow` 改为 `surface`。
 - 消息三点菜单里「翻译」打开的语言选择面板中，每个语言选项卡片的背景色由默认的 `surfaceContainerHighest` 改为 `surfaceContainerHigh`。
 - 思考块背景色由 `surfaceContainerHigh` 改为 `surfaceContainer`。
 - 压缩检查点展开后的摘要卡片：Android 背景色由 `surfaceContainerHigh` 改为 `surfaceContainer`，web-ui 对应由 `bg-muted` 改为 `bg-card`；摘要正文改用 `bodyMedium`（比默认正文小一档）。
@@ -553,8 +563,6 @@
 - 更新会话时按节点 ID 比较数据库实体与当前消息树，只删除已移除节点并写入新增或变化节点，不再全删全插全部消息节点。
 - `locale-tui-localization` skill 改为手工维护全部 `values*` 字符串资源，不再依赖 Python、uv 或自动翻译服务，并将 `locale-tui-localization` skill 内容精简后并入 `AGENTS.md`。
 - 将{关闭、取消、删除、保存、导出、分享、重命名、添加、确认}重复操作文案合并为通用本地化资源，并清理原页面专属重复键。
-- 上游 0450c4c1 带来的媒体创作功能沿用 Fork 的通用操作字符串与带“今天/昨天”的 `toMessageTimeString(todayLabel, yesterdayLabel)`；通知小图标沿用 `ic_launcher_foreground`；抽出的 `s3ConnectionItems` 共用组件改为 Fork 的输入框内 label 布局（文本项 `headlineContent` 留空，label 放进 `OutlinedTextField`），备份页 `S3Tab` 与媒体设置页共用。
-- 媒体创作与媒体提供商列表的卡片改用 `OutlinedItemCard`：媒体创作会话项的次要操作（重命名/删除）移到会话详情页顶栏，并以两个分立的图标按钮呈现（参考工作区详情页顶栏）；媒体设置页提供商项的删除移入编辑弹层底部的错误色按钮，右上角加号直接弹出新建弹层，厂商类型改为 `SelectTextField` 下拉框（参考 TTS），配置表单整体包进 `CardGroup`，编辑/新建弹层背景色改为 `surface`（与 TTS 一致），除厂商类型外的文本项改用输入框内 label（API Key 额外带隐藏/显示开关，全部文本项去掉 `singleLine`、内容过长时自动换行）；模型数量标签并入类型同一行（类型后面）。
 - 简体及繁体中文资源中的中英文相邻文本统一增加空格，并同步补齐各 `values*` 资源缺失的新增字符串。
 - 将 `app` 模块的所有 `values*` 语言资源重排为与英文源文件 `values/strings.xml` 完全相同的键顺序与行结构，使同一键在各语言文件中位于相同行号。`search` 模块各语言文件键行号本已对齐，未改动。
 - 繁体中文资源中的「」、『』、“”、‘’引号与引号内容及外侧相邻文本之间不留空格。

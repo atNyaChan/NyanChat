@@ -17,16 +17,19 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material3.AssistChip
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Surface
@@ -76,8 +79,8 @@ import me.rerere.rikkahub.data.model.MediaCreationRecord
 import me.rerere.rikkahub.data.model.MediaCreationStatus
 import me.rerere.rikkahub.ui.components.ui.ImagePreviewDialog
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
-import me.rerere.rikkahub.ui.components.ui.OutlinedItemCornerRadius
 import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.Tooltip
 import me.rerere.rikkahub.ui.components.ui.VideoPlayerDialog
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.utils.toMessageTimeString
@@ -112,15 +115,18 @@ internal fun MediaCreationRecordItem(
             .then(
                 if (editing) {
                     Modifier.border(
-                        width = 1.dp,
+                        width = 2.dp,
                         color = MaterialTheme.colorScheme.primary,
-                        shape = RoundedCornerShape(OutlinedItemCornerRadius),
+                        shape = MaterialTheme.shapes.extraLarge,
                     )
                 } else Modifier
             ),
+        // 内容离边 16dp，里面的小块圆角 12dp，和外圈同心
+        shape = MaterialTheme.shapes.extraLarge,
     ) {
         Column(
-            modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 4.dp),
+            // 最后一行按钮自带 8dp 的点击留白，底部补 8dp 后看起来和其它三边一样是 16dp
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             RecordInput(
@@ -296,8 +302,11 @@ private fun RecordFailure(record: MediaCreationRecord) {
     }
 }
 
-private val SingleOutputMaxWidth = 280.dp
-private val OutputMaxHeight = 240.dp
+private val SingleOutputMaxWidth = 200.dp
+private val OutputMaxHeight = 160.dp
+
+// 多项产出时一行摆几格
+private const val OUTPUT_COLUMNS = 3
 
 @Composable
 private fun RecordOutputs(
@@ -316,7 +325,7 @@ private fun RecordOutputs(
         )
     } else {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            outputs.chunked(2).forEach { row ->
+            outputs.chunked(OUTPUT_COLUMNS).forEach { row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     row.forEach { output ->
                         // 每格宽度固定，太高的竖图在格子里按高度上限缩小
@@ -329,7 +338,8 @@ private fun RecordOutputs(
                             )
                         }
                     }
-                    if (row.size == 1) Spacer(Modifier.weight(1f))
+                    // 没摆满的一行用空格占位，每格宽度保持一致
+                    repeat(OUTPUT_COLUMNS - row.size) { Spacer(Modifier.weight(1f)) }
                 }
             }
         }
@@ -486,9 +496,9 @@ private fun RecordActions(
     val toaster = LocalToaster.current
     var confirmCancel by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
-    var moreExpanded by remember { mutableStateOf(false) }
 
-    Row(verticalAlignment = Alignment.Top) {
+    // 右边的版本切换和左边的最后一行对齐
+    Row(verticalAlignment = Alignment.Bottom) {
         // 放不下时换行，保证每个操作都看得见
         FlowRow(
             modifier = Modifier.weight(1f),
@@ -547,57 +557,26 @@ private fun RecordActions(
             ActionChip(stringResource(R.string.media_creation_page_edit), HugeIcons.PencilEdit01) {
                 vm.editFrom(record)
             }
+            // 次要操作只放图标，跟在后面一起换行，不再收进弹出菜单
+            if (record.prompt.isNotBlank()) {
+                ActionIcon(stringResource(R.string.media_creation_page_copy_prompt), HugeIcons.Copy01) {
+                    context.writeClipboardText(record.prompt)
+                    toaster.show(
+                        context.getString(R.string.media_creation_page_prompt_copied),
+                        type = ToastType.Success,
+                    )
+                }
+            }
+            ActionIcon(
+                text = stringResource(
+                    if (hasVersions) R.string.media_creation_page_delete_version else R.string.common_delete
+                ),
+                icon = HugeIcons.Delete01,
+                destructive = true,
+            ) { confirmDelete = true }
         }
-        Column(horizontalAlignment = Alignment.End) {
-            Box {
-                IconButton(onClick = { moreExpanded = true }) {
-                    Icon(
-                        imageVector = HugeIcons.MoreVertical,
-                        contentDescription = stringResource(R.string.more_options),
-                    )
-                }
-                DropdownMenu(
-                    expanded = moreExpanded,
-                    onDismissRequest = { moreExpanded = false },
-                ) {
-                    if (record.prompt.isNotBlank()) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.media_creation_page_copy_prompt)) },
-                            leadingIcon = { Icon(HugeIcons.Copy01, contentDescription = null) },
-                            onClick = {
-                                moreExpanded = false
-                                context.writeClipboardText(record.prompt)
-                                toaster.show(
-                                    context.getString(R.string.media_creation_page_prompt_copied),
-                                    type = ToastType.Success,
-                                )
-                            },
-                        )
-                    }
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                stringResource(
-                                    if (hasVersions) R.string.media_creation_page_delete_version
-                                    else R.string.common_delete
-                                )
-                            )
-                        },
-                        leadingIcon = { Icon(HugeIcons.Delete01, contentDescription = null) },
-                        colors = MenuDefaults.itemColors(
-                            textColor = MaterialTheme.colorScheme.error,
-                            leadingIconColor = MaterialTheme.colorScheme.error,
-                        ),
-                        onClick = {
-                            moreExpanded = false
-                            confirmDelete = true
-                        },
-                    )
-                }
-            }
-            if (hasVersions) {
-                VersionSwitcher(node = node, onSwitch = { vm.switchVersion(node, it) })
-            }
+        if (hasVersions) {
+            VersionSwitcher(node = node, onSwitch = { vm.switchVersion(node, it) })
         }
     }
 
@@ -687,9 +666,54 @@ private fun VersionSwitcher(
 
 @Composable
 private fun ActionChip(text: String, icon: ImageVector, onClick: () -> Unit) {
-    AssistChip(
+    val height = ButtonDefaults.ExtraSmallContainerHeight
+    FilledTonalButton(
         onClick = onClick,
-        label = { Text(text) },
-        leadingIcon = { Icon(icon, contentDescription = null, modifier = Modifier.size(16.dp)) },
-    )
+        // 按下时圆角收紧
+        shapes = ButtonDefaults.shapesFor(height),
+        modifier = Modifier.heightIn(min = height),
+        colors = ButtonDefaults.filledTonalButtonColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ),
+        contentPadding = ButtonDefaults.contentPaddingFor(height, hasStartIcon = true),
+    ) {
+        Icon(icon, contentDescription = null, modifier = Modifier.size(ButtonDefaults.iconSizeFor(height)))
+        Spacer(Modifier.width(ButtonDefaults.iconSpacingFor(height)))
+        Text(text = text, style = ButtonDefaults.textStyleFor(height))
+    }
+}
+
+/** 只有图标的操作，长按显示名称。 */
+@Composable
+private fun ActionIcon(
+    text: String,
+    icon: ImageVector,
+    destructive: Boolean = false,
+    onClick: () -> Unit,
+) {
+    Tooltip(tooltip = { Text(text) }) {
+        FilledTonalIconButton(
+            onClick = onClick,
+            // 按下时圆角收紧
+            shapes = IconButtonDefaults.shapes(),
+            modifier = Modifier.size(
+                IconButtonDefaults.extraSmallContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide)
+            ),
+            colors = IconButtonDefaults.filledTonalIconButtonColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                contentColor = if (destructive) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                },
+            ),
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = text,
+                modifier = Modifier.size(IconButtonDefaults.extraSmallIconSize),
+            )
+        }
+    }
 }

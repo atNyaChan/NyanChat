@@ -47,6 +47,16 @@ import me.rerere.hugeicons.stroke.Sparkles
 // 最后一步连线在容器底部留出的收尾长度（与 Fork 原实现的 bottomOffset 一致）
 private val ChainOfThoughtTrailingLineOffset = 16.dp
 
+// 思考块卡片圆角
+private val ChainOfThoughtShape = RoundedCornerShape(20.dp)
+
+// 标题行按压反馈相对卡片四周内缩的距离
+private val ChainOfThoughtInteractiveInset = 4.dp
+
+// 标题行按压反馈的圆角：与卡片圆角共圆心，因此半径等于卡片半径减去内缩距离
+private val ChainOfThoughtInteractiveShape =
+    RoundedCornerShape(20.dp - ChainOfThoughtInteractiveInset)
+
 /**
  * 以时间线/步骤卡片的形式展示一组思考过程。
  *
@@ -69,7 +79,7 @@ fun <T> ChainOfThought(
     Card(
         modifier = modifier,
         colors = cardColors,
-        shape = RoundedCornerShape(16.dp),
+        shape = ChainOfThoughtShape,
     ) {
         Column(
             modifier = Modifier
@@ -275,11 +285,11 @@ private class ChainOfThoughtScopeImpl(
                     .then(
                         if (onClick != null) {
                             Modifier
-                                .clip(MaterialTheme.shapes.small)
+                                .clip(ChainOfThoughtInteractiveShape)
                                 .clickable { onClick() }
                         } else if (hasContent) {
                             Modifier
-                                .clip(MaterialTheme.shapes.small)
+                                .clip(ChainOfThoughtInteractiveShape)
                                 .clickable { onExpandedChange(!expanded) }
                         } else {
                             Modifier
