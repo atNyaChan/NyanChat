@@ -1,29 +1,42 @@
 package me.rerere.rikkahub.ui.components.ai
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemColors
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.ListItemShapes
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.composables.icons.lucide.ExternalLink
-import com.composables.icons.lucide.Lucide
+import kotlin.uuid.Uuid
+import me.rerere.hugeicons.HugeIcons
+import me.rerere.hugeicons.stroke.ExternalLink
+import me.rerere.hugeicons.stroke.Package
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.files.SkillMetadata
 import me.rerere.rikkahub.data.model.Lorebook
@@ -33,71 +46,57 @@ import me.rerere.rikkahub.data.model.QuickMessage
 @Composable
 fun ModeInjectionsContent(
     modeInjections: List<PromptInjection.ModeInjection>,
-    selectedIds: Set<kotlin.uuid.Uuid>,
-    onToggle: (kotlin.uuid.Uuid, Boolean) -> Unit,
+    selectedIds: Set<Uuid>,
+    onToggle: (Uuid, Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    colors: ListItemColors = ListItemDefaults.segmentedColors(),
     onManage: (() -> Unit)? = null,
+    manageText: String? = null,
 ) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        items(modeInjections) { injection ->
-            ListItem(
-                trailingContent = {
-                    Switch(
-                        checked = selectedIds.contains(injection.id),
-                        onCheckedChange = { checked -> onToggle(injection.id, checked) }
-                    )
-                },
-                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-            ) { Text(injection.name.ifBlank { stringResource(R.string.extension_content_unnamed) }) }
-        }
-        if (onManage != null) {
-            item {
-                ManageButton(onClick = onManage, modifier = Modifier.padding(top = 4.dp))
-            }
-        }
+    ExtensionList(
+        items = modeInjections,
+        modifier = modifier,
+        contentPadding = contentPadding,
+        onManage = onManage,
+        manageText = manageText,
+    ) { injection, shapes ->
+        ExtensionListItem(
+            title = injection.name.ifBlank { stringResource(R.string.extension_content_unnamed) },
+            checked = selectedIds.contains(injection.id),
+            onCheckedChange = { checked -> onToggle(injection.id, checked) },
+            shapes = shapes,
+            colors = colors,
+        )
     }
 }
 
 @Composable
 fun LorebooksContent(
     lorebooks: List<Lorebook>,
-    selectedIds: Set<kotlin.uuid.Uuid>,
-    onToggle: (kotlin.uuid.Uuid, Boolean) -> Unit,
+    selectedIds: Set<Uuid>,
+    onToggle: (Uuid, Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    colors: ListItemColors = ListItemDefaults.segmentedColors(),
     onManage: (() -> Unit)? = null,
+    manageText: String? = null,
 ) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        items(lorebooks) { lorebook ->
-            ListItem(
-                supportingContent = if (lorebook.description.isNotBlank()) {
-                    {
-                        Text(
-                            text = lorebook.description,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
-                    }
-                } else null,
-                trailingContent = {
-                    Switch(
-                        checked = selectedIds.contains(lorebook.id),
-                        onCheckedChange = { checked -> onToggle(lorebook.id, checked) }
-                    )
-                },
-                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-            ) { Text(lorebook.name.ifBlank { stringResource(R.string.extension_content_unnamed_lorebook) }) }
-        }
-        if (onManage != null) {
-            item {
-                ManageButton(onClick = onManage, modifier = Modifier.padding(top = 4.dp))
-            }
-        }
+    ExtensionList(
+        items = lorebooks,
+        modifier = modifier,
+        contentPadding = contentPadding,
+        onManage = onManage,
+        manageText = manageText,
+    ) { lorebook, shapes ->
+        ExtensionListItem(
+            title = lorebook.name.ifBlank { stringResource(R.string.extension_content_unnamed_lorebook) },
+            description = lorebook.description,
+            checked = selectedIds.contains(lorebook.id),
+            onCheckedChange = { checked -> onToggle(lorebook.id, checked) },
+            shapes = shapes,
+            colors = colors,
+        )
     }
 }
 
@@ -107,97 +106,145 @@ fun SkillsContent(
     enabledSkills: Set<String>,
     onToggle: (String, Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    colors: ListItemColors = ListItemDefaults.segmentedColors(),
     onManage: (() -> Unit)? = null,
+    manageText: String? = null,
 ) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        items(skills, key = { it.skillDir.absolutePath }) { skill ->
-            ListItem(
-                supportingContent = if (skill.description.isNotBlank()) {
-                    {
-                        Text(
-                            text = skill.description,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
-                    }
-                } else null,
-                trailingContent = {
-                    Switch(
-                        checked = enabledSkills.contains(skill.name),
-                        onCheckedChange = { checked -> onToggle(skill.name, checked) }
-                    )
-                },
-                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-            ) { Text(skill.name) }
-        }
-        if (onManage != null) {
-            item {
-                ManageButton(onClick = onManage, modifier = Modifier.padding(top = 4.dp))
-            }
-        }
+    ExtensionList(
+        items = skills,
+        modifier = modifier,
+        contentPadding = contentPadding,
+        onManage = onManage,
+        manageText = manageText,
+        key = { it.skillDir.absolutePath },
+    ) { skill, shapes ->
+        ExtensionListItem(
+            title = skill.name,
+            description = skill.description,
+            checked = enabledSkills.contains(skill.name),
+            onCheckedChange = { checked -> onToggle(skill.name, checked) },
+            shapes = shapes,
+            colors = colors,
+        )
     }
 }
 
 @Composable
 fun QuickMessagesContent(
     quickMessages: List<QuickMessage>,
-    selectedIds: Set<kotlin.uuid.Uuid>,
-    onToggle: (kotlin.uuid.Uuid, Boolean) -> Unit,
+    selectedIds: Set<Uuid>,
+    onToggle: (Uuid, Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    colors: ListItemColors = ListItemDefaults.segmentedColors(),
     onManage: (() -> Unit)? = null,
+    manageText: String? = null,
 ) {
+    ExtensionList(
+        items = quickMessages,
+        modifier = modifier,
+        contentPadding = contentPadding,
+        onManage = onManage,
+        manageText = manageText,
+        key = { it.id },
+    ) { quickMessage, shapes ->
+        ExtensionListItem(
+            title = quickMessage.title.ifBlank { stringResource(R.string.extension_content_unnamed) },
+            description = quickMessage.content,
+            descriptionMaxLines = 2,
+            checked = selectedIds.contains(quickMessage.id),
+            onCheckedChange = { checked -> onToggle(quickMessage.id, checked) },
+            shapes = shapes,
+            colors = colors,
+        )
+    }
+}
+
+// 扩展项的分段列表，末尾可带一个跳转到管理页的按钮
+@Composable
+private fun <T> ExtensionList(
+    items: List<T>,
+    modifier: Modifier,
+    contentPadding: PaddingValues,
+    onManage: (() -> Unit)?,
+    manageText: String? = null,
+    key: ((T) -> Any)? = null,
+    itemContent: @Composable (item: T, shapes: ListItemShapes) -> Unit,
+) {
+    val itemKey: ((Int, T) -> Any)? = key?.let { keyOf -> { _, item -> keyOf(item) } }
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        contentPadding = contentPadding,
+        verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
     ) {
-        items(quickMessages, key = { it.id }) { quickMessage ->
-            ListItem(
-                supportingContent = if (quickMessage.content.isNotBlank()) {
-                    {
-                        Text(
-                            text = quickMessage.content,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            maxLines = 2,
-                        )
-                    }
-                } else null,
-                trailingContent = {
-                    Switch(
-                        checked = selectedIds.contains(quickMessage.id),
-                        onCheckedChange = { checked -> onToggle(quickMessage.id, checked) }
-                    )
-                },
-                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-            ) { Text(quickMessage.title.ifBlank { stringResource(R.string.extension_content_unnamed) }) }
+        itemsIndexed(items = items, key = itemKey) { index, item ->
+            itemContent(item, ListItemDefaults.segmentedShapes(index = index, count = items.size))
         }
         if (onManage != null) {
-            item { ManageButton(onClick = onManage, modifier = Modifier.padding(top = 4.dp)) }
+            item {
+                ManageButton(
+                    onClick = onManage,
+                    text = manageText ?: stringResource(R.string.extension_content_manage),
+                )
+            }
         }
+    }
+}
+
+@Composable
+private fun ExtensionListItem(
+    title: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    shapes: ListItemShapes,
+    colors: ListItemColors,
+    description: String = "",
+    // 技能等的描述可能很长，完整内容在管理页看
+    descriptionMaxLines: Int = 3,
+) {
+    SegmentedListItem(
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        shapes = shapes,
+        colors = colors,
+        supportingContent = if (description.isNotBlank()) {
+            {
+                Text(
+                    text = description,
+                    maxLines = descriptionMaxLines,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        } else null,
+        trailingContent = {
+            // 整行都能点击切换，开关只用来显示状态
+            Switch(checked = checked, onCheckedChange = null)
+        },
+    ) {
+        Text(title)
     }
 }
 
 @Composable
 private fun ManageButton(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    text: String,
 ) {
-    Row(
-        modifier = modifier
+    Box(
+        modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.End,
+            .padding(top = 12.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        TextButton(onClick = onClick) {
-            Icon(Lucide.ExternalLink, contentDescription = null, modifier = Modifier.size(16.dp))
-            Text(
-                text = stringResource(R.string.extension_content_manage),
-                modifier = Modifier.padding(start = 4.dp),
-                style = MaterialTheme.typography.labelMedium,
+        FilledTonalButton(onClick = onClick) {
+            Icon(
+                imageVector = HugeIcons.ExternalLink,
+                contentDescription = null,
+                modifier = Modifier.size(ButtonDefaults.IconSize),
             )
+            Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+            Text(text)
         }
     }
 }
@@ -207,23 +254,46 @@ fun ExtensionEmptyState(
     message: String,
     buttonText: String? = null,
     onAction: (() -> Unit)? = null,
+    icon: ImageVector = HugeIcons.Package,
 ) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
     ) {
+        Box(
+            modifier = Modifier
+                .size(96.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = MaterialShapes.Cookie9Sided.toShape(),
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(40.dp),
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+        }
         Text(
             text = message,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
         )
         if (buttonText != null && onAction != null) {
-            TextButton(onClick = onAction) {
-                Icon(Lucide.ExternalLink, contentDescription = null, modifier = Modifier.size(16.dp))
-                Text(buttonText, modifier = Modifier.padding(start = 4.dp))
+            FilledTonalButton(onClick = onAction) {
+                Icon(
+                    imageVector = HugeIcons.ExternalLink,
+                    contentDescription = null,
+                    modifier = Modifier.size(ButtonDefaults.IconSize),
+                )
+                Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                Text(buttonText)
             }
         }
     }
