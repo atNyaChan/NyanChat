@@ -854,6 +854,7 @@
   <string name="setting_theme_page_primary_color">اللون الأساسي</string>
   <string name="setting_theme_page_secondary_color">اللون الثانوي</string>
   <string name="setting_theme_page_tertiary_color">اللون الثالثي</string>
+  <string name="setting_theme_page_auto_derive">اشتقاق تلقائي</string>
   <string name="setting_theme_page_preview">معاينة</string>
   <string name="setting_theme_page_import_theme">استيراد</string>
   <string name="setting_theme_page_export_success">تم نسخ JSON السمة إلى الحافظة</string>

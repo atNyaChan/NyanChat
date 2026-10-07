@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.ink.geometry.ImmutableBox
 import androidx.ink.geometry.ImmutableVec
 import androidx.ink.strokes.Stroke
+import me.rerere.ui.common.HueGradientColors
 import kotlin.math.ceil
 import kotlin.math.min
 
@@ -38,8 +39,8 @@ internal object SketchDefaults {
         Color(0xFF8E24AA),
     )
 
-    // 色相转一圈，用在自定义颜色的色块和色相滑杆上
-    val HueColors = List(7) { Color.hsv(it * 60f, 1f, 1f) }
+    // 色相转一圈，用在自定义颜色的色块上（色相轨道与通用取色面板共用同一份色带）
+    val HueColors = HueGradientColors
 
     // 第一次打开调色面板时的起始色：鲜艳一点，三条滑杆一拖就能看到变化
     val CustomColor = Color(0xFFE91E63)

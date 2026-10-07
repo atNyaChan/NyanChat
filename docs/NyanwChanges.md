@@ -486,7 +486,10 @@
 - 世界书条目编辑页（“编辑条目”）的全部可滚动表单元素合并为一个 Material 3 `CardGroup`，红色全宽删除按钮仍保留在卡片组下方的可滚动内容最底部。模式注入编辑面板同样把全部可滚动元素合并为一个 `CardGroup`。
 - 世界书编辑页底部左侧按钮顺序调整为删除、分享，并与模型提供商详情页一致改用对应的删除与分享图标。
 - 模式注入编辑面板与快捷消息编辑弹窗的分享按钮及分享面板内的分享图标，统一改用 `Share01` 样式；模式注入编辑与快捷消息编辑的分享、删除按钮位置对调（删除在前、分享在后）；快捷消息编辑弹窗底部改为左组（删除/分享）与右组（取消/保存）。
-- 自定义主题颜色不再使用合并文本框，改为独立的 H、S、L 数字输入框，并使用 Material 3 supporting text 分别标注范围。
+- 自定义主题颜色改为复用抽取到 `ui/common` 的通用 HSV 取色面板（H/S/V 三条渐变滑杆 + RGB `#RRGGBB` 输入框），不再使用 HSL 滑动条和输入框。
+- H/S/V 分量改为组件内的本地状态，拖动时只把颜色往外传、不再从颜色反推，修复了几条滑杆在拖动时互相牵连的问题；外部颜色的同步从 `LaunchedEffect(color)` 改为 `SideEffect`，避免快速拖动时旧颜色在异步回执里把滑杆又拽回去。
+- 次色/第三色新增「自动推导」开关（位于色号输入框上方）：开启时颜色由主色推导、色号输入框与 H/S/V 滑杆禁用；关闭后才可手动取色，且此后不再随主色变动。新建主题默认两色均为自动推导。
+- 主题预览与「自动推导」的推导色重算都按 25ms 节流，拖动主色时不再每帧重算整套配色。
 - 手动添加 Agent Skill 时，不再在输入框上方显示“SKILL.md内容”，并且固定占位符为原来输入框获得焦点后的占位符。
 - 聊天字体下拉框移至项目右侧，并使用当前选中的字体渲染 `Aa` 预览，自定义字体未加载时回退系统默认字体。
 - 设置主页项目名字与对应页面标题共用同一 locale 资源键，并删除重复标题键。
@@ -551,6 +554,7 @@
 - 媒体创作详情页输入区显示参数摘要的「参数」按钮（`ComposerChip`）背景色由 `secondaryContainer` 改为 `surfaceContainer`。
 - 媒体创作详情页输入区弹出的各选择面板（模型/参数/素材，`ComposerSheet`）背景由 `surfaceContainerLow` 改为 `surface`。
 - 画板（Sketch）页面背景由 `surfaceContainer` 改为 `surface`；画纸（`SketchCanvas`）四周增加 1dp 的 `outlineVariant` 描边。
+- 画板自定义颜色面板最上方新增色号输入框，固定前缀 `#`（输入框左侧标 `RGB`），只接受六位十六进制（`#RRGGBB`），输入完整即应用到画笔并同步三条滑杆；H/S/V 三条滑杆左侧标注分量字母、右侧显示当前数值；面板背景色由 `surfaceContainerHigh` 改为 `surface`。该面板已抽取为 `ui/common` 的通用 `ColorPicker` 组件，主题设置页复用同一实现。
 - 消息三点菜单里「翻译」打开的语言选择面板中，每个语言选项卡片的背景色由默认的 `surfaceContainerHighest` 改为 `surfaceContainerHigh`。
 - 思考块背景色由 `surfaceContainerHigh` 改为 `surfaceContainer`。
 - 压缩检查点展开后的摘要卡片：Android 背景色由 `surfaceContainerHigh` 改为 `surfaceContainer`，web-ui 对应由 `bg-muted` 改为 `bg-card`；摘要正文改用 `bodyMedium`（比默认正文小一档）。

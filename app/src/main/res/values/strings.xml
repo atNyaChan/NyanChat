@@ -854,6 +854,7 @@
   <string name="setting_theme_page_primary_color">Primary Color</string>
   <string name="setting_theme_page_secondary_color">Secondary Color</string>
   <string name="setting_theme_page_tertiary_color">Tertiary Color</string>
+  <string name="setting_theme_page_auto_derive">Auto Derive</string>
   <string name="setting_theme_page_preview">Preview</string>
   <string name="setting_theme_page_import_theme">Import</string>
   <string name="setting_theme_page_export_success">Theme JSON copied to clipboard</string>

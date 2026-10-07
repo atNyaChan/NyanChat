@@ -854,6 +854,7 @@
   <string name="setting_theme_page_primary_color">プライマリカラー</string>
   <string name="setting_theme_page_secondary_color">セカンダリカラー</string>
   <string name="setting_theme_page_tertiary_color">ターシャリカラー</string>
+  <string name="setting_theme_page_auto_derive">自動導出</string>
   <string name="setting_theme_page_preview">プレビュー</string>
   <string name="setting_theme_page_import_theme">インポート</string>
   <string name="setting_theme_page_export_success">テーマJSONがクリップボードにコピーされました</string>

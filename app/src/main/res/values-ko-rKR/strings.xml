@@ -854,6 +854,7 @@
   <string name="setting_theme_page_primary_color">기본 색상</string>
   <string name="setting_theme_page_secondary_color">보조 색상</string>
   <string name="setting_theme_page_tertiary_color">세 번째 색상</string>
+  <string name="setting_theme_page_auto_derive">자동 파생</string>
   <string name="setting_theme_page_preview">미리보기</string>
   <string name="setting_theme_page_import_theme">가져오기</string>
   <string name="setting_theme_page_export_success">테마 JSON이 클립보드에 복사되었습니다</string>

@@ -854,6 +854,7 @@
   <string name="setting_theme_page_primary_color">主色</string>
   <string name="setting_theme_page_secondary_color">辅色</string>
   <string name="setting_theme_page_tertiary_color">第三色</string>
+  <string name="setting_theme_page_auto_derive">自动推导</string>
   <string name="setting_theme_page_preview">预览</string>
   <string name="setting_theme_page_import_theme">导入</string>
   <string name="setting_theme_page_export_success">主题 JSON 已复制到剪贴板</string>

@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AlertDialog
@@ -34,8 +33,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -43,11 +40,14 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,11 +58,12 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.ColorUtils
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dokar.sonner.ToastType
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -84,8 +85,8 @@ import me.rerere.rikkahub.ui.theme.CustomTheme
 import me.rerere.rikkahub.ui.theme.LocalDarkMode
 import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.utils.plus
+import me.rerere.ui.common.ColorPicker
 import org.koin.androidx.compose.koinViewModel
-import kotlin.math.roundToInt
 import kotlin.uuid.Uuid
 
 private val themeJson = Json {
@@ -402,7 +403,7 @@ private fun CustomThemeItem(
     ) { Text(theme.name.ifEmpty { "Unnamed" }) }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
 private fun CustomThemeEditSheet(
     theme: CustomTheme?,
@@ -412,6 +413,19 @@ private fun CustomThemeEditSheet(
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     var currentTheme by remember {
         mutableStateOf(theme ?: CustomTheme())
+    }
+    // 「自动推导」时次色/第三色显示的颜色：只跟主色走，无视当前次色/第三色。
+    // 拖动主色时最多每 25ms 重算一次，避免每帧重算整套配色拖慢取色
+    var derivedScheme by remember { mutableStateOf(currentTheme.generateColorScheme(false)) }
+    val latestPrimary by rememberUpdatedState(currentTheme.primaryColorArgb)
+    LaunchedEffect(Unit) {
+        snapshotFlow { latestPrimary }
+            .sample(25.milliseconds)
+            .collect { primary ->
+                derivedScheme = currentTheme
+                    .copy(primaryColorArgb = primary, secondaryColorArgb = null, tertiaryColorArgb = null)
+                    .generateColorScheme(false)
+            }
     }
 
     ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
@@ -452,8 +466,10 @@ private fun CustomThemeEditSheet(
                 )
                 ColorPickerRow(
                     color = Color(currentTheme.primaryColorArgb.toInt()),
-                    onColorChange = {
-                        currentTheme = currentTheme.copy(primaryColorArgb = it.toArgb().toLong() and 0xFFFFFFFFL)
+                    onColorChange = { newPrimary ->
+                        currentTheme = currentTheme.copy(
+                            primaryColorArgb = newPrimary.toArgb().toLong() and 0xFFFFFFFFL,
+                        )
                     }
                 )
 
@@ -462,14 +478,26 @@ private fun CustomThemeEditSheet(
                     style = MaterialTheme.typography.titleSmall,
                 )
                 ColorPickerRow(
-                    color = if (currentTheme.secondaryColorArgb != null) {
-                        Color(currentTheme.secondaryColorArgb!!.toInt())
-                    } else {
-                        Color(currentTheme.generateColorScheme(false).secondary.toArgb())
-                    },
+                    color = currentTheme.secondaryColorArgb?.let { Color(it.toInt()) }
+                        ?: derivedScheme.secondary,
+                    enabled = currentTheme.secondaryColorArgb != null,
                     onColorChange = {
                         currentTheme = currentTheme.copy(secondaryColorArgb = it.toArgb().toLong() and 0xFFFFFFFFL)
-                    }
+                    },
+                    header = {
+                        AutoDeriveSwitch(
+                            checked = currentTheme.secondaryColorArgb == null,
+                            onCheckedChange = { auto ->
+                                currentTheme = if (auto) {
+                                    currentTheme.copy(secondaryColorArgb = null)
+                                } else {
+                                    currentTheme.copy(
+                                        secondaryColorArgb = derivedScheme.secondary.toArgb().toLong() and 0xFFFFFFFFL,
+                                    )
+                                }
+                            },
+                        )
+                    },
                 )
 
                 Text(
@@ -477,14 +505,26 @@ private fun CustomThemeEditSheet(
                     style = MaterialTheme.typography.titleSmall,
                 )
                 ColorPickerRow(
-                    color = if (currentTheme.tertiaryColorArgb != null) {
-                        Color(currentTheme.tertiaryColorArgb!!.toInt())
-                    } else {
-                        Color(currentTheme.generateColorScheme(false).tertiary.toArgb())
-                    },
+                    color = currentTheme.tertiaryColorArgb?.let { Color(it.toInt()) }
+                        ?: derivedScheme.tertiary,
+                    enabled = currentTheme.tertiaryColorArgb != null,
                     onColorChange = {
                         currentTheme = currentTheme.copy(tertiaryColorArgb = it.toArgb().toLong() and 0xFFFFFFFFL)
-                    }
+                    },
+                    header = {
+                        AutoDeriveSwitch(
+                            checked = currentTheme.tertiaryColorArgb == null,
+                            onCheckedChange = { auto ->
+                                currentTheme = if (auto) {
+                                    currentTheme.copy(tertiaryColorArgb = null)
+                                } else {
+                                    currentTheme.copy(
+                                        tertiaryColorArgb = derivedScheme.tertiary.toArgb().toLong() and 0xFFFFFFFFL,
+                                    )
+                                }
+                            },
+                        )
+                    },
                 )
 
                 ThemePreview(currentTheme)
@@ -568,30 +608,9 @@ private fun ImportThemeDialog(
 private fun ColorPickerRow(
     color: Color,
     onColorChange: (Color) -> Unit,
+    enabled: Boolean = true,
+    header: (@Composable () -> Unit)? = null,
 ) {
-    val hsl = remember(color) {
-        FloatArray(3).also { ColorUtils.colorToHSL(color.toArgb(), it) }
-    }
-    val hueState = remember(color) { SliderState(value = hsl[0], trackRange = 0f..360f) }
-    val saturationState = remember(color) { SliderState(value = hsl[1], trackRange = 0f..1f) }
-    val lightnessState = remember(color) { SliderState(value = hsl[2], trackRange = 0f..1f) }
-    var hueInput by remember(color) { mutableStateOf(hsl[0].roundToInt().toString()) }
-    var saturationInput by remember(color) { mutableStateOf((hsl[1] * 100).roundToInt().toString()) }
-    var lightnessInput by remember(color) { mutableStateOf((hsl[2] * 100).roundToInt().toString()) }
-    val hue = hueState.value
-    val saturation = saturationState.value
-    val lightness = lightnessState.value
-
-    fun updateColor(newHue: Float, newSaturation: Float, newLightness: Float) {
-        hueState.value = newHue
-        saturationState.value = newSaturation
-        lightnessState.value = newLightness
-        hueInput = newHue.roundToInt().toString()
-        saturationInput = (newSaturation * 100).roundToInt().toString()
-        lightnessInput = (newLightness * 100).roundToInt().toString()
-        onColorChange(Color(ColorUtils.HSLToColor(floatArrayOf(newHue, newSaturation, newLightness))))
-    }
-
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -603,89 +622,47 @@ private fun ColorPickerRow(
         ) {
             drawCircle(color = color)
         }
-        Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("H", style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(16.dp))
-                Slider(
-                    state = hueState,
-                    onValueChange = { updateColor(it, saturation, lightness) },
-                    modifier = Modifier.weight(1f),
-                )
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("S", style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(16.dp))
-                Slider(
-                    state = saturationState,
-                    onValueChange = { updateColor(hue, it, lightness) },
-                    modifier = Modifier.weight(1f),
-                )
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("L", style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(16.dp))
-                Slider(
-                    state = lightnessState,
-                    onValueChange = { updateColor(hue, saturation, it) },
-                    modifier = Modifier.weight(1f),
-                )
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
-                    value = hueInput,
-                    onValueChange = { value ->
-                        if (value.all(Char::isDigit)) {
-                            hueInput = value
-                            value.toFloatOrNull()?.takeIf { it in 0f..360f }?.let {
-                                updateColor(it, saturation, lightness)
-                            }
-                        }
-                    },
-                    label = { Text("H") },
-                    supportingText = { Text("0–360") },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                )
-                OutlinedTextField(
-                    value = saturationInput,
-                    onValueChange = { value ->
-                        if (value.all(Char::isDigit)) {
-                            saturationInput = value
-                            value.toFloatOrNull()?.takeIf { it in 0f..100f }?.let {
-                                updateColor(hue, it / 100f, lightness)
-                            }
-                        }
-                    },
-                    label = { Text("S") },
-                    supportingText = { Text("0–100") },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                )
-                OutlinedTextField(
-                    value = lightnessInput,
-                    onValueChange = { value ->
-                        if (value.all(Char::isDigit)) {
-                            lightnessInput = value
-                            value.toFloatOrNull()?.takeIf { it in 0f..100f }?.let {
-                                updateColor(hue, saturation, it / 100f)
-                            }
-                        }
-                    },
-                    label = { Text("L") },
-                    supportingText = { Text("0–100") },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                )
-            }
-        }
+        ColorPicker(
+            color = color,
+            onColorChange = onColorChange,
+            enabled = enabled,
+            header = header,
+            modifier = Modifier.weight(1f),
+        )
     }
 }
 
+// 次色/第三色的「自动推导」开关：开启时颜色由主色推导，关掉才能手动取色
+@Composable
+private fun AutoDeriveSwitch(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(R.string.setting_theme_page_auto_derive),
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Switch(checked = checked, onCheckedChange = onCheckedChange)
+    }
+}
+
+@OptIn(FlowPreview::class)
 @Composable
 private fun ThemePreview(theme: CustomTheme) {
     val darkMode = LocalDarkMode.current
-    val scheme = theme.generateColorScheme(darkMode)
+    // 拖动取色时最多每 25ms 重算一次整套配色，既跟手又不会每帧重算
+    var scheme by remember(darkMode) { mutableStateOf(theme.generateColorScheme(darkMode)) }
+    val latestTheme by rememberUpdatedState(theme)
+    LaunchedEffect(darkMode) {
+        snapshotFlow { latestTheme }
+            .sample(25.milliseconds)
+            .collect { scheme = it.generateColorScheme(darkMode) }
+    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)

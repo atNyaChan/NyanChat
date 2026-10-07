@@ -854,6 +854,7 @@
   <string name="setting_theme_page_primary_color">Основной цвет</string>
   <string name="setting_theme_page_secondary_color">Вторичный цвет</string>
   <string name="setting_theme_page_tertiary_color">Третичный цвет</string>
+  <string name="setting_theme_page_auto_derive">Автовывод</string>
   <string name="setting_theme_page_preview">Предпросмотр</string>
   <string name="setting_theme_page_import_theme">Импорт</string>
   <string name="setting_theme_page_export_success">JSON темы скопирован в буфер обмена</string>
