@@ -118,7 +118,7 @@
   <string name="assistant_page_preset_messages_desc">تعيين رسائل المحادثة الأولية</string>
   <string name="assistant_page_quick_message_content">المحتوى</string>
   <string name="assistant_page_quick_message_title">العنوان</string>
-  <string name="assistant_page_quick_messages">رسائل سريعة</string>
+  <string name="quick_messages_page_title">رسائل سريعة</string>
   <string name="assistant_page_recent_chats">الرجوع إلى المحادثات الأخيرة</string>
   <string name="assistant_page_recent_chats_desc">عند التمكين، يتيح للمساعد البحث في المحادثات السابقة عن معلومات ذات صلة</string>
   <string name="assistant_page_regex_affecting_scopes">النطاقات المتأثرة:</string>
@@ -339,14 +339,7 @@
   <string name="extension_selector_mode_injections_empty">لا توجد حقن أوضاع متاحة</string>
   <string name="extension_selector_quick_messages_empty">لا توجد رسائل سريعة متاحة</string>
   <string name="extension_selector_skills_empty">لا توجد مهارات متاحة</string>
-  <string name="extension_selector_manage_quick_messages">إدارة الرسائل السريعة</string>
-  <string name="extension_selector_manage_mode_injections">إدارة حقن الأوضاع</string>
-  <string name="extension_selector_manage_lorebooks">إدارة كتب المعرفة</string>
-  <string name="extension_selector_manage_skills">إدارة المهارات</string>
-  <string name="extension_selector_tab_lorebooks">كتب المعرفة</string>
-  <string name="extension_selector_tab_mode_injections">حقن الأوضاع</string>
-  <string name="extension_selector_tab_quick_messages">الرسائل السريعة</string>
-  <string name="extension_selector_tab_skills">المهارات</string>
+  <string name="extension_selector_manage">إدارة %1$s</string>
   <string name="extensions_page_agent_skills_desc">إدارة حزم المهارات ليحمّلها الذكاء الاصطناعي عند الطلب</string>
   <string name="extensions_page_quick_messages_desc">إدارة قوالب الرسائل السريعة المشتركة</string>
   <string name="favorite_page_no_favorites">لا توجد مفضلات بعد</string>
@@ -459,9 +452,9 @@
   <string name="prompt_page_keywords_format">الكلمات المفتاحية: %s</string>
   <string name="prompt_page_keywords_label">الكلمات المفتاحية</string>
   <string name="prompt_page_lorebook_empty">لا توجد كتب معرفة</string>
-  <string name="prompt_page_lorebook_tab">كتاب المعرفة</string>
+  <string name="lorebook_page_title">كتب المعرفة</string>
   <string name="prompt_page_mode_injection_empty">لا توجد حقن للأوضاع</string>
-  <string name="prompt_page_mode_injection_tab">حقن الأوضاع</string>
+  <string name="mode_injection_page_title">حقن الأوضاع</string>
   <string name="prompt_page_name">الاسم</string>
   <string name="prompt_page_new_keyword">كلمة مفتاحية جديدة</string>
   <string name="prompt_page_new_keyword_hint">بعد إدخال الكلمة المفتاحية، انقر على زر الإضافة على اليمين لإضافتها</string>

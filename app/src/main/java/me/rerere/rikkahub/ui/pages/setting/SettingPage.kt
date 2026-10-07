@@ -180,19 +180,19 @@ fun SettingPage(vm: SettingVM = koinViewModel()) {
                     item(
                         onClick = { navController.navigate(Screen.QuickMessages) },
                         leadingContent = { Icon(HugeIcons.Zap, null) },
-                        headlineContent = { Text(stringResource(R.string.assistant_page_quick_messages)) },
+                        headlineContent = { Text(stringResource(R.string.quick_messages_page_title)) },
                         supportingContent = { Text(stringResource(R.string.extensions_page_quick_messages_desc)) },
                     )
                     item(
                         onClick = { navController.navigate(Screen.ModeInjections) },
                         leadingContent = { Icon(HugeIcons.MagicWand01, null) },
-                        headlineContent = { Text(stringResource(R.string.prompt_page_mode_injection_tab)) },
+                        headlineContent = { Text(stringResource(R.string.mode_injection_page_title)) },
                         supportingContent = { Text(stringResource(R.string.setting_page_mode_injection_desc)) },
                     )
                     item(
                         onClick = { navController.navigate(Screen.Lorebooks) },
                         leadingContent = { Icon(HugeIcons.Book01, null) },
-                        headlineContent = { Text(stringResource(R.string.prompt_page_lorebook_tab)) },
+                        headlineContent = { Text(stringResource(R.string.lorebook_page_title)) },
                         supportingContent = { Text(stringResource(R.string.setting_page_lorebook_desc)) },
                     )
                     item(

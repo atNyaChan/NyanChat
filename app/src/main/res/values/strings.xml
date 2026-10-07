@@ -118,7 +118,7 @@
   <string name="assistant_page_preset_messages_desc">Set initial conversation messages</string>
   <string name="assistant_page_quick_message_content">Content</string>
   <string name="assistant_page_quick_message_title">Title</string>
-  <string name="assistant_page_quick_messages">Quick Messages</string>
+  <string name="quick_messages_page_title">Quick Messages</string>
   <string name="assistant_page_recent_chats">Reference Recent Chats</string>
   <string name="assistant_page_recent_chats_desc">When enabled, allows the assistant to search past conversations for relevant information</string>
   <string name="assistant_page_regex_affecting_scopes">Affecting Scopes:</string>
@@ -339,14 +339,7 @@
   <string name="extension_selector_mode_injections_empty">No mode injections available</string>
   <string name="extension_selector_quick_messages_empty">No quick messages available</string>
   <string name="extension_selector_skills_empty">No skills available</string>
-  <string name="extension_selector_manage_quick_messages">Manage quick messages</string>
-  <string name="extension_selector_manage_mode_injections">Manage mode injections</string>
-  <string name="extension_selector_manage_lorebooks">Manage lorebooks</string>
-  <string name="extension_selector_manage_skills">Manage Skills</string>
-  <string name="extension_selector_tab_lorebooks">Lorebooks</string>
-  <string name="extension_selector_tab_mode_injections">Mode Injections</string>
-  <string name="extension_selector_tab_quick_messages">Quick Messages</string>
-  <string name="extension_selector_tab_skills">Skills</string>
+  <string name="extension_selector_manage">Manage %1$s</string>
   <string name="extensions_page_agent_skills_desc">Manage skill packages for AI to load on demand</string>
   <string name="extensions_page_quick_messages_desc">Manage shared quick message templates</string>
   <string name="favorite_page_no_favorites">No favorites yet</string>
@@ -459,9 +452,9 @@
   <string name="prompt_page_keywords_format">Keywords: %s</string>
   <string name="prompt_page_keywords_label">Keywords</string>
   <string name="prompt_page_lorebook_empty">No Lorebooks</string>
-  <string name="prompt_page_lorebook_tab">Lorebook</string>
+  <string name="lorebook_page_title">Lorebooks</string>
   <string name="prompt_page_mode_injection_empty">No mode injections</string>
-  <string name="prompt_page_mode_injection_tab">Mode Injection</string>
+  <string name="mode_injection_page_title">Mode Injections</string>
   <string name="prompt_page_name">Name</string>
   <string name="prompt_page_new_keyword">New Keyword</string>
   <string name="prompt_page_new_keyword_hint">After entering a keyword, tap the plus button on the right to add it</string>

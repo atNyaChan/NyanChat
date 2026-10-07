@@ -62,10 +62,10 @@ import me.rerere.rikkahub.ui.components.ai.SkillsContent
 import org.koin.compose.koinInject
 
 private enum class ExtensionTab(val icon: ImageVector, @param:StringRes val label: Int) {
-    QUICK_MESSAGES(HugeIcons.Zap, R.string.extension_selector_tab_quick_messages),
-    MODE_INJECTIONS(HugeIcons.MagicWand01, R.string.extension_selector_tab_mode_injections),
-    LOREBOOKS(HugeIcons.Book01, R.string.extension_selector_tab_lorebooks),
-    SKILLS(HugeIcons.Puzzle, R.string.extension_selector_tab_skills),
+    QUICK_MESSAGES(HugeIcons.Zap, R.string.quick_messages_page_title),
+    MODE_INJECTIONS(HugeIcons.MagicWand01, R.string.mode_injection_page_title),
+    LOREBOOKS(HugeIcons.Book01, R.string.lorebook_page_title),
+    SKILLS(HugeIcons.Puzzle, R.string.skills_page_title),
 }
 
 
@@ -121,6 +121,7 @@ fun ExtensionSelector(
                 .weight(1f)
         ) { page ->
             val tab = ExtensionTab.entries[page]
+            val manageText = stringResource(R.string.extension_selector_manage, stringResource(tab.label))
             when (tab) {
                 ExtensionTab.QUICK_MESSAGES -> {
                     if (settings.quickMessages.isNotEmpty()) {
@@ -136,12 +137,12 @@ fun ExtensionSelector(
                                 onUpdate(assistant.copy(quickMessageIds = newIds))
                             },
                             onManage = onNavigateToQuickMessages,
-                            manageText = stringResource(R.string.extension_selector_manage_quick_messages),
+                            manageText = manageText,
                         )
                     } else {
                         ExtensionEmptyState(
                             message = stringResource(R.string.extension_selector_quick_messages_empty),
-                            buttonText = stringResource(R.string.extension_selector_manage_quick_messages),
+                            buttonText = manageText,
                             onAction = onNavigateToQuickMessages,
                             icon = tab.icon,
                         )
@@ -166,12 +167,12 @@ fun ExtensionSelector(
                                 }
                             },
                             onManage = onNavigateToModeInjections,
-                            manageText = stringResource(R.string.extension_selector_manage_mode_injections),
+                            manageText = manageText,
                         )
                     } else {
                         ExtensionEmptyState(
                             message = stringResource(R.string.extension_selector_mode_injections_empty),
-                            buttonText = stringResource(R.string.extension_selector_manage_mode_injections),
+                            buttonText = manageText,
                             onAction = onNavigateToModeInjections,
                             icon = tab.icon,
                         )
@@ -196,12 +197,12 @@ fun ExtensionSelector(
                                 }
                             },
                             onManage = onNavigateToLorebooks,
-                            manageText = stringResource(R.string.extension_selector_manage_lorebooks),
+                            manageText = manageText,
                         )
                     } else {
                         ExtensionEmptyState(
                             message = stringResource(R.string.extension_selector_lorebooks_empty),
-                            buttonText = stringResource(R.string.extension_selector_manage_lorebooks),
+                            buttonText = manageText,
                             onAction = onNavigateToLorebooks,
                             icon = tab.icon,
                         )
@@ -222,12 +223,12 @@ fun ExtensionSelector(
                                 onUpdate(assistant.copy(enabledSkills = newSkills))
                             },
                             onManage = onNavigateToSkills,
-                            manageText = stringResource(R.string.extension_selector_manage_skills),
+                            manageText = manageText,
                         )
                     } else {
                         ExtensionEmptyState(
                             message = stringResource(R.string.extension_selector_skills_empty),
-                            buttonText = stringResource(R.string.extension_selector_manage_skills),
+                            buttonText = manageText,
                             onAction = onNavigateToSkills,
                             icon = tab.icon,
                         )
