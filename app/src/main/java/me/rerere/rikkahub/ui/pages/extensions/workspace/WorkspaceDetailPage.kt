@@ -476,8 +476,9 @@ fun WorkspaceDetailPage(id: String) {
 
     state.exportResult?.let { result ->
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = vm::dismissExportResult,
-            title = { Text("导出结果") },
+            title = { Text(stringResource(R.string.workspace_detail_export_result)) },
             text = { Text(result, modifier = Modifier.verticalScroll(rememberScrollState())) },
             confirmButton = {
                 TextButton(onClick = vm::dismissExportResult) { Text(stringResource(R.string.common_confirm_action)) }
@@ -946,18 +947,18 @@ private fun WorkspaceFilesPage(
                             selecting = false
                             selectedPaths = emptySet()
                         },
-                    ) { Text("取消多选") }
+                    ) { Text(stringResource(R.string.workspace_detail_selection_cancel)) }
                     TextButton(onClick = {
                         selectedPaths = if (selectedFiles.size == files.size) emptySet() else files.map { it.path }.toSet()
-                    }) { Text(if (files.isNotEmpty() && selectedFiles.size == files.size) "取消全选" else "全选") }
+                    }) { Text(if (files.isNotEmpty() && selectedFiles.size == files.size) stringResource(R.string.workspace_detail_selection_deselect_all) else stringResource(R.string.workspace_detail_selection_select_all)) }
                     TextButton(
                         onClick = { onBatchExport(selectedFiles) },
                         enabled = selectedFiles.isNotEmpty() && !state.exporting,
-                    ) { Text("导出 (${selectedFiles.size})") }
+                    ) { Text(stringResource(R.string.workspace_detail_export_count, selectedFiles.size)) }
                 }
                 if (state.exporting) {
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                    Text("正在导出 ${state.exportCompleted}/${state.exportTotal}")
+                    Text(stringResource(R.string.workspace_detail_exporting_progress, state.exportCompleted, state.exportTotal))
                 }
             }
         }
@@ -1086,7 +1087,7 @@ private fun WorkspaceFileCard(
             .combinedClickable(
                 onClick = onOpen,
                 onLongClick = if (entry.isDirectory) null else onLongClick,
-                onLongClickLabel = if (entry.isDirectory) null else "选择文件",
+                onLongClickLabel = if (entry.isDirectory) null else stringResource(R.string.workspace_detail_select_file),
             ),
         colors = CustomColors.cardColorsOnSurfaceContainer,
     ) {

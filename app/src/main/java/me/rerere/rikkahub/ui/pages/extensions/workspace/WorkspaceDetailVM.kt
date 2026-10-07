@@ -68,16 +68,21 @@ class WorkspaceDetailVM(
                                 entry.name.substringAfterLast('.', "").lowercase()
                             ) ?: "application/octet-stream"
                             val document = DocumentsContract.createDocument(resolver, parent, mime, entry.name)
-                                ?: error("无法创建目标文件")
+                                ?: error(context.getString(R.string.workspace_detail_export_create_target_failed))
                             destination = document
-                            val output = resolver.openOutputStream(document) ?: error("无法打开目标文件")
+                            val output = resolver.openOutputStream(document)
+                                ?: error(context.getString(R.string.workspace_detail_export_open_target_failed))
                             output.use { repository.exportFile(id, area, entry.path, it) }
                             succeeded++
                             destination = null
                         } catch (error: CancellationException) {
                             throw error
                         } catch (error: Exception) {
-                            failures += "${entry.name}：${error.message ?: "导出失败"}"
+                            failures += context.getString(
+                                R.string.workspace_detail_export_entry_failed,
+                                entry.name,
+                                error.message ?: context.getString(R.string.workspace_detail_export_failed_short),
+                            )
                         } finally {
                             // 只清理本次创建但未完整写入的文件。
                             destination?.let { runCatching { DocumentsContract.deleteDocument(resolver, it) } }
@@ -87,14 +92,14 @@ class WorkspaceDetailVM(
                 }
                 _state.update {
                     it.copy(exportResult = buildString {
-                        append("已导出 $succeeded/${entries.size} 个文件")
+                        append(context.getString(R.string.workspace_detail_export_summary, succeeded, entries.size))
                         if (failures.isNotEmpty()) append("\n\n" + failures.joinToString("\n"))
                     })
                 }
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Exception) {
-                _state.update { it.copy(exportResult = "导出失败：${error.message}") }
+                _state.update { it.copy(exportResult = context.getString(R.string.workspace_detail_export_error, error.message.orEmpty())) }
             } finally {
                 _state.update { it.copy(exporting = false) }
             }
