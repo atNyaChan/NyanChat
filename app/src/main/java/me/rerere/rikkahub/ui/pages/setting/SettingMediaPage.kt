@@ -319,9 +319,9 @@ private fun MediaProviderSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
-                .fillMaxHeight(0.8f),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 16.dp).padding(bottom = 8.dp)
+                .fillMaxHeight(0.95f),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
                 text = title,

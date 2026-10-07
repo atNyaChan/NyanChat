@@ -432,8 +432,8 @@ private fun McpServerConfigModal(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(0.9f)
-                    .padding(horizontal = 8.dp, vertical = 16.dp),
+                    .fillMaxHeight(0.95f)
+                    .padding(horizontal = 8.dp).padding(bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 SecondaryTabRow(
@@ -1044,10 +1044,10 @@ private fun McpImportModal(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.7f)
-                .padding(16.dp)
+                .fillMaxHeight(0.95f)
+                .padding(horizontal = 16.dp).padding(bottom = 8.dp)
                 .imePadding(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(stringResource(R.string.setting_mcp_page_import_title), style = MaterialTheme.typography.titleLarge)
             Text(

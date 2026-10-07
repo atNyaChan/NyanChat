@@ -1,7 +1,6 @@
 package me.rerere.rikkahub.ui.pages.setting
 
 import me.rerere.hugeicons.HugeIcons
-import me.rerere.hugeicons.stroke.ArrowDown01
 import me.rerere.hugeicons.stroke.Add01
 import me.rerere.hugeicons.stroke.Refresh03
 import me.rerere.hugeicons.stroke.Package01
@@ -34,6 +33,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -227,26 +227,17 @@ fun SettingProviderDetailSheet(
             onDismiss()
         },
         sheetState = sheetState,
-        sheetGesturesEnabled = false,
         dragHandle = {
-            IconButton(
-                onClick = {
-                    scope.launch {
-                        sheetState.hide()
-                        onDismiss()
-                    }
-                }
-            ) {
-                Icon(HugeIcons.ArrowDown01, contentDescription = null)
-            }
+            BottomSheetDefaults.DragHandle()
         },
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.95f)
+                .padding(bottom = 8.dp)
                 .imePadding(),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
                 text = stringResource(R.string.setting_provider_page_edit_provider),
@@ -403,7 +394,7 @@ fun SettingProviderDetailSheet(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                    .padding(start = 16.dp, end = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -523,25 +514,16 @@ fun SettingProviderDetailSheet(
                     customModelDialog.dismiss()
                 },
                 sheetState = sheetState,
-                sheetGesturesEnabled = false,
                 dragHandle = {
-                    IconButton(
-                        onClick = {
-                            scope.launch {
-                                sheetState.hide()
-                                customModelDialog.dismiss()
-                            }
-                        }
-                    ) {
-                        Icon(HugeIcons.ArrowDown01, null)
-                    }
+                    BottomSheetDefaults.DragHandle()
                 }
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight(0.95f),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                        .fillMaxHeight(0.95f)
+                        .padding(bottom = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
                         text = stringResource(R.string.setting_provider_page_add_model),
@@ -569,7 +551,7 @@ fun SettingProviderDetailSheet(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                            .padding(start = 16.dp, end = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                     ) {
                         TextButton(
@@ -1061,7 +1043,8 @@ private fun ModelPickerSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.95f)
-                .padding(8.dp)
+                .padding(horizontal = 8.dp)
+                .padding(bottom = 8.dp)
                 .imePadding(),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
@@ -1991,26 +1974,17 @@ private fun ModelCard(
                     dialogState.dismiss()
                 },
                 sheetState = sheetState,
-                sheetGesturesEnabled = false,
                 dragHandle = {
-                    IconButton(
-                        onClick = {
-                            scope.launch {
-                                sheetState.hide()
-                                dialogState.dismiss()
-                            }
-                        }
-                    ) {
-                        Icon(HugeIcons.ArrowDown01, null)
-                    }
+                    BottomSheetDefaults.DragHandle()
                 },
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .fillMaxHeight(0.95f)
+                        .padding(bottom = 8.dp)
                         .imePadding(),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
                         text = stringResource(R.string.setting_provider_page_edit_model),
@@ -2043,7 +2017,7 @@ private fun ModelCard(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                            .padding(start = 16.dp, end = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                     ) {
                         TextButton(
@@ -2279,9 +2253,9 @@ private fun ProviderOverrideSettings(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.setting_provider_page_configure_provider_override),
@@ -2290,7 +2264,7 @@ private fun ProviderOverrideSettings(
 
                     Column(
                         modifier = Modifier
-                            .weight(1f)
+                            .weight(1f, fill = false)
                             .verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {

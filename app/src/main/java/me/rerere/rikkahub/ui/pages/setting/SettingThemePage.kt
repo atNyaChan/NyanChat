@@ -436,7 +436,7 @@ private fun CustomThemeEditSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
-                .padding(bottom = 32.dp),
+                .padding(bottom = 8.dp),
         ) {
             Text(
                 text = if (theme == null) stringResource(R.string.setting_theme_page_create_theme)
@@ -530,7 +530,7 @@ private fun CustomThemeEditSheet(
                 ThemePreview(currentTheme)
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(8.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),

@@ -597,8 +597,9 @@ private fun ScreenTimePreview(content: JsonElement, apps: List<JsonElement>) {
     val maxAppMs = apps.maxOfOrNull { it.appMs() }?.takeIf { it > 0 } ?: 1L
     LazyColumn(
         modifier = Modifier
-            .fillMaxHeight(0.8f)
-            .padding(16.dp),
+            .fillMaxHeight(0.95f)
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item {
@@ -713,8 +714,9 @@ private fun SearchWebPreview(
 
     LazyColumn(
         modifier = Modifier
-            .fillMaxHeight(0.8f)
-            .padding(16.dp),
+            .fillMaxHeight(0.95f)
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
@@ -869,8 +871,9 @@ private fun ScrapeWebPreview(content: JsonElement) {
 
     LazyColumn(
         modifier = Modifier
-            .fillMaxHeight(0.8f)
-            .padding(16.dp),
+            .fillMaxHeight(0.95f)
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {

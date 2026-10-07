@@ -91,6 +91,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import me.rerere.hugeicons.HugeIcons
@@ -933,7 +934,7 @@ private fun ParamsSheet(
     val promptEnhancementLabel = stringResource(R.string.media_creation_page_param_prompt_enhancement)
     val seedLabel = stringResource(R.string.media_creation_page_param_seed)
 
-    ComposerSheet(onDismiss = onDismiss) {
+    ComposerSheet(onDismiss = onDismiss, bottomPadding = 16.dp) {
         // 改过的参数，和输入区按钮上显示的是同一份
         val changed = current.summary(kind)
         PickerHeader(
@@ -1244,6 +1245,7 @@ private fun CardGroupScope.ToggleParam(
 @Composable
 private fun ComposerSheet(
     onDismiss: () -> Unit,
+    bottomPadding: Dp = 8.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val sheetState = rememberBottomSheetState(
@@ -1260,7 +1262,7 @@ private fun ComposerSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .padding(bottom = 16.dp)
+                .padding(bottom = bottomPadding)
                 .imePadding(),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             content = content,

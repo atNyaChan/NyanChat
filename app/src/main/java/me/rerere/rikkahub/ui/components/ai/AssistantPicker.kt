@@ -154,8 +154,8 @@ private fun AssistantPickerSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.8f)
-                .padding(16.dp),
+                .fillMaxHeight(0.95f)
+                .padding(horizontal = 16.dp).padding(bottom = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(

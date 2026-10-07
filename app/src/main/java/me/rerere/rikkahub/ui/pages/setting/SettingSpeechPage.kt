@@ -184,9 +184,9 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
-                    .fillMaxHeight(0.8f),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(horizontal = 16.dp).padding(bottom = 8.dp)
+                    .fillMaxHeight(0.95f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
                     text = stringResource(R.string.setting_tts_page_edit_provider),
@@ -297,9 +297,9 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
-                    .fillMaxHeight(0.8f),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(horizontal = 16.dp).padding(bottom = 8.dp)
+                    .fillMaxHeight(0.95f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
                     text = stringResource(R.string.setting_asr_page_edit_provider),
@@ -505,9 +505,9 @@ private fun AddTTSProviderButton(onAdd: (TTSProviderSetting) -> Unit) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
-                    .fillMaxHeight(0.8f),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(horizontal = 16.dp).padding(bottom = 8.dp)
+                    .fillMaxHeight(0.95f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
                     text = stringResource(R.string.setting_tts_page_add_provider),
@@ -576,9 +576,9 @@ private fun AddASRProviderButton(onAdd: (ASRProviderSetting) -> Unit) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
-                    .fillMaxHeight(0.8f),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(horizontal = 16.dp).padding(bottom = 8.dp)
+                    .fillMaxHeight(0.95f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
                     text = stringResource(R.string.setting_asr_page_add_provider),

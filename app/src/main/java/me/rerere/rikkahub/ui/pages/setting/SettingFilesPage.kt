@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.horizontalScroll
@@ -387,9 +386,8 @@ private fun CleanFilesSheet(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .navigationBarsPadding()
             .padding(horizontal = 24.dp)
-            .padding(bottom = 16.dp),
+            .padding(bottom = 8.dp),
     ) {
         Text(
             text = stringResource(R.string.setting_files_page_clean_title),

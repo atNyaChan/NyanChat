@@ -321,7 +321,8 @@ fun UIAvatar(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 8.dp)
             )
         }
     }

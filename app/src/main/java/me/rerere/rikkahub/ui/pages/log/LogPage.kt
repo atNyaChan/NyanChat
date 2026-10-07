@@ -442,7 +442,7 @@ private fun RequestLogDetail(log: LogEntry.RequestLog) {
     SelectionContainer {
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {

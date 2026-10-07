@@ -1,7 +1,6 @@
 package me.rerere.rikkahub.ui.pages.extensions
 
 import me.rerere.hugeicons.HugeIcons
-import me.rerere.hugeicons.stroke.ArrowDown01
 import me.rerere.hugeicons.stroke.FileImport
 import me.rerere.hugeicons.stroke.Add01
 import me.rerere.hugeicons.stroke.Share01
@@ -32,6 +31,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FloatingToolbarDefaults.ScreenOffset
@@ -55,7 +55,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
@@ -71,7 +70,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dokar.sonner.ToastType
-import kotlinx.coroutines.launch
 import me.rerere.ai.core.MessageRole
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.export.LorebookSerializer
@@ -347,7 +345,6 @@ private fun ModeInjectionEditSheet(
     onDelete: (() -> Unit)?,
 ) {
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
-    val scope = rememberCoroutineScope()
     var showExportDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
     val exporter = rememberExporter(injection, ModeInjectionSerializer)
@@ -364,23 +361,15 @@ private fun ModeInjectionEditSheet(
     ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        sheetGesturesEnabled = false,
         dragHandle = {
-            IconButton(onClick = {
-                scope.launch {
-                    sheetState.hide()
-                    onDismiss()
-                }
-            }) {
-                Icon(HugeIcons.ArrowDown01, null)
-            }
+            BottomSheetDefaults.DragHandle()
         }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.95f),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
                 text = stringResource(R.string.prompt_page_edit_mode_injection),
@@ -507,7 +496,7 @@ private fun ModeInjectionEditSheet(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                    .padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -820,7 +809,6 @@ private fun LorebookEditSheet(
     onDelete: (() -> Unit)?,
 ) {
     val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
-    val scope = rememberCoroutineScope()
     var showExportDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
     val exporter = rememberExporter(book, LorebookSerializer)
@@ -843,23 +831,15 @@ private fun LorebookEditSheet(
     ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        sheetGesturesEnabled = false,
         dragHandle = {
-            IconButton(onClick = {
-                scope.launch {
-                    sheetState.hide()
-                    onDismiss()
-                }
-            }) {
-                Icon(HugeIcons.ArrowDown01, null)
-            }
+            BottomSheetDefaults.DragHandle()
         }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.95f),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
                 text = stringResource(R.string.prompt_page_edit_lorebook),
@@ -951,7 +931,7 @@ private fun LorebookEditSheet(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                    .padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -1089,7 +1069,6 @@ private fun RegexInjectionEditDialog(
         initialValue = SheetValue.Hidden,
         enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
     )
-    val scope = rememberCoroutineScope()
     val contentState = rememberTextFieldState(entry.content)
     val currentEntry by rememberUpdatedState(entry)
 
@@ -1105,23 +1084,15 @@ private fun RegexInjectionEditDialog(
     ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        sheetGesturesEnabled = false,
         dragHandle = {
-            IconButton(onClick = {
-                scope.launch {
-                    sheetState.hide()
-                    onDismiss()
-                }
-            }) {
-                Icon(HugeIcons.ArrowDown01, null)
-            }
+            BottomSheetDefaults.DragHandle()
         },
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.95f),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
                 text = stringResource(R.string.prompt_page_edit_entry),
@@ -1376,7 +1347,7 @@ private fun RegexInjectionEditDialog(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                    .padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                 verticalAlignment = Alignment.CenterVertically,
             ) {

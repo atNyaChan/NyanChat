@@ -895,7 +895,7 @@ private fun SettingsBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 16.dp).padding(bottom = 16.dp)
                 .imePadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -944,8 +944,6 @@ private fun SettingsBottomSheet(
                     textStyle = MaterialTheme.typography.bodySmall,
                 )
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

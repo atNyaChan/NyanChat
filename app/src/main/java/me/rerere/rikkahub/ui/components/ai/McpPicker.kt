@@ -120,8 +120,8 @@ fun McpPickerButton(
             Column(
                 modifier = Modifier.Companion
                     .fillMaxWidth()
-                    .fillMaxHeight(0.7f)
-                    .padding(16.dp),
+                    .fillMaxHeight(0.95f)
+                    .padding(horizontal = 16.dp).padding(bottom = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {

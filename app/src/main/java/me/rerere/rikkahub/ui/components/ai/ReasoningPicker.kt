@@ -129,7 +129,7 @@ fun ReasoningPicker(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
-                .padding(bottom = 16.dp),
+                .padding(bottom = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             PickerValueHeader(

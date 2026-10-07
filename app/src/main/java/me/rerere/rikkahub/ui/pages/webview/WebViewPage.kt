@@ -162,7 +162,8 @@ fun WebViewPage(url: String, contentId: String) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 8.dp)
             ) {
                 Text(
                     text = "Console Logs",
