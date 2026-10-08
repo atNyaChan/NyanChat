@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,6 +39,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
+import me.rerere.ai.provider.Model
 import me.rerere.ai.provider.ProviderSetting
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.ArrowLeft01
@@ -45,6 +48,7 @@ import me.rerere.hugeicons.stroke.Camera01
 import me.rerere.hugeicons.stroke.Codesandbox
 import me.rerere.hugeicons.stroke.ComputerTerminal01
 import me.rerere.hugeicons.stroke.Files02
+import me.rerere.hugeicons.stroke.HelpCircle
 import me.rerere.hugeicons.stroke.Image02
 import me.rerere.hugeicons.stroke.MusicNote03
 import me.rerere.hugeicons.stroke.Package
@@ -57,7 +61,6 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.ai.mcp.McpManager
 import me.rerere.rikkahub.data.datastore.Settings
-import me.rerere.rikkahub.data.datastore.getCurrentChatModel
 import me.rerere.rikkahub.data.datastore.findProvider
 import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
 import me.rerere.rikkahub.data.model.Assistant
@@ -83,11 +86,14 @@ private enum class FilesPickerPage {
 @Composable
 internal fun FilesPicker(
     conversation: Conversation,
+    // 会话视角下的助手和模型：会话开始后以会话上固定的配置为准
     assistant: Assistant,
+    chatModel: Model?,
     state: ChatInputState,
     mcpManager: McpManager,
     onCompressContext: (additionalPrompt: String, targetTokens: Int, keepRecentMessages: Int) -> Job,
     onUpdateAssistant: (Assistant) -> Unit,
+    onUpdateFollowAssistant: (Boolean) -> Unit,
     onSelectSearch: (mode: SearchMode, serviceIndex: Int?) -> Unit,
     onUpdateConversation: (Conversation) -> Unit,
     showCompressDialog: Boolean,
@@ -102,7 +108,7 @@ internal fun FilesPicker(
     onStartVoiceMode: (() -> Unit)? = null,
 ) {
     val settings = LocalSettings.current
-    val provider = settings.getCurrentChatModel()?.findProvider(providers = settings.providers)
+    val provider = chatModel?.findProvider(providers = settings.providers)
     val showContextCache = provider is ProviderSetting.Claude ||
         (provider is ProviderSetting.OpenAI && !provider.useResponseApi)
     val navController = LocalNavController.current
@@ -111,6 +117,7 @@ internal fun FilesPicker(
     var showSearchPicker by remember { mutableStateOf(false) }
     var showWorkspaceSheet by remember { mutableStateOf(false) }
     var showCwdSheet by remember { mutableStateOf(false) }
+    var showFollowAssistantHelp by remember { mutableStateOf(false) }
     val boundWorkspace = remember(workspaces, assistant.workspaceId) {
         workspaces.find { it.id == assistant.workspaceId?.toString() }
     }
@@ -143,11 +150,9 @@ internal fun FilesPicker(
             )
 
             FilesPickerPage.EXTENSIONS -> ExtensionPickerPage(
-                conversation = conversation,
                 assistant = assistant,
                 settings = settings,
                 onUpdateAssistant = onUpdateAssistant,
-                onUpdateConversation = onUpdateConversation,
                 onBack = { page = FilesPickerPage.MAIN },
                 onDismissAll = onDismiss,
             )
@@ -186,6 +191,29 @@ internal fun FilesPicker(
             item(
                 trailingContent = {
                     Switch(
+                        checked = conversation.config?.followAssistant ?: false,
+                        onCheckedChange = onUpdateFollowAssistant,
+                    )
+                },
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(stringResource(R.string.chat_page_follow_assistant_settings))
+                    IconButton(onClick = { showFollowAssistantHelp = true }) {
+                        Icon(
+                            imageVector = HugeIcons.HelpCircle,
+                            contentDescription = stringResource(R.string.chat_page_follow_assistant_settings_help),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+
+            item(
+                trailingContent = {
+                    Switch(
                         checked = assistant.includeHistoryReasoning,
                         onCheckedChange = { onUpdateAssistant(assistant.copy(includeHistoryReasoning = it)) },
                     )
@@ -217,7 +245,7 @@ internal fun FilesPicker(
                             enableSearch = assistant.enableWebSearch,
                             useBuiltInSearch = assistant.useBuiltInSearch,
                             settings = settings,
-                            model = settings.getCurrentChatModel(),
+                            model = chatModel,
                         )
                         Icon(
                             imageVector = HugeIcons.ArrowRight01,
@@ -232,15 +260,10 @@ internal fun FilesPicker(
             }
 
             // Extensions (Quick Messages + Prompt Injections + Skills)
-            val modeAndLorebookCount =
-                if (assistant.allowConversationPromptInjection) {
-                    conversation.modeInjectionIds.size + conversation.lorebookIds.size
-                } else {
-                    assistant.modeInjectionIds.size + assistant.lorebookIds.size
-                }
             val activeCount =
                 assistant.quickMessageIds.size +
-                    modeAndLorebookCount +
+                    assistant.modeInjectionIds.size +
+                    assistant.lorebookIds.size +
                     assistant.enabledSkills.size
             item(
                 leadingContent = {
@@ -347,7 +370,7 @@ internal fun FilesPicker(
         useBuiltInSearch = assistant.useBuiltInSearch,
         settings = settings,
         onSelectSearch = onSelectSearch,
-        model = settings.getCurrentChatModel(),
+        model = chatModel,
         onDismiss = { showSearchPicker = false },
     )
 
@@ -359,10 +382,8 @@ internal fun FilesPicker(
             onSelect = { workspaceId ->
                 val newId = workspaceId?.let { Uuid.parse(it) }
                 if (newId != assistant.workspaceId) {
+                    // 会话的工作目录随工作区一并重置（由 withAssistantUpdate 处理）
                     onUpdateAssistant(assistant.copy(workspaceId = newId))
-                    if (conversation.workspaceCwd != null) {
-                        onUpdateConversation(conversation.copy(workspaceCwd = null))
-                    }
                 }
                 showWorkspaceSheet = false
             },
@@ -394,6 +415,21 @@ internal fun FilesPicker(
         }, onConfirm = { additionalPrompt, targetTokens, keepRecentMessages ->
             onCompressContext(additionalPrompt, targetTokens, keepRecentMessages)
         })
+    }
+
+    // 对话设置跟随助手说明
+    if (showFollowAssistantHelp) {
+        AlertDialog(
+            onDismissRequest = { showFollowAssistantHelp = false },
+            containerColor = MaterialTheme.colorScheme.surface,
+            title = { Text(stringResource(R.string.chat_page_follow_assistant_settings)) },
+            text = { Text(stringResource(R.string.chat_page_follow_assistant_settings_help)) },
+            confirmButton = {
+                TextButton(onClick = { showFollowAssistantHelp = false }) {
+                    Text(stringResource(R.string.common_ok))
+                }
+            },
+        )
     }
 }
 
@@ -473,11 +509,9 @@ private fun CardGroupScope.workspaceItems(
 // 扩展选择页，作为子页面嵌在加号 sheet 里
 @Composable
 private fun ExtensionPickerPage(
-    conversation: Conversation,
     assistant: Assistant,
     settings: Settings,
     onUpdateAssistant: (Assistant) -> Unit,
-    onUpdateConversation: (Conversation) -> Unit,
     onBack: () -> Unit,
     onDismissAll: () -> Unit,
 ) {
@@ -501,8 +535,6 @@ private fun ExtensionPickerPage(
             assistant = assistant,
             settings = settings,
             onUpdate = onUpdateAssistant,
-            conversation = conversation,
-            onUpdateConversation = onUpdateConversation,
             modifier = Modifier.weight(1f),
             onNavigateToQuickMessages = {
                 onDismissAll()

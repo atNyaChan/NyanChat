@@ -34,8 +34,6 @@
   <string name="assistant_page_add_header">Add Header</string>
   <string name="assistant_page_allow_conversation_system_prompt">Per-Conversation System Prompt</string>
   <string name="assistant_page_allow_conversation_system_prompt_desc">Allow each conversation to override the assistant\'s system prompt</string>
-  <string name="assistant_page_allow_conversation_prompt_injection">Per-Conversation Prompt Injections</string>
-  <string name="assistant_page_allow_conversation_prompt_injection_desc">Allow each conversation to bind its own prompt injections and lorebooks</string>
   <string name="assistant_page_available_variables">"Available variables: "</string>
   <string name="assistant_page_background_opacity">Background Opacity</string>
   <string name="assistant_page_background_opacity_desc">Adjust chat background image visibility</string>
@@ -130,6 +128,8 @@
   <string name="assistant_page_regex_visual_only">Visual Only (affects display only, not actual message)</string>
   <string name="assistant_page_remove">Remove</string>
   <string name="assistant_page_remove_background">Remove Background</string>
+  <string name="chat_page_follow_assistant_settings">Conversation settings follow assistant</string>
+  <string name="chat_page_follow_assistant_settings_help">When enabled: the chat model, reasoning level, search type, MCP, workspace, skills, mode injections, and lorebooks all follow changes to the assistant settings.</string>
   <string name="assistant_page_return_thinking">Return Thinking</string>
   <string name="assistant_page_return_thinking_desc">Send thinking content from previous messages back to the model</string>
   <string name="assistant_page_select_background">Select Background Image</string>

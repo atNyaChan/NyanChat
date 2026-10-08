@@ -86,8 +86,6 @@ class GenerationLoop(
         memories: List<AssistantMemory>,
         tools: List<Tool>,
         conversationSystemPrompt: String?,
-        conversationModeInjectionIds: Set<Uuid>,
-        conversationLorebookIds: Set<Uuid>,
         workspaceCwd: String?,
         processingStatus: MutableStateFlow<String?> = MutableStateFlow(null),
     ): List<UIMessage> = buildList {
@@ -129,8 +127,6 @@ class GenerationLoop(
         model = model,
         assistant = assistant,
         settings = settings,
-        conversationModeInjectionIds = conversationModeInjectionIds,
-        conversationLorebookIds = conversationLorebookIds,
         processingStatus = processingStatus,
         workspaceCwd = workspaceCwd,
     )
@@ -148,8 +144,6 @@ class GenerationLoop(
         processingStatus: MutableStateFlow<String?> = MutableStateFlow(null),
         conversationSystemPrompt: String? = null,
         conversationId: Uuid? = null,
-        conversationModeInjectionIds: Set<Uuid> = emptySet(),
-        conversationLorebookIds: Set<Uuid> = emptySet(),
         workspaceCwd: String? = null,
     ): Flow<GenerationChunk> = flow {
         val provider = model.findProvider(settings.providers) ?: error("Provider not found")
@@ -207,8 +201,6 @@ class GenerationLoop(
                     processingStatus = processingStatus,
                     conversationSystemPrompt = conversationSystemPrompt,
                     conversationId = conversationId,
-                    conversationModeInjectionIds = conversationModeInjectionIds,
-                    conversationLorebookIds = conversationLorebookIds,
                     workspaceCwd = workspaceCwd,
                 )
                 messages = messages.visualTransforms(
@@ -407,8 +399,6 @@ class GenerationLoop(
         processingStatus: MutableStateFlow<String?> = MutableStateFlow(null),
         conversationSystemPrompt: String? = null,
         conversationId: Uuid? = null,
-        conversationModeInjectionIds: Set<Uuid> = emptySet(),
-        conversationLorebookIds: Set<Uuid> = emptySet(),
         workspaceCwd: String? = null,
     ) {
         val internalMessages = prepareRequestMessages(
@@ -420,8 +410,6 @@ class GenerationLoop(
             memories = memories,
             tools = tools,
             conversationSystemPrompt = conversationSystemPrompt,
-            conversationModeInjectionIds = conversationModeInjectionIds,
-            conversationLorebookIds = conversationLorebookIds,
             workspaceCwd = workspaceCwd,
             processingStatus = processingStatus,
         )

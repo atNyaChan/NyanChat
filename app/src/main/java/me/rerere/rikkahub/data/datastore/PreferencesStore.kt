@@ -39,6 +39,7 @@ import me.rerere.rikkahub.data.ai.prompts.DEFAULT_TRANSLATION_PROMPT
 import me.rerere.rikkahub.data.ai.prompts.LEARNING_MODE_PROMPT
 import me.rerere.asr.ASRProviderSetting
 import me.rerere.rikkahub.data.datastore.migration.PreferenceStoreV3Migration
+import me.rerere.rikkahub.data.datastore.migration.PreferenceStoreV4Migration
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.Avatar
 import me.rerere.rikkahub.data.model.InjectionPosition
@@ -91,7 +92,8 @@ private fun createSettingsDataStore(context: Context): DataStore<Preferences> {
             emptyPreferences()
         },
         migrations = listOf(
-            PreferenceStoreV3Migration()
+            PreferenceStoreV3Migration(),
+            PreferenceStoreV4Migration(),
         ),
         produceFile = { file },
     )

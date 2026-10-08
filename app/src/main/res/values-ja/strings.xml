@@ -34,8 +34,6 @@
   <string name="assistant_page_add_header">ヘッダーを追加</string>
   <string name="assistant_page_allow_conversation_system_prompt">会話別システムプロンプト</string>
   <string name="assistant_page_allow_conversation_system_prompt_desc">会話ごとにシステムプロンプトを個別に設定可能にする</string>
-  <string name="assistant_page_allow_conversation_prompt_injection">会話別プロンプトインジェクション</string>
-  <string name="assistant_page_allow_conversation_prompt_injection_desc">会話ごとにプロンプトインジェクションとロアブックを個別にバインド可能にする</string>
   <string name="assistant_page_available_variables">"利用可能な変数: "</string>
   <string name="assistant_page_background_opacity">背景の透明度</string>
   <string name="assistant_page_background_opacity_desc">チャット背景画像の表示透明度を調整します</string>
@@ -130,6 +128,8 @@
   <string name="assistant_page_regex_visual_only">表示のみ（実際のメッセージには影響しません）</string>
   <string name="assistant_page_remove">削除</string>
   <string name="assistant_page_remove_background">背景を削除</string>
+  <string name="chat_page_follow_assistant_settings">会話設定をアシスタントに従わせる</string>
+  <string name="chat_page_follow_assistant_settings_help">有効にすると：チャットモデル、思考レベル、検索タイプ、MCP、ワークスペース、スキル、モードインジェクション、ロアブックスがすべてアシスタント設定の変更に追従します。</string>
   <string name="assistant_page_return_thinking">思考の送信</string>
   <string name="assistant_page_return_thinking_desc">過去のメッセージの思考内容をモデルに送り返す</string>
   <string name="assistant_page_select_background">背景画像を選択</string>

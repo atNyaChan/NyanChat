@@ -80,7 +80,6 @@ import me.rerere.rikkahub.data.model.toMessageNode
 import me.rerere.rikkahub.ui.components.message.ChatMessage
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
-import me.rerere.rikkahub.ui.components.ui.CompactNumberField
 import me.rerere.rikkahub.ui.components.ui.FormItem
 import me.rerere.rikkahub.ui.components.ui.ExtensionSelector
 import me.rerere.rikkahub.ui.components.ui.Select
@@ -153,9 +152,6 @@ private fun AssistantPromptContent(
     var pendingPresetDeleteIndex by remember { mutableStateOf<Int?>(null) }
     var pendingRegexDeleteIndex by remember { mutableStateOf<Int?>(null) }
     var expandedRegexId by remember { mutableStateOf<Uuid?>(null) }
-    var timeReminderIntervalInput by remember(assistant.timeReminderIntervalMinutes) {
-        mutableStateOf(assistant.timeReminderIntervalMinutes.toString())
-    }
 
     Column(
         modifier = Modifier
@@ -168,62 +164,59 @@ private fun AssistantPromptContent(
             .imePadding(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Card(
-            colors = CustomColors.cardColorsOnSurfaceContainer,
-            shape = rememberScreenEdgeCornerShape(),
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                val systemPromptValue = rememberTextFieldState(
-                    initialText = assistant.systemPrompt,
-                )
-                LaunchedEffect(Unit) {
-                    snapshotFlow { systemPromptValue.text }.collect {
-                        onUpdate(
-                            assistant.copy(
-                                systemPrompt = it.toString()
-                            )
-                        )
-                    }
-                }
-
-                TextArea(
-                    state = systemPromptValue,
-                    label = stringResource(R.string.assistant_page_system_prompt),
-                    minLines = 3,
-                    maxLines = 10,
-                    collapsible = true,
-                )
-
-                Column {
-                    Text(
-                        text = stringResource(R.string.assistant_page_available_variables),
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(2.dp),
-                        verticalArrangement = Arrangement.spacedBy(2.dp),
+        CardGroup {
+            item(
+                headlineContent = {},
+                supportingContent = {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        DefaultPlaceholderProvider.placeholders.forEach { (k, info) ->
-                            Tag(
-                                onClick = {
-                                    systemPromptValue.insertAtCursor("{{$k}}")
-                                }
+                        val systemPromptValue = rememberTextFieldState(
+                            initialText = assistant.systemPrompt,
+                        )
+                        LaunchedEffect(Unit) {
+                            snapshotFlow { systemPromptValue.text }.collect {
+                                onUpdate(
+                                    assistant.copy(
+                                        systemPrompt = it.toString()
+                                    )
+                                )
+                            }
+                        }
+
+                        TextArea(
+                            state = systemPromptValue,
+                            label = stringResource(R.string.assistant_page_system_prompt),
+                            minLines = 3,
+                            maxLines = 10,
+                            collapsible = true,
+                        )
+
+                        Column {
+                            Text(
+                                text = stringResource(R.string.assistant_page_available_variables),
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                                verticalArrangement = Arrangement.spacedBy(2.dp),
                             ) {
-                                info.displayName()
-                                Text(": {{$k}}")
+                                DefaultPlaceholderProvider.placeholders.forEach { (k, info) ->
+                                    Tag(
+                                        onClick = {
+                                            systemPromptValue.insertAtCursor("{{$k}}")
+                                        }
+                                    ) {
+                                        info.displayName()
+                                        Text(": {{$k}}")
+                                    }
+                                }
                             }
                         }
                     }
-                }
-            }
-        }
-
-        CardGroup {
+                },
+            )
             FormItem(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {
                     Text(stringResource(R.string.assistant_page_allow_conversation_system_prompt))
                 },
@@ -243,67 +236,6 @@ private fun AssistantPromptContent(
                     )
                 }
             )
-            FormItem(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                label = {
-                    Text(stringResource(R.string.assistant_page_allow_conversation_prompt_injection))
-                },
-                description = {
-                    Text(stringResource(R.string.assistant_page_allow_conversation_prompt_injection_desc))
-                },
-                tail = {
-                    Switch(
-                        checked = assistant.allowConversationPromptInjection,
-                        onCheckedChange = {
-                            onUpdate(
-                                assistant.copy(
-                                    allowConversationPromptInjection = it
-                                )
-                            )
-                        }
-                    )
-                }
-            )
-            FormItem(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                label = {
-                    Text(stringResource(R.string.assistant_page_time_reminder))
-                },
-                description = {
-                    Text(stringResource(R.string.assistant_page_time_reminder_desc))
-                },
-                tail = {
-                    Switch(
-                        checked = assistant.enableTimeReminder,
-                        onCheckedChange = {
-                            onUpdate(assistant.copy(enableTimeReminder = it))
-                        }
-                    )
-                }
-            )
-            if (assistant.enableTimeReminder) {
-                FormItem(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    label = {
-                        Text(stringResource(R.string.assistant_page_time_reminder_interval))
-                    },
-                    description = {
-                        Text(stringResource(R.string.assistant_page_time_reminder_interval_desc))
-                    },
-                    tail = {
-                        CompactNumberField(
-                            value = timeReminderIntervalInput,
-                            onValueChange = { value ->
-                                timeReminderIntervalInput = value.filter { it.isDigit() }
-                                timeReminderIntervalInput.toIntOrNull()?.takeIf { it > 0 }?.let {
-                                    onUpdate(assistant.copy(timeReminderIntervalMinutes = it))
-                                }
-                            },
-                            isError = timeReminderIntervalInput.toIntOrNull()?.let { it <= 0 } ?: true,
-                        )
-                    },
-                )
-            }
         }
 
         Card(

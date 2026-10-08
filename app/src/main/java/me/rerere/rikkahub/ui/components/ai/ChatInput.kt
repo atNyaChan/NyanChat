@@ -118,8 +118,6 @@ import me.rerere.rikkahub.data.ai.transformers.DocumentAsPromptTransformer
 import me.rerere.rikkahub.data.datastore.BackgroundEffectType
 import me.rerere.rikkahub.data.datastore.ScreenCornerAdaptation
 import me.rerere.rikkahub.data.datastore.Settings
-import me.rerere.rikkahub.data.datastore.getCurrentAssistant
-import me.rerere.rikkahub.data.datastore.getCurrentChatModel
 import me.rerere.rikkahub.data.datastore.getQuickMessagesOfAssistant
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.model.Assistant
@@ -158,6 +156,9 @@ fun ChatInput(
     onRequestWordCountRefresh: () -> Unit,
     loading: Boolean,
     settings: Settings,
+    // 会话视角下的助手和模型：会话开始后以会话上固定的配置为准
+    assistant: Assistant,
+    chatModel: Model?,
     hazeState: HazeState,
     modifier: Modifier = Modifier,
     completionProviders: List<ChatCompletionProvider> = emptyList(),
@@ -179,7 +180,6 @@ fun ChatInput(
     onStopVoiceMode: () -> Unit = {},
 ) {
     val toaster = LocalToaster.current
-    val assistant = settings.getCurrentAssistant()
     val inputWordCount = state.getContents().sumOf { part ->
         (part as? UIMessagePart.Text)?.text?.wordCount() ?: 0
     }
@@ -413,6 +413,7 @@ fun ChatInput(
 
                     TextInputRow(
                         state = state,
+                        assistant = assistant,
                         completionProviders = completionProviders,
                         onFocusChanged = { focused ->
                             if (focused) {
@@ -441,7 +442,7 @@ fun ChatInput(
                         ) {
                             // Model Picker
                             ModelSelector(
-                                modelId = assistant.chatModelId ?: settings.chatModelId,
+                                modelId = chatModel?.id,
                                 providers = settings.providers,
                                 onSelect = {
                                     onUpdateChatModel(it)
@@ -452,8 +453,7 @@ fun ChatInput(
                             )
 
                             // Reasoning
-                            val model = settings.getCurrentChatModel()
-                            if (model?.abilities?.contains(ModelAbility.REASONING) == true) {
+                            if (chatModel?.abilities?.contains(ModelAbility.REASONING) == true) {
                                 ReasoningButton(
                                     reasoningLevel = assistant.reasoningLevel,
                                     onUpdateReasoningLevel = {
@@ -692,6 +692,7 @@ private fun SendButton(
 @Composable
 private fun TextInputRow(
     state: ChatInputState,
+    assistant: Assistant,
     completionProviders: List<ChatCompletionProvider>,
     onFocusChanged: (Boolean) -> Unit,
     onSendMessage: () -> Unit,
@@ -702,7 +703,6 @@ private fun TextInputRow(
 ) {
     val settings = LocalSettings.current
     val filesManager: FilesManager = koinInject()
-    val assistant = settings.getCurrentAssistant()
     val quickMessages = remember(settings.quickMessages, assistant.quickMessageIds) {
         settings.getQuickMessagesOfAssistant(assistant)
     }

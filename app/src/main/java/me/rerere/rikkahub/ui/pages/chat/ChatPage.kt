@@ -67,9 +67,6 @@ import me.rerere.hugeicons.stroke.Menu03
 import me.rerere.hugeicons.stroke.MessageAdd01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
-import me.rerere.rikkahub.data.datastore.getAssistantById
-import me.rerere.rikkahub.data.datastore.getCurrentAssistant
-import me.rerere.rikkahub.data.datastore.getCurrentChatModel
 import me.rerere.rikkahub.data.datastore.getSelectedASRProvider
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.ai.transformers.DocumentAsPromptTransformer
@@ -120,6 +117,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
     val processingStatus by vm.processingStatus.collectAsStateWithLifecycle()
     val translatingMessageIds by vm.translatingMessageIds.collectAsStateWithLifecycle()
     val currentChatModel by vm.currentChatModel.collectAsStateWithLifecycle()
+    val assistant by vm.assistant.collectAsStateWithLifecycle()
     val errors by vm.errors.collectAsStateWithLifecycle()
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -251,8 +249,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
     }
 
     // 切换“回传思考”（includeHistoryReasoning）后计入/排除历史思考内容，需重新统计请求总词数
-    val currentIncludeHistoryReasoning = setting.getAssistantById(conversation.assistantId)
-        ?.includeHistoryReasoning
+    val currentIncludeHistoryReasoning = assistant.includeHistoryReasoning
     LaunchedEffect(currentIncludeHistoryReasoning) {
         refreshRequestWordCount()
     }
@@ -330,6 +327,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
                     navController = navController,
                     vm = vm,
                     chatListState = chatListState,
+                    assistant = assistant,
                     currentChatModel = currentChatModel,
                     bigScreen = true,
                     errors = errors,
@@ -371,6 +369,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
                     navController = navController,
                     vm = vm,
                     chatListState = chatListState,
+                    assistant = assistant,
                     currentChatModel = currentChatModel,
                     bigScreen = false,
                     errors = errors,
@@ -398,6 +397,7 @@ private fun ChatPageContent(
     loadingJob: Job?,
     processingStatus: String? = null,
     setting: Settings,
+    assistant: Assistant,
     bigScreen: Boolean,
     conversation: Conversation,
     drawerState: DrawerState,
@@ -420,7 +420,6 @@ private fun ChatPageContent(
     val folderRepository: FolderRepository = koinInject()
     var previewMode by rememberSaveable { mutableStateOf(false) }
     val generatingMessageId by vm.generatingMessageId.collectAsStateWithLifecycle()
-    val assistant = setting.getCurrentAssistant()
     val folders by folderRepository.getFoldersOfAssistant(assistant.id)
         .collectAsStateWithLifecycle(initialValue = emptyList())
     val folderName = remember(conversation.folderId, folders) {
@@ -451,6 +450,8 @@ private fun ChatPageContent(
             topBar = {
                 TopBar(
                     settings = setting,
+                    assistant = assistant,
+                    chatModel = currentChatModel,
                     conversation = conversation,
                     folderName = folderName,
                     bigScreen = bigScreen,
@@ -491,6 +492,8 @@ private fun ChatPageContent(
                     onRequestWordCountRefresh = onRequestWordCountRefresh,
                     loading = loadingJob != null,
                     settings = setting,
+                    assistant = assistant,
+                    chatModel = currentChatModel,
                     hazeState = hazeState,
                     completionProviders = completionProviders,
                     onCancelClick = {
@@ -532,22 +535,8 @@ private fun ChatPageContent(
                         }
                         inputState.clearInput()
                     },
-                    onUpdateChatModel = {
-                        vm.setChatModel(assistant = setting.getCurrentAssistant(), model = it)
-                    },
-                    onUpdateAssistant = {
-                        vm.updateSettings(
-                            setting.copy(
-                                assistants = setting.assistants.map { assistant ->
-                                    if (assistant.id == it.id) {
-                                        it
-                                    } else {
-                                        assistant
-                                    }
-                                }
-                            )
-                        )
-                    },
+                    onUpdateChatModel = vm::setChatModel,
+                    onUpdateAssistant = vm::updateAssistant,
                     filesExpanded = filesExpanded,
                     onFilesExpandedChange = { expanded ->
                         onRequestWordCountRefresh()
@@ -559,6 +548,7 @@ private fun ChatPageContent(
                             setting = setting,
                             conversation = conversation,
                             assistant = assistant,
+                            chatModel = currentChatModel,
                             vm = vm,
                             onStartVoiceMode = onStartVoiceMode,
                             onRequestStatsRefresh = onRequestWordCountRefresh,
@@ -663,6 +653,7 @@ private fun ChatFilesPanel(
     setting: Settings,
     conversation: Conversation,
     assistant: Assistant,
+    chatModel: Model?,
     vm: ChatVM,
     onStartVoiceMode: () -> Unit,
     onRequestStatsRefresh: () -> Unit,
@@ -688,6 +679,7 @@ private fun ChatFilesPanel(
         conversation = conversation,
         state = inputState,
         assistant = assistant,
+        chatModel = chatModel,
         mcpManager = vm.mcpManager,
         onCompressContext = { additionalPrompt, targetTokens, keepRecentMessages ->
             vm.handleCompressContext(additionalPrompt, targetTokens, keepRecentMessages).also {
@@ -695,34 +687,20 @@ private fun ChatFilesPanel(
             }
         },
         onUpdateAssistant = {
-            vm.updateSettings(
-                setting.copy(
-                    assistants = setting.assistants.map { assistant ->
-                        if (assistant.id == it.id) {
-                            it
-                        } else {
-                            assistant
-                        }
-                    }
-                )
-            )
+            vm.updateAssistant(it)
+            onRequestStatsRefresh()
+        },
+        onUpdateFollowAssistant = {
+            vm.setFollowAssistant(it)
             onRequestStatsRefresh()
         },
         onSelectSearch = { mode, serviceIndex ->
-            vm.updateSettings(
-                setting.copy(
-                    searchServiceSelected = serviceIndex ?: setting.searchServiceSelected,
-                    assistants = setting.assistants.map { item ->
-                        if (item.id == assistant.id) {
-                            item.copy(
-                                enableWebSearch = mode != SearchMode.OFF,
-                                useBuiltInSearch = mode == SearchMode.BUILT_IN,
-                            )
-                        } else {
-                            item
-                        }
-                    },
-                )
+            if (serviceIndex != null) {
+                vm.updateSettings(setting.copy(searchServiceSelected = serviceIndex))
+            }
+            vm.updateSearch(
+                enableWebSearch = mode != SearchMode.OFF,
+                builtInSearch = mode == SearchMode.BUILT_IN,
             )
             onRequestStatsRefresh()
         },
@@ -756,6 +734,8 @@ private fun ChatFilesPanel(
 @Composable
 private fun TopBar(
     settings: Settings,
+    assistant: Assistant,
+    chatModel: Model?,
     conversation: Conversation,
     folderName: String?,
     drawerState: DrawerState,
@@ -810,8 +790,7 @@ private fun TopBar(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    val assistant = settings.getCurrentAssistant()
-                    val model = settings.getCurrentChatModel()
+                    val model = chatModel
                     Text(
                         text = conversation.title.ifBlank { stringResource(R.string.conversation_untitled) },
                         maxLines = 1,

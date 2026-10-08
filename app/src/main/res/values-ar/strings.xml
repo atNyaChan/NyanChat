@@ -34,8 +34,6 @@
   <string name="assistant_page_add_header">إضافة ترويسة</string>
   <string name="assistant_page_allow_conversation_system_prompt">مطالبة النظام لكل محادثة</string>
   <string name="assistant_page_allow_conversation_system_prompt_desc">السماح لكل محادثة بتجاوز مطالبة النظام الخاصة بالمساعد</string>
-  <string name="assistant_page_allow_conversation_prompt_injection">حقن المطالبات لكل محادثة</string>
-  <string name="assistant_page_allow_conversation_prompt_injection_desc">السماح لكل محادثة بربط حقن المطالبات وكتب المعرفة الخاصة بها</string>
   <string name="assistant_page_available_variables">\"المتغيرات المتاحة: \"</string>
   <string name="assistant_page_background_opacity">عتامة الخلفية</string>
   <string name="assistant_page_background_opacity_desc">اضبط ظهور صورة خلفية الدردشة</string>
@@ -130,6 +128,8 @@
   <string name="assistant_page_regex_visual_only">مرئي فقط (يؤثر على العرض فقط، وليس على الرسالة الفعلية)</string>
   <string name="assistant_page_remove">إزالة</string>
   <string name="assistant_page_remove_background">إزالة الخلفية</string>
+  <string name="chat_page_follow_assistant_settings">إعدادات المحادثة تتبع المساعد</string>
+  <string name="chat_page_follow_assistant_settings_help">عند التفعيل: يتبع نموذج الدردشة ومستوى التفكير ونوع البحث وMCP ومساحة العمل والمهارات وحقن الأوضاع وكتب المعرفة تغييرات إعدادات المساعد.</string>
   <string name="assistant_page_return_thinking">إرجاع التفكير</string>
   <string name="assistant_page_return_thinking_desc">إرسال محتوى التفكير من الرسائل السابقة عائدًا إلى النموذج</string>
   <string name="assistant_page_select_background">اختيار صورة الخلفية</string>

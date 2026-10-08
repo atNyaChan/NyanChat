@@ -34,8 +34,6 @@
   <string name="assistant_page_add_header">添加 Header</string>
   <string name="assistant_page_allow_conversation_system_prompt">独立对话系统提示</string>
   <string name="assistant_page_allow_conversation_system_prompt_desc">允许每个对话单独设置系统提示词</string>
-  <string name="assistant_page_allow_conversation_prompt_injection">独立对话提示词注入</string>
-  <string name="assistant_page_allow_conversation_prompt_injection_desc">允许每个对话单独绑定提示词注入和世界书</string>
   <string name="assistant_page_available_variables">"可用变量: "</string>
   <string name="assistant_page_background_opacity">背景透明度</string>
   <string name="assistant_page_background_opacity_desc">调整聊天背景图显示透明度</string>
@@ -130,6 +128,8 @@
   <string name="assistant_page_regex_visual_only">仅视觉（仅影响显示，不影响实际消息）</string>
   <string name="assistant_page_remove">移除</string>
   <string name="assistant_page_remove_background">移除背景</string>
+  <string name="chat_page_follow_assistant_settings">对话设置跟随助手</string>
+  <string name="chat_page_follow_assistant_settings_help">开启后：聊天模型、思考级别、搜索类型、MCP、工作区、技能开关、模式注入开关、世界书开关都会随助手设置的变化而变化。</string>
   <string name="assistant_page_return_thinking">回传思考</string>
   <string name="assistant_page_return_thinking_desc">把历史消息中的思考内容回传给模型</string>
   <string name="assistant_page_select_background">选择背景图片</string>

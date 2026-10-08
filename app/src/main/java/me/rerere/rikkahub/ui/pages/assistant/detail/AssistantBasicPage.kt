@@ -51,6 +51,7 @@ import me.rerere.rikkahub.ui.components.ai.ContextCachePicker
 import me.rerere.rikkahub.ui.components.ai.ReasoningButton
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CompactNumberField
 import me.rerere.rikkahub.ui.components.ui.TagsInput
 import me.rerere.rikkahub.ui.components.ui.UIAvatar
 import me.rerere.rikkahub.ui.hooks.heroAnimation
@@ -136,6 +137,9 @@ internal fun AssistantBasicContent(
     val scrollState = rememberScrollState()
     var containerTop by remember { mutableStateOf<Float?>(null) }
     var contextLimitTop by remember { mutableStateOf<Float?>(null) }
+    var timeReminderIntervalInput by remember(assistant.timeReminderIntervalMinutes) {
+        mutableStateOf(assistant.timeReminderIntervalMinutes.toString())
+    }
     LaunchedEffect(scrollToContextLimit, containerTop, contextLimitTop) {
         if (scrollToContextLimit && containerTop != null && contextLimitTop != null) {
             scrollState.scrollTo((contextLimitTop!! - containerTop!!).toInt().coerceAtLeast(0))
@@ -296,6 +300,47 @@ internal fun AssistantBasicContent(
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
+            }
+
+            FormItem(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                label = {
+                    Text(stringResource(R.string.assistant_page_time_reminder))
+                },
+                description = {
+                    Text(stringResource(R.string.assistant_page_time_reminder_desc))
+                },
+                tail = {
+                    Switch(
+                        checked = assistant.enableTimeReminder,
+                        onCheckedChange = {
+                            onUpdate(assistant.copy(enableTimeReminder = it))
+                        }
+                    )
+                }
+            )
+            if (assistant.enableTimeReminder) {
+                FormItem(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    label = {
+                        Text(stringResource(R.string.assistant_page_time_reminder_interval))
+                    },
+                    description = {
+                        Text(stringResource(R.string.assistant_page_time_reminder_interval_desc))
+                    },
+                    tail = {
+                        CompactNumberField(
+                            value = timeReminderIntervalInput,
+                            onValueChange = { value ->
+                                timeReminderIntervalInput = value.filter { it.isDigit() }
+                                timeReminderIntervalInput.toIntOrNull()?.takeIf { it > 0 }?.let {
+                                    onUpdate(assistant.copy(timeReminderIntervalMinutes = it))
+                                }
+                            },
+                            isError = timeReminderIntervalInput.toIntOrNull()?.let { it <= 0 } ?: true,
+                        )
+                    },
+                )
             }
 
             FormItem(

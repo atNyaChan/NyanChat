@@ -75,15 +75,21 @@ import me.rerere.rikkahub.data.datastore.findModelById
 import me.rerere.rikkahub.data.datastore.findProvider
 import me.rerere.rikkahub.data.datastore.getAssistantById
 import me.rerere.rikkahub.data.datastore.getCurrentAssistant
-import me.rerere.rikkahub.data.datastore.getCurrentChatModel
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.AssistantAffectScope
 import me.rerere.rikkahub.data.model.MessageNode
+import me.rerere.rikkahub.data.model.bindConfig
+import me.rerere.rikkahub.data.model.getAssistantOf
+import me.rerere.rikkahub.data.model.getChatModelOf
+import me.rerere.rikkahub.data.model.getStoredAssistantOf
 import me.rerere.rikkahub.data.model.localFileUrls
 import me.rerere.rikkahub.data.model.replaceRegexes
+import me.rerere.rikkahub.data.model.setFollowAssistant
 import me.rerere.rikkahub.data.model.toMessageNode
+import me.rerere.rikkahub.data.model.withAssistantUpdate
+import me.rerere.rikkahub.data.model.withoutConversationFields
 import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.rikkahub.data.repository.FolderRepository
 import me.rerere.rikkahub.data.repository.MemoryRepository
@@ -135,6 +141,7 @@ internal fun createForkConversation(
     customSystemPrompt = source.customSystemPrompt,
     modeInjectionIds = source.modeInjectionIds,
     lorebookIds = source.lorebookIds,
+    config = source.config,
     workspaceCwd = source.workspaceCwd,
     folderId = source.folderId,
 )
@@ -340,21 +347,9 @@ class ChatService(
         sessionManager.withSession(conversationId) { session ->
             var isNewConversation = false
             session.initialize {
-                conversationRepo.getConversationById(conversationId) ?: run {
+                loadConversation(conversationId) ?: run {
                     isNewConversation = true
-                    // 新建对话, 并添加预设消息
-                    val currentSettings = settingsStore.settingsFlowRaw.first()
-                    val assistant = currentSettings.getCurrentAssistant()
-                    Conversation.ofId(
-                        id = conversationId,
-                        assistantId = assistant.id,
-                        newConversation = true,
-                    ).copy(
-                        // 新聊天在发送消息前就把默认标题写入会话数据，
-                        // 而不是依赖标题栏的空标题兜底渲染
-                        title = defaultConversationTitle(),
-                        folderId = folderId,
-                    ).updateCurrentMessages(assistant.presetMessages)
+                    createNewConversation(conversationId, folderId)
                 }
             }
             // 保留 fork 行为：新建的对话立即落库，返回活跃会话时不覆盖内存态。
@@ -364,6 +359,39 @@ class ChatService(
             settingsStore.updateAssistant(session.state.value.assistantId)
         }
     }
+
+    private suspend fun ensureInitialized(session: ConversationSession) {
+        session.initialize {
+            loadConversation(session.id) ?: createNewConversation(session.id)
+        }
+    }
+
+    // 新建对话, 并添加预设消息
+    private suspend fun createNewConversation(id: Uuid, folderId: Uuid? = null): Conversation {
+        val currentSettings = settingsStore.settingsFlowRaw.first()
+        val assistant = currentSettings.getCurrentAssistant()
+        return Conversation.ofId(
+            id = id,
+            assistantId = assistant.id,
+            newConversation = true,
+        ).copy(
+            // 新聊天在发送消息前就把默认标题写入会话数据，
+            // 而不是依赖标题栏的空标题兜底渲染
+            title = defaultConversationTitle(),
+            folderId = folderId,
+        ).updateCurrentMessages(assistant.presetMessages)
+    }
+
+    // 引入会话配置之前创建的会话没有固定配置，加载时按助手当前的值补上，之后不再随助手变化。
+    private suspend fun loadConversation(conversationId: Uuid): Conversation? {
+        val conversation = conversationRepo.getConversationById(conversationId) ?: return null
+        val bound = conversation.bindConfig(loadedSettings())
+        if (bound !== conversation) conversationRepo.updateConversationConfig(bound)
+        return bound
+    }
+
+    // settingsFlow 在启动初期还是占位值，固定配置必须基于真实设置。
+    private suspend fun loadedSettings(): Settings = settingsStore.settingsFlow.first { !it.init }
 
     // ---- 发送消息 ----
 
@@ -551,9 +579,9 @@ class ChatService(
     ): RequestContextStats {
         val conversation = getConversationFlow(conversationId).value
         val settings = settingsStore.settingsFlow.first()
-        val assistant = settings.getAssistantById(conversation.assistantId)
-            ?: settings.getCurrentAssistant()
-        val model = settings.findModelById(assistant.chatModelId ?: settings.chatModelId)
+        // 模型、思考级别、搜索、工具等以会话上固定的配置为准
+        val assistant = settings.getAssistantOf(conversation)
+        val model = settings.getChatModelOf(conversation)
             ?: return RequestContextStats(wordCount = 0, toolCount = 0, fileCount = 0)
         val memories = if (assistant.useGlobalMemory) {
             memoryRepository.getGlobalMemories()
@@ -592,8 +620,6 @@ class ChatService(
             memories = memories,
             tools = tools,
             conversationSystemPrompt = conversation.customSystemPrompt,
-            conversationModeInjectionIds = conversation.modeInjectionIds,
-            conversationLorebookIds = conversation.lorebookIds,
             workspaceCwd = conversation.workspaceCwd,
         ).sumOf { message ->
             message.parts.sumOf { part ->
@@ -782,9 +808,9 @@ class ChatService(
     ): Boolean {
         val settings = settingsStore.settingsFlow.first()
         val initialConversation = getConversationFlow(conversationId).value
-        val assistant = settings.getAssistantById(initialConversation.assistantId)
-            ?: settings.getCurrentAssistant()
-        val model = settings.findModelById(assistant.chatModelId ?: settings.chatModelId)
+        // 模型、思考级别、搜索、工具等以会话上固定的配置为准
+        val assistant = settings.getAssistantOf(initialConversation)
+        val model = settings.getChatModelOf(initialConversation)
             ?: throw IllegalStateException("No chat model selected")
 
         val senderName = if (assistant.useAssistantAvatar) {
@@ -833,7 +859,7 @@ class ChatService(
 
             // memory tool
             if (!model.abilities.contains(ModelAbility.TOOL)) {
-                if (useExternalWebSearch || mcpManager.getAllAvailableTools().isNotEmpty()) {
+                if (useExternalWebSearch || mcpManager.getAllAvailableTools(assistant).isNotEmpty()) {
                     addError(
                         IllegalStateException(context.getString(R.string.tools_warning)),
                         conversationId,
@@ -886,8 +912,6 @@ class ChatService(
                 assistant = assistant,
                 conversationId = conversationId,
                 conversationSystemPrompt = conversation.customSystemPrompt,
-                conversationModeInjectionIds = conversation.modeInjectionIds,
-                conversationLorebookIds = conversation.lorebookIds,
                 workspaceCwd = conversation.workspaceCwd,
                 memories = if (assistant.useGlobalMemory) {
                     memoryRepository.getGlobalMemories()
@@ -1232,7 +1256,7 @@ class ChatService(
 
         val settings = settingsStore.settingsFlow.first()
         val model = settings.findModelById(settings.compressModelId)
-            ?: settings.getCurrentChatModel()
+            ?: settings.getChatModelOf(conversation)
             ?: throw IllegalStateException("No model available for compression")
         val provider = model.findProvider(settings.providers)
             ?: throw IllegalStateException("Provider not found")
@@ -1309,6 +1333,95 @@ class ChatService(
         saveConversation(conversationId, newConversation)
     }
 
+    // ---- 聊天页配置 ----
+
+    /**
+     * 聊天页对助手的修改：会话持有的字段只改当前会话，其余写回助手设置。
+     *
+     * @param update 接收会话视角下的助手，返回修改后的助手
+     */
+    suspend fun updateChatAssistant(conversationId: Uuid, update: (Assistant) -> Assistant) {
+        sessionManager.withSession(conversationId) { session ->
+            ensureInitialized(session)
+            val settings = settingsStore.settingsFlow.first()
+            val conversation = session.state.value
+            val stored = settings.getStoredAssistantOf(conversation)
+            val updated = update(settings.getAssistantOf(conversation))
+            val assistant = updated.withoutConversationFields(conversation, stored)
+            session.updateMetadata(
+                update = { it.withAssistantUpdate(updated, settings) },
+                persist = conversationRepo::updateConversationConfig,
+            )
+            if (assistant != stored) {
+                settingsStore.update { latest ->
+                    latest.copy(assistants = latest.assistants.map { if (it.id == assistant.id) assistant else it })
+                }
+            }
+        }
+    }
+
+    /**
+     * 切换搜索方式，传 null 的一项保持不变。
+     * 模型内置搜索是助手的开关，会话开始前/跟随助手时改助手，否则固定在会话上。
+     */
+    suspend fun updateChatSearch(
+        conversationId: Uuid,
+        enableWebSearch: Boolean? = null,
+        builtInSearch: Boolean? = null,
+    ) {
+        sessionManager.withSession(conversationId) { session ->
+            ensureInitialized(session)
+            val conversation = session.state.value
+            val config = conversation.config
+            if (config != null && !config.followAssistant) {
+                session.updateMetadata(
+                    update = {
+                        it.copy(
+                            config = it.config?.let { cfg ->
+                                cfg.copy(
+                                    enableWebSearch = enableWebSearch ?: cfg.enableWebSearch,
+                                    builtInSearch = builtInSearch ?: cfg.builtInSearch,
+                                )
+                            }
+                        )
+                    },
+                    persist = conversationRepo::updateConversationConfig,
+                )
+                return@withSession
+            }
+            settingsStore.update { settings ->
+                val assistant = settings.getAssistantOf(conversation)
+                settings.copy(
+                    assistants = settings.assistants.map {
+                        if (it.id == assistant.id) {
+                            it.copy(
+                                enableWebSearch = enableWebSearch ?: it.enableWebSearch,
+                                useBuiltInSearch = builtInSearch ?: it.useBuiltInSearch,
+                            )
+                        } else {
+                            it
+                        }
+                    },
+                )
+            }
+        }
+    }
+
+    /**
+     * fork：切换当前会话是否跟随助手设置。
+     * 开启后该会话实时使用助手设置；关闭时用助手当前设置重新拍快照。
+     */
+    suspend fun updateChatFollowAssistant(conversationId: Uuid, follow: Boolean) {
+        sessionManager.withSession(conversationId) { session ->
+            ensureInitialized(session)
+            val settings = settingsStore.settingsFlow.first()
+            session.updateMetadata(
+                update = { it.setFollowAssistant(settings, follow) },
+                persist = conversationRepo::updateConversationConfig,
+            )
+        }
+    }
+
     // ---- 对话状态更新 ----
 
     private fun updateConversation(
@@ -1337,7 +1450,7 @@ class ChatService(
     ) {
         sessionManager.withSession(conversationId) { session ->
             session.initialize {
-                conversationRepo.getConversationById(conversationId)
+                loadConversation(conversationId)
                     ?: throw NotFoundException("Conversation not found")
             }
             session.updateMetadata(update, persist)
@@ -1424,7 +1537,9 @@ class ChatService(
     }
 
     suspend fun saveConversation(conversationId: Uuid, conversation: Conversation) {
-        updateConversation(conversationId, conversation.copy(), persistWhenIdle = false)
+        // 会话落库即视为开始，此时把助手的配置固定到会话上
+        val bound = conversation.bindConfig(loadedSettings())
+        updateConversation(conversationId, bound, persistWhenIdle = false)
         persistCurrentConversation(conversationId)
 
         // 删除消息或切换分支也可能解除工具审批阻塞，保存成功后重新检查队列。
