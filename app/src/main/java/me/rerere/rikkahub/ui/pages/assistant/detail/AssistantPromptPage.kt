@@ -192,7 +192,8 @@ private fun AssistantPromptContent(
                 TextArea(
                     state = systemPromptValue,
                     label = stringResource(R.string.assistant_page_system_prompt),
-                    minLines = 5,
+                    minLines = 3,
+                    maxLines = 10,
                     collapsible = true,
                 )
 
@@ -376,7 +377,7 @@ private fun AssistantPromptContent(
                     value = assistant.messageTemplate,
                     onValueChange = { onUpdate(assistant.copy(messageTemplate = it)) },
                     modifier = Modifier.fillMaxWidth(),
-                    minLines = 5,
+                    minLines = 3,
                     maxLines = 15,
                     isError = missingMessage,
                     supportingText = if (missingMessage) {
@@ -618,7 +619,9 @@ private fun AssistantPromptContent(
                     }
                 },
             )
+        }
 
+        CardGroup {
             item(
                 headlineContent = {
                     Text(stringResource(R.string.assistant_page_message_template))

@@ -483,7 +483,7 @@ private fun ModeInjectionEditSheet(
                                 label = stringResource(R.string.prompt_page_injection_content),
                                 labelInField = true,
                                 modifier = Modifier.fillMaxWidth(),
-                                minLines = 1,
+                                minLines = 3,
                                 maxLines = Int.MAX_VALUE,
                                 enableImport = false,
                             )
@@ -1316,7 +1316,7 @@ private fun RegexInjectionEditDialog(
                                 label = stringResource(R.string.prompt_page_injection_content),
                                 labelInField = true,
                                 modifier = Modifier.fillMaxWidth(),
-                                minLines = 1,
+                                minLines = 3,
                                 maxLines = Int.MAX_VALUE,
                                 enableImport = false,
                             )

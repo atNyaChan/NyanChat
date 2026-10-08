@@ -297,7 +297,6 @@ fun ChainOfThoughtScope.ChatMessageToolStep(
                         readOnly = true,
                         label = { Text(stringResource(R.string.assistant_memory_content_label)) },
                         modifier = Modifier.fillMaxWidth(),
-                        maxLines = Int.MAX_VALUE,
                     )
                 }
             },
@@ -469,8 +468,6 @@ private fun ChainOfThoughtScope.AskUserToolStep(
                                     ),
                                 textStyle = MaterialTheme.typography.bodySmall,
                                 singleLine = false,
-                                minLines = 1,
-                                maxLines = Int.MAX_VALUE,
                             )
                         } else if (isAnswered) {
                             // Show the user's answer
@@ -564,8 +561,7 @@ private fun ToolDenyReasonDialog(
                     label = { Text(stringResource(R.string.chat_message_tool_deny_dialog_hint)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = false,
-                    minLines = 2,
-                    maxLines = Int.MAX_VALUE
+                    minLines = 2
                 )
             }
         },

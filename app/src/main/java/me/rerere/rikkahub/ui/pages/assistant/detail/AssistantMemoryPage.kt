@@ -139,8 +139,6 @@ private fun AssistantMemoryContent(
                         onValueChange = {
                             update(memory.copy(content = it))
                         },
-                        minLines = 1,
-                        maxLines = Int.MAX_VALUE,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
@@ -309,7 +307,6 @@ private fun AssistantMemoryContent(
                     readOnly = true,
                     label = { Text(stringResource(R.string.assistant_memory_content_label)) },
                     modifier = Modifier.fillMaxWidth(),
-                    maxLines = Int.MAX_VALUE,
                 )
             }
         }

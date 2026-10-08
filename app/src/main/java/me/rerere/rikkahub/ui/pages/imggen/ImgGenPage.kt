@@ -439,7 +439,6 @@ private fun InputBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(max = 140.dp),
-            minLines = 1,
             maxLines = 5,
             shape = MaterialTheme.shapes.large,
             textStyle = MaterialTheme.typography.bodySmall,

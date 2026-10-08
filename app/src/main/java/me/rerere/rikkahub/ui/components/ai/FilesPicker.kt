@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -486,7 +486,7 @@ private fun ExtensionPickerPage(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .bottomSheetMaxHeight()
+            .fillMaxHeight(0.95f)
             .padding(horizontal = 16.dp),
     ) {
         SheetHeader(
@@ -503,8 +503,7 @@ private fun ExtensionPickerPage(
             onUpdate = onUpdateAssistant,
             conversation = conversation,
             onUpdateConversation = onUpdateConversation,
-            modifier = Modifier.weight(1f, fill = false),
-            fillHeight = false,
+            modifier = Modifier.weight(1f),
             onNavigateToQuickMessages = {
                 onDismissAll()
                 navController.navigate(Screen.QuickMessages)

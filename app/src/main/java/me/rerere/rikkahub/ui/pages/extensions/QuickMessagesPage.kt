@@ -293,7 +293,6 @@ private fun EditQuickMessageDialog(
                         modifier = Modifier.fillMaxWidth(),
                         label = { Text(stringResource(R.string.assistant_page_quick_message_content)) },
                         minLines = 4,
-                        maxLines = Int.MAX_VALUE,
                     )
                 }
                 Row(

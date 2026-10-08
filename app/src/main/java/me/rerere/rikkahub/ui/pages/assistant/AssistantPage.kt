@@ -310,7 +310,7 @@ private fun AssistantCreationSheet(
                         onClick = {
                             state.confirm()
                         }) {
-                        Text(stringResource(R.string.common_save))
+                        Text(stringResource(R.string.common_confirm_action))
                     }
                 }
             }

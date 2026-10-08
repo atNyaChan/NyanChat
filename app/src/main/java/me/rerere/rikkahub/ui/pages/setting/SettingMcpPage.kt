@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -432,7 +433,7 @@ private fun McpServerConfigModal(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .bottomSheetMaxHeight()
+                    .fillMaxHeight(0.95f)
                     .padding(horizontal = 8.dp).padding(bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -466,7 +467,7 @@ private fun McpServerConfigModal(
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier
-                        .weight(1f, fill = false)
+                        .weight(1f)
                         .fillMaxWidth()
                 ) { page ->
                     when (page) {
@@ -502,7 +503,7 @@ private fun McpServerConfigModal(
                             }
                         }
                     ) {
-                        Text(stringResource(R.string.common_save))
+                        Text(stringResource(R.string.common_confirm_action))
                     }
                 }
             }
@@ -536,7 +537,7 @@ private fun McpCommonOptionsConfigure(
 ) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .padding(horizontal = 8.dp, vertical = 16.dp)
             .verticalScroll(rememberScrollState())
             .imePadding(),
@@ -849,7 +850,7 @@ private fun McpToolsConfigure(
 ) {
     val mcpManager = koinInject<McpManager>()
     LazyColumn(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {

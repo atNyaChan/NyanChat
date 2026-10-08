@@ -54,7 +54,7 @@ import me.rerere.rikkahub.ui.modifier.onClick
  * @param enabled Whether the text field is enabled
  * @param readOnly Whether the text field is read-only
  * @param supportedFileTypes Array of MIME types to filter in file picker (default: text files)
- * @param collapsible Whether to collapse to [minLines] and show an expand/collapse toggle when the
+ * @param collapsible Whether to collapse to [maxLines] and show an expand/collapse toggle when the
  * content exceeds the collapsed height. When expanded, the field adapts to the content height.
  * @param enableImport Whether to enable file import functionality
  * @param onImportError Callback when file import fails (optional)
@@ -81,7 +81,7 @@ fun TextArea(
 
     var expanded by remember { mutableStateOf(false) }
     var textLineCount by remember { mutableStateOf<Int?>(null) }
-    val showExpandCollapse = collapsible && (expanded || (textLineCount ?: 0) > minLines)
+    val showExpandCollapse = collapsible && (expanded || (textLineCount ?: 0) > maxLines)
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -182,7 +182,7 @@ fun TextArea(
             lineLimits = if (collapsible) {
                 TextFieldLineLimits.MultiLine(
                     minHeightInLines = minLines,
-                    maxHeightInLines = if (expanded) Int.MAX_VALUE else minLines
+                    maxHeightInLines = if (expanded) Int.MAX_VALUE else maxLines
                 )
             } else {
                 TextFieldLineLimits.MultiLine(

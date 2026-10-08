@@ -145,7 +145,7 @@ fun SettingMediaPage(vm: SettingVM = koinViewModel()) {
         MediaProviderSheet(
             title = stringResource(R.string.setting_media_page_edit_provider),
             initial = provider,
-            confirmText = stringResource(R.string.common_save),
+            confirmText = stringResource(R.string.common_confirm_action),
             onConfirm = { edited ->
                 vm.updateSettings(
                     settings.copy(
@@ -356,11 +356,11 @@ private fun MediaProviderSheet(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 TextButton(
                     onClick = onDismiss,
-                    modifier = Modifier.weight(1f)
                 ) {
                     Text(stringResource(R.string.common_cancel))
                 }
@@ -375,7 +375,6 @@ private fun MediaProviderSheet(
                         )
                         onDismiss()
                     },
-                    modifier = Modifier.weight(1f)
                 ) {
                     Text(confirmText)
                 }

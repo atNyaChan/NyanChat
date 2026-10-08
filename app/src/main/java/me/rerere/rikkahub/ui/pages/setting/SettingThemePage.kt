@@ -547,7 +547,7 @@ private fun CustomThemeEditSheet(
                     onClick = { onSave(currentTheme) },
                     enabled = currentTheme.name.isNotBlank()
                 ) {
-                    Text(stringResource(R.string.common_save))
+                    Text(stringResource(R.string.common_confirm_action))
                 }
             }
         }

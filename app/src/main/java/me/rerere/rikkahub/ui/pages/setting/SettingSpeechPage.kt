@@ -242,7 +242,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                             editingTTSProvider = null
                         }
                     ) {
-                        Text(stringResource(R.string.common_save))
+                        Text(stringResource(R.string.common_confirm_action))
                     }
                 }
             }
@@ -351,7 +351,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                             editingASRProvider = null
                         }
                     ) {
-                        Text(stringResource(R.string.common_save))
+                        Text(stringResource(R.string.common_confirm_action))
                     }
                 }
             }
