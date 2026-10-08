@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.data.datastore.ConversationSortOrder
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.data.model.Folder
@@ -41,6 +42,10 @@ class ChatDrawerVM(
 
     private val assistantIdFlow = settingsStore.settingsFlow
         .map { it.assistantId }
+        .distinctUntilChanged()
+
+    private val sortOrderFlow = settingsStore.settingsFlow
+        .map { it.displaySetting.conversationSortOrder }
         .distinctUntilChanged()
 
     // 当前选中的文件夹筛选，null 表示「未归类」视图
@@ -77,17 +82,17 @@ class ChatDrawerVM(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     val conversations: Flow<List<ConversationListItem>> =
-        combine(assistantIdFlow, _selectedFolderId) { assistantId, folderId ->
-            assistantId to folderId
+        combine(assistantIdFlow, _selectedFolderId, sortOrderFlow) { assistantId, folderId, sortOrder ->
+            Triple(assistantId, folderId, sortOrder)
         }
-            .flatMapLatest { (assistantId, folderId) ->
-                if (folderId == null) {
-                    conversationRepo.getUnfiledConversationsOfAssistant(assistantId)
+            .flatMapLatest { (assistantId, folderId, sortOrder) ->
+                val listFlow = if (folderId == null) {
+                    conversationRepo.getUnfiledConversationsOfAssistant(assistantId, sortOrder)
                 } else {
-                    conversationRepo.getConversationsOfFolder(folderId)
+                    conversationRepo.getConversationsOfFolder(folderId, sortOrder)
                 }
+                listFlow.map { list -> withHeaders(list.map { ConversationListItem.Item(it) }, sortOrder) }
             }
-            .map { list -> withHeaders(list.map { ConversationListItem.Item(it) }) }
 
     val scrollIndex: Int get() = savedStateHandle["scrollIndex"] ?: 0
     val scrollOffset: Int get() = savedStateHandle["scrollOffset"] ?: 0
@@ -209,10 +214,24 @@ class ChatDrawerVM(
     }
 
     /**
-     * 在一列按「置顶优先、更新时间倒序」排序的会话前插入对应的置顶/日期标题。
+     * 日期分组跟随排序依据：按创建时间排序时以创建日期分组。
+     */
+    private fun Conversation.sortDate(sortOrder: ConversationSortOrder): LocalDate {
+        val instant = when (sortOrder) {
+            ConversationSortOrder.UPDATE_TIME -> updateAt
+            ConversationSortOrder.CREATE_TIME -> createAt
+        }
+        return instant.atZone(ZoneId.systemDefault()).toLocalDate()
+    }
+
+    /**
+     * 在一列按「置顶优先、排序依据倒序」排序的会话前插入对应的置顶/日期标题。
      * 结果总长度略大于原列表，完全在内存中构建，供侧栏全量列表一次展示。
      */
-    private fun withHeaders(items: List<ConversationListItem.Item>): List<ConversationListItem> {
+    private fun withHeaders(
+        items: List<ConversationListItem.Item>,
+        sortOrder: ConversationSortOrder,
+    ): List<ConversationListItem> {
         val result = mutableListOf<ConversationListItem>()
         var previous: ConversationListItem.Item? = null
         for (after in items) {
@@ -222,37 +241,32 @@ class ChatDrawerVM(
                     if (after.conversation.isPinned) {
                         result += ConversationListItem.PinnedHeader
                     } else {
-                        val afterDate = after.conversation.updateAt
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate()
+                        val afterDate = after.conversation.sortDate(sortOrder)
                         result += ConversationListItem.DateHeader(
                             date = afterDate,
-                            label = getDateLabel(afterDate)
+                            label = getDateLabel(afterDate),
+                            sortOrder = sortOrder,
                         )
                     }
                 }
 
                 before.conversation.isPinned && !after.conversation.isPinned -> {
-                    val afterDate = after.conversation.updateAt
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate()
+                    val afterDate = after.conversation.sortDate(sortOrder)
                     result += ConversationListItem.DateHeader(
                         date = afterDate,
-                        label = getDateLabel(afterDate)
+                        label = getDateLabel(afterDate),
+                        sortOrder = sortOrder,
                     )
                 }
 
                 !after.conversation.isPinned -> {
-                    val beforeDate = before.conversation.updateAt
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate()
-                    val afterDate = after.conversation.updateAt
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate()
+                    val beforeDate = before.conversation.sortDate(sortOrder)
+                    val afterDate = after.conversation.sortDate(sortOrder)
                     if (beforeDate != afterDate) {
                         result += ConversationListItem.DateHeader(
                             date = afterDate,
-                            label = getDateLabel(afterDate)
+                            label = getDateLabel(afterDate),
+                            sortOrder = sortOrder,
                         )
                     }
                 }

@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import me.rerere.ai.core.MessageRole
 import me.rerere.ai.ui.UIMessage
+import me.rerere.rikkahub.data.datastore.ConversationSortOrder
 import me.rerere.rikkahub.data.db.AppDatabase
 import me.rerere.rikkahub.data.db.fts.MessageFtsManager
 import me.rerere.rikkahub.data.db.fts.MessageSearchSort
@@ -79,13 +80,25 @@ class ConversationRepository(
         }
     }
 
-    fun getUnfiledConversationsOfAssistant(assistantId: Uuid): Flow<List<Conversation>> {
-        return conversationDAO.getUnfiledConversationsOfAssistant(assistantId.toString())
+    fun getUnfiledConversationsOfAssistant(
+        assistantId: Uuid,
+        sortOrder: ConversationSortOrder = ConversationSortOrder.UPDATE_TIME,
+    ): Flow<List<Conversation>> {
+        return conversationDAO.getUnfiledConversationsOfAssistant(
+            assistantId.toString(),
+            sortByCreateTime = sortOrder == ConversationSortOrder.CREATE_TIME,
+        )
             .map { list -> list.map { conversationSummaryToConversation(it) } }
     }
 
-    fun getConversationsOfFolder(folderId: Uuid): Flow<List<Conversation>> {
-        return conversationDAO.getConversationsOfFolder(folderId.toString())
+    fun getConversationsOfFolder(
+        folderId: Uuid,
+        sortOrder: ConversationSortOrder = ConversationSortOrder.UPDATE_TIME,
+    ): Flow<List<Conversation>> {
+        return conversationDAO.getConversationsOfFolder(
+            folderId.toString(),
+            sortByCreateTime = sortOrder == ConversationSortOrder.CREATE_TIME,
+        )
             .map { list -> list.map { conversationSummaryToConversation(it) } }
     }
 

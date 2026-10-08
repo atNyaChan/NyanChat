@@ -5,6 +5,10 @@ import android.content.ContextWrapper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.db.AppDatabase
 import me.rerere.rikkahub.data.db.AppDatabaseFactory
@@ -24,7 +28,9 @@ import java.nio.file.Files
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream
 
 @RunWith(AndroidJUnit4::class)
 class BackupManagerTest {
@@ -90,6 +96,52 @@ class BackupManagerTest {
         liveDatabase = AppDatabaseFactory.create(context)
         assertEquals("archived", probe(liveDatabase))
         ZipFile(archive).use { assertTrue(it.getEntry(DatabaseBackup.SHM) != null) }
+    }
+
+    @Test fun launchCountStaysInSettingsJsonThroughBackupAndStaging() = runBlocking {
+        val archive = manager.createBackup(includeDatabase = false, includeFiles = false, includeWorkspace = false)
+        val archived = launchCountOf(readTarEntry(archive, "settings.json"))
+        assertTrue(archived != null)
+        manager.stageRestore(archive)
+        val staged = File(context.noBackupFilesDir, "backup-restore/pending/settings.json").readText()
+        assertEquals(archived, launchCountOf(staged))
+    }
+
+    @Test fun archiveWithoutLaunchCountRestoresItAsZero() = runBlocking {
+        val current = manager.createBackup(includeDatabase = false, includeFiles = false, includeWorkspace = false)
+        val settingsJson = readTarEntry(current, "settings.json")
+        val archive = File(directory, "no-launch-count.tar")
+        writeSettingsTar(
+            archive,
+            JsonObject(JsonInstant.parseToJsonElement(settingsJson).jsonObject - "launchCount").toString(),
+        )
+        manager.stageRestore(archive)
+        val staged = File(context.noBackupFilesDir, "backup-restore/pending/settings.json").readText()
+        assertEquals(0, launchCountOf(staged))
+    }
+
+    private fun launchCountOf(settingsJson: String): Int? =
+        JsonInstant.parseToJsonElement(settingsJson).jsonObject["launchCount"]?.jsonPrimitive?.int
+
+    private fun readTarEntry(archive: File, name: String): String {
+        TarArchiveInputStream(archive.inputStream().buffered()).use { tar ->
+            var entry = tar.nextEntry
+            while (entry != null) {
+                if (entry.name == name) return tar.readBytes().decodeToString()
+                entry = tar.nextEntry
+            }
+        }
+        error("Entry $name not found in $archive")
+    }
+
+    private fun writeSettingsTar(archive: File, settingsJson: String) {
+        TarArchiveOutputStream(archive.outputStream().buffered()).use { tar ->
+            tar.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX)
+            val bytes = settingsJson.toByteArray()
+            tar.putArchiveEntry(TarArchiveEntry("settings.json").apply { size = bytes.size.toLong() })
+            tar.write(bytes)
+            tar.closeArchiveEntry()
+        }
     }
 
     @Test fun newArchiveContainsStandaloneDatabaseAndNoWalOrShm() = runBlocking {

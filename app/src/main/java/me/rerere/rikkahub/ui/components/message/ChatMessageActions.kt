@@ -299,7 +299,7 @@ fun ChatMessageActionsSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .bottomSheetMaxHeight()
-                .padding(horizontal = 16.dp).padding(bottom = 8.dp),
+                .padding(horizontal = 16.dp).padding(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -395,7 +395,10 @@ fun ChatMessageActionsSheet(
             }
 
             // Message Info
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
                 ProvideTextStyle(MaterialTheme.typography.labelSmall) {
                     Text(message.createdAt.toJavaLocalDateTime().toLocalString())
                     if (model != null) {

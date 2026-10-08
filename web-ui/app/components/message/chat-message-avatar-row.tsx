@@ -63,38 +63,45 @@ export function ChatMessageAvatarRow({
     );
   }
 
-  if (message.role !== "ASSISTANT" || !model) {
+  if (message.role !== "ASSISTANT") {
     return null;
   }
 
   const showModelIcon = displaySetting?.showModelIcon !== false;
   const showModelName = displaySetting?.showModelName === true;
-  if (!showModelIcon && !showModelName) {
-    return null;
-  }
 
+  // 模型被删除后用消息上的快照；没有快照时退回显示消息记录的模型 id，再没有才退回助手名称
+  const modelInfo =
+    model ??
+    message.modelSnapshot ??
+    (message.modelId ? { modelId: "", displayName: `(${message.modelId})` } : null);
   const useAssistantAvatar = assistant?.useAssistantAvatar === true;
   const defaultAssistantName = t("common:quick_jump.role_assistant", { defaultValue: "Assistant" });
   const assistantName = assistant?.name?.trim() || defaultAssistantName;
-  const modelName = model.displayName.trim() || model.modelId.trim() || defaultAssistantName;
+  const modelName = modelInfo
+    ? modelInfo.displayName.trim() || modelInfo.modelId.trim() || defaultAssistantName
+    : assistantName;
   const title = useAssistantAvatar ? assistantName : modelName;
+
+  const icon = !showModelIcon ? null : useAssistantAvatar ? (
+    <UIAvatar name={assistantName} avatar={assistant?.avatar} className="size-9" />
+  ) : modelInfo ? (
+    <AIIcon
+      name={modelInfo.modelId}
+      size={36}
+      loading={loading}
+      className="bg-secondary"
+      imageClassName="h-[72%] w-[72%]"
+    />
+  ) : null;
+  if (!icon && !showModelName) {
+    return null;
+  }
 
   return (
     <div className="flex w-full justify-start">
       <div className="flex min-w-0 items-center gap-2">
-        {showModelIcon ? (
-          useAssistantAvatar ? (
-            <UIAvatar name={assistantName} avatar={assistant?.avatar} className="size-9" />
-          ) : (
-            <AIIcon
-              name={model.modelId}
-              size={36}
-              loading={loading}
-              className="bg-secondary"
-              imageClassName="h-[72%] w-[72%]"
-            />
-          )
-        ) : null}
+        {icon}
         {showModelName ? (
           <div className="min-w-0">
             <div className="truncate text-sm font-medium text-foreground/90">{title}</div>

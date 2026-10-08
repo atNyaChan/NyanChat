@@ -81,6 +81,7 @@ import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.AssistantAffectScope
 import me.rerere.rikkahub.data.model.MessageNode
 import me.rerere.rikkahub.data.model.bindConfig
+import me.rerere.rikkahub.data.model.fillModelSnapshots
 import me.rerere.rikkahub.data.model.getAssistantOf
 import me.rerere.rikkahub.data.model.getChatModelOf
 import me.rerere.rikkahub.data.model.getStoredAssistantOf
@@ -368,8 +369,8 @@ class ChatService(
 
     // 新建对话, 并添加预设消息
     private suspend fun createNewConversation(id: Uuid, folderId: Uuid? = null): Conversation {
-        val currentSettings = settingsStore.settingsFlowRaw.first()
-        val assistant = currentSettings.getCurrentAssistant()
+        // 当前助手要读已落盘的值：updateAssistant 只写盘，settingsFlow 要等解码完才跟上
+        val assistant = settingsStore.settingsFlowRaw.first().getCurrentAssistant()
         return Conversation.ofId(
             id = id,
             assistantId = assistant.id,
@@ -1538,7 +1539,8 @@ class ChatService(
 
     suspend fun saveConversation(conversationId: Uuid, conversation: Conversation) {
         // 会话落库即视为开始，此时把助手的配置固定到会话上
-        val bound = conversation.bindConfig(loadedSettings())
+        val settings = loadedSettings()
+        val bound = conversation.bindConfig(settings).fillModelSnapshots(settings)
         updateConversation(conversationId, bound, persistWhenIdle = false)
         persistCurrentConversation(conversationId)
 
@@ -1695,7 +1697,8 @@ class ChatService(
                 processedUserParts
             }
 
-            if (node.messages.first { it.id == messageId }.isContextCheckpoint) {
+            val original = node.messages.first { it.id == messageId }
+            if (original.isContextCheckpoint) {
                 // 摘要原地改写：新建分支会丢掉检查点标记，删除摘要时还会露出旧版本。
                 return@map node.copy(
                     messages = node.messages.map { message ->

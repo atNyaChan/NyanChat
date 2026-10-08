@@ -65,6 +65,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.data.datastore.ConversationSortOrder
 import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.ui.theme.extendColors
 import me.rerere.rikkahub.utils.mirrorForRtl
@@ -77,7 +78,8 @@ import kotlin.uuid.Uuid
 sealed class ConversationListItem {
     data class DateHeader(
         val date: LocalDate,
-        val label: String
+        val label: String,
+        val sortOrder: ConversationSortOrder = ConversationSortOrder.UPDATE_TIME,
     ) : ConversationListItem()
     data object PinnedHeader : ConversationListItem()
     data class Item(
@@ -113,7 +115,7 @@ fun ColumnScope.ConversationList(
     // 用整个条目序列拼接而不是数量，这样数量不变但对调顺序时也能感知变化。
     val itemContentKey = conversations.joinToString("|") { item ->
         when (item) {
-            is ConversationListItem.DateHeader -> "d:${item.date}"
+            is ConversationListItem.DateHeader -> "d:${item.sortOrder}:${item.date}"
             is ConversationListItem.PinnedHeader -> "p"
             is ConversationListItem.Item -> "c:${item.conversation.id}"
         }
@@ -229,7 +231,8 @@ fun ColumnScope.ConversationList(
             items = conversations,
             key = { item ->
                 when (item) {
-                    is ConversationListItem.DateHeader -> "date_${item.date}"
+                    // key 带上排序方式，避免切换排序后列表锚定到另一种排序下的同日期分组而发生跳动
+                    is ConversationListItem.DateHeader -> "date_${item.sortOrder}_${item.date}"
                     is ConversationListItem.PinnedHeader -> "pinned_header"
                     is ConversationListItem.Item -> item.conversation.id.toString()
                 }
@@ -322,7 +325,7 @@ private fun PinnedHeader(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+            .background(Color.Transparent)
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
