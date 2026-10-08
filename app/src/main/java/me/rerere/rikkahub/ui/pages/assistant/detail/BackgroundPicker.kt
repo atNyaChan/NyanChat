@@ -27,17 +27,13 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.files.FilesManager
-import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.ui.components.RikkaConfirmDialog
 import org.koin.compose.koinInject
 
 @Composable
-fun BackgroundPicker(
-    modifier: Modifier = Modifier,
+fun BackgroundPickerContent(
     background: String?,
     backgroundOpacity: Float = 1.0f,
-    continueFromPrevious: Boolean = false,
-    continueToNext: Boolean = false,
     onUpdate: (String?) -> Unit
 ) {
     val filesManager: FilesManager = koinInject()
@@ -59,64 +55,49 @@ fun BackgroundPicker(
 
     val previewOpacity = backgroundOpacity.coerceIn(0f, 1f)
 
-    CardGroup(
-        modifier = modifier,
-        continueFromPrevious = continueFromPrevious,
-        continueToNext = continueToNext,
+    Button(
+        onClick = {
+            showPickOption = true
+        },
+        modifier = Modifier.fillMaxWidth()
     ) {
-        FormItem(
-            label = {
-                Text(stringResource(R.string.assistant_page_chat_background))
-            },
-            description = {
-                Text(stringResource(R.string.assistant_page_chat_background_desc))
+        Text(
+            text = if (background != null) {
+                stringResource(R.string.assistant_page_change_background)
+            } else {
+                stringResource(R.string.assistant_page_select_background)
             }
+        )
+    }
+
+    if (background != null) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Button(
+            Text(
+                text = stringResource(R.string.assistant_page_background_set),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.weight(1f)
+            )
+            TextButton(
                 onClick = {
-                    showPickOption = true
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = if (background != null) {
-                        stringResource(R.string.assistant_page_change_background)
-                    } else {
-                        stringResource(R.string.assistant_page_select_background)
-                    }
-                )
-            }
-
-            if (background != null) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = stringResource(R.string.assistant_page_background_set),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.weight(1f)
-                    )
-                    TextButton(
-                        onClick = {
-                            showDeleteConfirm = true
-                        }
-                    ) {
-                        Text(stringResource(R.string.assistant_page_remove))
-                    }
+                    showDeleteConfirm = true
                 }
-
-                AsyncImage(
-                    model = background,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .alpha(previewOpacity)
-                )
+            ) {
+                Text(stringResource(R.string.assistant_page_remove))
             }
         }
+
+        AsyncImage(
+            model = background,
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth()
+                .alpha(previewOpacity)
+        )
     }
 
     if (showPickOption) {

@@ -183,10 +183,7 @@ internal fun AssistantBasicContent(
             )
         }
 
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        CardGroup(
-            continueToNext = !assistant.useGradientBackground,
-        ) {
+        CardGroup {
             FormItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {},
@@ -301,7 +298,9 @@ internal fun AssistantBasicContent(
                     )
                 }
             }
+        }
 
+        CardGroup {
             FormItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {
@@ -342,7 +341,9 @@ internal fun AssistantBasicContent(
                     },
                 )
             }
+        }
 
+        CardGroup {
             FormItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {
@@ -360,64 +361,66 @@ internal fun AssistantBasicContent(
                     )
                 }
             )
-        }
-
-        if (!assistant.useGradientBackground) {
-            BackgroundPicker(
-                background = assistant.background,
-                backgroundOpacity = assistant.backgroundOpacity,
-                continueFromPrevious = true,
-                continueToNext = assistant.background != null,
-                onUpdate = { background ->
-                    onUpdate(assistant.copy(background = background))
-                }
-            )
-        }
-        if (!assistant.useGradientBackground && assistant.background != null) {
-            val backgroundOpacity = assistant.backgroundOpacity.coerceIn(0.1f, 1f)
-            CardGroup(
-                continueFromPrevious = true,
-            ) {
+            if (!assistant.useGradientBackground) {
                 FormItem(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     label = {
-                        Text(stringResource(R.string.assistant_page_background_opacity))
+                        Text(stringResource(R.string.assistant_page_chat_background))
                     },
                     description = {
-                        Text(stringResource(R.string.assistant_page_background_opacity_desc))
-                    }
+                        Text(stringResource(R.string.assistant_page_chat_background_desc))
+                    },
                 ) {
-                    val backgroundOpacityState = remember {
-                        SliderState(value = backgroundOpacity, trackRange = 0.1f..1f, steps = 8)
-                    }
-                    LaunchedEffect(backgroundOpacity) {
-                        if (backgroundOpacityState.value != backgroundOpacity) {
-                            backgroundOpacityState.value = backgroundOpacity
-                        }
-                    }
-                    Slider(
-                        state = backgroundOpacityState,
-                        onValueChange = {
-                            backgroundOpacityState.value = it
-                            onUpdate(
-                                assistant.copy(
-                                    backgroundOpacity = it.toFixed(2).toFloatOrNull()
-                                        ?.coerceIn(0.1f, 1f) ?: 1.0f
-                                )
-                            )
+                    BackgroundPickerContent(
+                        background = assistant.background,
+                        backgroundOpacity = assistant.backgroundOpacity,
+                        onUpdate = { background ->
+                            onUpdate(assistant.copy(background = background))
                         },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Text(
-                        text = stringResource(
-                            R.string.assistant_page_background_opacity_value,
-                            (backgroundOpacity * 100).roundToInt()
-                        ),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.75f),
                     )
                 }
+                if (assistant.background != null) {
+                    val backgroundOpacity = assistant.backgroundOpacity.coerceIn(0.1f, 1f)
+                    FormItem(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        label = {
+                            Text(stringResource(R.string.assistant_page_background_opacity))
+                        },
+                        description = {
+                            Text(stringResource(R.string.assistant_page_background_opacity_desc))
+                        }
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            val backgroundOpacityState = remember {
+                                SliderState(value = backgroundOpacity, trackRange = 0.1f..1f, steps = 8)
+                            }
+                            LaunchedEffect(backgroundOpacity) {
+                                if (backgroundOpacityState.value != backgroundOpacity) {
+                                    backgroundOpacityState.value = backgroundOpacity
+                                }
+                            }
+                            Slider(
+                                state = backgroundOpacityState,
+                                onValueChange = {
+                                    backgroundOpacityState.value = it
+                                    onUpdate(
+                                        assistant.copy(
+                                            backgroundOpacity = it.toFixed(2).toFloatOrNull()
+                                                ?.coerceIn(0.1f, 1f) ?: 1.0f
+                                        )
+                                    )
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(text = "${(backgroundOpacity * 100).roundToInt()}%")
+                        }
+                    }
+                }
             }
-        }
         }
         }
 
