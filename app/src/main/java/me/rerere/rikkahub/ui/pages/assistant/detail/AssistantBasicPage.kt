@@ -626,27 +626,13 @@ internal fun AssistantBasicContent(
                     }
                 )
             }
-        }
-        CardGroup {
-            FormItem(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                label = { Text(stringResource(R.string.assistant_page_custom_headers)) },
-            ) {
-                CustomHeaders(
-                    headers = assistant.customHeaders,
-                    onUpdate = { onUpdate(assistant.copy(customHeaders = it)) },
-                )
             }
-            FormItem(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                label = { Text(stringResource(R.string.assistant_page_custom_bodies)) },
-            ) {
-                CustomBodies(
-                    customBodies = assistant.customBodies,
-                    onUpdate = { onUpdate(assistant.copy(customBodies = it)) },
-                )
-            }
-        }
+            CustomRequestProperties(
+                headers = assistant.customHeaders,
+                onUpdateHeaders = { onUpdate(assistant.copy(customHeaders = it)) },
+                customBodies = assistant.customBodies,
+                onUpdateCustomBodies = { onUpdate(assistant.copy(customBodies = it)) },
+            )
         }
 
     }

@@ -47,7 +47,7 @@
   <string name="assistant_page_delete_background_title">حذف خلفية الدردشة</string>
   <string name="assistant_page_delete_background_confirm">هل تريد حذف خلفية الدردشة المخصصة؟ لا يمكن التراجع عن هذا الإجراء.</string>
   <string name="assistant_page_custom_bodies">جسم مخصص</string>
-  <string name="assistant_page_custom_headers">ترويسات مخصصة</string>
+  <string name="assistant_page_custom_headers">ترويسة مخصصة</string>
   <string name="assistant_page_custom_header_singular">ترويسة</string>
   <string name="assistant_page_custom_body_singular">جسم</string>
   <string name="assistant_page_delete_custom_title">حذف %1$s مخصص</string>

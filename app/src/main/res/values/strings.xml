@@ -47,7 +47,7 @@
   <string name="assistant_page_delete_background_title">Delete Chat Background</string>
   <string name="assistant_page_delete_background_confirm">Delete the custom chat background? This action cannot be undone.</string>
   <string name="assistant_page_custom_bodies">Custom Body</string>
-  <string name="assistant_page_custom_headers">Custom Headers</string>
+  <string name="assistant_page_custom_headers">Custom Header</string>
   <string name="assistant_page_custom_header_singular">Header</string>
   <string name="assistant_page_custom_body_singular">Body</string>
   <string name="assistant_page_delete_custom_title">Delete Custom %1$s</string>

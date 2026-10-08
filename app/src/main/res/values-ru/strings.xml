@@ -47,7 +47,7 @@
   <string name="assistant_page_delete_background_title">Удалить фон чата</string>
   <string name="assistant_page_delete_background_confirm">Удалить пользовательский фон чата? Это действие нельзя отменить.</string>
   <string name="assistant_page_custom_bodies">Пользовательский контекст</string>
-  <string name="assistant_page_custom_headers">Пользовательские заголовки</string>
+  <string name="assistant_page_custom_headers">Пользовательский заголовок</string>
   <string name="assistant_page_custom_header_singular">Header</string>
   <string name="assistant_page_custom_body_singular">Body</string>
   <string name="assistant_page_delete_custom_title">Удалить пользовательский %1$s</string>

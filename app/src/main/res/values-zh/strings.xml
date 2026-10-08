@@ -47,7 +47,7 @@
   <string name="assistant_page_delete_background_title">删除聊天背景</string>
   <string name="assistant_page_delete_background_confirm">确定删除自定义聊天背景吗？此操作无法撤销。</string>
   <string name="assistant_page_custom_bodies">自定义 Body</string>
-  <string name="assistant_page_custom_headers">自定义 Headers</string>
+  <string name="assistant_page_custom_headers">自定义 Header</string>
   <string name="assistant_page_custom_header_singular">Header</string>
   <string name="assistant_page_custom_body_singular">Body</string>
   <string name="assistant_page_delete_custom_title">删除自定义 %1$s</string>

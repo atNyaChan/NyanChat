@@ -5,13 +5,14 @@ import me.rerere.hugeicons.stroke.Add01
 import me.rerere.hugeicons.stroke.Delete01
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -67,10 +69,56 @@ private fun commonHeaderNames(input: String): List<String> {
     return matched.ifEmpty { COMMON_HEADER_NAMES }
 }
 
+// 分组标题行，加号按钮放在标题右侧且无背景色
 @Composable
-fun CustomHeaders(headers: List<CustomHeader>, onUpdate: (List<CustomHeader>) -> Unit) {
+private fun CustomPropertyHeader(
+    title: String,
+    addContentDescription: String,
+    onAdd: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 4.dp, top = 2.dp, end = 4.dp, bottom = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmallEmphasized,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.weight(1f),
+        )
+        IconButton(
+            onClick = onAdd,
+            modifier = Modifier.size(32.dp),
+        ) {
+            Icon(
+                imageVector = HugeIcons.Add01,
+                contentDescription = addContentDescription,
+            )
+        }
+    }
+}
+
+@Composable
+fun CustomHeaders(
+    headers: List<CustomHeader>,
+    onUpdate: (List<CustomHeader>) -> Unit,
+    title: String,
+) {
     var pendingDeleteIndex by remember { mutableStateOf<Int?>(null) }
+    val addHeader = {
+        val updatedHeaders = headers.toMutableList()
+        updatedHeaders.add(CustomHeader("", ""))
+        onUpdate(updatedHeaders)
+    }
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        CustomPropertyHeader(
+            title = title,
+            addContentDescription = stringResource(R.string.assistant_page_add_header),
+            onAdd = addHeader,
+        )
         CardGroup {
             headers.forEachIndexed { index, header ->
                 item(
@@ -93,19 +141,6 @@ fun CustomHeaders(headers: List<CustomHeader>, onUpdate: (List<CustomHeader>) ->
                     headlineContent = {},
                 )
             }
-        }
-
-        Button(
-            onClick = {
-                val updatedHeaders = headers.toMutableList()
-                updatedHeaders.add(CustomHeader("", ""))
-                onUpdate(updatedHeaders)
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Icon(HugeIcons.Add01, contentDescription = stringResource(R.string.assistant_page_add_header))
-            Spacer(Modifier.width(4.dp))
-            Text(stringResource(R.string.assistant_page_add_header))
         }
     }
     RikkaConfirmDialog(
@@ -177,20 +212,34 @@ private fun HeaderFields(
 }
 
 @Composable
-fun CustomBodies(customBodies: List<CustomBody>, onUpdate: (List<CustomBody>) -> Unit) {
+fun CustomBodies(
+    customBodies: List<CustomBody>,
+    onUpdate: (List<CustomBody>) -> Unit,
+    title: String,
+) {
     val context = LocalContext.current
     var pendingDeleteIndex by remember { mutableStateOf<Int?>(null) }
+    val addBody = {
+        val updatedBodies = customBodies.toMutableList()
+        updatedBodies.add(CustomBody("", JsonPrimitive("")))
+        onUpdate(updatedBodies)
+    }
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        customBodies.forEachIndexed { index, body ->
-            var bodyKey by remember(body.key) { mutableStateOf(body.key) }
-            var bodyValueString by remember(body.value) {
-                mutableStateOf(jsonLenient.encodeToString(JsonElement.serializer(), body.value))
-            }
-            var jsonParseError by remember { mutableStateOf<String?>(null) }
-
-            CardGroup {
+        CustomPropertyHeader(
+            title = title,
+            addContentDescription = stringResource(R.string.assistant_page_add_body),
+            onAdd = addBody,
+        )
+        CardGroup {
+            customBodies.forEachIndexed { index, body ->
                 item(
                     supportingContent = {
+                        var bodyKey by remember(body.key) { mutableStateOf(body.key) }
+                        var bodyValueString by remember(body.value) {
+                            mutableStateOf(jsonLenient.encodeToString(JsonElement.serializer(), body.value))
+                        }
+                        var jsonParseError by remember { mutableStateOf<String?>(null) }
+
                         Column(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -257,19 +306,6 @@ fun CustomBodies(customBodies: List<CustomBody>, onUpdate: (List<CustomBody>) ->
                 )
             }
         }
-
-        Button(
-            onClick = {
-                val updatedBodies = customBodies.toMutableList()
-                updatedBodies.add(CustomBody("", JsonPrimitive("")))
-                onUpdate(updatedBodies)
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Icon(HugeIcons.Add01, contentDescription = stringResource(R.string.assistant_page_add_body))
-            Spacer(Modifier.width(4.dp))
-            Text(stringResource(R.string.assistant_page_add_body))
-        }
     }
     RikkaConfirmDialog(
         show = pendingDeleteIndex != null,
@@ -294,6 +330,28 @@ fun CustomBodies(customBodies: List<CustomBody>, onUpdate: (List<CustomBody>) ->
                 R.string.assistant_page_delete_custom_confirm,
                 stringResource(R.string.assistant_page_custom_body_singular),
             )
+        )
+    }
+}
+
+// 自定义请求头/请求体，模型、助手与提供商共用同一套标题与排版；不传 Body 时只显示 Headers
+@Composable
+fun CustomRequestProperties(
+    headers: List<CustomHeader>,
+    onUpdateHeaders: (List<CustomHeader>) -> Unit,
+    customBodies: List<CustomBody>? = null,
+    onUpdateCustomBodies: ((List<CustomBody>) -> Unit)? = null,
+) {
+    CustomHeaders(
+        headers = headers,
+        onUpdate = onUpdateHeaders,
+        title = stringResource(R.string.assistant_page_custom_headers),
+    )
+    if (customBodies != null && onUpdateCustomBodies != null) {
+        CustomBodies(
+            customBodies = customBodies,
+            onUpdate = onUpdateCustomBodies,
+            title = stringResource(R.string.assistant_page_custom_bodies),
         )
     }
 }

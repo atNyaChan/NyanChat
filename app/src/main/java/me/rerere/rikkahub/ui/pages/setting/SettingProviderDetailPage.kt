@@ -118,8 +118,7 @@ import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.hooks.useEditState
-import me.rerere.rikkahub.ui.pages.assistant.detail.CustomBodies
-import me.rerere.rikkahub.ui.pages.assistant.detail.CustomHeaders
+import me.rerere.rikkahub.ui.pages.assistant.detail.CustomRequestProperties
 import me.rerere.rikkahub.ui.pages.setting.components.ProviderConfigure
 import me.rerere.rikkahub.ui.pages.setting.components.ProviderConnectionTester
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
@@ -274,16 +273,9 @@ fun SettingProviderDetailSheet(
                 }
 
                 item {
-                    Text(
-                        text = stringResource(R.string.assistant_page_custom_headers),
-                        style = MaterialTheme.typography.titleSmall,
-                    )
-                }
-
-                item {
-                    CustomHeaders(
+                    CustomRequestProperties(
                         headers = internalProvider.customHeaders,
-                        onUpdate = { headers ->
+                        onUpdateHeaders = { headers ->
                             internalProvider = internalProvider.copyProvider(customHeaders = headers)
                         },
                     )
@@ -1511,69 +1503,6 @@ private fun ModelSettingsForm(
                             .padding(vertical = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        CardGroup(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            item(
-                                supportingContent = {
-                                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        Text(
-                                            text = stringResource(R.string.setting_provider_page_provider_override),
-                                            style = MaterialTheme.typography.titleMedium,
-                                        )
-                                        ProviderOverrideSettings(
-                                            providerOverride = model.providerOverwrite,
-                                            onUpdateProviderOverride = { providerOverride ->
-                                                // 覆盖提供商切到 Chat Completions 时，关闭仅 Responses API 支持的内置工具
-                                                val tools =
-                                                    if (providerOverride is ProviderSetting.OpenAI && !providerOverride.useResponseApi) {
-                                                        model.tools - ResponsesApiOnlyBuiltInTools
-                                                    } else {
-                                                        model.tools
-                                                    }
-                                                onModelChange(
-                                                    model.copy(
-                                                        providerOverwrite = providerOverride,
-                                                        tools = tools,
-                                                    )
-                                                )
-                                            },
-                                            parentProvider = parentProvider
-                                        )
-                                    }
-                                },
-                                headlineContent = {},
-                            )
-                        }
-
-                        CardGroup(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            item(
-                                supportingContent = {
-                                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        Text(
-                                            text = stringResource(R.string.assistant_page_tab_request),
-                                            style = MaterialTheme.typography.titleMedium,
-                                        )
-                                        CustomHeaders(
-                                            headers = model.customHeaders,
-                                            onUpdate = { headers ->
-                                                onModelChange(model.copy(customHeaders = headers))
-                                            }
-                                        )
-                                        CustomBodies(
-                                            customBodies = model.customBodies,
-                                            onUpdate = { bodies ->
-                                                onModelChange(model.copy(customBodies = bodies))
-                                            }
-                                        )
-                                    }
-                                },
-                                headlineContent = {},
-                            )
-                        }
-
                         if (isEdit && onMigrateModelId != null) {
                             CardGroup(
                                 modifier = Modifier.fillMaxWidth()
@@ -1645,6 +1574,52 @@ private fun ModelSettingsForm(
                                 )
                             }
                         }
+
+                        CardGroup(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            item(
+                                supportingContent = {
+                                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Text(
+                                            text = stringResource(R.string.setting_provider_page_provider_override),
+                                            style = MaterialTheme.typography.titleMedium,
+                                        )
+                                        ProviderOverrideSettings(
+                                            providerOverride = model.providerOverwrite,
+                                            onUpdateProviderOverride = { providerOverride ->
+                                                // 覆盖提供商切到 Chat Completions 时，关闭仅 Responses API 支持的内置工具
+                                                val tools =
+                                                    if (providerOverride is ProviderSetting.OpenAI && !providerOverride.useResponseApi) {
+                                                        model.tools - ResponsesApiOnlyBuiltInTools
+                                                    } else {
+                                                        model.tools
+                                                    }
+                                                onModelChange(
+                                                    model.copy(
+                                                        providerOverwrite = providerOverride,
+                                                        tools = tools,
+                                                    )
+                                                )
+                                            },
+                                            parentProvider = parentProvider
+                                        )
+                                    }
+                                },
+                                headlineContent = {},
+                            )
+                        }
+
+                        CustomRequestProperties(
+                            headers = model.customHeaders,
+                            onUpdateHeaders = { headers ->
+                                onModelChange(model.copy(customHeaders = headers))
+                            },
+                            customBodies = model.customBodies,
+                            onUpdateCustomBodies = { bodies ->
+                                onModelChange(model.copy(customBodies = bodies))
+                            },
+                        )
                     }
                 }
 
