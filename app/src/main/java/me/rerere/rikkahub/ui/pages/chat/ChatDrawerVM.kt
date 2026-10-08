@@ -143,7 +143,7 @@ class ChatDrawerVM(
     fun revealConversation(assistantId: Uuid, folderId: Uuid?) {
         viewModelScope.launch {
             if (assistantIdFlow.first() != assistantId) {
-                settingsStore.updateAssistant(assistantId)
+                settingsStore.selectAssistant(assistantId)
             }
             // 复用既有逻辑：等助手切换完成后（init 里的文件夹重置也会先执行）再设置文件夹
             selectFolderAfterAssistantChange(assistantId, folderId)

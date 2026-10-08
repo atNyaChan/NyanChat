@@ -52,7 +52,7 @@ fun SettingSearchCommonPage(vm: SettingVM = koinViewModel()) {
                 CommonOptions(
                     settings = settings,
                     onUpdate = { options ->
-                        vm.updateSettings(settings.copy(searchCommonOptions = options))
+                        vm.updateSettings { it.copy(searchCommonOptions = options) }
                     },
                 )
             }

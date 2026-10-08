@@ -100,20 +100,20 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                 actions = {
                     if (pagerState.currentPage == 0) {
                         AddTTSProviderButton {
-                            vm.updateSettings(
-                                settings.copy(
-                                    ttsProviders = listOf(it) + settings.ttsProviders
+                            vm.updateSettings { latest ->
+                                latest.copy(
+                                    ttsProviders = listOf(it) + latest.ttsProviders
                                 )
-                            )
+                            }
                         }
                     } else {
                         AddASRProviderButton {
-                            vm.updateSettings(
-                                settings.copy(
-                                    asrProviders = listOf(it) + settings.asrProviders,
-                                    selectedASRProviderId = settings.selectedASRProviderId ?: it.id
+                            vm.updateSettings { latest ->
+                                latest.copy(
+                                    asrProviders = listOf(it) + latest.asrProviders,
+                                    selectedASRProviderId = latest.selectedASRProviderId ?: it.id
                                 )
-                            )
+                            }
                         }
                     }
                 },
@@ -238,7 +238,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                             val newProviders = settings.ttsProviders.map {
                                 if (it.id == provider.id) currentProvider else it
                             }
-                            vm.updateSettings(settings.copy(ttsProviders = newProviders))
+                            vm.updateSettings { it.copy(ttsProviders = newProviders) }
                             editingTTSProvider = null
                         }
                     ) {
@@ -259,12 +259,12 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                 } else {
                     settings.selectedTTSProviderId
                 }
-                vm.updateSettings(
-                    settings.copy(
+                vm.updateSettings {
+                    it.copy(
                         ttsProviders = newProviders,
                         selectedTTSProviderId = newSelectedId,
                     )
-                )
+                }
                 showDeleteConfirm = false
                 editingTTSProvider = null
             },
@@ -347,7 +347,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                             val newProviders = settings.asrProviders.map {
                                 if (it.id == provider.id) currentProvider else it
                             }
-                            vm.updateSettings(settings.copy(asrProviders = newProviders))
+                            vm.updateSettings { it.copy(asrProviders = newProviders) }
                             editingASRProvider = null
                         }
                     ) {
@@ -368,12 +368,12 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                 } else {
                     settings.selectedASRProviderId
                 }
-                vm.updateSettings(
-                    settings.copy(
+                vm.updateSettings {
+                    it.copy(
                         asrProviders = newProviders,
                         selectedASRProviderId = newSelectedId,
                     )
-                )
+                }
                 showDeleteConfirm = false
                 editingASRProvider = null
             },
@@ -393,17 +393,19 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
 @Composable
 private fun TTSProviderList(
     settings: Settings,
-    onUpdateSettings: (Settings) -> Unit,
+    onUpdateSettings: ((Settings) -> Settings) -> Unit,
     onEdit: (TTSProviderSetting) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val lazyListState = rememberLazyListState()
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
-        onUpdateSettings(settings.copy(
-            ttsProviders = settings.ttsProviders.toMutableList().apply {
-                add(to.index, removeAt(from.index))
-            }
-        ))
+        onUpdateSettings {
+            it.copy(
+                ttsProviders = it.ttsProviders.toMutableList().apply {
+                    add(to.index, removeAt(from.index))
+                }
+            )
+        }
     }
     LazyColumn(
         modifier = modifier
@@ -422,7 +424,7 @@ private fun TTSProviderList(
                     provider = provider,
                     isSelected = settings.selectedTTSProviderId == provider.id,
                     onSelect = {
-                        onUpdateSettings(settings.copy(selectedTTSProviderId = provider.id))
+                        onUpdateSettings { it.copy(selectedTTSProviderId = provider.id) }
                     },
                     onEdit = { onEdit(provider) },
                 )
@@ -434,7 +436,7 @@ private fun TTSProviderList(
 @Composable
 private fun ASRProviderList(
     settings: Settings,
-    onUpdateSettings: (Settings) -> Unit,
+    onUpdateSettings: ((Settings) -> Settings) -> Unit,
     onEdit: (ASRProviderSetting) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -443,7 +445,7 @@ private fun ASRProviderList(
         val newProviders = settings.asrProviders.toMutableList().apply {
             add(to.index, removeAt(from.index))
         }
-        onUpdateSettings(settings.copy(asrProviders = newProviders))
+        onUpdateSettings { it.copy(asrProviders = newProviders) }
     }
 
     LazyColumn(
@@ -466,7 +468,7 @@ private fun ASRProviderList(
                     provider = provider,
                     isSelected = settings.selectedASRProviderId == provider.id,
                     onSelect = {
-                        onUpdateSettings(settings.copy(selectedASRProviderId = provider.id))
+                        onUpdateSettings { it.copy(selectedASRProviderId = provider.id) }
                     },
                     onEdit = {
                         onEdit(provider)

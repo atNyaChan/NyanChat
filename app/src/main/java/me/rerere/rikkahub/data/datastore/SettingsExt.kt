@@ -11,6 +11,14 @@ import kotlin.uuid.Uuid
 fun Settings.isNotConfigured() = providers.all { it.models.isEmpty() }
 
 /**
+ * 过滤 HTTP 请求头值中 OkHttp 不允许的字符（非 ASCII 与控制字符）。
+ * User-Agent 等自定义请求头直接交给 OkHttp 会抛出 IllegalArgumentException，
+ * 输入框和设置规整都要用它过滤。
+ */
+fun String.filterHeaderValueChars(): String =
+    filter { it == '\t' || it.code in 0x20..0x7e }
+
+/**
  * 按 ID 查找模型。
  *
  * @param fallback [uuid] 为空或已找不到对应模型时改用的模型 ID

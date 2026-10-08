@@ -71,7 +71,7 @@ class WebServerService : Service() {
                     return START_NOT_STICKY
                 }
                 serviceScope.launch {
-                    val settings = settingsStore.settingsFlowRaw.first()
+                    val settings = settingsStore.awaitLoaded()
                     if (settings.webServerEnabled) {
                         startObservingState()
                         webServerManager.start(

@@ -48,7 +48,7 @@ fun SettingPreferencesPage(vm: SettingVM = koinViewModel()) {
 
     fun updateDisplaySetting(value: DisplaySetting) {
         displaySetting = value
-        vm.updateSettings(settings.copy(displaySetting = value))
+        vm.updateSettings { it.copy(displaySetting = value) }
     }
 
     Scaffold(

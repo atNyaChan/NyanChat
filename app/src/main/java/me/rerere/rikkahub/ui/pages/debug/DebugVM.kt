@@ -41,9 +41,9 @@ class DebugVM(
         scanConversationAssistants()
     }
 
-    fun updateSettings(settings: Settings) {
+    fun updateSettings(fn: (Settings) -> Settings) {
         viewModelScope.launch {
-            settingsStore.update(settings)
+            settingsStore.update(fn)
         }
     }
 
@@ -88,7 +88,7 @@ class DebugVM(
         val recovered = missing.mapIndexed { index, (id, _) ->
             Assistant(id = id, name = "Recovered assistant ${index + 1}")
         }
-        settingsStore.update(settings.copy(assistants = settings.assistants + recovered))
+        settingsStore.update { it.copy(assistants = it.assistants + recovered) }
         return recovered.size
     }
 

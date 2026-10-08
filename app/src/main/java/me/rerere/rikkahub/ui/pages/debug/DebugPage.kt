@@ -215,10 +215,10 @@ private fun MainPage(vm: DebugVM) {
         Button(
             onClick = {
                 val current = settings.getCurrentAssistant()
-                vm.updateSettings(
-                    settings.copy(
+                vm.updateSettings { latest ->
+                    latest.copy(
                         chatModelId = Uuid.random(),
-                        assistants = settings.assistants.map { assistant ->
+                        assistants = latest.assistants.map { assistant ->
                             if (assistant.id == current.id) {
                                 assistant.copy(chatModelId = null)
                             } else {
@@ -226,7 +226,7 @@ private fun MainPage(vm: DebugVM) {
                             }
                         }
                     )
-                )
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {

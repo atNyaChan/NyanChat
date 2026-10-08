@@ -120,9 +120,9 @@ fun SettingSearchPage(vm: SettingVM = koinViewModel()) {
                 val newServices = settings.searchServices.toMutableList().apply {
                     add(toIndex, removeAt(fromIndex))
                 }
-                vm.updateSettings(
-                    settings.copy(searchServices = newServices)
-                )
+                vm.updateSettings {
+                    it.copy(searchServices = newServices)
+                }
             }
         }
 
@@ -159,11 +159,11 @@ fun SettingSearchPage(vm: SettingVM = koinViewModel()) {
             onDismiss = { showAddDialog = false },
             onConfirm = { options ->
                 showAddDialog = false
-                vm.updateSettings(
-                    settings.copy(
-                        searchServices = listOf(options) + settings.searchServices
+                vm.updateSettings {
+                    it.copy(
+                        searchServices = listOf(options) + it.searchServices
                     )
-                )
+                }
                 scope.launch {
                     lazyListState.animateScrollToItem(0)
                 }

@@ -168,7 +168,7 @@ class SafeModeActivity : ComponentActivity() {
                     AssistantPickerSheet(
                         settings = settings,
                         onAssistantSelected = { assistantId ->
-                            scope.launch { settingsStore.updateAssistant(assistantId) }
+                            scope.launch { settingsStore.selectAssistant(assistantId) }
                             context.writeStringPreference("lastConversationId", null)
                             showAssistantPicker = false
                         },

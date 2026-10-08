@@ -83,32 +83,32 @@ internal fun PromptEditor(
                 OutlinedTextField(
                     value = value,
                     onValueChange = { prompt ->
-                        vm.updateSettings(
+                        vm.updateSettings {
                             when (type) {
-                                PromptType.TRANSLATION -> settings.copy(translatePrompt = prompt)
-                                PromptType.TITLE -> settings.copy(titlePrompt = prompt)
-                                PromptType.SUGGESTION -> settings.copy(suggestionPrompt = prompt)
-                                PromptType.OCR -> settings.copy(ocrPrompt = prompt)
-                                PromptType.COMPRESS -> settings.copy(compressPrompt = prompt)
+                                PromptType.TRANSLATION -> it.copy(translatePrompt = prompt)
+                                PromptType.TITLE -> it.copy(titlePrompt = prompt)
+                                PromptType.SUGGESTION -> it.copy(suggestionPrompt = prompt)
+                                PromptType.OCR -> it.copy(ocrPrompt = prompt)
+                                PromptType.COMPRESS -> it.copy(compressPrompt = prompt)
                             }
-                        )
+                        }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     maxLines = 15,
                 )
                 TextButton(
                     onClick = {
-                        vm.updateSettings(
+                        vm.updateSettings {
                             when (type) {
                                 PromptType.TRANSLATION ->
-                                    settings.copy(translatePrompt = DEFAULT_TRANSLATION_PROMPT)
-                                PromptType.TITLE -> settings.copy(titlePrompt = DEFAULT_TITLE_PROMPT)
+                                    it.copy(translatePrompt = DEFAULT_TRANSLATION_PROMPT)
+                                PromptType.TITLE -> it.copy(titlePrompt = DEFAULT_TITLE_PROMPT)
                                 PromptType.SUGGESTION ->
-                                    settings.copy(suggestionPrompt = DEFAULT_SUGGESTION_PROMPT)
-                                PromptType.OCR -> settings.copy(ocrPrompt = DEFAULT_OCR_PROMPT)
-                                PromptType.COMPRESS -> settings.copy(compressPrompt = DEFAULT_COMPRESS_PROMPT)
+                                    it.copy(suggestionPrompt = DEFAULT_SUGGESTION_PROMPT)
+                                PromptType.OCR -> it.copy(ocrPrompt = DEFAULT_OCR_PROMPT)
+                                PromptType.COMPRESS -> it.copy(compressPrompt = DEFAULT_COMPRESS_PROMPT)
                             }
-                        )
+                        }
                     }
                 ) {
                     Text(stringResource(R.string.setting_model_page_reset_to_default))

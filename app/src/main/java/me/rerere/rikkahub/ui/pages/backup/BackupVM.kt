@@ -55,9 +55,9 @@ class BackupVM(
         loadS3BackupFileItems()
     }
 
-    fun updateSettings(settings: Settings) {
+    fun updateSettings(fn: (Settings) -> Settings) {
         viewModelScope.launch {
-            settingsStore.update(settings)
+            settingsStore.update(fn)
         }
     }
 
@@ -201,11 +201,11 @@ class BackupVM(
 
         Log.i(TAG, "restoreFromCherryStudio: import ${importProviders.size} providers: $importProviders")
 
-        updateSettings(
-            settings.value.copy(
-                providers = importProviders + settings.value.providers,
+        updateSettings {
+            it.copy(
+                providers = importProviders + it.providers,
             )
-        )
+        }
     }
 
     // S3 Backup methods

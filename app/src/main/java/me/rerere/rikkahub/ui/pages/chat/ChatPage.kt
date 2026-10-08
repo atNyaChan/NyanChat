@@ -696,7 +696,7 @@ private fun ChatFilesPanel(
         },
         onSelectSearch = { mode, serviceIndex ->
             if (serviceIndex != null) {
-                vm.updateSettings(setting.copy(searchServiceSelected = serviceIndex))
+                vm.updateSettings { it.copy(searchServiceSelected = serviceIndex) }
             }
             vm.updateSearch(
                 enableWebSearch = mode != SearchMode.OFF,

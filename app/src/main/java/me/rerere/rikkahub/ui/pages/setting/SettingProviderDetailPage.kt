@@ -202,24 +202,24 @@ fun SettingProviderDetailSheet(
 
     val onSave = {
         val providerToSave: ProviderSetting = internalProvider.copyProvider(name = internalProvider.name.trim())
-        val newSettings = settings.copy(
-            providers = settings.providers.map {
-                if (internalProvider.id == it.id) {
-                    providerToSave
-                } else {
-                    it
+        vm.updateSettings { latest ->
+            latest.copy(
+                providers = latest.providers.map {
+                    if (internalProvider.id == it.id) {
+                        providerToSave
+                    } else {
+                        it
+                    }
                 }
-            }
-        )
-        vm.updateSettings(newSettings)
+            )
+        }
         onDismiss()
     }
 
     val onDelete = {
-        val newSettings = settings.copy(
-            providers = settings.providers.filter { it.id != internalProvider.id }
-        )
-        vm.updateSettings(newSettings)
+        vm.updateSettings { latest ->
+            latest.copy(providers = latest.providers.filter { it.id != internalProvider.id })
+        }
         onDismiss()
     }
 

@@ -147,20 +147,20 @@ fun SettingMediaPage(vm: SettingVM = koinViewModel()) {
             initial = provider,
             confirmText = stringResource(R.string.common_confirm_action),
             onConfirm = { edited ->
-                vm.updateSettings(
-                    settings.copy(
-                        mediaGenerationProviders = settings.mediaGenerationProviders.map {
+                vm.updateSettings { latest ->
+                    latest.copy(
+                        mediaGenerationProviders = latest.mediaGenerationProviders.map {
                             if (it.id == provider.id) edited else it
                         }
                     )
-                )
+                }
             },
             onDelete = {
-                vm.updateSettings(
-                    settings.copy(
-                        mediaGenerationProviders = settings.mediaGenerationProviders.filter { it.id != provider.id }
+                vm.updateSettings { latest ->
+                    latest.copy(
+                        mediaGenerationProviders = latest.mediaGenerationProviders.filter { it.id != provider.id }
                     )
-                )
+                }
                 editingProvider = null
             },
             onDismiss = { editingProvider = null }
@@ -173,9 +173,9 @@ fun SettingMediaPage(vm: SettingVM = koinViewModel()) {
             initial = provider,
             confirmText = stringResource(R.string.common_add),
             onConfirm = { added ->
-                vm.updateSettings(
-                    settings.copy(mediaGenerationProviders = listOf(added) + settings.mediaGenerationProviders)
-                )
+                vm.updateSettings {
+                    it.copy(mediaGenerationProviders = listOf(added) + it.mediaGenerationProviders)
+                }
             },
             onDismiss = { addingProvider = null }
         )
@@ -185,7 +185,7 @@ fun SettingMediaPage(vm: SettingVM = koinViewModel()) {
 @Composable
 private fun MediaProviderList(
     settings: Settings,
-    onUpdateSettings: (Settings) -> Unit,
+    onUpdateSettings: ((Settings) -> Settings) -> Unit,
     onEdit: (MediaGenerationProviderSetting) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -194,7 +194,7 @@ private fun MediaProviderList(
         val newProviders = settings.mediaGenerationProviders.toMutableList().apply {
             add(to.index, removeAt(from.index))
         }
-        onUpdateSettings(settings.copy(mediaGenerationProviders = newProviders))
+        onUpdateSettings { it.copy(mediaGenerationProviders = newProviders) }
     }
 
     if (settings.mediaGenerationProviders.isEmpty()) {
@@ -406,7 +406,7 @@ private fun MediaProviderSheet(
 @Composable
 private fun MediaUploadS3Tab(
     settings: Settings,
-    onUpdateSettings: (Settings) -> Unit,
+    onUpdateSettings: ((Settings) -> Settings) -> Unit,
     modifier: Modifier = Modifier,
     remoteFileStore: RemoteFileStore = koinInject(),
 ) {
@@ -441,7 +441,7 @@ private fun MediaUploadS3Tab(
                     config = config,
                     onUpdate = {
                         config = it
-                        onUpdateSettings(settings.copy(uploadS3Config = it))
+                        onUpdateSettings { latest -> latest.copy(uploadS3Config = it) }
                     }
                 )
             }

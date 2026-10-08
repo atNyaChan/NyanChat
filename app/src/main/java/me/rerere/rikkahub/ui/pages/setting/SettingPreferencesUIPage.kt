@@ -74,6 +74,7 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.ChatFontFamily
 import me.rerere.rikkahub.data.datastore.BackgroundEffectType
 import me.rerere.rikkahub.data.datastore.DisplaySetting
+import me.rerere.rikkahub.data.datastore.filterHeaderValueChars
 import me.rerere.rikkahub.data.datastore.ScreenCornerAdaptation
 import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.files.FileUtils
@@ -169,7 +170,7 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
 
     fun updateDisplaySetting(setting: DisplaySetting) {
         displaySetting = setting
-        vm.updateSettings(settings.copy(displaySetting = setting))
+        vm.updateSettings { it.copy(displaySetting = setting) }
     }
 
     val networkSetting = settings.networkSetting
@@ -196,24 +197,26 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
     val proxyUrlInvalid = proxyUrlDraft.isNotBlank() && proxyUrlDraft.toProxyOrNull() == null
 
     fun updateUserAgent(value: String) {
-        userAgent = value
-        vm.updateSettings(
-            settings.copy(
-                networkSetting = networkSetting.copy(userAgent = value),
+        // User-Agent 只能是 OkHttp 允许的 ASCII 字符，输入框里直接过滤，不让非法字符落进设置
+        val filtered = value.filterHeaderValueChars()
+        userAgent = filtered
+        vm.updateSettings {
+            it.copy(
+                networkSetting = it.networkSetting.copy(userAgent = filtered),
             )
-        )
+        }
     }
 
     fun saveProxy() {
-        vm.updateSettings(
-            settings.copy(
-                networkSetting = networkSetting.copy(
+        vm.updateSettings {
+            it.copy(
+                networkSetting = it.networkSetting.copy(
                     proxyUrl = proxyUrlDraft,
                     proxyUsername = proxyUsernameDraft,
                     proxyPassword = proxyPasswordDraft,
                 ),
             )
-        )
+        }
         proxyUrl = proxyUrlDraft
         proxyUsername = proxyUsernameDraft
         proxyPassword = proxyPasswordDraft
@@ -741,13 +744,13 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                             Switch(
                                 checked = settings.networkSetting.enableAutoRetry,
                                 onCheckedChange = { enabled ->
-                                    vm.updateSettings(
-                                        settings.copy(
-                                            networkSetting = settings.networkSetting.copy(
+                                    vm.updateSettings {
+                                        it.copy(
+                                            networkSetting = it.networkSetting.copy(
                                                 enableAutoRetry = enabled,
                                             ),
                                         )
-                                    )
+                                    }
                                 },
                             )
                         },
@@ -765,6 +768,10 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                                         .fillMaxWidth(),
                                     placeholder = { Text(defaultUserAgent) },
                                     singleLine = true,
+                                    keyboardOptions = KeyboardOptions(
+                                        keyboardType = KeyboardType.Ascii,
+                                        autoCorrectEnabled = false,
+                                    ),
                                 )
                             }
                         },
@@ -1096,9 +1103,9 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                                             ttsPlaybackSpeedState.value = (it * 10).roundToInt() / 10f
                                         },
                                         onValueChangeFinished = {
-                                            vm.updateSettings(
-                                                settings.copy(defaultTTSPlaybackSpeed = ttsPlaybackSpeedState.value)
-                                            )
+                                            vm.updateSettings {
+                                                it.copy(defaultTTSPlaybackSpeed = ttsPlaybackSpeedState.value)
+                                            }
                                         },
                                         modifier = Modifier.weight(1f),
                                     )

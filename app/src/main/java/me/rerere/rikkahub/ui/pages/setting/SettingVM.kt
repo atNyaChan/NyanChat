@@ -21,9 +21,9 @@ class SettingVM(
     val settings: StateFlow<Settings> = settingsStore.settingsFlow
         .stateIn(viewModelScope, SharingStarted.Lazily, Settings(init = true, providers = emptyList()))
 
-    fun updateSettings(settings: Settings) {
+    fun updateSettings(fn: (Settings) -> Settings) {
         viewModelScope.launch {
-            settingsStore.update(settings)
+            settingsStore.update(fn)
         }
     }
 

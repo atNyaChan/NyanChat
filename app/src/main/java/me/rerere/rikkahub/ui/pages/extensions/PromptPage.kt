@@ -121,7 +121,7 @@ fun ModeInjectionPage(vm: PromptVM = koinViewModel()) {
         ) {
             ModeInjectionTab(
                 modeInjections = settings.modeInjections,
-                onUpdate = { vm.updateSettings(settings.copy(modeInjections = it)) },
+                onUpdate = { vm.updateSettings { latest -> latest.copy(modeInjections = it) } },
             )
         }
     }
@@ -151,7 +151,7 @@ fun LorebookPage(vm: PromptVM = koinViewModel()) {
         ) {
             LorebookTab(
                 lorebooks = settings.lorebooks,
-                onUpdate = { vm.updateSettings(settings.copy(lorebooks = it)) },
+                onUpdate = { vm.updateSettings { latest -> latest.copy(lorebooks = it) } },
             )
         }
     }

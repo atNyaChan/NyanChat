@@ -25,20 +25,15 @@ class AssistantVM(
     val settings: StateFlow<Settings> = settingsStore.settingsFlow
         .stateIn(viewModelScope, SharingStarted.Eagerly, Settings.dummy())
 
-    fun updateSettings(settings: Settings) {
+    fun updateSettings(fn: (Settings) -> Settings) {
         viewModelScope.launch {
-            settingsStore.update(settings)
+            settingsStore.update(fn)
         }
     }
 
     fun addAssistant(assistant: Assistant) {
         viewModelScope.launch {
-            val settings = settings.value
-            settingsStore.update(
-                settings.copy(
-                    assistants = settings.assistants.plus(assistant)
-                )
-            )
+            settingsStore.update { it.copy(assistants = it.assistants.plus(assistant)) }
         }
     }
 
@@ -49,22 +44,20 @@ class AssistantVM(
         viewModelScope.launch {
             cleanupAssistantFiles(assistant)
 
-            val settings = settings.value
-            val remainingAssistants = settings.assistants.filter { it.id != assistant.id }
-            val fallbackAssistant = if (settings.assistantId == assistant.id) {
-                remainingAssistants.firstOrNull()
-            } else {
-                null
-            }
-            settingsStore.update(
+            var fallbackAssistantId: Uuid? = null
+            settingsStore.update { settings ->
+                val remainingAssistants = settings.assistants.filter { it.id != assistant.id }
+                if (settings.assistantId == assistant.id) {
+                    fallbackAssistantId = remainingAssistants.firstOrNull()?.id
+                }
                 settings.copy(
                     assistants = remainingAssistants,
-                    assistantId = fallbackAssistant?.id ?: settings.assistantId,
+                    assistantId = fallbackAssistantId ?: settings.assistantId,
                 )
-            )
+            }
             memoryRepository.deleteMemoriesOfAssistant(assistant.id.toString())
             conversationRepo.deleteConversationOfAssistant(assistant.id)
-            val fallbackChatId = fallbackAssistant?.let { Uuid.random() }
+            val fallbackChatId = fallbackAssistantId?.let { Uuid.random() }
             onRemoved(fallbackChatId)
         }
     }

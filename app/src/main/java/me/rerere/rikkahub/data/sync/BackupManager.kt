@@ -59,7 +59,7 @@ class BackupManager(
         val archive = File(context.cacheDir, "NyanChatBackup-$timestamp${BackupArchive.EXTENSION}")
         val staging = Files.createTempDirectory(context.cacheDir.toPath(), "backup-").toFile()
         try {
-            val settings = settingsStore.settingsFlowRaw.first()
+            val settings = settingsStore.awaitLoaded()
             TarArchiveOutputStream(FileOutputStream(archive).buffered()).use { tar ->
                 tar.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX)
                 val settingsJson = json.encodeSettings(settings, settingsStore.launchCountFlow.first())

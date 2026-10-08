@@ -122,32 +122,35 @@ fun SettingMcpPage(vm: SettingVM = koinViewModel()) {
     val settings by vm.settings.collectAsStateWithLifecycle()
     val mcpConfigs = settings.mcpServers
     val creationState = useEditState<McpServerConfig> {
-        vm.updateSettings(
-            settings.copy(
-                mcpServers = mcpConfigs + it
+        vm.updateSettings { latest ->
+            latest.copy(
+                mcpServers = latest.mcpServers + it
             )
-        )
+        }
     }
     val editState = useEditState<McpServerConfig> { newConfig ->
-        vm.updateSettings(
-            settings.copy(
-                mcpServers = mcpConfigs.map {
+        vm.updateSettings { latest ->
+            latest.copy(
+                mcpServers = latest.mcpServers.map {
                     if (it.id == newConfig.id) {
                         newConfig
                     } else {
                         it
                     }
                 }
-            ))
+            )
+        }
     }
     var showImportDialog by remember { mutableStateOf(false) }
     val lazyListState = rememberLazyListState()
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
-        vm.updateSettings(settings.copy(
-            mcpServers = mcpConfigs.toMutableList().apply {
-                add(to.index, removeAt(from.index))
-            }
-        ))
+        vm.updateSettings {
+            it.copy(
+                mcpServers = it.mcpServers.toMutableList().apply {
+                    add(to.index, removeAt(from.index))
+                }
+            )
+        }
     }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
@@ -244,9 +247,9 @@ fun SettingMcpPage(vm: SettingVM = koinViewModel()) {
     McpServerConfigModal(
         state = editState,
         onDelete = { config ->
-            vm.updateSettings(
-                settings.copy(mcpServers = mcpConfigs.filter { it.id != config.id })
-            )
+            vm.updateSettings { latest ->
+                latest.copy(mcpServers = latest.mcpServers.filter { it.id != config.id })
+            }
             editState.dismiss()
         },
     )
@@ -256,7 +259,7 @@ fun SettingMcpPage(vm: SettingVM = koinViewModel()) {
             onImport = { newConfigs ->
                 val existingIds = mcpConfigs.map { it.commonOptions.name }.toSet()
                 val toAdd = newConfigs.filter { it.commonOptions.name.isNotBlank() && it.commonOptions.name !in existingIds }
-                vm.updateSettings(settings.copy(mcpServers = mcpConfigs + toAdd))
+                vm.updateSettings { it.copy(mcpServers = it.mcpServers + toAdd) }
                 showImportDialog = false
             }
         )
