@@ -1,4 +1,4 @@
-package me.rerere.rikkahub.ui.components.ui
+package me.rerere.ui.components
 
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat

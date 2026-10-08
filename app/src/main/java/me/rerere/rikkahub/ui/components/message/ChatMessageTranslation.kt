@@ -45,7 +45,7 @@ import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.LanguageCircle
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
-import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
+import me.rerere.ui.components.RikkaConfirmDialog
 import java.util.Locale
 import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 

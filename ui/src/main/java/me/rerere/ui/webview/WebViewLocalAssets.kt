@@ -1,4 +1,4 @@
-package me.rerere.rikkahub.ui.components.webview
+package me.rerere.ui.webview
 
 import android.content.Context
 import android.net.Uri

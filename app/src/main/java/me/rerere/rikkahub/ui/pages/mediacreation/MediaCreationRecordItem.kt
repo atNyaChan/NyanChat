@@ -79,8 +79,8 @@ import me.rerere.rikkahub.data.model.MediaCreationRecord
 import me.rerere.rikkahub.data.model.MediaCreationStatus
 import me.rerere.rikkahub.ui.components.ui.ImagePreviewDialog
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
-import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
-import me.rerere.rikkahub.ui.components.ui.Tooltip
+import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.ui.components.Tooltip
 import me.rerere.rikkahub.ui.components.ui.VideoPlayerDialog
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.utils.toMessageTimeString

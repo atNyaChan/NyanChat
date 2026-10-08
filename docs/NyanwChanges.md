@@ -583,6 +583,7 @@
 - 将仅用于提示框确认已知信息的通用 `OK` 资源命名为 `common_ok`，与确认执行操作的 `common_confirm_action` 明确区分。
 - 全部通过 `LocalToaster` 触发的错误提示统一改为可滚动、可选择并可一键复制全文的弹窗；成功、警告及普通短提示统一改用 Android 系统 Toast，不再渲染应用顶部的彩色自定义浮层。打开链接、写入剪贴板和聊天图片导出等原本直接使用错误 Toast 的路径也接入该弹窗。
 - SAF 文档提供器顶层改为 `data` 与 `workspaces`，分别暴露应用数据目录及按工作区组织的文件。
+- 通用 UI 组件下沉到 ui 模块时，仅迁移真正不依赖 app 主题/上下文的组件。`Form`、`Select`、`DiffView`、`DataTable` 以及依赖 `DataTable` 的 `charts` 因依赖 app 的 `CustomColors`/`rememberScreenEdgeCornerShape`/`LocalSettings`/`codeFontFeatureSettings` 等，仍保留在 app 模块（与上游全量下沉不同）。
 - 整个项目、Gradle Daemon toolchain、CI 与本地构建文档统一使用 JDK 21；各 Android 模块的 Java source/target compatibility 也统一为 21。
 - 统一 compileSdk/targetSdk 至 37，并在根构建脚本为所有 Android 模块显式固定 Build-Tools 为 37.0.0，避免 AGP 按需下载默认的 Build-Tools 36。
 - 所有 Android 模块统一使用 `compileSdk { version = release(37) { minorApiLevel = 2 } }`（即 Android SDK Platform 37.2）。

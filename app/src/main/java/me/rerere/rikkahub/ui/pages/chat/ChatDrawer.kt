@@ -80,7 +80,7 @@ import me.rerere.rikkahub.ui.components.ai.AssistantPicker
 import me.rerere.rikkahub.ui.components.hazeBackgroundEffect
 import me.rerere.rikkahub.ui.components.ui.BackupReminderCard
 import me.rerere.rikkahub.ui.components.ui.Greeting
-import me.rerere.rikkahub.ui.components.ui.Tooltip
+import me.rerere.ui.components.Tooltip
 import me.rerere.rikkahub.ui.components.ui.UIAvatar
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color

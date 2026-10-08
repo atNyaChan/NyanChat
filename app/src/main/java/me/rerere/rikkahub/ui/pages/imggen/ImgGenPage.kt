@@ -100,6 +100,7 @@ import me.rerere.hugeicons.stroke.FloppyDisk
 import me.rerere.hugeicons.stroke.Image03
 import me.rerere.hugeicons.stroke.Tools
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.files.FileUtils
 import me.rerere.rikkahub.data.files.FilesManager
@@ -108,7 +109,8 @@ import me.rerere.rikkahub.ui.components.ui.AppLoadingIndicator
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.FormItem
 import me.rerere.rikkahub.ui.components.ui.ImagePreviewDialog
-import me.rerere.rikkahub.ui.components.ui.OutlinedNumberInput
+import me.rerere.ui.components.OutlinedNumberInput
+import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
@@ -126,6 +128,7 @@ fun ImageGenPage(
 ) {
     val pagerState = rememberPagerState { 2 }
     val scope = rememberCoroutineScope()
+    val navController = LocalNavController.current
 
     val isGenerating by vm.isGenerating.collectAsStateWithLifecycle()
     var showCancelDialog by remember { mutableStateOf(false) }
@@ -167,15 +170,34 @@ fun ImageGenPage(
         },
         containerColor = CustomColors.topBarColors.containerColor,
     ) { innerPadding ->
-        HorizontalPager(
-            state = pagerState,
+        Column(
             modifier = modifier
                 .padding(innerPadding)
                 .consumeWindowInsets(innerPadding)
-        ) { page ->
-            when (page) {
-                0 -> ImageGenScreen(vm = vm)
-                1 -> ImageGalleryScreen(vm = vm, isActive = pagerState.currentPage == 1)
+        ) {
+            Text(
+                text = stringResource(
+                    R.string.imggen_page_deprecated_warning,
+                    stringResource(R.string.media_creation_title)
+                ),
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.labelMedium,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        navController.navigate(Screen.MediaCreationSessions) { launchSingleTop = true }
+                    }
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+            )
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.weight(1f)
+            ) { page ->
+                when (page) {
+                    0 -> ImageGenScreen(vm = vm)
+                    1 -> ImageGalleryScreen(vm = vm, isActive = pagerState.currentPage == 1)
+                }
             }
         }
     }

@@ -1626,5 +1626,6 @@
   <string name="media_creation_page_files_unreadable">%1$d 件のファイルを読み込めませんでした</string>
   <string name="sketch">スケッチ</string>
   <string name="sketch_draw_on_image">画像に描画</string>
+  <string name="imggen_page_deprecated_warning">この機能は非推奨であり、将来のバージョンで削除される予定です。代わりに %1$s を使用してください</string>
 </resources>
 

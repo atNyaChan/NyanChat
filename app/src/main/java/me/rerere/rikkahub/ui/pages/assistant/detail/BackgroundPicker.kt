@@ -28,7 +28,7 @@ import coil3.compose.AsyncImage
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.ui.components.ui.CardGroup
-import me.rerere.rikkahub.ui.components.ui.RikkaConfirmDialog
+import me.rerere.ui.components.RikkaConfirmDialog
 import org.koin.compose.koinInject
 
 @Composable

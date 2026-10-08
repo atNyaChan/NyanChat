@@ -1,10 +1,10 @@
-package me.rerere.rikkahub.ui.components.webview
+package me.rerere.ui.webview
 
 import java.io.File
 import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 
-internal object WebViewContentCache {
+object WebViewContentCache {
     private const val DIRECTORY_NAME = "webview_content"
     private const val HASH_LENGTH = 64
     private val maxAgeMillis = TimeUnit.DAYS.toMillis(7)

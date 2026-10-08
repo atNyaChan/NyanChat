@@ -1626,5 +1626,6 @@
   <string name="media_creation_page_files_unreadable">تعذّرت قراءة %1$d من الملفات</string>
   <string name="sketch">رسم</string>
   <string name="sketch_draw_on_image">ارسم على الصورة</string>
+  <string name="imggen_page_deprecated_warning">هذه الميزة مهملة وستُزال في إصدار مستقبلي. استخدم %1$s بدلاً من ذلك</string>
 </resources>
 

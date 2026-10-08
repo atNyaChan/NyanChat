@@ -1626,5 +1626,6 @@
   <string name="media_creation_page_files_unreadable">%1$d 個檔案無法讀取</string>
   <string name="sketch">草圖</string>
   <string name="sketch_draw_on_image">在圖片上繪圖</string>
+  <string name="imggen_page_deprecated_warning">此功能已棄用，將在未來版本中移除。請改用 %1$s</string>
 </resources>
 

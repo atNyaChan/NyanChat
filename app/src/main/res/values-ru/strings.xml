@@ -1626,5 +1626,6 @@
   <string name="media_creation_page_files_unreadable">Не удалось прочитать файлов: %1$d</string>
   <string name="sketch">Эскиз</string>
   <string name="sketch_draw_on_image">Рисовать на изображении</string>
+  <string name="imggen_page_deprecated_warning">Эта функция устарела и будет удалена в будущей версии. Вместо неё используйте %1$s</string>
 </resources>
 

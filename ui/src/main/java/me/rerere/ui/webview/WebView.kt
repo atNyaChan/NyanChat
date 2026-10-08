@@ -1,4 +1,4 @@
-package me.rerere.rikkahub.ui.components.webview
+package me.rerere.ui.webview
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
@@ -263,7 +263,8 @@ class WebViewState(
     // --- WebView Instance ---
     // Hold the WebView instance internally to perform actions.
     // Be cautious with this reference, ensure it doesn't leak context.
-    internal var webView: WebView? by mutableStateOf(null)
+    var webView: WebView? by mutableStateOf(null)
+        internal set
 
     // --- Public Actions ---
 

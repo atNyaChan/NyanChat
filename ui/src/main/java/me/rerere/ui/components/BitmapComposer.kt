@@ -1,4 +1,4 @@
-package me.rerere.rikkahub.ui.components.ui
+package me.rerere.ui.components
 
 import android.app.Activity
 import android.graphics.Bitmap
