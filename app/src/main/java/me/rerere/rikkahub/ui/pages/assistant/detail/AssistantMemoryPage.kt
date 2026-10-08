@@ -1,7 +1,6 @@
 package me.rerere.rikkahub.ui.pages.assistant.detail
 
 import me.rerere.hugeicons.HugeIcons
-import me.rerere.hugeicons.stroke.PencilEdit01
 import me.rerere.hugeicons.stroke.Add01
 import me.rerere.hugeicons.stroke.Delete01
 import androidx.compose.foundation.layout.Arrangement
@@ -320,6 +319,7 @@ private fun MemoryItem(
     onDeleteMemory: (AssistantMemory) -> Unit
 ) {
     Card(
+        onClick = { onEditMemory(memory) },
         modifier = Modifier.fillMaxWidth(),
         colors = CustomColors.cardColorsOnSurfaceContainer
     ) {
@@ -344,11 +344,6 @@ private fun MemoryItem(
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.bodySmall,
                 )
-            }
-            IconButton(
-                onClick = { onEditMemory(memory) }
-            ) {
-                Icon(HugeIcons.PencilEdit01, null)
             }
             IconButton(
                 onClick = { onDeleteMemory(memory) }

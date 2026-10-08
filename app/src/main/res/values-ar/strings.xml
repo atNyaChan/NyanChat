@@ -37,7 +37,6 @@
   <string name="assistant_page_available_variables">\"المتغيرات المتاحة: \"</string>
   <string name="assistant_page_background_opacity">عتامة الخلفية</string>
   <string name="assistant_page_background_opacity_desc">اضبط ظهور صورة خلفية الدردشة</string>
-  <string name="assistant_page_background_set">تم تعيين صورة الخلفية</string>
   <string name="assistant_page_body_key">مفتاح Body</string>
   <string name="assistant_page_body_value">قيمة Body (JSON)</string>
   <string name="assistant_page_change_background">تغيير صورة الخلفية</string>

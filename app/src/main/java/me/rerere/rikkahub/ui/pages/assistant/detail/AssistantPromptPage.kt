@@ -4,6 +4,7 @@ import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Add01
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.Refresh03
+import me.rerere.hugeicons.stroke.Tick01
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -23,8 +25,9 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
@@ -34,7 +37,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -337,7 +339,7 @@ private fun AssistantPromptContent(
                 )
                 Column(
                     modifier = Modifier
-                        .clip(MaterialTheme.shapes.small)
+                        .clip(MaterialTheme.shapes.large)
                         .background(MaterialTheme.colorScheme.background)
                         .padding(8.dp)
                         .fillMaxWidth()
@@ -627,13 +629,17 @@ private fun AssistantRegexCard(
     var expanded by remember(regex.id) {
         mutableStateOf(initiallyExpanded)
     }
-    ElevatedCard(
+    Card(
         onClick = { expanded = !expanded },
         modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.extraSmall,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
     ) {
         Column(
             modifier = Modifier
-                .padding(12.dp)
+                .padding(start = 12.dp, top = 12.dp, end = 12.dp, bottom = 8.dp)
                 .animateContentSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -647,6 +653,13 @@ private fun AssistantRegexCard(
                         .widthIn(max = 200.dp)
                         .padding(start = 8.dp),
                 )
+                IconButton(onClick = onRequestDelete) {
+                    Icon(
+                        imageVector = HugeIcons.Delete01,
+                        contentDescription = stringResource(R.string.common_delete),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
                 Switch(
                     checked = regex.enabled,
                     onCheckedChange = { enabled ->
@@ -725,54 +738,16 @@ private fun AssistantRegexCard(
                     placeholder = { Text("e.g., [EMAIL]") }
                 )
 
-                Column {
-                    Text(
-                        text = stringResource(R.string.assistant_page_regex_affecting_scopes),
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        AssistantAffectScope.entries.forEach { scope ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Checkbox(
-                                    checked = scope in regex.affectingScope,
-                                    onCheckedChange = { checked ->
-                                        val newScopes = if (checked) {
-                                            regex.affectingScope + scope
-                                        } else {
-                                            regex.affectingScope - scope
-                                        }
-                                        onUpdate(
-                                            assistant.copy(
-                                                regexes = assistant.regexes.mapIndexed { i, reg ->
-                                                    if (i == index) {
-                                                        reg.copy(affectingScope = newScopes)
-                                                    } else {
-                                                        reg
-                                                    }
-                                                }
-                                            )
-                                        )
-                                    }
-                                )
-                                Text(
-                                    text = scope.name.lowercase().replaceFirstChar { it.uppercase() },
-                                    style = MaterialTheme.typography.labelMedium
-                                )
-                            }
-                        }
-                    }
-                }
-
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Checkbox(
+                    Text(
+                        text = stringResource(R.string.assistant_page_regex_visual_only),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Switch(
                         checked = regex.visualOnly,
                         onCheckedChange = { visualOnly ->
                             onUpdate(
@@ -788,19 +763,52 @@ private fun AssistantRegexCard(
                             )
                         }
                     )
-                    Text(
-                        text = stringResource(R.string.assistant_page_regex_visual_only),
-                        style = MaterialTheme.typography.labelMedium
-                    )
                 }
 
-                TextButton(onClick = onRequestDelete) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        Icon(HugeIcons.Delete01, null)
-                        Text(stringResource(R.string.common_delete))
+                Text(
+                    text = stringResource(R.string.assistant_page_regex_affecting_scopes),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    AssistantAffectScope.entries.forEach { scope ->
+                        val selected = scope in regex.affectingScope
+                        FilterChip(
+                            selected = selected,
+                            onClick = {
+                                val newScopes = if (selected) {
+                                    regex.affectingScope - scope
+                                } else {
+                                    regex.affectingScope + scope
+                                }
+                                onUpdate(
+                                    assistant.copy(
+                                        regexes = assistant.regexes.mapIndexed { i, reg ->
+                                            if (i == index) {
+                                                reg.copy(affectingScope = newScopes)
+                                            } else {
+                                                reg
+                                            }
+                                        }
+                                    )
+                                )
+                            },
+                            label = {
+                                Text(scope.name.lowercase().replaceFirstChar { it.uppercase() })
+                            },
+                            leadingIcon = if (selected) {
+                                {
+                                    Icon(
+                                        imageVector = HugeIcons.Tick01,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(FilterChipDefaults.IconSize),
+                                    )
+                                }
+                            } else null,
+                        )
                     }
                 }
             }

@@ -275,7 +275,7 @@ fun SettingProviderDetailSheet(
 
                 item {
                     Text(
-                        text = stringResource(R.string.setting_provider_page_advanced_settings),
+                        text = stringResource(R.string.assistant_page_custom_headers),
                         style = MaterialTheme.typography.titleSmall,
                     )
                 }

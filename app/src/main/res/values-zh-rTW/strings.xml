@@ -37,7 +37,6 @@
   <string name="assistant_page_available_variables">"可用變數: "</string>
   <string name="assistant_page_background_opacity">背景透明度</string>
   <string name="assistant_page_background_opacity_desc">調整聊天背景圖片顯示透明度</string>
-  <string name="assistant_page_background_set">已設定背景圖片</string>
   <string name="assistant_page_body_key">Body Key</string>
   <string name="assistant_page_body_value">Body 值 (JSON)</string>
   <string name="assistant_page_change_background">更換背景圖片</string>

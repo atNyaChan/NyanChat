@@ -37,7 +37,6 @@
   <string name="assistant_page_available_variables">Доступные переменные:</string>
   <string name="assistant_page_background_opacity">Прозрачность фона</string>
   <string name="assistant_page_background_opacity_desc">Настройте видимость фонового изображения чата</string>
-  <string name="assistant_page_background_set">Фоновое изображение установлено</string>
   <string name="assistant_page_body_key">Ключ тела</string>
   <string name="assistant_page_body_value">Значение тела (JSON)</string>
   <string name="assistant_page_change_background">Изменить фоновое изображение</string>

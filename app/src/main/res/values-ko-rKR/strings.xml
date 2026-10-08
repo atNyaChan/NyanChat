@@ -37,7 +37,6 @@
   <string name="assistant_page_available_variables">사용 가능한 변수: </string>
   <string name="assistant_page_background_opacity">배경 투명도</string>
   <string name="assistant_page_background_opacity_desc">채팅 배경 이미지의 표시 투명도를 조절합니다</string>
-  <string name="assistant_page_background_set">배경 이미지 설정됨</string>
   <string name="assistant_page_body_key">본문 키</string>
   <string name="assistant_page_body_value">본문 값 (JSON)</string>
   <string name="assistant_page_change_background">배경 이미지 변경</string>

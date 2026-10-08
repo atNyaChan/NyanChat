@@ -10,8 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -20,12 +20,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dokar.sonner.ToastType
+import me.rerere.hugeicons.HugeIcons
+import me.rerere.hugeicons.stroke.BatteryFull
+import me.rerere.hugeicons.stroke.Calendar03
+import me.rerere.hugeicons.stroke.ChartLineData01
+import me.rerere.hugeicons.stroke.ClipboardPaste
+import me.rerere.hugeicons.stroke.Clock01
+import me.rerere.hugeicons.stroke.JavaScript
+import me.rerere.hugeicons.stroke.Location01
+import me.rerere.hugeicons.stroke.MessageQuestion
+import me.rerere.hugeicons.stroke.SmartPhone01
+import me.rerere.hugeicons.stroke.VolumeHigh
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.ai.tools.local.LocalToolOption
 import me.rerere.rikkahub.data.datastore.Settings
@@ -37,11 +49,13 @@ import me.rerere.rikkahub.ui.components.ai.SearchPickerSheet
 import me.rerere.rikkahub.ui.components.ai.SearchMode
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
 import me.rerere.rikkahub.ui.components.ui.CardGroupScope
 import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionInfo
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionManager
 import me.rerere.rikkahub.ui.components.ui.permission.rememberPermissionState
+import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.hasUsageStatsPermission
@@ -217,26 +231,55 @@ private fun AssistantLocalToolContent(
             .imePadding(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        fun CardGroupScope.toolItem(option: LocalToolOption, title: Int, description: Int) {
-            item(
-                headlineContent = { Text(stringResource(title)) },
-                supportingContent = { Text(stringResource(description)) },
-                trailingContent = {
-                    Switch(
-                        checked = assistant.localTools.contains(option),
-                        onCheckedChange = { toggleLocalTool(option, it) },
+        fun CardGroupScope.toolItem(option: LocalToolOption, icon: ImageVector, title: Int, description: Int) {
+            val checked = assistant.localTools.contains(option)
+            switchItem(
+                checked = checked,
+                onCheckedChange = { toggleLocalTool(option, it) },
+                // 图标底色跟着开关状态变化
+                leadingContent = {
+                    CardGroupIcon(
+                        icon = icon,
+                        containerColor = if (checked) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.surfaceContainerHigh
+                        },
+                        contentColor = if (checked) {
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
                     )
                 },
+                supportingContent = { Text(stringResource(description)) },
+                headlineContent = { Text(stringResource(title)) },
             )
         }
 
-        fun CardGroupScope.authorizedToolItem(option: LocalToolOption, title: Int, description: Int) {
+        fun CardGroupScope.authorizedToolItem(option: LocalToolOption, icon: ImageVector, title: Int, description: Int) {
             val mode = when {
                 option !in assistant.localTools -> LocalToolAuthorizationMode.DENIED
                 option in assistant.manualAuthorizationTools -> LocalToolAuthorizationMode.MANUAL
                 else -> LocalToolAuthorizationMode.ALWAYS
             }
+            val checked = option in assistant.localTools
             item(
+                leadingContent = {
+                    CardGroupIcon(
+                        icon = icon,
+                        containerColor = if (checked) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.surfaceContainerHigh
+                        },
+                        contentColor = if (checked) {
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                    )
+                },
                 headlineContent = { Text(stringResource(title)) },
                 supportingContent = { Text(stringResource(description)) },
                 trailingContent = {
@@ -265,26 +308,31 @@ private fun AssistantLocalToolContent(
         CardGroup {
             toolItem(
                 LocalToolOption.TimeInfo,
+                HugeIcons.Clock01,
                 R.string.assistant_page_local_tools_time_info_title,
                 R.string.assistant_page_local_tools_time_info_desc,
             )
             toolItem(
                 LocalToolOption.AskUser,
+                HugeIcons.MessageQuestion,
                 R.string.assistant_page_local_tools_ask_user_title,
                 R.string.assistant_page_local_tools_ask_user_desc,
             )
             toolItem(
                 LocalToolOption.Tts,
+                HugeIcons.VolumeHigh,
                 R.string.assistant_page_local_tools_tts_title,
                 R.string.assistant_page_local_tools_tts_desc,
             )
             toolItem(
                 LocalToolOption.JavascriptEngine,
+                HugeIcons.JavaScript,
                 R.string.assistant_page_local_tools_javascript_engine_title,
                 R.string.assistant_page_local_tools_javascript_engine_desc,
             )
             toolItem(
                 LocalToolOption.ChartDisplay,
+                HugeIcons.ChartLineData01,
                 R.string.assistant_page_local_tools_chart_display_title,
                 R.string.assistant_page_local_tools_chart_display_desc,
             )
@@ -327,26 +375,31 @@ private fun AssistantLocalToolContent(
         CardGroup {
             authorizedToolItem(
                 LocalToolOption.Clipboard,
+                HugeIcons.ClipboardPaste,
                 R.string.assistant_page_local_tools_clipboard_title,
                 R.string.assistant_page_local_tools_clipboard_desc,
             )
             authorizedToolItem(
                 LocalToolOption.Battery,
+                HugeIcons.BatteryFull,
                 R.string.assistant_page_local_tools_battery_title,
                 R.string.assistant_page_local_tools_battery_desc,
             )
             authorizedToolItem(
                 LocalToolOption.Location,
+                HugeIcons.Location01,
                 R.string.assistant_page_local_tools_location_title,
                 R.string.assistant_page_local_tools_location_desc,
             )
             authorizedToolItem(
                 LocalToolOption.ScreenTime,
+                HugeIcons.SmartPhone01,
                 R.string.assistant_page_local_tools_screen_time_title,
                 R.string.assistant_page_local_tools_screen_time_desc,
             )
             authorizedToolItem(
                 LocalToolOption.Calendar,
+                HugeIcons.Calendar03,
                 R.string.assistant_page_local_tools_calendar_title,
                 R.string.assistant_page_local_tools_calendar_desc,
             )

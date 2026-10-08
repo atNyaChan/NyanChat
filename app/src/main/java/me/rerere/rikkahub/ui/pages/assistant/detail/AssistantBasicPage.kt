@@ -626,6 +626,8 @@ internal fun AssistantBasicContent(
                     }
                 )
             }
+        }
+        CardGroup {
             FormItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = { Text(stringResource(R.string.assistant_page_custom_headers)) },

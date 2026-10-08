@@ -37,7 +37,6 @@
   <string name="assistant_page_available_variables">"Available variables: "</string>
   <string name="assistant_page_background_opacity">Background Opacity</string>
   <string name="assistant_page_background_opacity_desc">Adjust chat background image visibility</string>
-  <string name="assistant_page_background_set">Background image set</string>
   <string name="assistant_page_body_key">Body Key</string>
   <string name="assistant_page_body_value">Body Value (JSON)</string>
   <string name="assistant_page_change_background">Change Background Image</string>

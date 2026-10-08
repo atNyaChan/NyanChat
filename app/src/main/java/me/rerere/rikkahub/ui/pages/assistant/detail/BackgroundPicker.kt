@@ -6,10 +6,15 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -22,9 +27,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import me.rerere.hugeicons.HugeIcons
+import me.rerere.hugeicons.stroke.Image02
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.ui.components.RikkaConfirmDialog
@@ -55,49 +63,54 @@ fun BackgroundPickerContent(
 
     val previewOpacity = backgroundOpacity.coerceIn(0f, 1f)
 
-    Button(
-        onClick = {
-            showPickOption = true
-        },
-        modifier = Modifier.fillMaxWidth()
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text(
-            text = if (background != null) {
-                stringResource(R.string.assistant_page_change_background)
-            } else {
-                stringResource(R.string.assistant_page_select_background)
-            }
-        )
-    }
+        if (background != null) {
+            AsyncImage(
+                model = background,
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.large)
+                    .alpha(previewOpacity)
+            )
+        }
 
-    if (background != null) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = stringResource(R.string.assistant_page_background_set),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.weight(1f)
-            )
-            TextButton(
+            FilledTonalButton(
                 onClick = {
-                    showDeleteConfirm = true
-                }
+                    showPickOption = true
+                },
             ) {
-                Text(stringResource(R.string.assistant_page_remove))
+                Icon(
+                    imageVector = HugeIcons.Image02,
+                    contentDescription = null,
+                    modifier = Modifier.size(ButtonDefaults.IconSize),
+                )
+                Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                Text(
+                    text = if (background != null) {
+                        stringResource(R.string.assistant_page_change_background)
+                    } else {
+                        stringResource(R.string.assistant_page_select_background)
+                    }
+                )
+            }
+            if (background != null) {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirm = true
+                    }
+                ) {
+                    Text(stringResource(R.string.assistant_page_remove))
+                }
             }
         }
-
-        AsyncImage(
-            model = background,
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .alpha(previewOpacity)
-        )
     }
 
     if (showPickOption) {
