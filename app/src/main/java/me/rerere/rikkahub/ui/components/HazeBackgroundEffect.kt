@@ -28,12 +28,12 @@ fun CornerBasedShape.toRoundedCornerShape(): RoundedCornerShape =
 
 @Composable
 fun Modifier.hazeBackgroundEffect(
-    effectType: BackgroundEffectType,
+    effectType: BackgroundEffectType?,
     hazeState: HazeState,
     tintColor: Color,
     shape: RoundedCornerShape,
 ): Modifier = when (effectType) {
-    BackgroundEffectType.OFF -> this
+    null -> this
     BackgroundEffectType.BLUR -> this.hazeBlur(
         input = HazeInput.Sources(hazeState),
         style = HazeBlurStyle.BlurMaterial3 { blurRadius(12.dp) },

@@ -887,7 +887,7 @@
   <string name="prompt_page_delete_lorebook_confirm">Удалить книгу знаний «%1$s»? Это действие нельзя отменить.</string>
   <string name="prompt_page_delete_unnamed_lorebook_confirm">Удалить эту книгу знаний? Это действие нельзя отменить.</string>
   <string name="setting_provider_page_delete_model_referenced_messages">%1$d сообщений</string>
-  <string name="setting_provider_page_delete_model_warning_suffix">\u0020потеряют записанное имя модели ответа. Рекомендуется\u0020</string>
+  <string name="setting_provider_page_delete_model_warning_suffix">\u0020заменят записанное имя модели ответа на ID модели или имя модели на момент создания ответа. Рекомендуется\u0020</string>
   <string name="setting_provider_page_delete_model_migrate_link">перенести ID модели</string>
   <string name="setting_provider_page_migrate_id">Перенести ID</string>
   <string name="setting_provider_page_migrate_id_desc">Изменить модель, записанную в существующих ответах этой модели, на другую модель</string>
@@ -1285,7 +1285,7 @@
   <string name="request_intercept_confirm">Отправить</string>
   <string name="log_page_preview_string">Предпросмотр строки</string>
   <string name="log_page_preview_markdown">Предпросмотр Markdown</string>
-  <string name="log_page_enable_markdown_rendering">Включить рендеринг Markdown</string>
+  <string name="log_page_enable_markdown_rendering">Рендеринг Markdown</string>
   <string name="backup_page_import_failed_detail">Ошибка импорта: %1$s</string>
   <string name="backup_page_export_failed_detail">Ошибка экспорта: %1$s</string>
   <string name="backup_page_rikkahub_format">Формат, подобный RikkaHub</string>
@@ -1305,8 +1305,8 @@
   <string name="chat_page_confirm_move">Переместить чаты</string>
   <string name="chat_page_confirm_move_desc">Подтвердить перемещение выбранных чатов (%1$d) в «%2$s»?</string>
   <string name="chat_page_confirm_single_move_desc">Переместить чат «%1$s» в «%2$s»?</string>
-  <string name="chat_page_folder_move_forward">Переместить вперёд</string>
-  <string name="chat_page_folder_move_backward">Переместить назад</string>
+  <string name="chat_page_move_forward">Переместить вперёд</string>
+  <string name="chat_page_move_backward">Переместить назад</string>
   <string name="chat_page_context_message_limit_current">Контекст сохраняет не более %1$d сообщений</string>
   <string name="chat_page_create_folder_in">Создать папку в «%1$s»</string>
   <string name="about_page_original_github">RikkaHub GitHub</string>

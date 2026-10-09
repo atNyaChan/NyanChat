@@ -887,7 +887,7 @@
   <string name="prompt_page_delete_lorebook_confirm">هل أنت متأكد من أنك تريد حذف كتاب المعرفة "%1$s"؟ لا يمكن التراجع عن هذا الإجراء.</string>
   <string name="prompt_page_delete_unnamed_lorebook_confirm">هل أنت متأكد من أنك تريد حذف كتاب المعرفة هذا؟ لا يمكن التراجع عن هذا الإجراء.</string>
   <string name="setting_provider_page_delete_model_referenced_messages">%1$d رسالة</string>
-  <string name="setting_provider_page_delete_model_warning_suffix">\u0020سيفقد اسم نموذج الردود المسجّل. فكّر في\u0020</string>
+  <string name="setting_provider_page_delete_model_warning_suffix">\u0020ستُستبدل أسماء نماذج الردود بمعرّف النموذج أو اسم النموذج عند إنشاء الرد. فكّر في\u0020</string>
   <string name="setting_provider_page_delete_model_migrate_link">ترحيل معرّف النموذج</string>
   <string name="setting_provider_page_migrate_id">ترحيل المعرّف</string>
   <string name="setting_provider_page_migrate_id_desc">تغيير النموذج المسجّل لردود المحادثة الحالية لهذا النموذج إلى نموذج آخر</string>
@@ -1285,7 +1285,7 @@
   <string name="request_intercept_confirm">إرسال</string>
   <string name="log_page_preview_string">معاينة النص</string>
   <string name="log_page_preview_markdown">معاينة Markdown</string>
-  <string name="log_page_enable_markdown_rendering">تفعيل عرض Markdown</string>
+  <string name="log_page_enable_markdown_rendering">عرض Markdown</string>
   <string name="backup_page_import_failed_detail">فشل الاستيراد: %1$s</string>
   <string name="backup_page_export_failed_detail">فشل التصدير: %1$s</string>
   <string name="backup_page_rikkahub_format">تنسيق شبيه بـ RikkaHub</string>
@@ -1305,8 +1305,8 @@
   <string name="chat_page_confirm_move">نقل المحادثات</string>
   <string name="chat_page_confirm_move_desc">تأكيد نقل المحادثات المحددة (%1$d) إلى "%2$s"؟</string>
   <string name="chat_page_confirm_single_move_desc">تأكيد نقل المحادثة "%1$s" إلى "%2$s"؟</string>
-  <string name="chat_page_folder_move_forward">نقل إلى الأمام</string>
-  <string name="chat_page_folder_move_backward">نقل إلى الخلف</string>
+  <string name="chat_page_move_forward">نقل إلى الأمام</string>
+  <string name="chat_page_move_backward">نقل إلى الخلف</string>
   <string name="chat_page_context_message_limit_current">يحتفظ السياق الحالي بـ %1$d رسالة كحد أقصى</string>
   <string name="chat_page_create_folder_in">إنشاء مجلد في "%1$s"</string>
   <string name="about_page_original_github">RikkaHub GitHub</string>

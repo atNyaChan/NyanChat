@@ -887,7 +887,7 @@
   <string name="prompt_page_delete_lorebook_confirm">Are you sure you want to delete lorebook “%1$s”? This action cannot be undone.</string>
   <string name="prompt_page_delete_unnamed_lorebook_confirm">Are you sure you want to delete this lorebook? This action cannot be undone.</string>
   <string name="setting_provider_page_delete_model_referenced_messages">%1$d messages</string>
-  <string name="setting_provider_page_delete_model_warning_suffix">\u0020will lose the recorded reply model name. Consider\u0020</string>
+  <string name="setting_provider_page_delete_model_warning_suffix">\u0020will have their reply model name replaced with the model ID or the model name from when the reply was generated. Consider\u0020</string>
   <string name="setting_provider_page_delete_model_migrate_link">migrating the model ID</string>
   <string name="setting_provider_page_migrate_id">Migrate ID</string>
   <string name="setting_provider_page_migrate_id_desc">Change the model recorded for this model\'s existing chat replies to another model</string>
@@ -1285,7 +1285,7 @@
   <string name="request_intercept_confirm">Send</string>
   <string name="log_page_preview_string">Preview String</string>
   <string name="log_page_preview_markdown">Preview Markdown</string>
-  <string name="log_page_enable_markdown_rendering">Enable Markdown Rendering</string>
+  <string name="log_page_enable_markdown_rendering">Markdown Rendering</string>
   <string name="backup_page_import_failed_detail">Import failed: %1$s</string>
   <string name="backup_page_export_failed_detail">Export failed: %1$s</string>
   <string name="backup_page_rikkahub_format">RikkaHub-like format</string>
@@ -1305,8 +1305,8 @@
   <string name="chat_page_confirm_move">Move chats</string>
   <string name="chat_page_confirm_move_desc">Confirm moving the %1$d selected chats to “%2$s”?</string>
   <string name="chat_page_confirm_single_move_desc">Confirm moving chat “%1$s” to “%2$s”?</string>
-  <string name="chat_page_folder_move_forward">Move Forward</string>
-  <string name="chat_page_folder_move_backward">Move Backward</string>
+  <string name="chat_page_move_forward">Move Forward</string>
+  <string name="chat_page_move_backward">Move Backward</string>
   <string name="chat_page_context_message_limit_current">Current context keeps at most %1$d messages</string>
   <string name="chat_page_create_folder_in">Create a folder in “%1$s”</string>
   <string name="about_page_original_github">RikkaHub GitHub</string>

@@ -19,6 +19,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.SettingsStore
+import me.rerere.rikkahub.data.datastore.sanitizeBuiltInTools
 import me.rerere.rikkahub.data.datastore.migration.SettingsJsonMigrator
 import me.rerere.rikkahub.data.db.AppDatabase
 import me.rerere.rikkahub.data.db.AppDatabaseFactory
@@ -211,8 +212,10 @@ class BackupManager(
                 val migrated = SettingsJsonMigrator.migrate(settingsFile.readText())
                 val settings = json.decodeFromString<Settings>(migrated)
                 require(!settings.init) { "Backup contains uninitialized settings" }
+                // 关闭备份里当前提供商类型不支持的内置工具
+                val sanitized = settings.sanitizeBuiltInTools()
                 // Persist the migrated value once, including generated IDs, for restart/retry consistency.
-                PendingRestore.writeDurably(settingsFile, json.encodeSettings(settings, json.launchCountOf(migrated)))
+                PendingRestore.writeDurably(settingsFile, json.encodeSettings(sanitized, json.launchCountOf(migrated)))
             }
             currentCoroutineContext().ensureActive()
             restore.publish(staging)

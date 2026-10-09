@@ -34,7 +34,6 @@ kotlin-coroutines-core = "1.11.0"
 kotlinx-datetime = "0.8.0"
 ksp = "2.3.10"
 paging = "3.5.1"
-lucide-icons = "1.1.0"
 huge-icons = "1.5"
 image-viewer = "1.1.0-alpha.7"
 jsoup = "1.23.2"
@@ -136,7 +135,6 @@ koin-androidx-workmanager = { group = "io.insert-koin", name = "koin-androidx-wo
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization-json" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlin-coroutines-core" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
-lucide-icons = { group = "com.composables", name = "icons-lucide", version.ref = "lucide-icons" }
 huge-icons = { group = "com.github.rikkahub", name = "hugeicons-compose", version.ref = "huge-icons" }
 image-viewer = { group = "com.jvziyaoyao.scale", name = "image-viewer", version.ref = "image-viewer" }
 jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }

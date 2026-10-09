@@ -11,6 +11,13 @@ import kotlin.uuid.Uuid
 fun Settings.isNotConfigured() = providers.all { it.models.isEmpty() }
 
 /**
+ * 读取背景效果：先看 [DisplaySetting.enableBlurEffect]，关闭时视为无效果（返回 null），
+ * 否则再读取 [DisplaySetting.backgroundEffectType]。
+ */
+fun DisplaySetting.effectiveBackgroundEffectType(): BackgroundEffectType? =
+    if (enableBlurEffect) backgroundEffectType else null
+
+/**
  * 过滤 HTTP 请求头值中 OkHttp 不允许的字符（非 ASCII 与控制字符）。
  * User-Agent 等自定义请求头直接交给 OkHttp 会抛出 IllegalArgumentException，
  * 输入框和设置规整都要用它过滤。

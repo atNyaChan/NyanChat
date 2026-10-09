@@ -51,14 +51,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import me.rerere.rikkahub.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.composables.icons.lucide.ChevronDown
-import com.composables.icons.lucide.ChevronRight
-import com.composables.icons.lucide.FileText
-import com.composables.icons.lucide.Folder
-import com.composables.icons.lucide.FolderOpen
-import com.composables.icons.lucide.Lucide
-import com.composables.icons.lucide.Plus
-import com.composables.icons.lucide.Trash2
+import me.rerere.hugeicons.HugeIcons
+import me.rerere.hugeicons.stroke.Add01
+import me.rerere.hugeicons.stroke.ChevronDown
+import me.rerere.hugeicons.stroke.ChevronRight
+import me.rerere.hugeicons.stroke.Delete01
+import me.rerere.hugeicons.stroke.FileText
+import me.rerere.hugeicons.stroke.Folder01
+import me.rerere.hugeicons.stroke.FolderOpen
 import com.dokar.sonner.ToastType
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.ui.components.RikkaConfirmDialog
@@ -105,7 +105,7 @@ fun SkillDetailPage(skillName: String) {
                     if (!readOnly) {
                         IconButton(onClick = { showDeleteSkillConfirm = true }) {
                             Icon(
-                                Lucide.Trash2,
+                                HugeIcons.Delete01,
                                 contentDescription = stringResource(R.string.common_delete),
                                 tint = MaterialTheme.colorScheme.onSurface,
                             )
@@ -123,7 +123,7 @@ fun SkillDetailPage(skillName: String) {
                 exit = fadeOut() + scaleOut(),
             ) {
                 FloatingActionButton(onClick = { showAddDialog = true }) {
-                    Icon(Lucide.Plus, contentDescription = null)
+                    Icon(HugeIcons.Add01, contentDescription = null)
                 }
             }
         },
@@ -265,7 +265,7 @@ private fun FileItem(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                imageVector = Lucide.FileText,
+                imageVector = HugeIcons.FileText,
                 contentDescription = null,
                 modifier = Modifier.size(16.dp),
                 tint = MaterialTheme.colorScheme.primary,
@@ -288,7 +288,7 @@ private fun FileItem(
             if (!readOnly && skillFile.relativePath != "SKILL.md") {
                 IconButton(onClick = onDelete, modifier = Modifier.size(36.dp)) {
                     Icon(
-                        imageVector = Lucide.Trash2,
+                        imageVector = HugeIcons.Delete01,
                         contentDescription = stringResource(R.string.common_delete),
                         modifier = Modifier.size(16.dp),
                         tint = MaterialTheme.colorScheme.error,
@@ -323,13 +323,13 @@ private fun DirItem(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Icon(
-                    imageVector = if (expanded) Lucide.ChevronDown else Lucide.ChevronRight,
+                    imageVector = if (expanded) HugeIcons.ChevronDown else HugeIcons.ChevronRight,
                     contentDescription = null,
                     modifier = Modifier.size(14.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Icon(
-                    imageVector = if (expanded) Lucide.FolderOpen else Lucide.Folder,
+                    imageVector = if (expanded) HugeIcons.FolderOpen else HugeIcons.Folder01,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
                     tint = MaterialTheme.colorScheme.tertiary,

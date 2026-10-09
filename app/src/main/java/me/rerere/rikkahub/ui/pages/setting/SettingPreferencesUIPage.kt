@@ -74,6 +74,7 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.ChatFontFamily
 import me.rerere.rikkahub.data.datastore.BackgroundEffectType
 import me.rerere.rikkahub.data.datastore.DisplaySetting
+import me.rerere.rikkahub.data.datastore.effectiveBackgroundEffectType
 import me.rerere.rikkahub.data.datastore.filterHeaderValueChars
 import me.rerere.rikkahub.data.datastore.ScreenCornerAdaptation
 import me.rerere.rikkahub.data.files.FileFolders
@@ -513,20 +514,20 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                         supportingContent = { Text(stringResource(R.string.setting_display_page_enable_blur_effect_desc)) },
                         trailingContent = {
                             Select(
-                                options = BackgroundEffectType.entries,
-                                selectedOption = displaySetting.backgroundEffectType,
-                                onOptionSelected = {
+                                options = listOf(null, BackgroundEffectType.BLUR, BackgroundEffectType.GLASS),
+                                selectedOption = displaySetting.effectiveBackgroundEffectType(),
+                                onOptionSelected = { selected ->
                                     updateDisplaySetting(
                                         displaySetting.copy(
-                                            backgroundEffectType = it,
-                                            enableBlurEffect = it != BackgroundEffectType.OFF,
+                                            enableBlurEffect = selected != null,
+                                            backgroundEffectType = selected ?: BackgroundEffectType.BLUR,
                                         )
                                     )
                                 },
                                 fitToOptions = true,
-                                optionToString = {
-                                    when (it) {
-                                        BackgroundEffectType.OFF -> stringResource(R.string.common_off)
+                                optionToString = { selected ->
+                                    when (selected) {
+                                        null -> stringResource(R.string.common_off)
                                         BackgroundEffectType.BLUR -> stringResource(R.string.setting_display_page_background_effect_blur)
                                         BackgroundEffectType.GLASS -> stringResource(R.string.setting_display_page_background_effect_glass)
                                     }

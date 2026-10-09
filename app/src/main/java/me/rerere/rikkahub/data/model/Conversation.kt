@@ -141,6 +141,18 @@ data class MessageNode(
 
     val role get() = messages.firstOrNull()?.role ?: MessageRole.USER
 
+    /**
+     * 把当前选中的消息在分支里前移/后移 [delta] 位（负数前移、正数后移），越界时原样返回。
+     */
+    fun moveCurrentBy(delta: Int): MessageNode {
+        val target = selectIndex + delta
+        if (selectIndex !in messages.indices || target !in messages.indices) return this
+        val reordered = messages.toMutableList().apply {
+            add(target, removeAt(selectIndex))
+        }
+        return copy(messages = reordered, selectIndex = target)
+    }
+
     companion object {
         fun of(message: UIMessage) = MessageNode(
             messages = listOf(message),

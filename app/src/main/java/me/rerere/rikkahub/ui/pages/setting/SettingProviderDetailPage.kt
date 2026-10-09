@@ -292,7 +292,9 @@ fun SettingProviderDetailSheet(
                                 R.string.setting_provider_page_models_format,
                                 internalProvider.models.size,
                             ),
-                            style = MaterialTheme.typography.titleSmall,
+                            style = MaterialTheme.typography.titleSmallEmphasized,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(start = 4.dp, top = 8.dp, bottom = 8.dp),
                         )
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),

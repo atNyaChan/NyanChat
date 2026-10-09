@@ -70,9 +70,9 @@ import me.rerere.hugeicons.stroke.Settings03
 import me.rerere.hugeicons.stroke.Sorting01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.Screen
-import me.rerere.rikkahub.data.datastore.BackgroundEffectType
 import me.rerere.rikkahub.data.datastore.ConversationSortOrder
 import me.rerere.rikkahub.data.datastore.Settings
+import me.rerere.rikkahub.data.datastore.effectiveBackgroundEffectType
 import me.rerere.rikkahub.data.datastore.getCurrentAssistant
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.Conversation
@@ -211,21 +211,22 @@ fun ChatDrawerContent(
         modifier = Modifier
             .fillMaxWidth(0.9f)
             .then(
-                Modifier.hazeBackgroundEffect(
-                    effectType = settings.displaySetting.backgroundEffectType,
-                    hazeState = hazeState,
-                    tintColor = MaterialTheme.colorScheme.surface,
-                    shape = drawerShape,
-                )
-            )
-            .then(
-                if (settings.displaySetting.backgroundEffectType != BackgroundEffectType.OFF) {
+                // 先裁剪出圆角，再绘制背景效果，否则模糊会溢出圆角、把侧栏画成直角。
+                if (settings.displaySetting.enableBlurEffect) {
                     Modifier.clip(drawerShape)
                 } else {
                     Modifier
                 }
+            )
+            .then(
+                Modifier.hazeBackgroundEffect(
+                    effectType = settings.displaySetting.effectiveBackgroundEffectType(),
+                    hazeState = hazeState,
+                    tintColor = MaterialTheme.colorScheme.surface,
+                    shape = drawerShape,
+                )
             ),
-        drawerContainerColor = if (settings.displaySetting.backgroundEffectType != BackgroundEffectType.OFF) {
+        drawerContainerColor = if (settings.displaySetting.enableBlurEffect) {
             Color.Transparent
         } else {
             MaterialTheme.colorScheme.surface
@@ -1009,7 +1010,7 @@ private fun FolderBar(
                 ) {
                     if (folderIndex > 0) {
                         DropdownMenuItem(
-                            text = { Text(stringResource(R.string.chat_page_folder_move_forward)) },
+                            text = { Text(stringResource(R.string.chat_page_move_forward)) },
                             leadingIcon = { Icon(HugeIcons.ArrowLeft01, null) },
                             onClick = {
                                 onMoveForward(folder)
@@ -1019,7 +1020,7 @@ private fun FolderBar(
                     }
                     if (folderIndex < folders.lastIndex) {
                         DropdownMenuItem(
-                            text = { Text(stringResource(R.string.chat_page_folder_move_backward)) },
+                            text = { Text(stringResource(R.string.chat_page_move_backward)) },
                             leadingIcon = { Icon(HugeIcons.ArrowRight01, null) },
                             onClick = {
                                 onMoveBackward(folder)

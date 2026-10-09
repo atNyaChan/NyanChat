@@ -1,10 +1,14 @@
 package me.rerere.rikkahub.ui.components.message
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -33,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.datetime.toJavaLocalDateTime
@@ -41,6 +46,8 @@ import me.rerere.ai.provider.Model
 import me.rerere.ai.ui.UIMessage
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.hugeicons.HugeIcons
+import me.rerere.hugeicons.stroke.ArrowLeft01
+import me.rerere.hugeicons.stroke.ArrowRight01
 import me.rerere.hugeicons.stroke.Copy01
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.Edit01
@@ -54,10 +61,14 @@ import me.rerere.hugeicons.stroke.StopCircle
 import me.rerere.hugeicons.stroke.Translate
 import me.rerere.hugeicons.stroke.VolumeHigh
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.model.MessageNode
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CardGroupItemSpacing
+import me.rerere.rikkahub.ui.components.ui.CardGroupRow
 import me.rerere.ui.components.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalSettings
+import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.context.LocalTTSState
 import me.rerere.rikkahub.utils.copyMessageToClipboard
@@ -269,6 +280,44 @@ private class MessageSheetAction(
     val onClick: () -> Unit,
 )
 
+// CardGroupRow 的两栏项：箭头加文字，禁用时整项变淡；iconTrailing 把箭头放到文字后面
+@Composable
+private fun MessageMoveActionContent(
+    icon: ImageVector,
+    label: String,
+    enabled: Boolean,
+    iconTrailing: Boolean = false,
+) {
+    val contentColor = if (enabled) {
+        MaterialTheme.colorScheme.onSurface
+    } else {
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+    }
+    Row(
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        if (!iconTrailing) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = contentColor,
+            )
+        }
+        Text(text = label, color = contentColor)
+        if (iconTrailing) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = contentColor,
+            )
+        }
+    }
+}
+
 @Suppress("DEPRECATION")
 private val UIMessage.containsToolCall: Boolean
     get() = parts.any { part ->
@@ -278,11 +327,13 @@ private val UIMessage.containsToolCall: Boolean
 @Composable
 fun ChatMessageActionsSheet(
     message: UIMessage,
+    node: MessageNode,
     model: Model?,
     onDelete: () -> Unit,
     onEdit: () -> Unit,
     onShare: () -> Unit,
     onFork: () -> Unit,
+    onUpdate: (MessageNode) -> Unit,
     isFavorite: Boolean = false,
     onToggleFavorite: (() -> Unit)? = null,
     onTranslateRequest: (() -> Unit)? = null,
@@ -291,6 +342,7 @@ fun ChatMessageActionsSheet(
     var showDeleteConfirm by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val toaster = LocalToaster.current
+    val navController = LocalNavController.current
     ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismissRequest,
         sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)),
@@ -373,23 +425,72 @@ fun ChatMessageActionsSheet(
                 contentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                 leadingContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
             )
-            CardGroup(modifier = Modifier.fillMaxWidth()) {
-                actions.forEach { action ->
-                    item(
-                        onClick = action.onClick,
-                        leadingContent = {
-                            Icon(
-                                imageVector = action.icon,
-                                contentDescription = null,
-                            )
-                        },
-                        colors = when {
-                            action.destructive -> destructiveItemColors
-                            !action.enabled -> disabledItemColors
-                            else -> null
-                        },
+            // 分支有多条消息时，把前移/后移作为同一 CardGroup 的并排首行
+            val hasBranchNavigation = node.messages.size > 1
+            val canMoveForward = hasBranchNavigation && node.selectIndex > 0
+            val canMoveBackward = hasBranchNavigation && node.selectIndex < node.messages.lastIndex
+            val moveDisabledColors = ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                contentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+            )
+            Column(modifier = Modifier.fillMaxWidth()) {
+                if (hasBranchNavigation) {
+                    CardGroupRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        attachBelow = true,
                     ) {
-                        Text(action.label)
+                        item(
+                            onClick = if (canMoveForward) {
+                                { onUpdate(node.moveCurrentBy(-1)) }
+                            } else null,
+                            colors = if (canMoveForward) null else moveDisabledColors,
+                            headlineContent = {
+                                MessageMoveActionContent(
+                                    icon = HugeIcons.ArrowLeft01,
+                                    label = stringResource(R.string.chat_page_move_forward),
+                                    enabled = canMoveForward,
+                                )
+                            },
+                        )
+                        item(
+                            onClick = if (canMoveBackward) {
+                                { onUpdate(node.moveCurrentBy(1)) }
+                            } else null,
+                            colors = if (canMoveBackward) null else moveDisabledColors,
+                            headlineContent = {
+                                MessageMoveActionContent(
+                                    icon = HugeIcons.ArrowRight01,
+                                    label = stringResource(R.string.chat_page_move_backward),
+                                    enabled = canMoveBackward,
+                                    iconTrailing = true,
+                                )
+                            },
+                        )
+                    }
+                    // 与 CardGroup 内各项之间的间距保持一致
+                    Spacer(modifier = Modifier.height(CardGroupItemSpacing))
+                }
+                CardGroup(
+                    modifier = Modifier.fillMaxWidth(),
+                    continueFromPrevious = hasBranchNavigation,
+                ) {
+                    actions.forEach { action ->
+                        item(
+                            onClick = action.onClick,
+                            leadingContent = {
+                                Icon(
+                                    imageVector = action.icon,
+                                    contentDescription = null,
+                                )
+                            },
+                            colors = when {
+                                action.destructive -> destructiveItemColors
+                                !action.enabled -> disabledItemColors
+                                else -> null
+                            },
+                        ) {
+                            Text(action.label)
+                        }
                     }
                 }
             }
@@ -401,8 +502,19 @@ fun ChatMessageActionsSheet(
             ) {
                 ProvideTextStyle(MaterialTheme.typography.labelSmall) {
                     Text(message.createdAt.toJavaLocalDateTime().toLocalString())
-                    if (model != null) {
-                        Text(model.displayName)
+                    // 模型快照被删除后 model 可能为 null，此时用消息上记录的 modelId
+                    val searchModelId = model?.id ?: message.modelId
+                    if (searchModelId != null) {
+                        Text(
+                            text = model?.displayName?.takeIf { it.isNotBlank() }
+                                ?: "($searchModelId)",
+                            color = MaterialTheme.colorScheme.primary,
+                            textDecoration = TextDecoration.Underline,
+                            modifier = Modifier.clickable {
+                                onDismissRequest()
+                                navController.navigate(Screen.MessageSearch(searchModelId.toString()))
+                            },
+                        )
                     }
                 }
             }

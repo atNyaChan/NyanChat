@@ -115,9 +115,9 @@ import me.rerere.hugeicons.stroke.Upload02
 import me.rerere.hugeicons.stroke.Zap
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.ai.transformers.DocumentAsPromptTransformer
-import me.rerere.rikkahub.data.datastore.BackgroundEffectType
 import me.rerere.rikkahub.data.datastore.ScreenCornerAdaptation
 import me.rerere.rikkahub.data.datastore.Settings
+import me.rerere.rikkahub.data.datastore.effectiveBackgroundEffectType
 import me.rerere.rikkahub.data.datastore.getQuickMessagesOfAssistant
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.model.Assistant
@@ -357,7 +357,7 @@ fun ChatInput(
                     .clip(containerShape)
                     .then(
                         Modifier.hazeBackgroundEffect(
-                            effectType = settings.displaySetting.backgroundEffectType,
+                            effectType = settings.displaySetting.effectiveBackgroundEffectType(),
                             hazeState = hazeState,
                             tintColor = hazeTintColor,
                             shape = containerShape.toRoundedCornerShape(),
@@ -366,7 +366,7 @@ fun ChatInput(
                 shape = containerShape,
                 tonalElevation = 0.dp,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
-                color = if (settings.displaySetting.backgroundEffectType != BackgroundEffectType.OFF) Color.Transparent else hazeTintColor,
+                color = if (settings.displaySetting.enableBlurEffect) Color.Transparent else hazeTintColor,
             ) {
                 Column(
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),

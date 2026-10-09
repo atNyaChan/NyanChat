@@ -242,10 +242,12 @@ fun ChatMessage(
     if (showActionsSheet) {
         ChatMessageActionsSheet(
             message = message,
+            node = node,
             onEdit = onEdit,
             onDelete = onDelete,
             onShare = onShare,
             onFork = onFork,
+            onUpdate = onUpdate,
             model = model,
             isFavorite = isFavorite,
             onToggleFavorite = onToggleFavorite,

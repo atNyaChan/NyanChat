@@ -1024,6 +1024,7 @@ class ChatService(
     }
 
     private fun Conversation.removeUnsuccessfulEmptyMessage(messageId: Uuid): Conversation {
+        var removed = false
         val updatedNodes = messageNodes.mapNotNull { node ->
             val removeIndex = node.messages.indexOfFirst { message ->
                 message.id == messageId &&
@@ -1032,6 +1033,7 @@ class ChatService(
             }
             if (removeIndex < 0) return@mapNotNull node
 
+            removed = true
             val remainingMessages = node.messages.filterIndexed { index, _ -> index != removeIndex }
             if (remainingMessages.isEmpty()) return@mapNotNull null
 
@@ -1044,7 +1046,11 @@ class ChatService(
                 }.coerceIn(remainingMessages.indices),
             )
         }
-        return copy(messageNodes = updatedNodes)
+        if (!removed) return this
+        // 占位消息被删除后（例如生成尚未产出内容就被取消），把聊天列表的排序时间
+        // 同步为现存消息中最新的一条，避免这次没有结果的重新生成把聊天顶到列表最前。
+        val cleaned = copy(messageNodes = updatedNodes)
+        return cleaned.copy(updateAt = cleaned.newestMessageTime ?: cleaned.updateAt)
     }
 
     // ---- 检查无效消息 ----
@@ -1534,9 +1540,12 @@ class ChatService(
     }
 
     suspend fun saveConversation(conversationId: Uuid, conversation: Conversation) {
-        // 会话落库即视为开始，此时把助手的配置固定到会话上
+        // 会话落库即视为开始，此时把助手的配置固定到会话上。
+        // 保存即代表产生了真实内容，清掉“新建占位”标记，之后才允许落库。
         val settings = settingsStore.awaitLoaded()
-        val bound = conversation.bindConfig(settings).fillModelSnapshots(settings)
+        val bound = conversation.copy(newConversation = false)
+            .bindConfig(settings)
+            .fillModelSnapshots(settings)
         updateConversation(conversationId, bound, persistWhenIdle = false)
         persistCurrentConversation(conversationId)
 
@@ -1562,9 +1571,10 @@ class ChatService(
         mutex.withLock {
             val conversation = sessionManager.get(conversationId)?.state?.value ?: return@withLock
             val exists = conversationRepo.existsConversationById(conversation.id)
-            // 只按是否有消息判断是否落库：新建对话会预置默认标题，但不代表产生了内容，
-            // 避免空的“新聊天”出现在会话列表里。
-            if (!exists && conversation.messageNodes.isEmpty()) {
+            // 只按是否产生过内容判断是否落库：新建对话会预置默认标题、预设消息，
+            // 但用户尚未发送任何内容，不能算产生了内容（预设消息同理），
+            // 避免空的"新聊天"或仅含预设消息的占位对话出现在会话列表里。
+            if (!exists && (conversation.newConversation || conversation.messageNodes.isEmpty())) {
                 return@withLock
             }
             if (!exists) {

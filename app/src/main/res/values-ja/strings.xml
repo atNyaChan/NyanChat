@@ -887,7 +887,7 @@
   <string name="prompt_page_delete_lorebook_confirm">ロアブック「%1$s」を削除しますか？この操作は元に戻せません。</string>
   <string name="prompt_page_delete_unnamed_lorebook_confirm">このロアブックを削除しますか？この操作は元に戻せません。</string>
   <string name="setting_provider_page_delete_model_referenced_messages">%1$d件のメッセージ</string>
-  <string name="setting_provider_page_delete_model_warning_suffix">の返信モデル名が削除されます。</string>
+  <string name="setting_provider_page_delete_model_warning_suffix">の返信モデル名はモデル ID または返信生成時のモデル名になります。</string>
   <string name="setting_provider_page_delete_model_migrate_link">モデル ID の移行をご検討ください</string>
   <string name="setting_provider_page_migrate_id">ID を移行</string>
   <string name="setting_provider_page_migrate_id_desc">既存のチャットで、このモデルの返信に記録されたモデルを別のモデルへ変更します</string>
@@ -1285,7 +1285,7 @@
   <string name="request_intercept_confirm">送信する</string>
   <string name="log_page_preview_string">文字列をプレビュー</string>
   <string name="log_page_preview_markdown">プレビュー Markdown</string>
-  <string name="log_page_enable_markdown_rendering">Markdown レンダリングを有効にする</string>
+  <string name="log_page_enable_markdown_rendering">Markdown レンダリング</string>
   <string name="backup_page_import_failed_detail">インポート失敗：%1$s</string>
   <string name="backup_page_export_failed_detail">エクスポート失敗：%1$s</string>
   <string name="backup_page_rikkahub_format">RikkaHub類似形式</string>
@@ -1305,8 +1305,8 @@
   <string name="chat_page_confirm_move">チャットを移動</string>
   <string name="chat_page_confirm_move_desc">選択した%1$d件のチャットを「%2$s」に移動してもよろしいですか？</string>
   <string name="chat_page_confirm_single_move_desc">チャット「%1$s」を「%2$s」に移動してもよろしいですか？</string>
-  <string name="chat_page_folder_move_forward">前に移動</string>
-  <string name="chat_page_folder_move_backward">後ろに移動</string>
+  <string name="chat_page_move_forward">前に移動</string>
+  <string name="chat_page_move_backward">後ろに移動</string>
   <string name="chat_page_context_message_limit_current">現在のコンテキストは最大 %1$d 件のメッセージを保持します</string>
   <string name="chat_page_create_folder_in">「%1$s」にフォルダーを作成</string>
   <string name="about_page_original_github">RikkaHub GitHub</string>

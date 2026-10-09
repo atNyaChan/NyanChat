@@ -39,7 +39,7 @@ Material 3 look (cards with dividers, plain forms).
   before user confirmation.
 
 ## Upstream Sync Policy (IMPORTANT)
-This repo is a **hard fork** (~20k+ lines diverged). We record upstream
+This repo is a **hard fork** (~30k lines diverged). We record upstream
 merges in git history, but NEVER let git auto-merge file contents.
 
 ### Absolute rules

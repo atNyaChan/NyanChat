@@ -56,7 +56,7 @@ import me.rerere.rikkahub.ui.theme.ScreenEdgeCornerRadii
 import me.rerere.rikkahub.ui.theme.inset
 
 private val CardGroupScreenInset = 16.dp
-private val CardGroupItemSpacing = 2.dp
+internal val CardGroupItemSpacing = 2.dp
 private val CardGroupInnerCorner = 4.dp
 
 private data class CardGroupItem(
@@ -379,6 +379,8 @@ fun CardGroupRow(
     modifier: Modifier = Modifier,
     continueFromPrevious: Boolean = false,
     continueToNext: Boolean = false,
+    // 为 true 时把下边缘圆角收成组内圆角，供与下方 CardGroup 拼成同一组时使用
+    attachBelow: Boolean = false,
     cornerInset: Dp = CardGroupScreenInset,
     content: CardGroupScope.() -> Unit,
 ) {
@@ -425,7 +427,7 @@ fun CardGroupRow(
                 animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
             )
             val bottomStartCorner by animateDpAsState(
-                targetValue = if (isPressed || (isFirst && !continueFromPrevious)) {
+                targetValue = if (isPressed || (isFirst && !continueFromPrevious && !attachBelow)) {
                     screenCornerRadii?.start ?: fallbackCorner
                 } else {
                     CardGroupInnerCorner
@@ -433,7 +435,7 @@ fun CardGroupRow(
                 animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
             )
             val bottomEndCorner by animateDpAsState(
-                targetValue = if (isPressed || (isLast && !continueToNext)) {
+                targetValue = if (isPressed || (isLast && !continueToNext && !attachBelow)) {
                     screenCornerRadii?.end ?: fallbackCorner
                 } else {
                     CardGroupInnerCorner

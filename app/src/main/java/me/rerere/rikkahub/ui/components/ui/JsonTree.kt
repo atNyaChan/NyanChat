@@ -159,7 +159,7 @@ private fun PreviewStringDialog(
                     ) {
                         Text(
                             text = stringResource(R.string.log_page_enable_markdown_rendering),
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                         )
                         Switch(
                             checked = enableMarkdown,

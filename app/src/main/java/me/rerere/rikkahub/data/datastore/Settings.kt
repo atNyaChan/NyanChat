@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.rerere.ai.core.ReasoningLevel
 import me.rerere.ai.provider.ProviderSetting
+import me.rerere.ai.provider.supportedBuiltInTools
 import me.rerere.asr.ASRProviderSetting
 import me.rerere.mediagen.provider.MediaGenerationProviderSetting
 import me.rerere.rikkahub.data.ai.mcp.McpServerConfig
@@ -129,9 +130,6 @@ enum class ScreenCornerAdaptation {
 
 @Serializable
 enum class BackgroundEffectType {
-    @SerialName("off")
-    OFF,
-
     @SerialName("blur")
     BLUR,
 
@@ -183,7 +181,7 @@ data class DisplaySetting(
     val enableAutoScroll: Boolean = true,
     val enableLatexRendering: Boolean = true,
     val enableBlurEffect: Boolean = false,
-    val backgroundEffectType: BackgroundEffectType = BackgroundEffectType.OFF,
+    val backgroundEffectType: BackgroundEffectType = BackgroundEffectType.BLUR,
     val chatFontFamily: ChatFontFamily = ChatFontFamily.DEFAULT,
     val chatCustomFontPath: String = "",
     val chatCustomFontName: String = "",
@@ -220,4 +218,25 @@ data class BackupReminderConfig(
     val enabled: Boolean = false,
     val intervalDays: Int = 7,
     val lastBackupTime: Long = 0L,
+)
+
+/**
+ * 关闭每个模型上当前提供商类型不支持的内置工具。
+ *
+ * 模型自带的“提供商重写”优先于它所属的提供商；仅保留 [supportedBuiltInTools] 中列出的工具。
+ * 用于导入备份后清理来自其他版本或旧配置中已失效的内置工具。
+ */
+fun Settings.sanitizeBuiltInTools(): Settings = copy(
+    providers = providers.map { provider ->
+        provider.copyProvider(
+            models = provider.models.map { model ->
+                val supported = (model.providerOverwrite ?: provider).supportedBuiltInTools()
+                if (model.tools.all { it in supported }) {
+                    model
+                } else {
+                    model.copy(tools = model.tools.intersect(supported))
+                }
+            }
+        )
+    }
 )

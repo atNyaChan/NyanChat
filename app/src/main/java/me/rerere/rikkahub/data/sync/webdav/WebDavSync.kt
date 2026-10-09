@@ -9,6 +9,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.SettingsStore
@@ -269,18 +270,32 @@ internal fun makeRikkaHubCompatible(settings: JsonElement): JsonElement {
     val root = stripForkFields(settings) as? JsonObject ?: return settings
     val compatibleRoot = root - setOf("skillOrder", "workspaceOrder")
 
-    val displaySetting = (compatibleRoot["displaySetting"] as? JsonObject)?.let {
-        it - setOf(
+    val displaySetting = (compatibleRoot["displaySetting"] as? JsonObject)?.let { display ->
+        val stripped = display - setOf(
             "enableCodeLigatures",
             "useChatFontGlobally",
             "screenCornerAdaptation",
             "showThinkingContentPreview",
+            "parseMidThink",
+            "defaultFontWeight",
+            "boldFontWeight",
         )
+        // 上游不认识 OUTFIT，回落成它认识的 SERIF
+        if ((stripped["chatFontFamily"] as? JsonPrimitive)?.content == "outfit") {
+            stripped + ("chatFontFamily" to JsonPrimitive("serif"))
+        } else {
+            stripped
+        }
     }
     val assistants = (compatibleRoot["assistants"] as? JsonArray)?.let { array ->
         JsonArray(array.map { assistantElement ->
             val assistant = assistantElement as? JsonObject ?: return@map assistantElement
-            val compatibleAssistant = assistant - setOf("contextCache", "manualAuthorizationTools", "includeHistoryReasoning")
+            val compatibleAssistant = assistant - setOf(
+                "contextCache",
+                "manualAuthorizationTools",
+                "includeHistoryReasoning",
+                "useBuiltInSearch",
+            )
             val localTools = (compatibleAssistant["localTools"] as? JsonArray)?.let { tools ->
                 JsonArray(tools.filterNot { tool ->
                     val type = (tool as? JsonObject)?.get("type")?.toString()?.trim('"')
@@ -300,6 +315,14 @@ internal fun makeRikkaHubCompatible(settings: JsonElement): JsonElement {
     val result = compatibleRoot.toMutableMap()
     displaySetting?.let { result["displaySetting"] = JsonObject(it) }
     assistants?.let { result["assistants"] = it }
+    // 上游的 BackupItem 没有 WORKSPACE
+    for (configKey in listOf("webDavConfig", "s3Config", "uploadS3Config")) {
+        val config = result[configKey] as? JsonObject ?: continue
+        val items = config["items"] as? JsonArray ?: continue
+        result[configKey] = JsonObject(
+            config + ("items" to JsonArray(items.filterNot { (it as? JsonPrimitive)?.content == "WORKSPACE" }))
+        )
+    }
     return JsonObject(result)
 }
 

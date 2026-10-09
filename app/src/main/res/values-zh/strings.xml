@@ -887,7 +887,7 @@
   <string name="prompt_page_delete_lorebook_confirm">确定删除世界书“%1$s”吗？此操作无法撤销。</string>
   <string name="prompt_page_delete_unnamed_lorebook_confirm">确定删除这本世界书吗？此操作无法撤销。</string>
   <string name="setting_provider_page_delete_model_referenced_messages">%1$d 条消息</string>
-  <string name="setting_provider_page_delete_model_warning_suffix">里的回复模型的名字将被删除，请考虑</string>
+  <string name="setting_provider_page_delete_model_warning_suffix">里的回复模型的名字将变为模型 ID 或生成该回复时的模型名字，请考虑</string>
   <string name="setting_provider_page_delete_model_migrate_link">迁移模型 ID</string>
   <string name="setting_provider_page_migrate_id">迁移 ID</string>
   <string name="setting_provider_page_migrate_id_desc">把 已有的聊天记录里的此模型的回复里记录从模型名字 改成别的模型</string>
@@ -1285,7 +1285,7 @@
   <string name="request_intercept_confirm">确认发送</string>
   <string name="log_page_preview_string">预览字符串</string>
   <string name="log_page_preview_markdown">预览 Markdown</string>
-  <string name="log_page_enable_markdown_rendering">启用 Markdown 渲染</string>
+  <string name="log_page_enable_markdown_rendering">Markdown 渲染</string>
   <string name="backup_page_import_failed_detail">导入失败：%1$s</string>
   <string name="backup_page_export_failed_detail">导出失败：%1$s</string>
   <string name="backup_page_rikkahub_format">类 RikkaHub 格式</string>
@@ -1305,8 +1305,8 @@
   <string name="chat_page_confirm_move">移动聊天</string>
   <string name="chat_page_confirm_move_desc">确认将所选 %1$d 个聊天移动到“%2$s”吗？</string>
   <string name="chat_page_confirm_single_move_desc">确认将聊天“%1$s”移动到“%2$s”吗？</string>
-  <string name="chat_page_folder_move_forward">往前移动</string>
-  <string name="chat_page_folder_move_backward">往后移动</string>
+  <string name="chat_page_move_forward">往前移动</string>
+  <string name="chat_page_move_backward">往后移动</string>
   <string name="chat_page_context_message_limit_current">当前上下文最多保留 %1$d 条消息</string>
   <string name="chat_page_create_folder_in">在“%1$s”中新建文件夹</string>
   <string name="about_page_original_github">RikkaHub GitHub</string>

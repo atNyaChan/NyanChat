@@ -887,7 +887,7 @@
   <string name="prompt_page_delete_lorebook_confirm">로어북 “%1$s”을(를) 삭제할까요? 이 작업은 되돌릴 수 없습니다.</string>
   <string name="prompt_page_delete_unnamed_lorebook_confirm">이 로어북을 삭제할까요? 이 작업은 되돌릴 수 없습니다.</string>
   <string name="setting_provider_page_delete_model_referenced_messages">메시지 %1$d개</string>
-  <string name="setting_provider_page_delete_model_warning_suffix">의 답변 모델 이름이 삭제됩니다.\u0020</string>
+  <string name="setting_provider_page_delete_model_warning_suffix">의 답변 모델 이름이 모델 ID 또는 답변을 생성할 당시의 모델 이름으로 바뀝니다.\u0020</string>
   <string name="setting_provider_page_delete_model_migrate_link">모델 ID 이전을 고려하세요</string>
   <string name="setting_provider_page_migrate_id">ID 이전</string>
   <string name="setting_provider_page_migrate_id_desc">기존 채팅에서 이 모델의 답변에 기록된 모델을 다른 모델로 변경합니다</string>
@@ -1285,7 +1285,7 @@
   <string name="request_intercept_confirm">보내기</string>
   <string name="log_page_preview_string">문자열 미리 보기</string>
   <string name="log_page_preview_markdown">미리보기 Markdown</string>
-  <string name="log_page_enable_markdown_rendering">Markdown 렌더링 사용</string>
+  <string name="log_page_enable_markdown_rendering">Markdown 렌더링</string>
   <string name="backup_page_import_failed_detail">가져오기 실패: %1$s</string>
   <string name="backup_page_export_failed_detail">내보내기 실패: %1$s</string>
   <string name="backup_page_rikkahub_format">RikkaHub 유사 형식</string>
@@ -1305,8 +1305,8 @@
   <string name="chat_page_confirm_move">채팅 이동</string>
   <string name="chat_page_confirm_move_desc">선택한 채팅 %1$d개를 “%2$s”(으)로 이동할까요?</string>
   <string name="chat_page_confirm_single_move_desc">채팅 “%1$s”을(를) “%2$s”(으)로 이동할까요?</string>
-  <string name="chat_page_folder_move_forward">앞으로 이동</string>
-  <string name="chat_page_folder_move_backward">뒤로 이동</string>
+  <string name="chat_page_move_forward">앞으로 이동</string>
+  <string name="chat_page_move_backward">뒤로 이동</string>
   <string name="chat_page_context_message_limit_current">현재 컨텍스트는 최대 %1$d개의 메시지를 유지합니다</string>
   <string name="chat_page_create_folder_in">“%1$s”에 폴더 만들기</string>
   <string name="about_page_original_github">RikkaHub GitHub</string>
