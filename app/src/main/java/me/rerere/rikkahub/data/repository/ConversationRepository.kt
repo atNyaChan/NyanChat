@@ -17,7 +17,8 @@ import me.rerere.rikkahub.data.db.AppDatabase
 import me.rerere.rikkahub.data.db.fts.MessageFtsManager
 import me.rerere.rikkahub.data.db.fts.MessageSearchSort
 import me.rerere.rikkahub.data.db.fts.MessageSearchMode
-import me.rerere.rikkahub.data.db.fts.MessageAttachmentState
+import me.rerere.rikkahub.data.db.fts.MessageSearchRequest
+import me.rerere.rikkahub.data.db.fts.MessageSearchResult
 import me.rerere.rikkahub.data.db.dao.ConversationDAO
 import me.rerere.rikkahub.data.db.dao.FavoriteDAO
 import me.rerere.rikkahub.data.db.dao.MessageNodeDAO
@@ -387,43 +388,14 @@ class ConversationRepository(
         assistantId: Uuid? = null,
     ) = messageFtsManager.search(keyword, sort, mode, limit, offset, assistantId?.toString())
 
-    suspend fun searchMessagesByModel(
-        modelId: Uuid,
-        sort: MessageSearchSort,
-        limit: Int = 50,
-        offset: Int = 0,
-        assistantId: Uuid? = null,
-    ) = messageFtsManager.searchByModel(modelId, sort, limit, offset, assistantId?.toString())
+    suspend fun searchMessages(request: MessageSearchRequest): List<MessageSearchResult> =
+        messageFtsManager.searchCombined(request)
 
     suspend fun countMessagesByModel(modelId: Uuid, assistantId: Uuid? = null): Int =
         messageFtsManager.countByModel(modelId, assistantId?.toString())
 
     suspend fun getUsedMessageModelIds(assistantId: Uuid? = null): List<Uuid> =
         messageFtsManager.getUsedModelIds(assistantId?.toString())
-
-    suspend fun searchManuallyEditedMessages(
-        sort: MessageSearchSort,
-        limit: Int = 50,
-        offset: Int = 0,
-        assistantId: Uuid? = null,
-    ) = messageFtsManager.searchManuallyEdited(sort, limit, offset, assistantId?.toString())
-
-    suspend fun countManuallyEditedMessages(assistantId: Uuid? = null): Int =
-        messageFtsManager.countManuallyEdited(assistantId?.toString())
-
-    suspend fun searchMessagesByAttachmentState(
-        state: MessageAttachmentState,
-        sort: MessageSearchSort,
-        limit: Int = 50,
-        offset: Int = 0,
-        assistantId: Uuid? = null,
-    ) = messageFtsManager.searchByAttachmentState(state, sort, limit, offset, assistantId?.toString())
-
-    suspend fun countMessagesByAttachmentState(state: MessageAttachmentState, assistantId: Uuid? = null): Int =
-        messageFtsManager.countByAttachmentState(state, assistantId?.toString())
-
-    suspend fun countSearchMessages(keyword: String, mode: MessageSearchMode, assistantId: Uuid? = null): Int =
-        messageFtsManager.countSearch(keyword, mode, assistantId?.toString())
 
     suspend fun rebuildAllIndexes() {
         messageFtsManager.rebuildAll()

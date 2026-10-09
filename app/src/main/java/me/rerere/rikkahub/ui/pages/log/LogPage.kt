@@ -144,7 +144,7 @@ fun LogPage() {
                             shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
                         ) {
                             DropdownMenuItem(
-                                text = { Text(stringResource(R.string.log_page_filter_all)) },
+                                text = { Text(stringResource(R.string.common_all)) },
                                 leadingIcon = {
                                     RadioButton(selected = filter == LogFilter.ALL, onClick = null)
                                 },
@@ -246,7 +246,7 @@ private fun InterceptRequestCard(modifier: Modifier = Modifier) {
                             when (it) {
                                 RequestInterceptMode.OFF -> R.string.log_page_intercept_off
                                 RequestInterceptMode.LLM_ONLY -> R.string.log_page_intercept_llm_only
-                                RequestInterceptMode.ALL -> R.string.log_page_intercept_all
+                                RequestInterceptMode.ALL -> R.string.common_all
                             }
                         )
                     },

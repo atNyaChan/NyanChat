@@ -1423,7 +1423,7 @@ private val ScreenCornerAdaptation.labelRes: Int
     get() = when (this) {
         ScreenCornerAdaptation.DISABLED -> R.string.setting_display_page_screen_corner_adaptation_disabled
         ScreenCornerAdaptation.INPUT_ONLY -> R.string.setting_display_page_screen_corner_adaptation_input_only
-        ScreenCornerAdaptation.ALL -> R.string.setting_display_page_screen_corner_adaptation_all
+        ScreenCornerAdaptation.ALL -> R.string.common_all
         ScreenCornerAdaptation.SQUARE -> R.string.setting_display_page_screen_corner_adaptation_square
     }
 
