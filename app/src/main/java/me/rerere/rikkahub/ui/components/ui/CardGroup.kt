@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
@@ -334,6 +335,43 @@ fun CardGroup(
             }
         }
     }
+}
+
+/**
+ * 计算 CardGroup 内某一项的圆角形状，供行为上无法作为 CardGroup 项渲染
+ * （例如需要拖动排序）但外观要与之保持一致的卡片复用。
+ */
+@Composable
+fun rememberCardGroupItemShape(
+    isFirst: Boolean,
+    isLast: Boolean,
+    continueFromPrevious: Boolean = false,
+    continueToNext: Boolean = false,
+    cornerInset: Dp = CardGroupScreenInset,
+): CornerBasedShape {
+    val screenCornerRadii = if (LocalScreenCornerAdaptationEnabled.current) {
+        LocalScreenEdgeCornerRadii.current?.inset(
+            horizontalInset = cornerInset,
+            bottomInset = cornerInset,
+        )
+    } else {
+        null
+    }
+    val fallbackCorner = LocalScreenCornerFallbackRadius.current
+    return RoundedCornerShape(
+        topStart = if (isFirst && !continueFromPrevious) {
+            screenCornerRadii?.start ?: fallbackCorner
+        } else CardGroupInnerCorner,
+        topEnd = if (isFirst && !continueFromPrevious) {
+            screenCornerRadii?.end ?: fallbackCorner
+        } else CardGroupInnerCorner,
+        bottomStart = if (isLast && !continueToNext) {
+            screenCornerRadii?.start ?: fallbackCorner
+        } else CardGroupInnerCorner,
+        bottomEnd = if (isLast && !continueToNext) {
+            screenCornerRadii?.end ?: fallbackCorner
+        } else CardGroupInnerCorner,
+    )
 }
 
 @Composable

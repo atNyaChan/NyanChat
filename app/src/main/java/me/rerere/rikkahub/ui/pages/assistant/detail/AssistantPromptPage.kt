@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
@@ -51,6 +50,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -83,6 +83,7 @@ import me.rerere.rikkahub.ui.components.message.ChatMessage
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.FormItem
+import me.rerere.rikkahub.ui.components.ui.rememberCardGroupItemShape
 import me.rerere.rikkahub.ui.components.ui.ExtensionSelector
 import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.components.ui.Tag
@@ -405,154 +406,154 @@ private fun AssistantPromptContent(
                     Text(stringResource(R.string.assistant_page_preset_messages))
                 },
                 supportingContent = {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(stringResource(R.string.assistant_page_preset_messages_desc))
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                assistant.presetMessages.fastForEachIndexed { index, presetMessage ->
-                    CardGroup {
-                        item(
-                            headlineContent = {},
-                            supportingContent = {
-                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Select(
-                                        options = listOf(MessageRole.USER, MessageRole.ASSISTANT),
-                                        selectedOption = presetMessage.role,
-                                        onOptionSelected = { role ->
-                                            onUpdate(
-                                                assistant.copy(
-                                                    presetMessages =
-                                                        assistant.presetMessages.mapIndexed { i, msg ->
-                                                            if (i == index) msg.copy(role = role) else msg
-                                                        }
-                                                )
-                                            )
-                                        },
-                                        modifier = Modifier.width(160.dp)
+                    Text(stringResource(R.string.assistant_page_preset_messages_desc))
+                },
+                trailingContent = {
+                    IconButton(
+                        onClick = {
+                            val lastRole = assistant.presetMessages.lastOrNull()?.role ?: MessageRole.ASSISTANT
+                            val nextRole = when (lastRole) {
+                                MessageRole.USER -> MessageRole.ASSISTANT
+                                MessageRole.ASSISTANT -> MessageRole.USER
+                                else -> MessageRole.USER
+                            }
+                            onUpdate(
+                                assistant.copy(
+                                    presetMessages = assistant.presetMessages + UIMessage(
+                                        role = nextRole,
+                                        parts = listOf(UIMessagePart.Text(""))
                                     )
-                                    OutlinedTextField(
-                                        value = presetMessage.toText(),
-                                        onValueChange = { text ->
-                                            onUpdate(
-                                                assistant.copy(
-                                                    presetMessages =
-                                                        assistant.presetMessages.mapIndexed { i, msg ->
-                                                            if (i == index) {
-                                                                msg.copy(parts = listOf(UIMessagePart.Text(text)))
-                                                            } else {
-                                                                msg
-                                                            }
-                                                        }
-                                                )
-                                            )
-                                        },
-                                        modifier = Modifier.fillMaxWidth(),
-                                        maxLines = 6
-                                    )
-                                }
-                            },
-                            trailingContent = {
-                                IconButton(onClick = { pendingPresetDeleteIndex = index }) {
-                                    Icon(HugeIcons.Delete01, null)
-                                }
-                            },
-                        )
-                    }
-                }
-                Button(
-                    onClick = {
-                        val lastRole = assistant.presetMessages.lastOrNull()?.role ?: MessageRole.ASSISTANT
-                        val nextRole = when (lastRole) {
-                            MessageRole.USER -> MessageRole.ASSISTANT
-                            MessageRole.ASSISTANT -> MessageRole.USER
-                            else -> MessageRole.USER
-                        }
-                        onUpdate(
-                            assistant.copy(
-                                presetMessages = assistant.presetMessages + UIMessage(
-                                    role = nextRole,
-                                    parts = listOf(UIMessagePart.Text(""))
                                 )
                             )
-                        )
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(HugeIcons.Add01, null)
-                }
-            }
+                        },
+                        modifier = Modifier.size(32.dp),
+                    ) {
+                        Icon(HugeIcons.Add01, null)
                     }
                 },
             )
-
-            item(
-                headlineContent = {
-                    Text(stringResource(R.string.assistant_page_regex_title))
-                },
-                supportingContent = {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(stringResource(R.string.assistant_page_regex_desc))
+            assistant.presetMessages.fastForEachIndexed { index, presetMessage ->
+                item(
+                    headlineContent = {},
+                    supportingContent = {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            val haptic = LocalHapticFeedback.current
-                            ReorderableColumn(
-                                list = assistant.regexes,
-                                onSettle = { fromIndex, toIndex ->
-                                    val regexes = assistant.regexes.toMutableList().apply {
-                                        add(toIndex, removeAt(fromIndex))
-                                    }
-                                    onUpdate(assistant.copy(regexes = regexes))
-                                },
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                            ) { index, regex, isDragging ->
-                                key(regex.id) {
-                                    ReorderableItem(modifier = Modifier.fillMaxWidth()) {
-                                        AssistantRegexCard(
-                                            regex = regex,
-                                            onUpdate = onUpdate,
-                                            assistant = assistant,
-                                            index = index,
-                                            onRequestDelete = {
-                                                pendingRegexDeleteIndex = index
-                                            },
-                                            initiallyExpanded = regex.id == expandedRegexId,
-                                            modifier = Modifier.scale(
-                                                if (isDragging) 0.95f else 1f
-                                            ).longPressDraggableHandle(
-                                                enabled = assistant.regexes.size > 1,
-                                                onDragStarted = {
-                                                    haptic.performHapticFeedback(
-                                                        HapticFeedbackType.GestureThresholdActivate
-                                                    )
-                                                },
-                                                onDragStopped = {
-                                                    haptic.performHapticFeedback(
-                                                        HapticFeedbackType.GestureEnd
-                                                    )
-                                                },
-                                            ),
-                                        )
-                                    }
-                                }
-                            }
-                            Button(
-                                onClick = {
-                                    val regexId = Uuid.random()
-                                    expandedRegexId = regexId
+                            Select(
+                                options = listOf(MessageRole.USER, MessageRole.ASSISTANT),
+                                selectedOption = presetMessage.role,
+                                onOptionSelected = { role ->
                                     onUpdate(
                                         assistant.copy(
-                                            regexes = assistant.regexes + AssistantRegex(id = regexId)
+                                            presetMessages =
+                                                assistant.presetMessages.mapIndexed { i, msg ->
+                                                    if (i == index) msg.copy(role = role) else msg
+                                                }
                                         )
                                     )
                                 },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Icon(HugeIcons.Add01, null)
-                            }
+                                modifier = Modifier.width(160.dp)
+                            )
+                            OutlinedTextField(
+                                value = presetMessage.toText(),
+                                onValueChange = { text ->
+                                    onUpdate(
+                                        assistant.copy(
+                                            presetMessages =
+                                                assistant.presetMessages.mapIndexed { i, msg ->
+                                                    if (i == index) {
+                                                        msg.copy(parts = listOf(UIMessagePart.Text(text)))
+                                                    } else {
+                                                        msg
+                                                    }
+                                                }
+                                        )
+                                    )
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                maxLines = 6
+                            )
                         }
+                    },
+                    trailingContent = {
+                        IconButton(onClick = { pendingPresetDeleteIndex = index }) {
+                            Icon(HugeIcons.Delete01, null)
+                        }
+                    },
+                )
+            }
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            CardGroup(continueToNext = assistant.regexes.isNotEmpty()) {
+                item(
+                    headlineContent = {
+                        Text(stringResource(R.string.assistant_page_regex_title))
+                    },
+                    supportingContent = {
+                        Text(stringResource(R.string.assistant_page_regex_desc))
+                    },
+                    trailingContent = {
+                        IconButton(
+                            onClick = {
+                                val regexId = Uuid.random()
+                                expandedRegexId = regexId
+                                onUpdate(
+                                    assistant.copy(
+                                        regexes = assistant.regexes + AssistantRegex(id = regexId)
+                                    )
+                                )
+                            },
+                            modifier = Modifier.size(32.dp),
+                        ) {
+                            Icon(HugeIcons.Add01, null)
+                        }
+                    },
+                )
+            }
+            val haptic = LocalHapticFeedback.current
+            ReorderableColumn(
+                list = assistant.regexes,
+                onSettle = { fromIndex, toIndex ->
+                    val regexes = assistant.regexes.toMutableList().apply {
+                        add(toIndex, removeAt(fromIndex))
                     }
+                    onUpdate(assistant.copy(regexes = regexes))
                 },
-            )
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) { index, regex, isDragging ->
+                key(regex.id) {
+                    ReorderableItem(modifier = Modifier.fillMaxWidth()) {
+                        AssistantRegexCard(
+                            regex = regex,
+                            onUpdate = onUpdate,
+                            assistant = assistant,
+                            index = index,
+                            onRequestDelete = {
+                                pendingRegexDeleteIndex = index
+                            },
+                            initiallyExpanded = regex.id == expandedRegexId,
+                            shape = rememberCardGroupItemShape(
+                                isFirst = false,
+                                isLast = index == assistant.regexes.lastIndex,
+                            ),
+                            modifier = Modifier.scale(
+                                if (isDragging) 0.95f else 1f
+                            ).longPressDraggableHandle(
+                                enabled = assistant.regexes.size > 1,
+                                onDragStarted = {
+                                    haptic.performHapticFeedback(
+                                        HapticFeedbackType.GestureThresholdActivate
+                                    )
+                                },
+                                onDragStopped = {
+                                    haptic.performHapticFeedback(
+                                        HapticFeedbackType.GestureEnd
+                                    )
+                                },
+                            ),
+                        )
+                    }
+                }
+            }
         }
 
         CardGroup {
@@ -624,6 +625,7 @@ private fun AssistantRegexCard(
     index: Int,
     onRequestDelete: () -> Unit,
     initiallyExpanded: Boolean = false,
+    shape: Shape = MaterialTheme.shapes.extraSmall,
     modifier: Modifier = Modifier,
 ) {
     var expanded by remember(regex.id) {
@@ -632,9 +634,9 @@ private fun AssistantRegexCard(
     Card(
         onClick = { expanded = !expanded },
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraSmall,
+        shape = shape,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = CustomColors.listItemColors.containerColor,
         ),
     ) {
         Column(
