@@ -18,6 +18,49 @@ Material 3 look (cards with dividers, plain forms).
   app/src/main/java/me/rerere/rikkahub/ui/components/ui/CardGroup.kt) instead of a card with dividers.
 - Favor whole-row click targets.
 
+## Unified UI Conventions
+
+The fork consolidates cross-cutting UI behavior into shared components and rules. Reuse them instead
+of adding per-screen variants.
+
+- **List items**: reorderable entity lists, favorites, message search results, model pickers,
+  network/permission request logs, the sidebar assistant picker and the "copy assistant" list all
+  render through the shared `OutlinedItemCard`
+  (app/src/main/java/me/rerere/rikkahub/ui/components/ui/OutlinedItemCard.kt) — full width, outlined,
+  16dp corners, whole-card click. List margins and item gaps are 8dp and the card vertical content
+  padding is 8dp. Reorderable lists apply the shared `longPressReorder` modifier
+  (app/src/main/java/me/rerere/rikkahub/ui/components/ui/ReorderableDrag.kt: 0.95 drag scale plus
+  haptic feedback) and disable reordering while a search filter is active.
+- **Settings and forms**: group options with `CardGroup`; on pages that reuse the settings-home large
+  title plus card/list layout, keep 8dp between the title bar and the first item.
+- **Bottom sheets**: always use `BottomSheetDefaults.DragHandle()` with drag-to-dismiss, wrap the
+  content height up to 95% of the available height, and use top padding 0dp / bottom 8dp (plus the
+  navigation-bar inset). Fixed bottom button rows keep 8dp above and 8dp below, and use
+  "Cancel / Confirm" via `common_confirm_action`.
+- **Colors** (`CustomColors`, app/src/main/java/me/rerere/rikkahub/ui/theme/Color.kt): page
+  backgrounds, the top bar and all drawers use `surface`; card/list fills use `surfaceContainerLow`
+  (`CustomColors.cardColorsOnSurfaceContainer`, `CustomColors.listItemColors`). Every
+  `AlertDialog`/`BasicAlertDialog` uses `MaterialTheme.colorScheme.surface`.
+- **Shapes**: `OutlinedTextField`s use the theme's `Shapes.extraSmall` (16dp); search fields use the
+  fixed 20dp `SearchFieldShape`
+  (app/src/main/java/me/rerere/rikkahub/ui/components/ui/SearchFieldShape.kt) instead of the
+  screen-corner shape. Large containers (`CardGroup`, page cards, dialogs) adapt to the physical
+  screen corner via `rememberScreenEdgeCornerShape`
+  (app/src/main/java/me/rerere/rikkahub/ui/theme/ScreenCornerShape.kt), falling back to 24dp (the
+  "直角" mode uses 4dp); message bubbles, thinking blocks, shared outlined list cards and file item
+  cards keep their own shape.
+- **Shared components**: loading uses `AppLoadingIndicator`; color picking uses the shared
+  `ColorPicker` (ui/src/main/java/me/rerere/ui/common/ColorPicker.kt); custom request Header/Body
+  editing uses `CustomRequestProperties`
+  (app/src/main/java/me/rerere/rikkahub/ui/pages/assistant/detail/PropertyEditor.kt) in the provider
+  drawer, assistant request settings and model advanced settings; whether a request log is an LLM
+  call is decided only by `isLlmRequest(log)`
+  (app/src/main/java/me/rerere/rikkahub/data/ai/RequestInterceptController.kt).
+- **Feedback**: `LocalToaster` errors open a scrollable, selectable, copyable dialog; success,
+  warning and short messages use the Android system Toast. Do not add the old custom colored in-app
+  banner.
+- All scrollable pages (including the chat message list) use the platform stretch overscroll effect.
+
 ## Build, Test, and Development Commands
 
 ```bash
@@ -25,6 +68,13 @@ Material 3 look (cards with dividers, plain forms).
 ./gradlew test                   # Run all  JVM tests
 ./gradlew lint                   # Run Android Lint
 ```
+
+Build configuration is unified across the project: JDK 21 for the project, the Gradle daemon,
+toolchain declarations and CI; `compileSdk` 37.2 (Android SDK Platform 37) and `targetSdk` 37,
+`minSdk` 28; Java and Kotlin `jvmTarget` 21; Build-Tools pinned to 37.0.0. Library modules get this
+from the `rikkahub.android.library` / `rikkahub.android.library.compose` convention plugins in the
+`build-logic` included build; app-level keep rules live in `app/src/main/keepRules/rikkahub.keep`.
+Do not raise `minSdk` or change the Java/Kotlin target per module.
 
 ## Agent Change Workflow
 
@@ -92,6 +142,11 @@ to port safely in one session, STOP and ask the user before starting.
 - **web**: Embedded web server module that provides Ktor server startup function and hosts static frontend build files (
   built from web-ui/ React project)
 - **workspace**: Sandboxed per-workspace file system and shell execution environment exposed to the AI as tools.
+- **mediagen**: Media (image/video) generation SDK with a provider abstraction and built-in providers.
+- **oauth**: OAuth 2.0 authorization helpers (loopback callback server, callback foreground service) used by providers.
+- **build-logic**: Included Gradle build that supplies the shared `rikkahub.android.library` and
+  `rikkahub.android.library.compose` convention plugins to the library modules.
+- **app:baselineprofile**: Baseline profile generator for the app.
 
 ## Concepts
 
@@ -142,6 +197,14 @@ to port safely in one session, STOP and ask the user before starting.
   may also maintain their own `values*/strings.xml`
 - Use `stringResource(R.string.key_name)` in Compose
 - Page-specific strings should use page prefix (e.g., `setting_page_`)
+- Repeated action labels are merged into generic resources (`common_cancel`, `common_confirm_action`,
+  `common_save`, `common_delete`, `common_close`, `common_ok`, `common_yes`, `common_no`, ...). Do not add
+  page-specific duplicates. `common_ok` only acknowledges known information, while
+  `common_confirm_action` confirms performing an action.
+- Keep every `values-*/strings.xml` aligned to the English `values/strings.xml`: identical keys and the same
+  key order/line structure. When adding a key, add it at the same place in every locale.
+- In Simplified and Traditional Chinese, separate adjacent CJK and Latin text with a space; do not add spaces
+  around 「」『』“”‘’ quotes and their contents.
 - If the user does not explicitly request localization, prioritize implementing functionality without considering
   localization. (e.g `Text("Hello world")`)
 
