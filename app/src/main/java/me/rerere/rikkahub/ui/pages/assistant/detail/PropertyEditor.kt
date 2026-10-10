@@ -73,6 +73,8 @@ private fun CardGroupScope.customPropertyHeaderItem(
     onAdd: () -> Unit,
 ) {
     item(
+        // 整卡可点击：点击标题任意位置即可添加
+        onClick = onAdd,
         headlineContent = {
             Text(text = title)
         },

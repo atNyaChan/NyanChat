@@ -123,6 +123,7 @@
   <string name="assistant_page_regex_name">名称</string>
   <string name="assistant_page_regex_replace_string">替换字符串</string>
   <string name="assistant_page_regex_title">消息正则表达式</string>
+  <string name="assistant_page_regex_untitled">（未命名）</string>
   <string name="assistant_page_regex_visual_only">仅视觉（仅影响显示，不影响实际消息）</string>
   <string name="assistant_page_remove">移除</string>
   <string name="assistant_page_remove_background">移除背景</string>

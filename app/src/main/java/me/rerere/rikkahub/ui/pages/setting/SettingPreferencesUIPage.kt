@@ -799,6 +799,8 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                         }
                     )
                     item(
+                        // 整卡可点击：点击卡片任意位置即可导入自定义字体
+                        onClick = { fontPickerLauncher.launch(CustomFontMimeTypesUI) },
                         headlineContent = { Text(stringResource(R.string.setting_display_page_custom_font_title)) },
                         supportingContent = {
                             Text(

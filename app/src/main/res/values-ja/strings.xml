@@ -123,6 +123,7 @@
   <string name="assistant_page_regex_name">名前</string>
   <string name="assistant_page_regex_replace_string">文字列を置換</string>
   <string name="assistant_page_regex_title">メッセージ正規表現</string>
+  <string name="assistant_page_regex_untitled">（無題）</string>
   <string name="assistant_page_regex_visual_only">表示のみ（実際のメッセージには影響しません）</string>
   <string name="assistant_page_remove">削除</string>
   <string name="assistant_page_remove_background">背景を削除</string>

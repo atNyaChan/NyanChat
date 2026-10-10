@@ -123,6 +123,7 @@
   <string name="assistant_page_regex_name">Name</string>
   <string name="assistant_page_regex_replace_string">Replace String</string>
   <string name="assistant_page_regex_title">Message Regexes</string>
+  <string name="assistant_page_regex_untitled">(Untitled)</string>
   <string name="assistant_page_regex_visual_only">Visual Only (affects display only, not actual message)</string>
   <string name="assistant_page_remove">Remove</string>
   <string name="assistant_page_remove_background">Remove Background</string>

@@ -123,6 +123,7 @@
   <string name="assistant_page_regex_name">الاسم</string>
   <string name="assistant_page_regex_replace_string">نص الاستبدال</string>
   <string name="assistant_page_regex_title">تعبيرات Regex للرسائل</string>
+  <string name="assistant_page_regex_untitled">(بدون عنوان)</string>
   <string name="assistant_page_regex_visual_only">مرئي فقط (يؤثر على العرض فقط، وليس على الرسالة الفعلية)</string>
   <string name="assistant_page_remove">إزالة</string>
   <string name="assistant_page_remove_background">إزالة الخلفية</string>

@@ -54,6 +54,7 @@ fun <T> Select(
     trailing: @Composable () -> Unit = {}
 ) {
     var expanded by remember { mutableStateOf(false) }
+    RegisterItemClickAction { expanded = true }
     val optionLabels = options.map { optionToString(it) }
     val textStyle = MaterialTheme.typography.bodyMedium
     val textMeasurer = rememberTextMeasurer()

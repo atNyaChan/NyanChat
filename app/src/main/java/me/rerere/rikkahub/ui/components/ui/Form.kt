@@ -12,6 +12,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,6 +49,7 @@ fun FormItem(
     content: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
     val grouped = LocalGroupedFormItem.current
+    val clickActionState = remember { ItemClickActionState() }
     ListItem(
         modifier = modifier
             .fillMaxWidth()
@@ -59,8 +61,10 @@ fun FormItem(
                 }
             )
             .then(
-                if (onClick != null) {
-                    Modifier.clickable(onClick = onClick)
+                if (onClick != null || clickActionState.hasAction) {
+                    Modifier.clickable(
+                        onClick = onClick ?: clickActionState::invoke,
+                    )
                 } else {
                     Modifier
                 }
@@ -75,7 +79,13 @@ fun FormItem(
         } else {
             null
         },
-        trailingContent = tail,
+        trailingContent = tail?.let { tailContent ->
+            {
+                CompositionLocalProvider(LocalItemClickActionState provides clickActionState) {
+                    tailContent()
+                }
+            }
+        },
         colors = CustomColors.listItemColors,
     ) {
         label()

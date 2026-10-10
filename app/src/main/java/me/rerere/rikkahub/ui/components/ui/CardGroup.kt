@@ -222,6 +222,9 @@ private fun CardGroupListItem(
 
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    // 尾部控件（下拉框等）注册的点击动作，有动作时整卡可点击
+    val clickActionState = remember { ItemClickActionState() }
+    val itemClickable = item.onClick != null || item.onLongClick != null || clickActionState.hasAction
 
     val topStartCorner by animateDpAsState(
         targetValue = if (isPressed || (isFirst && !continueFromPrevious)) {
@@ -267,11 +270,14 @@ private fun CardGroupListItem(
             .fillMaxWidth()
             .clip(itemShape)
             .then(
-                if (item.onClick != null || item.onLongClick != null) {
+                if (itemClickable) {
                     Modifier.combinedClickable(
                         interactionSource = interactionSource,
                         indication = LocalIndication.current,
-                        onClick = item.onClick ?: {},
+                        onClick = {
+                            if (item.onClick != null) item.onClick.invoke()
+                            else clickActionState.invoke()
+                        },
                         onLongClick = item.onLongClick,
                     )
                 } else Modifier
@@ -279,7 +285,13 @@ private fun CardGroupListItem(
         overlineContent = item.overlineContent,
         supportingContent = item.supportingContent,
         leadingContent = item.leadingContent,
-        trailingContent = item.trailingContent,
+        trailingContent = item.trailingContent?.let { trailing ->
+            {
+                CompositionLocalProvider(LocalItemClickActionState provides clickActionState) {
+                    trailing()
+                }
+            }
+        },
         verticalAlignment = Alignment.CenterVertically,
         shapes = ListItemDefaults.shapes(
             itemShape,

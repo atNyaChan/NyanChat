@@ -44,6 +44,7 @@ import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Idea
 import me.rerere.hugeicons.stroke.Idea01
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.ui.components.ui.RegisterItemClickAction
 import me.rerere.ui.components.ToggleSurface
 import me.rerere.ui.icons.ReasoningHigh
 import me.rerere.ui.icons.ReasoningLow
@@ -63,6 +64,7 @@ fun ReasoningButton(
     onUpdateReasoningLevel: (ReasoningLevel) -> Unit,
 ) {
     var showPicker by remember { mutableStateOf(false) }
+    RegisterItemClickAction { showPicker = true }
 
     if (showPicker) {
         ReasoningPicker(

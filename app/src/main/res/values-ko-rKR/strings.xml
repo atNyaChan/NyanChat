@@ -123,6 +123,7 @@
   <string name="assistant_page_regex_name">이름</string>
   <string name="assistant_page_regex_replace_string">문자열 바꾸기</string>
   <string name="assistant_page_regex_title">메시지 정규식</string>
+  <string name="assistant_page_regex_untitled">(제목 없음)</string>
   <string name="assistant_page_regex_visual_only">시각적 표시만 (실제 메시지에는 영향을 주지 않고 표시만 변경)</string>
   <string name="assistant_page_remove">제거</string>
   <string name="assistant_page_remove_background">배경 제거</string>
