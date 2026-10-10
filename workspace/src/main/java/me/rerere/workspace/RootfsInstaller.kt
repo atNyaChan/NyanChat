@@ -4,12 +4,10 @@ import com.github.luben.zstd.ZstdInputStream
 import java.io.BufferedInputStream
 import java.io.EOFException
 import java.io.File
-import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.file.Files
-import java.nio.file.LinkOption
 import java.util.Locale
 import java.util.zip.GZIPInputStream
 import org.tukaani.xz.XZInputStream
@@ -202,7 +200,6 @@ class RootfsInstaller(
             var entries = 0
             var pendingName: String? = null
             var pendingLinkName: String? = null
-            val pendingHardLinks = mutableListOf<PendingHardLink>()
             while (true) {
                 checkInterrupted()
                 val rawHeader = input.readTarHeader() ?: break
@@ -238,11 +235,7 @@ class RootfsInstaller(
                 when (header.type) {
                     TarEntryType.DIRECTORY -> target.mkdirs()
                     TarEntryType.SYMLINK -> createSymlink(targetDir, target, header.linkName)
-                    TarEntryType.HARDLINK -> {
-                        if (!createHardLink(targetDir, target, header.linkName)) {
-                            pendingHardLinks += PendingHardLink(target, header.linkName)
-                        }
-                    }
+                    TarEntryType.HARDLINK -> createHardLink(targetDir, target, header.linkName)
                     TarEntryType.FILE -> {
                         target.outputStream().use { output ->
                             input.copyExactly(output, header.size)
@@ -273,7 +266,6 @@ class RootfsInstaller(
                     )
                 )
             }
-            createPendingHardLinks(targetDir, pendingHardLinks)
         }
     }
 
@@ -293,43 +285,15 @@ class RootfsInstaller(
         Files.createSymbolicLink(target.toPath(), linkTarget.toPath())
     }
 
-    private fun createHardLink(root: File, target: File, linkName: String): Boolean {
-        if (linkName.isBlank()) return true
+    // Android 文件系统不允许普通应用创建硬链接, 且 Rootfs 中的硬链接多为 BusyBox applet
+    // 共享同一二进制。统一直接创建指向归档内目标的相对软链接, 不再尝试硬链接也不复制内容。
+    private fun createHardLink(root: File, target: File, linkName: String) {
+        if (linkName.isBlank()) return
         val source = root.safeResolve(linkName)
-        if (!Files.exists(source.toPath(), LinkOption.NOFOLLOW_LINKS)) return false
-        target.delete()
-        runCatching {
-            Files.createLink(target.toPath(), source.toPath())
-        }.onSuccess {
-            return true
-        }.onFailure { error ->
-            if (error !is IOException &&
-                error !is UnsupportedOperationException &&
-                error !is SecurityException
-            ) {
-                throw error
-            }
-        }
-
-        // Android 文件系统不一定允许创建硬链接；BusyBox Rootfs 通常有大量 applet
-        // 指向同一二进制。回退为相对软链接可保持共享，绝不能 copyTo 展开为数百份文件。
         val parent = target.parentFile ?: root
         val relativeSource = parent.toPath().relativize(source.toPath())
+        target.delete()
         Files.createSymbolicLink(target.toPath(), relativeSource)
-        return true
-    }
-
-    private fun createPendingHardLinks(root: File, links: List<PendingHardLink>) {
-        var remaining = links
-        while (remaining.isNotEmpty()) {
-            val unresolved = remaining.filterNot { link ->
-                createHardLink(root, link.target, link.linkName)
-            }
-            require(unresolved.size < remaining.size) {
-                "Hard link target not found: ${unresolved.first().linkName}"
-            }
-            remaining = unresolved
-        }
     }
 
     private fun InputStream.readTarHeader(): TarHeader? {
@@ -489,11 +453,6 @@ class RootfsInstaller(
         val size: Long,
         val modTime: Long,
         val type: TarEntryType,
-        val linkName: String,
-    )
-
-    private data class PendingHardLink(
-        val target: File,
         val linkName: String,
     )
 

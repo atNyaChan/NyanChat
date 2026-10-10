@@ -52,7 +52,7 @@ class RootfsInstallerTest {
     }
 
     @Test
-    fun `hardlink before its target is deferred and preserved as a hardlink`() {
+    fun `hardlink entries become symbolic links`() {
         val archive = tmp.newFile("rootfs.tar.gz")
         GZIPOutputStream(archive.outputStream()).use { out ->
             out.writeTarEntry("bin/applet", '1', ByteArray(0), linkName = "bin/busybox")
@@ -64,8 +64,8 @@ class RootfsInstallerTest {
         createInstaller().extractTar(archive, target) {}
 
         val applet = File(target, "bin/applet")
-        assertFalse(Files.isSymbolicLink(applet.toPath()))
-        assertEquals(true, Files.isSameFile(applet.toPath(), File(target, "bin/busybox").toPath()))
+        assertTrue(Files.isSymbolicLink(applet.toPath()))
+        assertEquals("busybox", Files.readSymbolicLink(applet.toPath()).toString())
         assertEquals("busybox", applet.readText())
     }
 
