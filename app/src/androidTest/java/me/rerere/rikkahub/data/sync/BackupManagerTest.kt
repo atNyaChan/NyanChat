@@ -25,6 +25,7 @@ import org.junit.runner.RunWith
 import org.koin.core.context.GlobalContext
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.Paths
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
@@ -210,7 +211,7 @@ class BackupManagerTest {
         assertTrue("skills/kit/skill.md" in names)
     }
 
-    @Test fun byteIdenticalAttachmentsArePackedAsHardLinksAndRestoredAsCopies() = runBlocking {
+    @Test fun byteIdenticalRegularAttachmentsArePackedAsHardLinks() = runBlocking {
         val upload = File(context.filesDir, "upload").apply { mkdirs() }
         File(upload, "original.bin").writeText("shared payload")
         File(upload, "copy.bin").writeText("shared payload")
@@ -227,21 +228,58 @@ class BackupManagerTest {
                 entry = tar.nextEntry
             }
         }
-        // 两份内容相同的附件在 tar 里只存一份数据，另一份是指向它的硬链接
+        // 两份内容相同的普通附件在 tar 里只存一份数据，另一份是指向它的硬链接
         assertEquals(1, regular)
         assertEquals(1, links)
+    }
 
+    @Test fun uploadSymlinksArePackedAsSymlinksAlongsideCasEntities() = runBlocking {
+        val cas = File(context.filesDir, "upload-cas").apply { mkdirs() }
+        val upload = File(context.filesDir, "upload").apply { mkdirs() }
+        File(cas, "sha256deadbeef").writeText("content")
+        Files.createSymbolicLink(
+            File(upload, "linked.bin").toPath(),
+            Paths.get("../upload-cas/sha256deadbeef"),
+        )
+
+        val archive = manager.createBackup(includeDatabase = false, includeFiles = true, includeWorkspace = false)
+        var symlink: TarArchiveEntry? = null
+        var casEntry = false
+        TarArchiveInputStream(archive.inputStream().buffered()).use { tar ->
+            var entry = tar.nextEntry
+            while (entry != null) {
+                when (entry.name) {
+                    "upload/linked.bin" -> symlink = entry
+                    "upload-cas/sha256deadbeef" -> casEntry = true
+                }
+                entry = tar.nextEntry
+            }
+        }
+        assertTrue(symlink!!.isSymbolicLink)
+        assertEquals("../upload-cas/sha256deadbeef", symlink!!.linkName)
+        assertTrue(casEntry)
+    }
+
+    @Test fun restoredUploadIsConvertedIntoCasEntitiesAndSymlinks() = runBlocking {
+        val upload = File(context.filesDir, "upload").apply { mkdirs() }
+        File(upload, "original.bin").writeText("shared payload")
+        File(upload, "copy.bin").writeText("shared payload")
+
+        val archive = manager.createBackup(includeDatabase = false, includeFiles = true, includeWorkspace = false)
         upload.deleteRecursively()
         manager.stageRestore(archive)
         // Applying the staged settings would write to the real settings store of the app under test.
         assertTrue(File(context.noBackupFilesDir, "backup-restore/pending/settings.json").delete())
         assertTrue(BackupManager.applyPendingRestore(context, JsonInstant))
+
         val restoredOriginal = File(upload, "original.bin")
         val restoredCopy = File(upload, "copy.bin")
+        // 恢复时转换为内容寻址存储: 相同内容只保留一份实体, 两个文件名都是指向它的软链接
+        assertTrue(Files.isSymbolicLink(restoredOriginal.toPath()))
+        assertTrue(Files.isSymbolicLink(restoredCopy.toPath()))
+        assertEquals(1, File(context.filesDir, "upload-cas").listFiles()!!.size)
         assertEquals("shared payload", restoredOriginal.readText())
         assertEquals("shared payload", restoredCopy.readText())
-        // Android 环境不保证支持硬链接，恢复时把 TAR 硬链接展开成互相独立的副本
-        assertFalse(Files.isSameFile(restoredOriginal.toPath(), restoredCopy.toPath()))
     }
 
     @Test fun restoreReplacesExistingUploadFolderWhenArchiveHasUpload() = runBlocking {

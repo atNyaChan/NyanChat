@@ -35,6 +35,8 @@ internal fun createWorkspaceTerminalSession(
     val tempDir = File(workspaceDir, "tmp")
     val skillsDir = File(appContext.filesDir, FileFolders.SKILLS).apply { mkdirs() }
     val builtinSkillsDir = File(appContext.filesDir, FileFolders.BUILTIN_SKILLS).apply { mkdirs() }
+    val uploadDir = File(appContext.filesDir, FileFolders.UPLOAD).apply { mkdirs() }
+    val uploadCasDir = File(appContext.filesDir, FileFolders.UPLOAD_CAS).apply { mkdirs() }
     val nativeLibraryDir = File(appContext.applicationInfo.nativeLibraryDir)
     val proot = File(nativeLibraryDir, "libproot_exec.so")
     val loader = File(nativeLibraryDir, "libproot_loader.so")
@@ -54,6 +56,10 @@ internal fun createWorkspaceTerminalSession(
         "${skillsDir.absolutePath}:$SKILLS_DIR",
         "-b",
         "${builtinSkillsDir.absolutePath}:$BUILTIN_SKILLS_DIR",
+        "-b",
+        "${uploadDir.absolutePath}:$UPLOAD_DIR",
+        "-b",
+        "${uploadCasDir.absolutePath}:$UPLOAD_CAS_DIR",
     )
     listOf("/dev", "/proc", "/sys").forEach { path ->
         if (File(path).exists()) {
@@ -330,6 +336,8 @@ internal class WorkspaceTerminalViewClient(
 private const val WORKSPACE_DIR = "/workspace"
 private const val SKILLS_DIR = "/skills"
 private const val BUILTIN_SKILLS_DIR = "/builtin_skills"
+private const val UPLOAD_DIR = "/upload"
+private const val UPLOAD_CAS_DIR = "/upload-cas"
 
 // 一个 URL 最多还原跨越的软换行行数(向上/向下各算), 足够覆盖任意真实 URL
 private const val URL_MAX_WRAP_ROWS = 50

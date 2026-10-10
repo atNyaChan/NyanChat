@@ -236,8 +236,9 @@ class AssistantDetailVM(
     }
 
     fun checkAvatarDelete(old: Assistant, new: Assistant) {
-        if (old.avatar is Avatar.Image && old.avatar != new.avatar) {
-            filesManager.deleteChatFiles(listOf(old.avatar.url.toUri()))
+        val avatar = old.avatar
+        if (avatar is Avatar.Image && avatar != new.avatar) {
+            viewModelScope.launch { filesManager.deleteChatFiles(listOf(avatar.url.toUri())) }
         }
     }
 
@@ -249,7 +250,7 @@ class AssistantDetailVM(
             try {
                 val oldUri = oldBackground.toUri()
                 if (oldUri.scheme == "content" || oldUri.scheme == "file") {
-                    filesManager.deleteChatFiles(listOf(oldUri))
+                    viewModelScope.launch { filesManager.deleteChatFiles(listOf(oldUri)) }
                 }
             } catch (e: Exception) {
                 Log.w(TAG, "Failed to delete background file: $oldBackground", e)

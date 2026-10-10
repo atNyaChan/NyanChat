@@ -250,9 +250,12 @@ fun SettingFilesPage(
                             val cutoff = selectedCleanRange.days?.let { days ->
                                 System.currentTimeMillis() - TimeUnit.DAYS.toMillis(days.toLong())
                             }
-                            files
-                                .filter { file -> cutoff == null || file.file.createdAt < cutoff }
-                                .all { filesManager.delete(it.file.id, deleteFromDisk = true) }
+                            filesManager.deleteAll(
+                                ids = files
+                                    .filter { file -> cutoff == null || file.file.createdAt < cutoff }
+                                    .map { it.file.id },
+                                deleteFromDisk = true,
+                            )
                         } else {
                             selectedCleanRange.days?.let { days ->
                                 filesManager.deleteOlderThan(

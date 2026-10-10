@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import java.io.File
+import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlinx.coroutines.Dispatchers
@@ -48,6 +49,10 @@ class FilesManager(
     private val attachmentIndexMutex = Mutex()
     private val attachmentIndexFile get() = File(context.cacheDir, ATTACHMENT_INDEX_FILE)
 
+    private val filesRoot get() = context.filesDir
+    private val uploadDir get() = AttachmentCas.uploadDir(filesRoot)
+    private val uploadCasDir get() = AttachmentCas.casDir(filesRoot)
+
     suspend fun saveManagedFromUri(
         folder: String,
         uri: Uri,
@@ -56,10 +61,19 @@ class FilesManager(
     ): ManagedFileEntity = withContext(Dispatchers.IO) {
         val resolvedName = displayName ?: getFileNameFromUri(uri) ?: "file"
         val resolvedMime = mimeType ?: getFileMimeType(uri) ?: "application/octet-stream"
-        val target = createTargetFile(folder, resolvedName, resolvedMime)
-        context.contentResolver.openInputStream(uri)?.use { input ->
-            target.outputStream().use { output ->
-                input.copyTo(output)
+        val target = if (folder == FileFolders.UPLOAD) {
+            storeUploadFile(resolvedName, resolvedMime) { output ->
+                context.contentResolver.openInputStream(uri)?.use { input ->
+                    input.copyTo(output)
+                }
+            }
+        } else {
+            createTargetFile(folder, resolvedName, resolvedMime).also { file ->
+                context.contentResolver.openInputStream(uri)?.use { input ->
+                    file.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
             }
         }
         createManagedFileEntity(
@@ -76,8 +90,11 @@ class FilesManager(
         displayName: String,
         mimeType: String = "application/octet-stream",
     ): ManagedFileEntity = withContext(Dispatchers.IO) {
-        val target = createTargetFile(folder, displayName, mimeType)
-        target.writeBytes(bytes)
+        val target = if (folder == FileFolders.UPLOAD) {
+            storeUploadFile(displayName, mimeType) { it.write(bytes) }
+        } else {
+            createTargetFile(folder, displayName, mimeType).also { it.writeBytes(bytes) }
+        }
         createManagedFileEntity(
             folder = folder,
             file = target,
@@ -92,8 +109,11 @@ class FilesManager(
         displayName: String = "pasted_text.txt",
         mimeType: String = "text/plain",
     ): ManagedFileEntity = withContext(Dispatchers.IO) {
-        val target = createTargetFile(folder, displayName, mimeType)
-        target.writeText(text)
+        val target = if (folder == FileFolders.UPLOAD) {
+            storeUploadFile(displayName, mimeType) { it.write(text.toByteArray()) }
+        } else {
+            createTargetFile(folder, displayName, mimeType).also { it.writeText(text) }
+        }
         createManagedFileEntity(
             folder = folder,
             file = target,
@@ -177,6 +197,7 @@ class FilesManager(
         attachmentIndexMutex.withLock {
             attachmentIndexFile.delete()
         }
+        AttachmentCas.clearIndex(context.cacheDir)
     }
 
     private suspend fun rebuildAttachmentIndex(folder: String): List<AttachmentIndexEntry> {
@@ -225,23 +246,14 @@ class FilesManager(
 
     fun createChatFilesByContents(uris: List<Uri>): List<Uri> {
         val newUris = mutableListOf<Uri>()
-        val dir = context.filesDir.resolve(FileFolders.UPLOAD)
-        if (!dir.exists()) {
-            dir.mkdirs()
-        }
         uris.forEach { uri ->
             runCatching {
                 val sourceName = getFileNameFromUri(uri) ?: uri.lastPathSegment ?: "file"
                 val sourceMime = getFileMimeType(uri)
-                val fileName = buildUuidFileName(displayName = sourceName, mimeType = sourceMime)
-                val file = dir.resolve(fileName)
-                if (!file.exists()) {
-                    file.createNewFile()
-                }
-                val inputStream = context.contentResolver.openInputStream(uri)
-                    ?: error("Failed to open input stream for $uri")
-                inputStream.use { input ->
-                    file.outputStream().use { output ->
+                val file = storeUploadFile(sourceName, sourceMime) { output ->
+                    val inputStream = context.contentResolver.openInputStream(uri)
+                        ?: error("Failed to open input stream for $uri")
+                    inputStream.use { input ->
                         input.copyTo(output)
                     }
                 }
@@ -271,19 +283,9 @@ class FilesManager(
         mimeType: String = "image/png",
     ): List<Uri> {
         val newUris = mutableListOf<Uri>()
-        val dir = context.filesDir.resolve(FileFolders.UPLOAD)
-        if (!dir.exists()) {
-            dir.mkdirs()
-        }
         byteArrays.forEach { byteArray ->
-            val fileName = buildUuidFileName(displayName = displayName, mimeType = mimeType)
-            val file = dir.resolve(fileName)
-            if (!file.exists()) {
-                file.createNewFile()
-            }
-            val newUri = file.toUri()
-            file.outputStream().use { outputStream ->
-                outputStream.write(byteArray)
+            val file = storeUploadFile(displayName, mimeType) { output ->
+                output.write(byteArray)
             }
             trackManagedFile(
                 folder = FileFolders.UPLOAD,
@@ -291,7 +293,7 @@ class FilesManager(
                 displayName = displayName,
                 mimeType = mimeType
             )
-            newUris.add(newUri)
+            newUris.add(file.toUri())
         }
         return newUris
     }
@@ -326,43 +328,60 @@ class FilesManager(
             )
         }
 
-    fun deleteChatFiles(uris: List<Uri>) {
+    /**
+     * 删除聊天附件。删除软链接会同步读写共享索引, 因此这里在 IO 线程内完成整批删除,
+     * 调用方 (通常是 UI 事件) 应在自己的协程中调用并等待结果。
+     */
+    suspend fun deleteChatFiles(uris: List<Uri>) = withContext(Dispatchers.IO) {
+        val candidates = uris.filter { it.toString().startsWith("file://") }
+        if (candidates.isEmpty()) return@withContext
         val relativePaths = mutableSetOf<String>()
-        uris.filter { it.toString().startsWith("file://") }.forEach { uri ->
+        val uploadFiles = mutableListOf<File>()
+        candidates.forEach { uri ->
             val file = uri.toFile()
-            getRelativePathInFilesDir(file)?.let { relativePaths.add(it) }
-            if (file.exists()) {
-                file.delete()
-            }
-        }
-        if (relativePaths.isNotEmpty()) {
-            appScope.launch(Dispatchers.IO) {
-                relativePaths.forEach { path ->
-                    repository.deleteByPath(path)
+            val uploadName = uploadFileName(file)
+            when {
+                uploadName != null -> {
+                    uploadFiles += file
+                    relativePaths.add("${FileFolders.UPLOAD}/$uploadName")
+                }
+                // 实体文件由软链接的共享引用计数管理, 绝不应通过附件 URL 直接删除
+                isUploadCasEntity(file) -> Unit
+                else -> {
+                    getRelativePathInFilesDir(file)?.let { relativePaths.add(it) }
+                    if (file.exists()) {
+                        file.delete()
+                    }
                 }
             }
+        }
+        // 多个附件一次更新共享索引, 避免逐个删除时反复读写索引
+        if (uploadFiles.isNotEmpty()) {
+            deleteUploadFiles(uploadFiles)
+        }
+        relativePaths.forEach { path ->
+            repository.deleteByPath(path)
         }
     }
 
     suspend fun countChatFiles(): Pair<Int, Long> = withContext(Dispatchers.IO) {
-        val dir = context.filesDir.resolve(FileFolders.UPLOAD)
+        val dir = uploadDir
         if (!dir.exists()) {
             return@withContext Pair(0, 0)
         }
         val files = dir.listFiles() ?: return@withContext Pair(0, 0)
         val count = files.size
-        val size = files.sumOf { it.length() }
-        Pair(count, size)
+        // 软链接会跟随到实体文件, 直接相加会把共享的实体重复计算; 实体只按实际存储统计一次。
+        val legacySize = files.filterNot(AttachmentCas::isSymlink).sumOf { it.length() }
+        val entitySize = uploadCasDir.listFiles()
+            ?.filterNot(AttachmentCas::isTemporary)
+            ?.sumOf { it.length() }
+            ?: 0L
+        Pair(count, legacySize + entitySize)
     }
 
     fun createChatTextFile(text: String): UIMessagePart.Document {
-        val dir = context.filesDir.resolve(FileFolders.UPLOAD)
-        if (!dir.exists()) {
-            dir.mkdirs()
-        }
-        val fileName = buildUuidFileName(displayName = "pasted_text.txt", mimeType = "text/plain")
-        val file = dir.resolve(fileName)
-        file.writeText(text)
+        val file = storeUploadFile("pasted_text.txt", "text/plain") { it.write(text.toByteArray()) }
         trackManagedFile(
             folder = FileFolders.UPLOAD,
             file = file,
@@ -497,9 +516,29 @@ class FilesManager(
     suspend fun delete(id: Long, deleteFromDisk: Boolean = true): Boolean = withContext(Dispatchers.IO) {
         val entity = repository.getById(id) ?: return@withContext false
         if (deleteFromDisk) {
-            runCatching { getFile(entity).delete() }
+            // upload 下是软链接, 删除时必须同步维护实体文件与索引
+            deleteEntitiesFromDisk(listOf(entity))
         }
         repository.deleteById(id) > 0
+    }
+
+    /**
+     * 批量删除指定附件: 磁盘文件与共享索引只处理一次, 再删除数据库记录。
+     * 返回所有数据库记录是否都删除成功。
+     */
+    suspend fun deleteAll(ids: List<Long>, deleteFromDisk: Boolean = true): Boolean = withContext(Dispatchers.IO) {
+        val entities = ids.distinct().mapNotNull { repository.getById(it) }
+        if (entities.isEmpty()) return@withContext true
+        if (deleteFromDisk) {
+            deleteEntitiesFromDisk(entities)
+        }
+        var allDeleted = true
+        entities.forEach { entity ->
+            if (repository.deleteById(entity.id) == 0) {
+                allDeleted = false
+            }
+        }
+        allDeleted
     }
 
     suspend fun deleteAll(folder: String = FileFolders.UPLOAD): Boolean = withContext(Dispatchers.IO) {
@@ -513,6 +552,15 @@ class FilesManager(
         entries.orEmpty().forEach { entry ->
             if (!runCatching { entry.deleteRecursively() }.getOrDefault(false)) {
                 allDeletedFromDisk = false
+            }
+        }
+
+        if (folder == FileFolders.UPLOAD) {
+            // 软链接已全部移除: 实体文件与索引也一并清掉; 否则至少丢弃索引以便扫描重建
+            if (allDeletedFromDisk) {
+                AttachmentCas.clearAll(context.cacheDir, filesRoot)
+            } else {
+                AttachmentCas.clearIndex(context.cacheDir)
             }
         }
 
@@ -533,24 +581,86 @@ class FilesManager(
         folder: String = FileFolders.UPLOAD,
         cutoffMillis: Long,
     ): Boolean = withContext(Dispatchers.IO) {
-        var allDeleted = true
-        repository.listByFolder(folder).first()
+        val candidates = repository.listByFolder(folder).first()
             .filter { it.createdAt < cutoffMillis }
-            .forEach { entity ->
-                val file = getFile(entity)
-                val deletedFromDisk = !file.exists() || runCatching {
-                    file.deleteRecursively()
-                }.getOrDefault(false)
-
-                if (deletedFromDisk) {
-                    if (repository.deleteById(entity.id) == 0) {
-                        allDeleted = false
-                    }
-                } else {
+        // 一次处理全部软链接, 避免逐个删除时反复读写共享索引
+        val deletedFromDisk = deleteEntitiesFromDisk(candidates)
+        var allDeleted = true
+        candidates.forEachIndexed { index, entity ->
+            if (deletedFromDisk[index]) {
+                if (repository.deleteById(entity.id) == 0) {
                     allDeleted = false
                 }
+            } else {
+                allDeleted = false
             }
+        }
         allDeleted
+    }
+
+    /**
+     * 把上传内容写入内容寻址存储, 并在 `upload` 下创建指向 `../upload-cas/<sha256>` 的软链接。
+     * [writeContent] 负责把原始内容写入传入的输出流; 内容边写边计算 sha256, 不再二次读盘。
+     */
+    private fun storeUploadFile(
+        displayName: String,
+        mimeType: String?,
+        writeContent: (OutputStream) -> Unit,
+    ): File {
+        val casDir = uploadCasDir.apply { mkdirs() }
+        val (temporary, sha256) = AttachmentCas.writeTemporary(casDir, writeContent)
+        try {
+            val linkName = buildUuidFileName(displayName, mimeType)
+            // 实体落盘、建立软链接与索引更新由 AttachmentCas 在同一把锁内完成, 避免与并发删除互相穿插
+            return AttachmentCas.linkEntity(context.cacheDir, filesRoot, sha256, linkName, temporary)
+        } catch (e: Throwable) {
+            temporary.delete()
+            throw e
+        }
+    }
+
+    /**
+     * 批量删除附件的磁盘文件: `upload` 下的软链接一次性交给 [AttachmentCas.removeLinks] 处理
+     * (共享索引只读写一次), 其它目录逐个删除。返回与 [entities] 一一对应的磁盘删除结果。
+     */
+    private fun deleteEntitiesFromDisk(entities: List<ManagedFileEntity>): List<Boolean> {
+        val uploadEntities = entities.filter { it.folder == FileFolders.UPLOAD }
+        val uploadResults = deleteUploadFiles(uploadEntities.map { getFile(it) })
+        val results = MutableList(entities.size) { true }
+        var uploadIndex = 0
+        entities.forEachIndexed { index, entity ->
+            if (entity.folder == FileFolders.UPLOAD) {
+                results[index] = uploadResults[uploadIndex++]
+            } else {
+                val file = getFile(entity)
+                results[index] = !file.exists() || runCatching { file.deleteRecursively() }.getOrDefault(false)
+            }
+        }
+        return results
+    }
+
+    /**
+     * 删除一批 `upload` 下的软链接, 并一次性更新共享索引; 当实体文件不再被任何软链接引用时将其删除。
+     * 返回与 [files] 一一对应的「删除后该位置已不存在软链接」结果。
+     */
+    private fun deleteUploadFiles(files: List<File>): List<Boolean> {
+        val refs = mutableListOf<AttachmentCas.LinkRef>()
+        val results = files.map { file ->
+            if (!AttachmentCas.isSymlink(file)) {
+                file.delete() || !file.exists()
+            } else {
+                val sha256 = AttachmentCas.readSha(file)
+                val deleted = file.delete()
+                if (deleted && sha256 != null) {
+                    refs += AttachmentCas.LinkRef(sha256, file.name)
+                }
+                deleted || !AttachmentCas.isSymlink(file)
+            }
+        }
+        if (refs.isNotEmpty()) {
+            AttachmentCas.removeLinks(context.cacheDir, filesRoot, refs)
+        }
+        return results
     }
 
     private fun createTargetFile(folder: String, displayName: String, mimeType: String?): File {
@@ -620,6 +730,23 @@ class FilesManager(
     private fun getRelativePathInFilesDir(file: File): String? =
         FileUtils.getRelativePathInFilesDir(context.filesDir, file)
 
+    /**
+     * 文件位于 `filesDir/upload` 下时返回其文件名, 否则返回 null。
+     * 只比较父目录, 不使用 canonicalFile, 避免把软链接解析到 `upload-cas`。
+     */
+    private fun uploadFileName(file: File): String? {
+        val parent = runCatching { file.parentFile?.canonicalFile }.getOrNull() ?: return null
+        val upload = runCatching { uploadDir.canonicalFile }.getOrNull() ?: return null
+        return if (parent == upload && file.name.isNotBlank()) file.name else null
+    }
+
+    /** 文件是否直接位于 `filesDir/upload-cas` 下 (实体文件, 由引用计数管理)。 */
+    private fun isUploadCasEntity(file: File): Boolean {
+        val parent = runCatching { file.parentFile?.canonicalFile }.getOrNull() ?: return false
+        val cas = runCatching { uploadCasDir.canonicalFile }.getOrNull() ?: return false
+        return parent == cas
+    }
+
     fun getFileNameFromUri(uri: Uri): String? =
         FileUtils.getFileNameFromUri(context, uri)
 
@@ -669,6 +796,7 @@ data class SyncResult(
 
 object FileFolders {
     const val UPLOAD = "upload"
+    const val UPLOAD_CAS = "upload-cas"
     const val SKILLS = "skills"
     const val BUILTIN_SKILLS = "builtin_skills"
     const val FONTS = "fonts"

@@ -16,6 +16,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import me.rerere.rikkahub.data.files.AttachmentCas
 import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.files.SkillManager
 import java.io.File
@@ -87,6 +88,9 @@ class RikkaHubApp : Application() {
 
         // cleanup stale tool output files
         cleanupToolOutputs()
+
+        // cleanup attachment entity temp files left behind by an interrupted write
+        cleanupAttachmentTemps()
 
         // cleanup workspace temp dirs (proot + rootfs /tmp)
         cleanupWorkspaceTempDirs()
@@ -168,6 +172,16 @@ class RikkaHubApp : Application() {
                 if (dir.exists()) {
                     dir.deleteRecursively()
                 }
+            }
+        }
+    }
+
+    private fun cleanupAttachmentTemps() {
+        get<AppScope>().launch(Dispatchers.IO) {
+            runCatching {
+                AttachmentCas.deleteStaleTemporaryFiles(filesDir)
+            }.onFailure {
+                Log.e(TAG, "cleanupAttachmentTemps failed", it)
             }
         }
     }

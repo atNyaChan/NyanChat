@@ -1534,7 +1534,7 @@ class ChatService(
             newFiles.none { it == file }
         }
         if (deletedFiles.isNotEmpty()) {
-            filesManager.deleteChatFiles(deletedFiles)
+            appScope.launch { filesManager.deleteChatFiles(deletedFiles) }
             Log.w(TAG, "checkFilesDelete: $deletedFiles")
         }
     }

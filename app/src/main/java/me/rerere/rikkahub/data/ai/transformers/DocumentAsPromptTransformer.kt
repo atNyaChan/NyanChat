@@ -75,7 +75,7 @@ object DocumentAsPromptTransformer : InputMessageTransformer {
         return EpubParser.parse(file)
     }
 
-    // 上传文件保存在 filesDir/upload 下, 该目录通过 proot 挂载到 workspace 的 /upload
+    // 上传文件在 filesDir/upload 下, 是指向 upload-cas 的软链接; 该目录通过 proot 挂载到 workspace 的 /upload
     // 返回文件在 workspace 内的绝对路径, 便于 AI 用 workspace 工具直接读取原始文件
     private fun resolveWorkspacePath(document: UIMessagePart.Document): String? {
         if (!document.url.startsWith("file://")) return null

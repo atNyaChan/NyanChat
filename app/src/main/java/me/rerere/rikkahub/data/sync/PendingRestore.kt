@@ -39,14 +39,14 @@ internal class PendingRestore(
         }?.forEach { it.deleteRecursively() }
         if (!pending.isDirectory) return false
 
-        val replaceUpload = isReplaceUpload()
+        val replaceFolders = foldersToReplace()
         val journal = File(pending, "journal.json")
         val entries = if (journal.exists()) {
             // An existing journal may describe an interrupted installation; keep it if reading fails.
             Json.decodeFromString<List<RestoreEntry>>(journal.readText())
         } else {
             try {
-                buildEntries().also { writeDurably(journal, Json.encodeToString(it)) }
+                buildEntries(replaceFolders).also { writeDurably(journal, Json.encodeToString(it)) }
             } catch (e: Exception) {
                 // No live files have been changed yet, so this restore can be safely rejected.
                 move(pending, File(root, "failed-${UUID.randomUUID()}"))
@@ -54,12 +54,12 @@ internal class PendingRestore(
             }
         }
         try {
-            // 存档带非空 upload 时整体替换原 upload, 逐文件日志里不再包含 upload 条目
-            if (replaceUpload) {
-                // 先落一个持久标记, 保证「原 upload 已移走 / 存档 upload 已移入」后进程中断时,
+            // upload / upload-cas 带非空内容时整体替换, 逐文件日志里不再包含这些目录的条目
+            if (replaceFolders.isNotEmpty()) {
+                // 先落持久标记, 保证「旧目录已移走 / 存档目录已移入」后进程中断时,
                 // 重试仍按整体替换处理, 不会退化成逐文件合并而漏掉失败回滚。
-                writeDurably(File(pending, REPLACE_UPLOAD_MARKER), "")
-                replaceUploadDirectory()
+                replaceFolders.forEach { writeDurably(File(pending, replaceMarker(it)), "") }
+                replaceDirectories(replaceFolders)
             }
             entries.forEach { entry ->
                 val target = targetFile(entry.path)
@@ -77,17 +77,17 @@ internal class PendingRestore(
             if (settings.isFile) restoreSettings(settings.readText())
         } catch (e: Exception) {
             val rollbackError = runCatching { rollback(entries) }.exceptionOrNull()
-            val uploadError = runCatching { restoreUploadDirectory(replaceUpload) }.exceptionOrNull()
+            val folderError = runCatching { restoreDirectories(replaceFolders) }.exceptionOrNull()
             if (rollbackError != null) {
                 e.addSuppressed(rollbackError)
-                uploadError?.let { e.addSuppressed(it) }
+                folderError?.let { e.addSuppressed(it) }
                 // Do not start the app with a partially restored database. Keep the journal for retry.
                 throw e
             }
-            if (uploadError != null) {
-                // DB 与设置已回滚, 只有 upload 未还原; 保留 pending 以便下次启动重试, 但不能抛出
+            if (folderError != null) {
+                // DB 与设置已回滚, 只有附件目录未还原; 保留 pending 以便下次启动重试, 但不能抛出
                 // 未捕获异常导致启动崩溃 (RikkaHubApp 只处理 RestoreFailedException)。
-                e.addSuppressed(uploadError)
+                e.addSuppressed(folderError)
                 throw RestoreFailedException(e)
             }
             move(pending, File(root, "failed-${UUID.randomUUID()}"))
@@ -102,15 +102,14 @@ internal class PendingRestore(
         return true
     }
 
-    private fun buildEntries(): List<RestoreEntry> {
-        val replaceUpload = isReplaceUpload()
+    private fun buildEntries(replaceFolders: Set<String>): List<RestoreEntry> {
         val payload = File(pending, "payload")
         val paths = payload.walkTopDown().filter { it.isFile }.map {
             it.relativeTo(payload).invariantSeparatorsPath
         }.toList().sorted()
         val entries = paths
-            // upload 由 replaceUploadDirectory 整体处理, 不进逐文件日志
-            .filter { path -> !(replaceUpload && path.startsWith("files/${FileFolders.UPLOAD}/")) }
+            // upload / upload-cas 由 replaceDirectories 整体处理, 不进逐文件日志
+            .filter { path -> replaceFolders.none { path.startsWith("files/$it/") } }
             .map { path ->
                 RestoreEntry(path, install = true, hadOriginal = targetFile(path).exists())
             }.toMutableList()
@@ -125,48 +124,62 @@ internal class PendingRestore(
     }
 
     /**
-     * 存档里是否带了非空 upload。首次运行时看 payload；替换开始前会写入 [REPLACE_UPLOAD_MARKER]，
-     * 若上次已完成「旧 upload 已移到备份」这一步则用备份目录的存在来表示整体替换模式。
+     * 需要整体替换的附件目录集合。首次运行时看 payload 是否非空; 替换开始前会写入
+     * `replace-<folder>` 标记, 若上次已完成「旧目录已移到备份」这一步则用备份目录的存在来判断。
      */
-    private fun isReplaceUpload(): Boolean {
-        if (File(pending, REPLACE_UPLOAD_MARKER).exists()) return true
-        if (File(pending, "originals-upload").exists()) return true
-        val upload = File(pending, "payload/files/${FileFolders.UPLOAD}")
-        return upload.isDirectory && upload.listFiles()?.any { it.isFile } == true
+    private fun foldersToReplace(): Set<String> {
+        val result = linkedSetOf<String>()
+        REPLACEABLE_FOLDERS.forEach { folder ->
+            if (File(pending, replaceMarker(folder)).exists() || File(pending, originalsDir(folder)).exists()) {
+                result += folder
+            }
+        }
+        REPLACEABLE_FOLDERS.forEach { folder ->
+            if (folder in result) return@forEach
+            val source = File(pending, "payload/files/$folder")
+            val hasContent = source.isDirectory && source.listFiles().orEmpty().any {
+                it.isFile || Files.isSymbolicLink(it.toPath())
+            }
+            if (hasContent) result += folder
+        }
+        return result
     }
 
-    /** 把旧 upload 整体移到 originals-upload 备份, 再把存档里的 upload 目录整体移入。 */
-    private fun replaceUploadDirectory() {
-        val live = File(filesDir, FileFolders.UPLOAD)
-        val backup = File(pending, "originals-upload")
-        val source = File(pending, "payload/files/${FileFolders.UPLOAD}")
-        if (!backup.exists() && live.exists()) move(live, backup)
-        if (source.exists()) {
-            if (live.exists()) live.deleteRecursively()
-            move(source, live)
+    /** 把旧目录整体移到 originals-<folder> 备份, 再把存档里的目录整体移入。 */
+    private fun replaceDirectories(folders: Set<String>) {
+        folders.forEach { folder ->
+            val live = File(filesDir, folder)
+            val backup = File(pending, originalsDir(folder))
+            val source = File(pending, "payload/files/$folder")
+            if (!backup.exists() && live.exists()) move(live, backup)
+            if (source.exists()) {
+                if (live.exists()) live.deleteRecursively()
+                move(source, live)
+            }
         }
     }
 
-    /** 恢复失败时把新 upload 删掉, 再尽量把 originals-upload 备份放回。 */
-    private fun restoreUploadDirectory(replaceUpload: Boolean) {
-        if (!replaceUpload) return
-        val live = File(filesDir, FileFolders.UPLOAD)
-        val backup = File(pending, "originals-upload")
-        val source = File(pending, "payload/files/${FileFolders.UPLOAD}")
-        when {
-            backup.exists() -> {
-                // 原 upload 已备份, 删掉当前 (新) 目录并还原
-                if (live.exists()) live.deleteRecursively()
-                move(backup, live)
-            }
+    /** 恢复失败时把新目录删掉, 再尽量把 originals-<folder> 备份放回。 */
+    private fun restoreDirectories(folders: Set<String>) {
+        folders.forEach { folder ->
+            val live = File(filesDir, folder)
+            val backup = File(pending, originalsDir(folder))
+            val source = File(pending, "payload/files/$folder")
+            when {
+                backup.exists() -> {
+                    // 原目录已备份, 删掉当前 (新) 目录并还原
+                    if (live.exists()) live.deleteRecursively()
+                    move(backup, live)
+                }
 
-            !source.exists() -> {
-                // 本来没有原 upload, 且存档 upload 已移入: 删掉以还原到「无 upload」
-                if (live.exists()) live.deleteRecursively()
-            }
+                !source.exists() -> {
+                    // 本来没有原目录, 且存档目录已移入: 删掉以还原到「无目录」
+                    if (live.exists()) live.deleteRecursively()
+                }
 
-            // 其余情况原 upload 仍在 live (尚未备份), 保持原样, 绝不能删
-            else -> Unit
+                // 其余情况原目录仍在 live (尚未备份), 保持原样, 绝不能删
+                else -> Unit
+            }
         }
     }
 
@@ -201,8 +214,12 @@ internal class PendingRestore(
     private data class RestoreEntry(val path: String, val install: Boolean, val hadOriginal: Boolean)
 
     companion object {
-        /** 落盘的「本次恢复整体替换 upload」标记, 用于中断重试时保持同一处理模式。 */
-        private const val REPLACE_UPLOAD_MARKER = "replace-upload"
+        /** 需要整体替换的附件目录 (内容寻址存储改造后 upload 与 upload-cas 成对替换)。 */
+        private val REPLACEABLE_FOLDERS = listOf(FileFolders.UPLOAD, FileFolders.UPLOAD_CAS)
+
+        private fun replaceMarker(folder: String): String = "replace-$folder"
+
+        private fun originalsDir(folder: String): String = "originals-$folder"
 
         fun resolveInside(root: File, relativePath: String): File {
             require(relativePath.isNotBlank() && !relativePath.startsWith('/') &&

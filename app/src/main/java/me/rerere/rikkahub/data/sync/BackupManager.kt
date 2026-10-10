@@ -25,6 +25,7 @@ import me.rerere.rikkahub.data.datastore.migration.SettingsJsonMigrator
 import me.rerere.rikkahub.data.db.AppDatabase
 import me.rerere.rikkahub.data.db.AppDatabaseFactory
 import me.rerere.rikkahub.data.db.SQLiteConfiguration
+import me.rerere.rikkahub.data.files.AttachmentCas
 import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.files.MediaCreationFiles
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
@@ -41,6 +42,7 @@ import java.io.FileOutputStream
 import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.LinkOption
+import java.nio.file.Paths
 import java.nio.file.attribute.BasicFileAttributes
 import java.security.MessageDigest
 import java.time.LocalDateTime
@@ -355,7 +357,8 @@ class BackupManager(
                 restoredEntries++
             }
 
-            if (archive.extension.equals("tar", ignoreCase = true)) {
+            val isTar = archive.extension.equals("tar", ignoreCase = true)
+            if (isTar) {
                 TarArchiveInputStream(FileInputStream(archive).buffered()).use { tar ->
                     var entry = tar.nextEntry
                     while (entry != null) {
@@ -363,6 +366,15 @@ class BackupManager(
                         val name = entry.name
                         when {
                             entry.isDirectory -> Unit
+                            // 附件软链接 (upload/<name> -> ../upload-cas/<sha>) 原样还原成符号链接
+                            entry.isSymbolicLink -> {
+                                val linkName = entry.linkName
+                                targetOf(name)?.let { target ->
+                                    require(seen.add(name)) { "Duplicate backup entry: $name" }
+                                    createParent(target)
+                                    Files.createSymbolicLink(target.toPath(), validatedSymlinkTarget(target, linkName, File(payload, "files")))
+                                }
+                            }
                             // TAR 硬链接条目没有数据区, 记下目标, 等目标条目落盘后复制成独立文件
                             entry.isLink -> {
                                 val linkName = entry.linkName
@@ -395,6 +407,9 @@ class BackupManager(
                 }
             }
             expandHardLinks(hardLinks, extracted)
+            // 导入时把 upload 统一转换成 upload-cas + 软链接。
+            // TAR: 只有带非空 upload 且没有 upload-cas 文件夹时转换; ZIP: 只要 upload 非空就转换。
+            convertImportedUploadToCas(payload = payload, isTar = isTar)
             require(restoredEntries > 0) { "No data found in the backup" }
             if (stagedDatabase.exists()) {
                 DatabaseBackup.normalize(context, stagedDatabase)
@@ -431,6 +446,30 @@ class BackupManager(
 
     private fun isWorkspaceArchiveEntry(name: String): Boolean =
         name.startsWith(WORKSPACES_ENTRY) && name.endsWith(".tar.zst")
+
+    /** 校验软链接目标不允许逃出附件根目录, 返回可直接交给 [Files.createSymbolicLink] 的相对路径。 */
+    private fun validatedSymlinkTarget(link: File, target: String, root: File): java.nio.file.Path {
+        val path = Paths.get(target)
+        require(!path.isAbsolute) { "Invalid symlink target: $target" }
+        val rootPath = root.canonicalFile.toPath()
+        val linkParent = requireNotNull(link.parentFile) { "Symlink has no parent directory" }
+        val resolved = linkParent.canonicalFile.toPath().resolve(path).normalize()
+        require(resolved.startsWith(rootPath)) { "Symlink escapes the files directory: $target" }
+        return path
+    }
+
+    /**
+     * 导入时把展开的 `upload` 目录转换成内容寻址的 `upload-cas` + 软链接 `upload`。
+     * 已经是软链接形式的归档不会被重复处理。
+     */
+    private fun convertImportedUploadToCas(payload: File, isTar: Boolean) {
+        val filesRoot = File(payload, "files")
+        val upload = File(filesRoot, FileFolders.UPLOAD)
+        if (!upload.isDirectory || upload.listFiles().orEmpty().isEmpty()) return
+        // TAR 归档已经带 upload-cas 时保持原样; 只有没有 upload-cas 文件夹才转换
+        if (isTar && File(filesRoot, FileFolders.UPLOAD_CAS).isDirectory) return
+        AttachmentCas.convertUploadFolderToCas(filesRoot)
+    }
 
     /**
      * 打包时写入的 TAR 硬链接条目没有数据区，恢复时在目标条目落盘后把它展开成独立副本
@@ -494,9 +533,27 @@ class BackupManager(
             if (prefix == FileFolders.MEDIA_CREATION && file.name.endsWith(MediaCreationFiles.PARTIAL_SUFFIX)) {
                 return@forEach
             }
+            // 写入实体时可能残留的临时文件不属于任何附件, 不打包
+            if (prefix == FileFolders.UPLOAD_CAS && AttachmentCas.isTemporary(file)) {
+                return@forEach
+            }
             val relative = file.relativeTo(root).invariantSeparatorsPath
-            addFile(tar, file, "$prefix/$relative", deduplicator)
+            val name = "$prefix/$relative"
+            // upload 里是指向 upload-cas 的软链接, 原样写成 TAR 符号链接条目
+            if (Files.isSymbolicLink(file.toPath())) {
+                addSymbolicLink(tar, name, Files.readSymbolicLink(file.toPath()).toString())
+            } else {
+                addFile(tar, file, name, deduplicator)
+            }
         }
+    }
+
+    private fun addSymbolicLink(tar: TarArchiveOutputStream, name: String, target: String) {
+        val entry = TarArchiveEntry(name, TarConstants.LF_SYMLINK).apply {
+            linkName = target
+        }
+        tar.putArchiveEntry(entry)
+        tar.closeArchiveEntry()
     }
 
     private fun addFile(
@@ -543,7 +600,13 @@ class BackupManager(
         private const val DATABASE_ENTRY = "rikka_hub.db.zst"
 
         private val ATTACHMENT_FOLDERS =
-            listOf(FileFolders.UPLOAD, FileFolders.SKILLS, FileFolders.FONTS, FileFolders.MEDIA_CREATION)
+            listOf(
+                FileFolders.UPLOAD,
+                FileFolders.UPLOAD_CAS,
+                FileFolders.SKILLS,
+                FileFolders.FONTS,
+                FileFolders.MEDIA_CREATION,
+            )
 
         /** Backed up with their subdirectories; the other folders only contain top-level files. */
         private val NESTED_ATTACHMENT_FOLDERS = setOf(FileFolders.SKILLS, FileFolders.MEDIA_CREATION)
@@ -584,6 +647,9 @@ class BackupManager(
                 )
             }
             if (restored) {
+                // 附件目录可能被整体替换, 丢弃旧软链接索引, 下次使用时从磁盘重建
+                runCatching { AttachmentCas.clearIndex(context.cacheDir) }
+                    .onFailure { Log.w(TAG, "Failed to clear attachment symlink index", it) }
                 runCatching { RestoredAttachmentUrlRewriter.rewrite(context, json) }
                     .onFailure { Log.w(TAG, "Failed to rewrite restored attachment URLs", it) }
                 if (needsWorkspaceReset) {

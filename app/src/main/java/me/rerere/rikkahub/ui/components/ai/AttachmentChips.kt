@@ -63,15 +63,16 @@ internal fun MediaFileInputRow(
         managedFiles.associate { it.relativePath.substringAfterLast('/') to it.displayName }
     }
 
+    val scope = rememberCoroutineScope()
+
     fun removePart(part: UIMessagePart, url: String) {
         state.messageContent = state.messageContent.filterNot { it == part }
         if (state.shouldDeleteFileOnRemove(part)) {
-            filesManager.deleteChatFiles(listOf(url.toUri()))
+            scope.launch { filesManager.deleteChatFiles(listOf(url.toUri())) }
         }
     }
 
     // 正在哪张图片上画，非空时显示画板
-    val scope = rememberCoroutineScope()
     var drawingOn by remember { mutableStateOf<UIMessagePart.Image?>(null) }
     drawingOn?.let { part ->
         SketchDialog(

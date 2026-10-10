@@ -62,7 +62,7 @@ class AssistantVM(
         }
     }
 
-    private fun cleanupAssistantFiles(assistant: Assistant) {
+    private suspend fun cleanupAssistantFiles(assistant: Assistant) {
         val uris = buildList {
             (assistant.avatar as? Avatar.Image)?.let { add(it.url.toUri()) }
             assistant.background?.let { add(it.toUri()) }
