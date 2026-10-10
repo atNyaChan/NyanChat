@@ -456,8 +456,8 @@
 	- 备份包内的普通文件条目不保留源文件的 POSIX 权限与属主信息，统一按条目名以普通文件（0644）写入；恢复解包时本来也不回写目标权限。恢复时直接流式解析 TAR。由于 Android 环境不保证支持硬链接，打包时写入的 TAR 硬链接条目会在目标条目落盘后于暂存目录展开成独立副本（复制内容），不再创建硬链接。
 	- 恢复时若存档包含非空 `upload`，会在应用阶段把原 `filesDir/upload` 整体移到 `pending/originals-upload` 备份、再用存档里的 `upload` 目录整体替换；恢复失败回滚时删掉新目录并把备份放回。存档没有 `upload`（或为空）时不动原 `/upload`。
 	- 本地、WebDAV 和 S3 使用相同的新格式。
-- 导入根据文件后缀识别新 `.tar` 与旧 `.zip`，旧 ZIP 备份仍可还原。
-- 本地导出额外提供旧 ZIP 兼容格式（移除 Fork 新增的模型价格、排序、显示、上下文缓存、回传思考、本地工具授权、中途思考、自定义字体字重与内置搜索字段；`chatFontFamily` 的 `outfit` 回落为 `serif`；`webDavConfig`/`s3Config`/`uploadS3Config` 的备份项去除 `WORKSPACE`；过滤官方版本无法反序列化的电池和定位本地工具；并标注“兼容 RikkaHub 2.5.1+”）；该兼容 ZIP 不包含工作区环境，S3 与 WebDAV 仍只导出新的 TAR 格式。
+- 导入根据文件后缀识别新 `.tar` 与旧 `.zip`，旧 ZIP 备份仍可还原；还原时只读取单个 `rikka_hub.db`，不再合并旧 zip 的 `-wal`/`-shm` 旁路文件。
+- 本地导出额外提供旧 ZIP 兼容格式（移除 Fork 新增的模型价格、排序、显示、上下文缓存、回传思考、本地工具授权、中途思考、自定义字体字重与内置搜索字段；`chatFontFamily` 的 `outfit` 回落为 `serif`；`webDavConfig`/`s3Config`/`uploadS3Config` 的备份项去除 `WORKSPACE`；过滤官方版本无法反序列化的电池和定位本地工具；并标注“兼容 RikkaHub 2.5.1+”）；兼容 ZIP 中 `rikka_hub.db` 与 `settings.json` 使用 deflate 5 级压缩，其余附件条目只储存（STORED）不压缩；兼容 ZIP 不包含工作区环境，S3 与 WebDAV 仍只导出新的 TAR 格式。
 - Android 端 zstd 使用官方 `zstd-jni` AAR（包含各 Android ABI 原生库），避免普通 JVM JAR 缺少 `.so` 导致导出失败；Release 混淆配置保留 zstd-jni 的 JNI 字段与方法名，避免导出时因字段被重命名而报 `dstPos` 缺失。
 - 完整恢复前关闭 Room 数据库并清理目标数据库的旧 WAL/SHM，避免旧连接覆盖刚恢复的对话数据。
 - 通过本地文件、WebDAV 或 S3 导入新 TAR 存档时会恢复工作区环境；导入不包含工作区环境的兼容 ZIP（或未勾选“工作区”的 TAR）时，才在恢复后的下次启动重置工作区状态：存档里的工作区 id 与本地已有工作区相同且本地 Rootfs 仍完整时保持为 `READY` 并直接复用已有工作区，其余缺少 Rootfs 的工作区才重置为 `DISABLED`。

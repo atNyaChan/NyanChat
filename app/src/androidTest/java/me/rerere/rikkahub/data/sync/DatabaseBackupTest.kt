@@ -43,21 +43,6 @@ class DatabaseBackupTest {
         assertTrue(File(file.path + "-wal").length() > 0)
     }
 
-    @Test fun legacyWalIsMergedWithoutShmAndWithoutChangingOriginalArchiveFiles() {
-        val source = File(directory, "source")
-        val staged = File(directory, "rikka_hub")
-        createWalDatabase(source).use {
-            source.copyTo(staged)
-            File(source.path + "-wal").copyTo(File(staged.path + "-wal"))
-        }
-        DatabaseBackup.normalize(context, staged)
-        assertFalse(File(staged.path + "-wal").exists())
-        assertFalse(File(staged.path + "-shm").exists())
-        open(staged).use {
-            assertEquals("committed only in WAL", it.stringForQuery("SELECT text FROM messages", null))
-        }
-    }
-
     @Test fun snapshotContainsWalCommitsAndFtsTablesAndNeedsNoSidecars() {
         val source = File(directory, "source")
         val snapshot = File(directory, "snapshot")

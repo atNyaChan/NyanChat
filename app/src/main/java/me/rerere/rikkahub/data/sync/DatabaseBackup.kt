@@ -9,8 +9,6 @@ import java.io.File
 
 internal object DatabaseBackup {
     const val ARCHIVE_DATABASE = "rikka_hub.db"
-    const val WAL = "rikka_hub-wal"
-    const val SHM = "rikka_hub-shm"
 
     /** VACUUM INTO includes committed WAL contents in a consistent, standalone snapshot. */
     fun createSnapshot(database: SupportSQLiteDatabase, destination: File) {
@@ -18,7 +16,7 @@ internal object DatabaseBackup {
         database.execSQL("VACUUM main INTO ?", arrayOf(destination.absolutePath))
     }
 
-    /** Only opens the staged copy. The caller must place its matching WAL beside it first. */
+    /** Only opens the staged copy, which must already be a standalone snapshot. */
     fun normalize(context: Context, databaseFile: File) {
         require(databaseFile.isFile && databaseFile.length() > 0) { "Backup database is missing or empty" }
         val configuration = SQLiteConfiguration.configure(

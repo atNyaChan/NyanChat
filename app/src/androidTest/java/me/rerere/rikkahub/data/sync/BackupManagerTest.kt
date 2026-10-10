@@ -26,7 +26,6 @@ import org.koin.core.context.GlobalContext
 import java.io.File
 import java.nio.file.Files
 import java.util.zip.ZipEntry
-import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
@@ -68,21 +67,17 @@ class BackupManagerTest {
         directory.deleteRecursively()
     }
 
-    @Test fun oldArchiveIgnoresShmAndLeavesLiveDatabaseUntouchedUntilStartup() = runBlocking {
-        val source = File(directory, "source")
+    @Test fun legacyArchiveRestoresStandaloneDatabaseAndLeavesLiveDatabaseUntouchedUntilStartup() = runBlocking {
         val archive = File(directory, "legacy.zip")
-        withRoom(source) { room ->
+        withRoom(File(directory, "source")) { room ->
             val db = room.openHelper.writableDatabase
             db.execSQL("CREATE TABLE backup_probe (text TEXT)")
-            DatabaseBackup.checkpoint(db)
-            db.query("PRAGMA wal_autocheckpoint=0").use { assertTrue(it.moveToFirst()) }
             db.execSQL("INSERT INTO backup_probe VALUES ('archived')")
+            DatabaseBackup.checkpoint(db)
+            val snapshot = File(directory, "snapshot")
+            DatabaseBackup.createSnapshot(db, snapshot)
             ZipOutputStream(archive.outputStream()).use { zip ->
-                addFile(zip, DatabaseBackup.ARCHIVE_DATABASE, source)
-                addFile(zip, DatabaseBackup.WAL, File(source.path + "-wal"))
-                zip.putNextEntry(ZipEntry(DatabaseBackup.SHM))
-                zip.write("deliberately invalid SHM".toByteArray())
-                zip.closeEntry()
+                addFile(zip, DatabaseBackup.ARCHIVE_DATABASE, snapshot)
             }
         }
         manager.stageRestore(archive)
@@ -95,7 +90,6 @@ class BackupManagerTest {
         BackupManager.applyPendingRestore(context, JsonInstant)
         liveDatabase = AppDatabaseFactory.create(context)
         assertEquals("archived", probe(liveDatabase))
-        ZipFile(archive).use { assertTrue(it.getEntry(DatabaseBackup.SHM) != null) }
     }
 
     @Test fun launchCountStaysInSettingsJsonThroughBackupAndStaging() = runBlocking {

@@ -45,6 +45,7 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.security.MessageDigest
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.zip.CRC32
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
@@ -121,70 +122,72 @@ class BackupManager(
     )
 
     /**
-     * 导出上游 RikkaHub 兼容的旧 ZIP 备份：数据库不压缩，设置剥离本分支独有字段。
+     * 导出上游 RikkaHub 兼容的旧 ZIP 备份：数据库使用与上游一致的 `VACUUM INTO` 快照，
+     * 只写入单个 [DatabaseBackup.ARCHIVE_DATABASE]（不携带 `-wal`/`-shm`），设置剥离本分支独有字段。
      * 仅本地“导出旧版格式”使用，S3 与 WebDAV 只导出新 TAR 格式。
      */
     suspend fun createLegacyBackup(includeFiles: Boolean): File = withContext(Dispatchers.IO) {
         val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
         val backupFile = File(context.cacheDir, "backup_$timestamp.zip")
         if (backupFile.exists()) backupFile.delete()
+        val staging = Files.createTempDirectory(context.cacheDir.toPath(), "backup-").toFile()
 
         val settings = settingsStore.awaitLoaded()
-        ZipOutputStream(FileOutputStream(backupFile)).use { zipOut ->
-            addVirtualFileToZip(zipOut, "settings.json", legacyCompatibleSettingsJson(settings))
+        try {
+            ZipOutputStream(FileOutputStream(backupFile)).use { zipOut ->
+                // rikka_hub.db 与 settings.json 用 deflate 5 级压缩，其余附件只储存不压缩
+                zipOut.setLevel(LEGACY_DEFLATE_LEVEL)
+                addVirtualFileToZip(zipOut, "settings.json", legacyCompatibleSettingsJson(settings))
 
-            // Backup database files (chat records are always exported)
-            val dbFile = context.getDatabasePath(SQLiteConfiguration.DATABASE_NAME)
-            if (dbFile.exists()) {
-                addFileToZip(zipOut, dbFile, DatabaseBackup.ARCHIVE_DATABASE)
-            }
-            val walFile = File(dbFile.parentFile, DatabaseBackup.WAL)
-            if (walFile.exists()) {
-                addFileToZip(zipOut, walFile, DatabaseBackup.WAL)
-            }
-            val shmFile = File(dbFile.parentFile, DatabaseBackup.SHM)
-            if (shmFile.exists()) {
-                addFileToZip(zipOut, shmFile, DatabaseBackup.SHM)
-            }
+                // 与上游一致：VACUUM INTO 生成包含已提交 WAL 数据的一致、独立快照，只导出这一个数据库文件
+                val snapshot = File(staging, SQLiteConfiguration.DATABASE_NAME)
+                DatabaseBackup.createSnapshot(database.openHelper.writableDatabase, snapshot)
+                addFileToZip(zipOut, snapshot, DatabaseBackup.ARCHIVE_DATABASE)
 
-            if (includeFiles) {
-                val uploadFolder = File(context.filesDir, FileFolders.UPLOAD)
-                if (uploadFolder.exists() && uploadFolder.isDirectory) {
-                    Log.i(TAG, "createLegacyBackup: Backing up files from ${uploadFolder.absolutePath}")
-                    uploadFolder.listFiles()?.forEach { file ->
-                        if (file.isFile) {
-                            addFileToZip(zipOut, file, "${FileFolders.UPLOAD}/${file.name}")
+                if (includeFiles) {
+                    val uploadFolder = File(context.filesDir, FileFolders.UPLOAD)
+                    if (uploadFolder.exists() && uploadFolder.isDirectory) {
+                        Log.i(TAG, "createLegacyBackup: Backing up files from ${uploadFolder.absolutePath}")
+                        uploadFolder.listFiles()?.forEach { file ->
+                            if (file.isFile) {
+                                addFileToZip(zipOut, file, "${FileFolders.UPLOAD}/${file.name}", store = true)
+                            }
                         }
+                    } else {
+                        Log.w(TAG, "createLegacyBackup: Upload folder does not exist or is not a directory")
                     }
-                } else {
-                    Log.w(TAG, "createLegacyBackup: Upload folder does not exist or is not a directory")
-                }
 
-                val skillsFolder = File(context.filesDir, FileFolders.SKILLS)
-                if (skillsFolder.exists() && skillsFolder.isDirectory) {
-                    Log.i(TAG, "createLegacyBackup: Backing up skills from ${skillsFolder.absolutePath}")
-                    addDirectoryToZip(
-                        zipOut = zipOut,
-                        rootDir = skillsFolder,
-                        currentDir = skillsFolder,
-                        entryPrefix = "${FileFolders.SKILLS}/",
-                    )
-                } else {
-                    Log.w(TAG, "createLegacyBackup: Skills folder does not exist or is not a directory")
-                }
+                    val skillsFolder = File(context.filesDir, FileFolders.SKILLS)
+                    if (skillsFolder.exists() && skillsFolder.isDirectory) {
+                        Log.i(TAG, "createLegacyBackup: Backing up skills from ${skillsFolder.absolutePath}")
+                        addDirectoryToZip(
+                            zipOut = zipOut,
+                            rootDir = skillsFolder,
+                            currentDir = skillsFolder,
+                            entryPrefix = "${FileFolders.SKILLS}/",
+                        )
+                    } else {
+                        Log.w(TAG, "createLegacyBackup: Skills folder does not exist or is not a directory")
+                    }
 
-                val fontsFolder = File(context.filesDir, FileFolders.FONTS)
-                if (fontsFolder.exists() && fontsFolder.isDirectory) {
-                    Log.i(TAG, "createLegacyBackup: Backing up fonts from ${fontsFolder.absolutePath}")
-                    fontsFolder.listFiles()?.forEach { file ->
-                        if (file.isFile) {
-                            addFileToZip(zipOut, file, "${FileFolders.FONTS}/${file.name}")
+                    val fontsFolder = File(context.filesDir, FileFolders.FONTS)
+                    if (fontsFolder.exists() && fontsFolder.isDirectory) {
+                        Log.i(TAG, "createLegacyBackup: Backing up fonts from ${fontsFolder.absolutePath}")
+                        fontsFolder.listFiles()?.forEach { file ->
+                            if (file.isFile) {
+                                addFileToZip(zipOut, file, "${FileFolders.FONTS}/${file.name}", store = true)
+                            }
                         }
+                    } else {
+                        Log.w(TAG, "createLegacyBackup: Fonts folder does not exist or is not a directory")
                     }
-                } else {
-                    Log.w(TAG, "createLegacyBackup: Fonts folder does not exist or is not a directory")
                 }
             }
+        } catch (e: Throwable) {
+            backupFile.delete()
+            throw e
+        } finally {
+            staging.deleteRecursively()
         }
 
         Log.i(
@@ -198,13 +201,40 @@ class BackupManager(
         json.encodeToJsonElement(Settings.serializer(), settings)
     ).toString()
 
-    private fun addFileToZip(zipOut: ZipOutputStream, file: File, entryName: String) {
+    private fun addFileToZip(
+        zipOut: ZipOutputStream,
+        file: File,
+        entryName: String,
+        store: Boolean = false,
+    ) {
+        val entry = ZipEntry(entryName).apply {
+            if (store) {
+                // 仅储存时不压缩，必须预先提供长度与 CRC，否则 ZipOutputStream 会拒绝写入
+                method = ZipEntry.STORED
+                size = file.length()
+                compressedSize = size
+                crc = crc32Of(file)
+            }
+        }
         FileInputStream(file).use { fis ->
-            zipOut.putNextEntry(ZipEntry(entryName))
+            zipOut.putNextEntry(entry)
             fis.copyTo(zipOut)
             zipOut.closeEntry()
             Log.d(TAG, "addFileToZip: Added $entryName (${file.length()} bytes) to zip")
         }
+    }
+
+    private fun crc32Of(file: File): Long {
+        val crc = CRC32()
+        file.inputStream().buffered(IO_BUFFER_SIZE).use { input ->
+            val buffer = ByteArray(IO_BUFFER_SIZE)
+            while (true) {
+                val read = input.read(buffer)
+                if (read < 0) break
+                crc.update(buffer, 0, read)
+            }
+        }
+        return crc.value
     }
 
     private fun addDirectoryToZip(
@@ -218,7 +248,7 @@ class BackupManager(
                 addDirectoryToZip(zipOut, rootDir, file, entryPrefix)
             } else if (file.isFile) {
                 val relativePath = file.relativeTo(rootDir).invariantSeparatorsPath
-                addFileToZip(zipOut, file, "$entryPrefix$relativePath")
+                addFileToZip(zipOut, file, "$entryPrefix$relativePath", store = true)
             }
         }
     }
@@ -264,7 +294,6 @@ class BackupManager(
         try {
             val payload = File(staging, "payload")
             val stagedDatabase = File(payload, "database/${SQLiteConfiguration.DATABASE_NAME}")
-            val stagedWal = File(stagedDatabase.path + "-wal")
             val seen = mutableSetOf<String>()
             // 已落盘的条目名 -> 暂存文件, 用于把 TAR 硬链接条目展开成独立副本
             val extracted = mutableMapOf<String, File>()
@@ -275,8 +304,6 @@ class BackupManager(
             fun targetOf(name: String): File? = when (name) {
                 "settings.json" -> File(staging, "settings.json")
                 DATABASE_ENTRY, DatabaseBackup.ARCHIVE_DATABASE -> stagedDatabase
-                DatabaseBackup.WAL -> stagedWal
-                DatabaseBackup.SHM -> null // Rebuilt by SQLite; never restore shared-memory state.
                 else -> if (isAttachment(name)) {
                     PendingRestore.resolveInside(File(payload, "files"), name)
                 } else null
@@ -369,7 +396,6 @@ class BackupManager(
             }
             expandHardLinks(hardLinks, extracted)
             require(restoredEntries > 0) { "No data found in the backup" }
-            require(!stagedWal.exists() || stagedDatabase.exists()) { "Backup WAL has no matching database" }
             if (stagedDatabase.exists()) {
                 DatabaseBackup.normalize(context, stagedDatabase)
                 // Reject unsupported schemas before publishing; run supported old migrations on the copy.
@@ -537,6 +563,7 @@ class BackupManager(
         private val ZSTD_WORKERS = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
         private const val DATABASE_COMPRESSION_LEVEL = 9
         private const val ZSTD_LONG_WINDOW_LOG = 27
+        private const val LEGACY_DEFLATE_LEVEL = 5
         private const val IO_BUFFER_SIZE = 128 * 1024
 
         private fun pendingRestore(context: Context) = PendingRestore(
