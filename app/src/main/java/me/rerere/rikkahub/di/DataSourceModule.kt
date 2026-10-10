@@ -220,8 +220,6 @@ val dataSourceModule = module {
     single {
         WebDavSync(
             backupManager = get(),
-            settingsStore = get(),
-            json = get(),
             context = get(),
             httpClient = get(),
         )

@@ -30,7 +30,10 @@ class S3Sync(
     }
 
     suspend fun backupToS3(config: S3Config) = withContext(Dispatchers.IO) {
-        val file = prepareBackupFile(config)
+        val file = backupManager.createBackup(
+            includeFiles = S3Config.BackupItem.FILES in config.items,
+            includeWorkspace = S3Config.BackupItem.WORKSPACE in config.items,
+        )
         val client = getS3Client(config)
         val key = "rikkahub_backups/${file.name}"
 
@@ -57,7 +60,7 @@ class S3Sync(
             .filter {
                 (it.key.startsWith("rikkahub_backups/backup_") ||
                     it.key.startsWith("rikkahub_backups/NyanChatBackup-")) &&
-                    (it.key.endsWith(BackupArchive.EXTENSION) || it.key.endsWith(".zip"))
+                    (it.key.endsWith(BackupManager.EXTENSION) || it.key.endsWith(".zip"))
             }
             .map { obj ->
                 S3BackupItem(
@@ -98,12 +101,6 @@ class S3Sync(
         client.deleteObject(item.key).getOrThrow()
         Log.i(TAG, "deleteS3BackupFile: Deleted ${item.key}")
     }
-
-    suspend fun prepareBackupFile(config: S3Config): File = backupManager.createBackup(
-        includeDatabase = true,
-        includeFiles = S3Config.BackupItem.FILES in config.items,
-        includeWorkspace = S3Config.BackupItem.WORKSPACE in config.items,
-    )
 
     private suspend fun restoreFromBackupFile(backupFile: File) = backupManager.stageRestore(backupFile)
 }

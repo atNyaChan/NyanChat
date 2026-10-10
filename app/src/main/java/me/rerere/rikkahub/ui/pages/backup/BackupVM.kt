@@ -18,6 +18,7 @@ import me.rerere.rikkahub.data.datastore.WebDavConfig
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.files.saveUploadFromBytes
 import me.rerere.rikkahub.data.repository.ConversationRepository
+import me.rerere.rikkahub.data.sync.BackupManager
 import me.rerere.rikkahub.data.sync.importer.ChatboxImporter
 import me.rerere.rikkahub.data.sync.importer.CherryStudioProviderImporter
 import me.rerere.rikkahub.data.sync.webdav.WebDavBackupItem
@@ -31,6 +32,7 @@ private const val TAG = "BackupVM"
 
 class BackupVM(
     private val settingsStore: SettingsStore,
+    private val backupManager: BackupManager,
     private val webDavSync: WebDavSync,
     private val s3Sync: S3Sync,
     private val conversationRepository: ConversationRepository,
@@ -106,21 +108,15 @@ class BackupVM(
     }
 
     suspend fun exportToFile(): File {
-        val file = webDavSync.prepareBackupFile(
-            settings.value.webDavConfig.copy(items = localBackupItems.value)
+        return backupManager.createBackup(
+            includeFiles = WebDavConfig.BackupItem.FILES in localBackupItems.value,
+            includeWorkspace = WebDavConfig.BackupItem.WORKSPACE in localBackupItems.value,
         )
-        return file
     }
 
     suspend fun exportLegacyToFile(): File {
-        return webDavSync.prepareLegacyBackupFile(
-            settings.value.webDavConfig.copy(
-                items = if (localBackupItems.value.contains(WebDavConfig.BackupItem.FILES)) {
-                    listOf(WebDavConfig.BackupItem.FILES)
-                } else {
-                    emptyList()
-                }
-            )
+        return backupManager.createLegacyBackup(
+            includeFiles = WebDavConfig.BackupItem.FILES in localBackupItems.value,
         )
     }
 

@@ -448,6 +448,9 @@
 	- 导出前使用 `VACUUM INTO` 生成包含已提交 WAL 数据的一致、独立快照，再压缩为单个 `.db` 文件。
 	- 数据库只导出一个 `rikka_hub.db.zst`，不再携带 `-wal` 和 `-shm`，并使用 zstd 等级 9、长距离匹配窗口（`--long 27`）多线程压缩，再与 `settings.json`、`upload`、skills、fonts 等附件一起打入 tar。
 	- 选择导出“文件”时，在 `workspaces/` 下为所有非 `DISABLED` 工作区按根标识生成独立的 `{workspaceRoot}.tar.zst`；每个子归档复用单工作区导出实现，包含 Rootfs 及对应 `/workspace` 文件。恢复时会将两部分还原到对应工作区。
+	- 导出附件时按内容去重：`upload`、`skills`、`fonts`、`media_creation` 四个目录中逐字节相同的文件只在 tar 内保留一份数据，其余条目写成指向首份数据的 TAR 硬链接，缩小备份体积。先用文件大小筛选，只有大小相同的文件才计算 SHA-256，大小唯一的文件不做哈希。其中 `upload`、`fonts` 只打包顶层文件（与旧 ZIP 兼容格式一致），`skills`、`media_creation` 才递归包含子目录。
+	- 备份包内的普通文件条目不保留源文件的 POSIX 权限与属主信息，统一按条目名以普通文件（0644）写入；恢复解包时本来也不回写目标权限。恢复时直接流式解析 TAR。由于 Android 环境不保证支持硬链接，打包时写入的 TAR 硬链接条目会在目标条目落盘后于暂存目录展开成独立副本（复制内容），不再创建硬链接。
+	- 恢复时若存档包含非空 `upload`，会在应用阶段把原 `filesDir/upload` 整体移到 `pending/originals-upload` 备份、再用存档里的 `upload` 目录整体替换；恢复失败回滚时删掉新目录并把备份放回。存档没有 `upload`（或为空）时不动原 `/upload`。
 	- 本地、WebDAV 和 S3 使用相同的新格式。
 - 导入根据文件后缀识别新 `.tar` 与旧 `.zip`，旧 ZIP 备份仍可还原。
 - 本地导出额外提供旧 ZIP 兼容格式（移除 Fork 新增的模型价格、排序、显示、上下文缓存、回传思考、本地工具授权、中途思考、自定义字体字重与内置搜索字段；`chatFontFamily` 的 `outfit` 回落为 `serif`；`webDavConfig`/`s3Config`/`uploadS3Config` 的备份项去除 `WORKSPACE`；过滤官方版本无法反序列化的电池和定位本地工具；并标注“兼容 RikkaHub 2.5.1+”）；该兼容 ZIP 不包含工作区环境，S3 与 WebDAV 仍只导出新的 TAR 格式。
@@ -457,6 +460,7 @@
 - 本地导入与导出的失败提示分别显示为“导入失败”和“导出失败”。
 - 备份导入导出期间显示不可通过返回键关闭的横向直线进度条对话框，备份页导入项目不再显示加载动画。
 - “导入本地备份文件”说明仅支持 NyanChat 和 RikkaHub 2.x。
+- 备份打包逻辑统一收拢到 `data/sync/BackupManager`，`WebDavSync`/`S3Sync` 只负责传输与列表。
 
 ### 聊天文件
 - “聊天文件”的上传附件卡片支持点击打开，图片复用聊天图片预览；跳转与删除操作移到卡片底部的低矮分段操作条，MIME 类型与文件大小合并为一行。

@@ -1,4 +1,4 @@
-package me.rerere.rikkahub.data.sync.webdav
+package me.rerere.rikkahub.data.sync
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray

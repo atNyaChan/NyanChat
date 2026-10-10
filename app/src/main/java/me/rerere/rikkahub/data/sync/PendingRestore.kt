@@ -2,6 +2,7 @@ package me.rerere.rikkahub.data.sync
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import me.rerere.rikkahub.data.files.FileFolders
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.Files
@@ -38,6 +39,7 @@ internal class PendingRestore(
         }?.forEach { it.deleteRecursively() }
         if (!pending.isDirectory) return false
 
+        val replaceUpload = isReplaceUpload()
         val journal = File(pending, "journal.json")
         val entries = if (journal.exists()) {
             // An existing journal may describe an interrupted installation; keep it if reading fails.
@@ -52,6 +54,13 @@ internal class PendingRestore(
             }
         }
         try {
+            // 存档带非空 upload 时整体替换原 upload, 逐文件日志里不再包含 upload 条目
+            if (replaceUpload) {
+                // 先落一个持久标记, 保证「原 upload 已移走 / 存档 upload 已移入」后进程中断时,
+                // 重试仍按整体替换处理, 不会退化成逐文件合并而漏掉失败回滚。
+                writeDurably(File(pending, REPLACE_UPLOAD_MARKER), "")
+                replaceUploadDirectory()
+            }
             entries.forEach { entry ->
                 val target = targetFile(entry.path)
                 val original = File(pending, "originals/${entry.path}")
@@ -67,12 +76,19 @@ internal class PendingRestore(
             val settings = File(pending, "settings.json")
             if (settings.isFile) restoreSettings(settings.readText())
         } catch (e: Exception) {
-            try {
-                rollback(entries)
-            } catch (rollbackError: Exception) {
+            val rollbackError = runCatching { rollback(entries) }.exceptionOrNull()
+            val uploadError = runCatching { restoreUploadDirectory(replaceUpload) }.exceptionOrNull()
+            if (rollbackError != null) {
                 e.addSuppressed(rollbackError)
+                uploadError?.let { e.addSuppressed(it) }
                 // Do not start the app with a partially restored database. Keep the journal for retry.
                 throw e
+            }
+            if (uploadError != null) {
+                // DB 与设置已回滚, 只有 upload 未还原; 保留 pending 以便下次启动重试, 但不能抛出
+                // 未捕获异常导致启动崩溃 (RikkaHubApp 只处理 RestoreFailedException)。
+                e.addSuppressed(uploadError)
+                throw RestoreFailedException(e)
             }
             move(pending, File(root, "failed-${UUID.randomUUID()}"))
             throw RestoreFailedException(e)
@@ -87,13 +103,17 @@ internal class PendingRestore(
     }
 
     private fun buildEntries(): List<RestoreEntry> {
+        val replaceUpload = isReplaceUpload()
         val payload = File(pending, "payload")
         val paths = payload.walkTopDown().filter { it.isFile }.map {
             it.relativeTo(payload).invariantSeparatorsPath
         }.toList().sorted()
-        val entries = paths.map { path ->
-            RestoreEntry(path, install = true, hadOriginal = targetFile(path).exists())
-        }.toMutableList()
+        val entries = paths
+            // upload 由 replaceUploadDirectory 整体处理, 不进逐文件日志
+            .filter { path -> !(replaceUpload && path.startsWith("files/${FileFolders.UPLOAD}/")) }
+            .map { path ->
+                RestoreEntry(path, install = true, hadOriginal = targetFile(path).exists())
+            }.toMutableList()
         if (paths.contains("database/${databaseFile.name}")) {
             // The new database is standalone. Keep the old DB's sidecars with the old DB only.
             for (suffix in listOf("-wal", "-shm", "-journal")) {
@@ -102,6 +122,52 @@ internal class PendingRestore(
             }
         }
         return entries
+    }
+
+    /**
+     * 存档里是否带了非空 upload。首次运行时看 payload；替换开始前会写入 [REPLACE_UPLOAD_MARKER]，
+     * 若上次已完成「旧 upload 已移到备份」这一步则用备份目录的存在来表示整体替换模式。
+     */
+    private fun isReplaceUpload(): Boolean {
+        if (File(pending, REPLACE_UPLOAD_MARKER).exists()) return true
+        if (File(pending, "originals-upload").exists()) return true
+        val upload = File(pending, "payload/files/${FileFolders.UPLOAD}")
+        return upload.isDirectory && upload.listFiles()?.any { it.isFile } == true
+    }
+
+    /** 把旧 upload 整体移到 originals-upload 备份, 再把存档里的 upload 目录整体移入。 */
+    private fun replaceUploadDirectory() {
+        val live = File(filesDir, FileFolders.UPLOAD)
+        val backup = File(pending, "originals-upload")
+        val source = File(pending, "payload/files/${FileFolders.UPLOAD}")
+        if (!backup.exists() && live.exists()) move(live, backup)
+        if (source.exists()) {
+            if (live.exists()) live.deleteRecursively()
+            move(source, live)
+        }
+    }
+
+    /** 恢复失败时把新 upload 删掉, 再尽量把 originals-upload 备份放回。 */
+    private fun restoreUploadDirectory(replaceUpload: Boolean) {
+        if (!replaceUpload) return
+        val live = File(filesDir, FileFolders.UPLOAD)
+        val backup = File(pending, "originals-upload")
+        val source = File(pending, "payload/files/${FileFolders.UPLOAD}")
+        when {
+            backup.exists() -> {
+                // 原 upload 已备份, 删掉当前 (新) 目录并还原
+                if (live.exists()) live.deleteRecursively()
+                move(backup, live)
+            }
+
+            !source.exists() -> {
+                // 本来没有原 upload, 且存档 upload 已移入: 删掉以还原到「无 upload」
+                if (live.exists()) live.deleteRecursively()
+            }
+
+            // 其余情况原 upload 仍在 live (尚未备份), 保持原样, 绝不能删
+            else -> Unit
+        }
     }
 
     private fun rollback(entries: List<RestoreEntry>) {
@@ -135,6 +201,9 @@ internal class PendingRestore(
     private data class RestoreEntry(val path: String, val install: Boolean, val hadOriginal: Boolean)
 
     companion object {
+        /** 落盘的「本次恢复整体替换 upload」标记, 用于中断重试时保持同一处理模式。 */
+        private const val REPLACE_UPLOAD_MARKER = "replace-upload"
+
         fun resolveInside(root: File, relativePath: String): File {
             require(relativePath.isNotBlank() && !relativePath.startsWith('/') &&
                 '\\' !in relativePath && relativePath.split('/').none { it == ".." || it == "." }) {

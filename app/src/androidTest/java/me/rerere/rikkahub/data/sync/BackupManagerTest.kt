@@ -146,7 +146,7 @@ class BackupManagerTest {
 
     @Test fun newArchiveContainsStandaloneDatabaseAndNoWalOrShm() = runBlocking {
         val archive = manager.createBackup(includeDatabase = true, includeFiles = false, includeWorkspace = false)
-        assertTrue(archive.name.endsWith(BackupArchive.EXTENSION))
+        assertTrue(archive.name.endsWith(BackupManager.EXTENSION))
         val names = mutableListOf<String>()
         TarArchiveInputStream(archive.inputStream().buffered()).use { tar ->
             var entry = tar.nextEntry
@@ -190,6 +190,91 @@ class BackupManagerTest {
         assertEquals("image", File(session, "record/out_0.png").readText())
         assertEquals("asset", File(session, "draft/asset.jpg").readText())
         assertFalse(File(session, "record/out_1.mp4.part").exists())
+    }
+
+    @Test fun uploadAndFontsArePackedFlatWhileSkillsKeepSubdirectories() = runBlocking {
+        val upload = File(context.filesDir, "upload").apply { mkdirs() }
+        File(upload, "top.bin").writeText("top")
+        File(upload, "nested").mkdirs()
+        File(upload, "nested/deep.bin").writeText("deep")
+        val skills = File(context.filesDir, "skills").apply { mkdirs() }
+        File(skills, "kit").mkdirs()
+        File(skills, "kit/skill.md").writeText("skill")
+
+        val archive = manager.createBackup(includeDatabase = false, includeFiles = true, includeWorkspace = false)
+        val names = mutableListOf<String>()
+        TarArchiveInputStream(archive.inputStream().buffered()).use { tar ->
+            var entry = tar.nextEntry
+            while (entry != null) {
+                names += entry.name
+                entry = tar.nextEntry
+            }
+        }
+        // upload / fonts 只打包顶层文件, skills / media_creation 才递归包含子目录
+        assertTrue("upload/top.bin" in names)
+        assertFalse("upload/nested/deep.bin" in names)
+        assertTrue("skills/kit/skill.md" in names)
+    }
+
+    @Test fun byteIdenticalAttachmentsArePackedAsHardLinksAndRestoredAsCopies() = runBlocking {
+        val upload = File(context.filesDir, "upload").apply { mkdirs() }
+        File(upload, "original.bin").writeText("shared payload")
+        File(upload, "copy.bin").writeText("shared payload")
+
+        val archive = manager.createBackup(includeDatabase = false, includeFiles = true, includeWorkspace = false)
+        var regular = 0
+        var links = 0
+        TarArchiveInputStream(archive.inputStream().buffered()).use { tar ->
+            var entry = tar.nextEntry
+            while (entry != null) {
+                if (entry.name.startsWith("upload/")) {
+                    if (entry.isLink) links++ else regular++
+                }
+                entry = tar.nextEntry
+            }
+        }
+        // 两份内容相同的附件在 tar 里只存一份数据，另一份是指向它的硬链接
+        assertEquals(1, regular)
+        assertEquals(1, links)
+
+        upload.deleteRecursively()
+        manager.stageRestore(archive)
+        // Applying the staged settings would write to the real settings store of the app under test.
+        assertTrue(File(context.noBackupFilesDir, "backup-restore/pending/settings.json").delete())
+        assertTrue(BackupManager.applyPendingRestore(context, JsonInstant))
+        val restoredOriginal = File(upload, "original.bin")
+        val restoredCopy = File(upload, "copy.bin")
+        assertEquals("shared payload", restoredOriginal.readText())
+        assertEquals("shared payload", restoredCopy.readText())
+        // Android 环境不保证支持硬链接，恢复时把 TAR 硬链接展开成互相独立的副本
+        assertFalse(Files.isSameFile(restoredOriginal.toPath(), restoredCopy.toPath()))
+    }
+
+    @Test fun restoreReplacesExistingUploadFolderWhenArchiveHasUpload() = runBlocking {
+        val upload = File(context.filesDir, "upload").apply { mkdirs() }
+        File(upload, "new.bin").writeText("new")
+        val archive = manager.createBackup(includeDatabase = false, includeFiles = true, includeWorkspace = false)
+        File(upload, "new.bin").delete()
+        File(upload, "old.bin").writeText("old")
+
+        manager.stageRestore(archive)
+        assertTrue(File(context.noBackupFilesDir, "backup-restore/pending/settings.json").delete())
+        assertTrue(BackupManager.applyPendingRestore(context, JsonInstant))
+
+        assertFalse(File(upload, "old.bin").exists())
+        assertEquals("new", File(upload, "new.bin").readText())
+    }
+
+    @Test fun restoreKeepsExistingUploadWhenArchiveHasNoUpload() = runBlocking {
+        val upload = File(context.filesDir, "upload").apply { mkdirs() }
+        File(upload, "old.bin").writeText("old")
+        val archive = manager.createBackup(includeDatabase = false, includeFiles = false, includeWorkspace = false)
+
+        manager.stageRestore(archive)
+        assertTrue(File(context.noBackupFilesDir, "backup-restore/pending/settings.json").delete())
+        assertTrue(BackupManager.applyPendingRestore(context, JsonInstant))
+
+        assertEquals("old", File(upload, "old.bin").readText())
     }
 
     @Test fun unsupportedSchemaIsRejectedBeforePublishing() = runBlocking {
