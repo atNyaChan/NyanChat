@@ -542,6 +542,7 @@
   <string name="search_page_model_manually_edited">手動編集されたメッセージ</string>
   <string name="search_page_no_deleted_models">削除済みモデルはありません</string>
   <string name="search_page_attachment_label">添付ファイル</string>
+  <string name="search_page_attachment_none">添付なし</string>
   <string name="search_page_attachment_existing">添付あり</string>
   <string name="search_page_attachment_missing">添付削除済み</string>
   <string name="search_page_title">メッセージを検索</string>

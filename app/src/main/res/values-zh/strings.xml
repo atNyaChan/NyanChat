@@ -542,6 +542,7 @@
   <string name="search_page_model_manually_edited">手动编辑的消息</string>
   <string name="search_page_no_deleted_models">没有已被删除的模型</string>
   <string name="search_page_attachment_label">附件</string>
+  <string name="search_page_attachment_none">没有附件</string>
   <string name="search_page_attachment_existing">存在附件</string>
   <string name="search_page_attachment_missing">附件被删除</string>
   <string name="search_page_title">搜索消息</string>

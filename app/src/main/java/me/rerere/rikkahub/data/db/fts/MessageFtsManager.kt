@@ -47,6 +47,7 @@ enum class MessageSearchMode {
 }
 
 enum class MessageAttachmentState {
+    NONE,
     EXISTS,
     MISSING,
 }
@@ -432,6 +433,7 @@ private fun UIMessage.hasMissingLocalAttachment(): Boolean = attachmentParts().a
 private fun UIMessage.matchesAttachmentState(state: MessageAttachmentState): Boolean {
     val attachments = attachmentParts()
     return when (state) {
+        MessageAttachmentState.NONE -> attachments.isEmpty()
         MessageAttachmentState.EXISTS -> attachments.isNotEmpty() && !hasMissingLocalAttachment()
         MessageAttachmentState.MISSING -> hasMissingLocalAttachment()
     }

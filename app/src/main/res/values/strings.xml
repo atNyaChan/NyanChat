@@ -542,6 +542,7 @@
   <string name="search_page_model_manually_edited">Manually edited messages</string>
   <string name="search_page_no_deleted_models">No deleted models</string>
   <string name="search_page_attachment_label">Attachment</string>
+  <string name="search_page_attachment_none">No attachments</string>
   <string name="search_page_attachment_existing">Has attachments</string>
   <string name="search_page_attachment_missing">Attachments deleted</string>
   <string name="search_page_title">Search Messages</string>

@@ -96,6 +96,8 @@ class ModelListState internal constructor(
     modelId: Uuid?,
     providers: List<ProviderSetting>,
     type: ModelType?,
+    allowedModelIds: Set<Uuid>? = null,
+    includeDisabledProviders: Boolean = false,
 ) {
     var modelId by mutableStateOf(modelId)
         private set
@@ -106,6 +108,14 @@ class ModelListState internal constructor(
     var type by mutableStateOf(type)
         private set
 
+    /** 仅展示这些模型的 ID；为 null 时不限制。 */
+    var allowedModelIds by mutableStateOf(allowedModelIds)
+        private set
+
+    /** 为 true 时即使供应商被禁用也展示其模型。 */
+    var includeDisabledProviders by mutableStateOf(includeDisabledProviders)
+        private set
+
     var visible by mutableStateOf(false)
         private set
 
@@ -114,7 +124,11 @@ class ModelListState internal constructor(
 
     val filteredProviders: List<ProviderSetting>
         get() = providers.fastFilter { provider ->
-            provider.enabled && provider.models.fastAny { model -> type == null || model.type == type }
+            (includeDisabledProviders || provider.enabled) &&
+                provider.models.fastAny { model ->
+                    (type == null || model.type == type) &&
+                        (allowedModelIds == null || model.id in allowedModelIds!!)
+                }
         }
 
     fun open() {
@@ -129,10 +143,14 @@ class ModelListState internal constructor(
         modelId: Uuid?,
         providers: List<ProviderSetting>,
         type: ModelType?,
+        allowedModelIds: Set<Uuid>?,
+        includeDisabledProviders: Boolean,
     ) {
         this.modelId = modelId
         this.providers = providers
         this.type = type
+        this.allowedModelIds = allowedModelIds
+        this.includeDisabledProviders = includeDisabledProviders
     }
 }
 
@@ -141,18 +159,24 @@ fun rememberModelListState(
     modelId: Uuid?,
     providers: List<ProviderSetting>,
     type: ModelType?,
+    allowedModelIds: Set<Uuid>? = null,
+    includeDisabledProviders: Boolean = false,
 ): ModelListState {
     return remember {
         ModelListState(
             modelId = modelId,
             providers = providers,
             type = type,
+            allowedModelIds = allowedModelIds,
+            includeDisabledProviders = includeDisabledProviders,
         )
     }.also {
         it.update(
             modelId = modelId,
             providers = providers,
             type = type,
+            allowedModelIds = allowedModelIds,
+            includeDisabledProviders = includeDisabledProviders,
         )
     }
 }
@@ -278,6 +302,7 @@ fun ModelListSheet(
                 currentModel = state.modelId,
                 providers = state.filteredProviders,
                 modelType = state.type,
+                allowedModelIds = state.allowedModelIds,
                 onSelect = {
                     onSelect(it)
                     dismiss()
@@ -295,6 +320,7 @@ private fun ColumnScope.ModelList(
     currentModel: Uuid? = null,
     providers: List<ProviderSetting>,
     modelType: ModelType?,
+    allowedModelIds: Set<Uuid>? = null,
     onSelect: (Model) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -304,6 +330,7 @@ private fun ColumnScope.ModelList(
         .collectAsStateWithLifecycle()
 
     val favoriteModels = settings.value.favoriteModels.mapNotNull { modelId ->
+        if (allowedModelIds != null && modelId !in allowedModelIds) return@mapNotNull null
         val model = settings.value.providers.findModelById(modelId) ?: return@mapNotNull null
         if (modelType != null && model.type != modelType) return@mapNotNull null
         val provider = model.findProvider(providers = settings.value.providers, checkOverwrite = false) ?: return@mapNotNull null
@@ -326,16 +353,21 @@ private fun ColumnScope.ModelList(
             .joinToString(",")
     }
 
-    val typeFilteredModelsByProvider = remember(providers, modelType) {
+    val typeFilteredModelsByProvider = remember(providers, modelType, allowedModelIds) {
         providers.associate { provider ->
-            provider.id to provider.models.fastFilter { modelType == null || it.type == modelType }
+            provider.id to provider.models.fastFilter {
+                (modelType == null || it.type == modelType) &&
+                    (allowedModelIds == null || it.id in allowedModelIds)
+            }
         }
     }
 
-    val searchFilteredModelsByProvider = remember(providers, modelType, searchKeywords) {
+    val searchFilteredModelsByProvider = remember(providers, modelType, searchKeywords, allowedModelIds) {
         providers.associate { provider ->
             provider.id to provider.models.fastFilter {
-                (modelType == null || it.type == modelType) && it.displayName.contains(searchKeywords, true)
+                (modelType == null || it.type == modelType) &&
+                    (allowedModelIds == null || it.id in allowedModelIds) &&
+                    it.displayName.contains(searchKeywords, true)
             }
         }
     }

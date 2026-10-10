@@ -86,6 +86,10 @@ class SearchVM(
         get() = ((resultCount + PAGE_SIZE - 1) / PAGE_SIZE).coerceAtLeast(1)
     var deletedModelIds by mutableStateOf<List<Uuid>>(emptyList())
         private set
+
+    /** 聊天记录中出现过的模型 ID（与“已删除模型”使用同一筛选范围）。 */
+    var usedModelIds by mutableStateOf<Set<Uuid>>(emptySet())
+        private set
     var isLoading by mutableStateOf(false)
         private set
     var isRebuilding by mutableStateOf(false)
@@ -146,7 +150,9 @@ class SearchVM(
     }
 
     private suspend fun reloadDeletedModelIds() {
-        deletedModelIds = conversationRepo.getUsedMessageModelIds(assistantFilter)
+        val usedIds = conversationRepo.getUsedMessageModelIds(assistantFilter)
+        usedModelIds = usedIds.toSet()
+        deletedModelIds = usedIds
             .filterNot(existingModelIds::contains)
             .sortedBy { it.toString() }
     }

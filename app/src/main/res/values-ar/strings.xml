@@ -542,6 +542,7 @@
   <string name="search_page_model_manually_edited">الرسائل المحرّرة يدويًا</string>
   <string name="search_page_no_deleted_models">لا توجد نماذج محذوفة</string>
   <string name="search_page_attachment_label">المرفق</string>
+  <string name="search_page_attachment_none">بدون مرفقات</string>
   <string name="search_page_attachment_existing">به مرفقات</string>
   <string name="search_page_attachment_missing">المرفقات محذوفة</string>
   <string name="search_page_title">البحث في الرسائل</string>

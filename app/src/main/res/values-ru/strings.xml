@@ -542,6 +542,7 @@
   <string name="search_page_model_manually_edited">Сообщения, изменённые вручную</string>
   <string name="search_page_no_deleted_models">Удалённых моделей нет</string>
   <string name="search_page_attachment_label">Вложение</string>
+  <string name="search_page_attachment_none">Без вложений</string>
   <string name="search_page_attachment_existing">С вложениями</string>
   <string name="search_page_attachment_missing">Вложения удалены</string>
   <string name="search_page_title">Поиск сообщений</string>

@@ -82,6 +82,7 @@ import me.rerere.rikkahub.ui.components.ai.rememberModelListState
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
+import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.theme.CustomColors
@@ -100,6 +101,8 @@ fun SearchPage(initialModelId: String? = null, vm: SearchVM = koinViewModel()) {
         modelId = null,
         providers = settings.providers,
         type = null,
+        allowedModelIds = vm.usedModelIds,
+        includeDisabledProviders = true,
     )
     val listState = rememberLazyListState()
     var showRebuildDialog by remember { mutableStateOf(false) }
@@ -364,7 +367,6 @@ private fun SearchConditionsDialog(
 ) {
     var modelMenuExpanded by remember { mutableStateOf(false) }
     var deletedModelsExpanded by remember { mutableStateOf(false) }
-    var attachmentMenuExpanded by remember { mutableStateOf(false) }
 
     val selectedModelLabel = when {
         conditions.selectedModel != null -> conditions.selectedModel.displayName
@@ -372,10 +374,13 @@ private fun SearchConditionsDialog(
         conditions.manuallyEdited -> stringResource(R.string.search_page_model_manually_edited)
         else -> stringResource(R.string.common_all)
     }
-    val attachmentLabel = when (conditions.attachmentState) {
-        MessageAttachmentState.EXISTS -> stringResource(R.string.search_page_attachment_existing)
-        MessageAttachmentState.MISSING -> stringResource(R.string.search_page_attachment_missing)
-        null -> stringResource(R.string.common_all)
+    val attachmentOptions = remember {
+        listOf<MessageAttachmentState?>(
+            null,
+            MessageAttachmentState.NONE,
+            MessageAttachmentState.EXISTS,
+            MessageAttachmentState.MISSING,
+        )
     }
 
     ModalBottomSheet(
@@ -637,53 +642,27 @@ private fun SearchConditionsDialog(
                     },
                 )
                 item(
-                    onClick = { attachmentMenuExpanded = true },
                     headlineContent = { Text(stringResource(R.string.search_page_attachment_label)) },
                     trailingContent = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = attachmentLabel,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            Box {
-                                DropdownMenu(
-                                    expanded = attachmentMenuExpanded,
-                                    onDismissRequest = { attachmentMenuExpanded = false },
-                                    shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
-                                ) {
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.common_all)) },
-                                        onClick = {
-                                            attachmentMenuExpanded = false
-                                            onConditionsChange(conditions.copy(attachmentState = null))
-                                        },
-                                    )
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(stringResource(R.string.search_page_attachment_existing))
-                                        },
-                                        onClick = {
-                                            attachmentMenuExpanded = false
-                                            onConditionsChange(
-                                                conditions.copy(attachmentState = MessageAttachmentState.EXISTS)
-                                            )
-                                        },
-                                    )
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(stringResource(R.string.search_page_attachment_missing))
-                                        },
-                                        onClick = {
-                                            attachmentMenuExpanded = false
-                                            onConditionsChange(
-                                                conditions.copy(attachmentState = MessageAttachmentState.MISSING)
-                                            )
-                                        },
-                                    )
+                        Select(
+                            options = attachmentOptions,
+                            selectedOption = conditions.attachmentState,
+                            onOptionSelected = { state ->
+                                onConditionsChange(conditions.copy(attachmentState = state))
+                            },
+                            optionToString = { state ->
+                                when (state) {
+                                    MessageAttachmentState.NONE ->
+                                        stringResource(R.string.search_page_attachment_none)
+                                    MessageAttachmentState.EXISTS ->
+                                        stringResource(R.string.search_page_attachment_existing)
+                                    MessageAttachmentState.MISSING ->
+                                        stringResource(R.string.search_page_attachment_missing)
+                                    null -> stringResource(R.string.common_all)
                                 }
-                            }
-                        }
+                            },
+                            fitToOptions = true,
+                        )
                     },
                 )
             }

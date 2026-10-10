@@ -542,6 +542,7 @@
   <string name="search_page_model_manually_edited">수동 편집 메시지</string>
   <string name="search_page_no_deleted_models">삭제된 모델이 없습니다</string>
   <string name="search_page_attachment_label">첨부 파일</string>
+  <string name="search_page_attachment_none">첨부 없음</string>
   <string name="search_page_attachment_existing">첨부 있음</string>
   <string name="search_page_attachment_missing">첨부 삭제됨</string>
   <string name="search_page_title">메시지 검색</string>
