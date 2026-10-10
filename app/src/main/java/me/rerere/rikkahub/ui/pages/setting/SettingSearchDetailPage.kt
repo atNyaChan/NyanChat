@@ -690,6 +690,7 @@ internal fun BochaOptions(
     }
 
     FormItem(
+        onClick = { onUpdateOptions(options.copy(summary = !options.summary)) },
         label = {
             Text(stringResource(R.string.search_detail_summary))
         },

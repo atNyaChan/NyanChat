@@ -109,6 +109,7 @@ import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
 import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupScope
+import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.ShareSheet
 import me.rerere.rikkahub.ui.components.ui.Tag
@@ -739,19 +740,30 @@ private fun ProviderConfigTogglesCardGroup(
     CardGroup(modifier = Modifier.fillMaxWidth()) {
         when (provider) {
             is ProviderSetting.OpenAI -> {
-                FormItem(
-                    label = { Text(stringResource(R.string.setting_provider_page_enable)) },
-                    tail = {
-                        Switch(
-                            checked = provider.enabled,
-                            onCheckedChange = { onEdit(provider.copy(enabled = it)) }
-                        )
-                    }
+                switchItem(
+                    checked = provider.enabled,
+                    onCheckedChange = { onEdit(provider.copy(enabled = it)) },
+                    headlineContent = { Text(stringResource(R.string.setting_provider_page_enable)) },
                 )
 
-                FormItem(
-                    label = { Text(stringResource(R.string.setting_provider_page_response_api)) },
-                    description = {
+                switchItem(
+                    checked = provider.useResponseApi,
+                    onCheckedChange = { enabled ->
+                        if (enabled) {
+                            onEdit(provider.copy(useResponseApi = true))
+                        } else {
+                            // 切到 Chat Completions：关闭仅 Responses API 支持的内置工具
+                            onEdit(
+                                provider.copy(
+                                    useResponseApi = false,
+                                    models = provider.models.map { model ->
+                                        model.copy(tools = model.tools - ResponsesApiOnlyBuiltInTools)
+                                    }
+                                )
+                            )
+                        }
+                    },
+                    supportingContent = {
                         if (provider.baseUrl.toHttpUrlOrNull()?.host?.let {
                                 it != "api.openai.com" && it != "api.deepseek.com" && it != "openrouter.ai"
                             } == true
@@ -763,26 +775,7 @@ private fun ProviderConfigTogglesCardGroup(
                             )
                         }
                     },
-                    tail = {
-                        Switch(
-                            checked = provider.useResponseApi,
-                            onCheckedChange = { enabled ->
-                                if (enabled) {
-                                    onEdit(provider.copy(useResponseApi = true))
-                                } else {
-                                    // 切到 Chat Completions：关闭仅 Responses API 支持的内置工具
-                                    onEdit(
-                                        provider.copy(
-                                            useResponseApi = false,
-                                            models = provider.models.map { model ->
-                                                model.copy(tools = model.tools - ResponsesApiOnlyBuiltInTools)
-                                            }
-                                        )
-                                    )
-                                }
-                            }
-                        )
-                    }
+                    headlineContent = { Text(stringResource(R.string.setting_provider_page_response_api)) },
                 )
 
                 BalanceFormItem(
@@ -824,35 +817,23 @@ private fun ProviderConfigTogglesCardGroup(
             }
 
             is ProviderSetting.Google -> {
-                FormItem(
-                    label = { Text(stringResource(R.string.setting_provider_page_enable)) },
-                    tail = {
-                        Switch(
-                            checked = provider.enabled,
-                            onCheckedChange = { onEdit(provider.copy(enabled = it)) }
-                        )
-                    }
+                switchItem(
+                    checked = provider.enabled,
+                    onCheckedChange = { onEdit(provider.copy(enabled = it)) },
+                    headlineContent = { Text(stringResource(R.string.setting_provider_page_enable)) },
                 )
 
-                FormItem(
-                    label = { Text(stringResource(R.string.setting_provider_page_vertex_ai)) },
-                    tail = {
-                        Switch(
-                            checked = provider.vertexAI,
-                            onCheckedChange = { onEdit(provider.copy(vertexAI = it)) }
-                        )
-                    }
+                switchItem(
+                    checked = provider.vertexAI,
+                    onCheckedChange = { onEdit(provider.copy(vertexAI = it)) },
+                    headlineContent = { Text(stringResource(R.string.setting_provider_page_vertex_ai)) },
                 )
 
                 if (provider.vertexAI) {
-                    FormItem(
-                        label = { Text(stringResource(R.string.setting_provider_page_use_service_account)) },
-                        tail = {
-                            Switch(
-                                checked = provider.useServiceAccount,
-                                onCheckedChange = { onEdit(provider.copy(useServiceAccount = it)) }
-                            )
-                        }
+                    switchItem(
+                        checked = provider.useServiceAccount,
+                        onCheckedChange = { onEdit(provider.copy(useServiceAccount = it)) },
+                        headlineContent = { Text(stringResource(R.string.setting_provider_page_use_service_account)) },
                     )
                 }
 
@@ -867,14 +848,10 @@ private fun ProviderConfigTogglesCardGroup(
             }
 
             is ProviderSetting.Claude -> {
-                FormItem(
-                    label = { Text(stringResource(R.string.setting_provider_page_enable)) },
-                    tail = {
-                        Switch(
-                            checked = provider.enabled,
-                            onCheckedChange = { onEdit(provider.copy(enabled = it)) }
-                        )
-                    }
+                switchItem(
+                    checked = provider.enabled,
+                    onCheckedChange = { onEdit(provider.copy(enabled = it)) },
+                    headlineContent = { Text(stringResource(R.string.setting_provider_page_enable)) },
                 )
             }
         }
@@ -888,6 +865,7 @@ private fun CardGroupScope.BalanceFormItem(
     onEdit: (BalanceOption) -> Unit,
 ) {
     FormItem(
+        onClick = { onEdit(provider.balanceOption.copy(enabled = !provider.balanceOption.enabled)) },
         label = {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -1395,8 +1373,12 @@ private fun ModelSettingsForm(
                         CardGroup(
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            FormItem(
-                                label = {
+                            switchItem(
+                                checked = model.price != null,
+                                onCheckedChange = { enabled ->
+                                    onModelChange(model.copy(price = if (enabled) ModelPrice() else null))
+                                },
+                                headlineContent = {
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(stringResource(R.string.setting_provider_page_set_price))
                                         Text(
@@ -1405,14 +1387,6 @@ private fun ModelSettingsForm(
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                     }
-                                },
-                                tail = {
-                                    Switch(
-                                        checked = model.price != null,
-                                        onCheckedChange = { enabled ->
-                                            onModelChange(model.copy(price = if (enabled) ModelPrice() else null))
-                                        },
-                                    )
                                 },
                             )
 
@@ -2127,21 +2101,17 @@ private fun BuiltInToolsSettings(
         ) {
             availableTools.forEach { (tool, info) ->
                 val (title, description) = info
-                item(
-                    headlineContent = { Text(title) },
-                    supportingContent = { Text(description) },
-                    trailingContent = {
-                        Switch(
-                            checked = tool in tools,
-                            onCheckedChange = { checked ->
-                                if (checked) {
-                                    onUpdateTools(tools + tool)
-                                } else {
-                                    onUpdateTools(tools - tool)
-                                }
-                            }
-                        )
+                switchItem(
+                    checked = tool in tools,
+                    onCheckedChange = { checked ->
+                        if (checked) {
+                            onUpdateTools(tools + tool)
+                        } else {
+                            onUpdateTools(tools - tool)
+                        }
                     },
+                    supportingContent = { Text(description) },
+                    headlineContent = { Text(title) },
                 )
             }
         }

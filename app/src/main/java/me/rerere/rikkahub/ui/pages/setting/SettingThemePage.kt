@@ -77,6 +77,7 @@ import me.rerere.hugeicons.stroke.Tick01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.ui.components.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.pages.setting.components.PresetThemeButtonGroup
@@ -135,15 +136,11 @@ fun SettingThemePage(vm: SettingVM = koinViewModel()) {
         ) {
             item("dynamicColor") {
                 CardGroup(modifier = Modifier.padding(horizontal = 8.dp)) {
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_page_dynamic_color)) },
+                    switchItem(
+                        checked = settings.dynamicColor,
+                        onCheckedChange = { vm.updateSettings { latest -> latest.copy(dynamicColor = it) } },
                         supportingContent = { Text(stringResource(R.string.setting_page_dynamic_color_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = settings.dynamicColor,
-                                onCheckedChange = { vm.updateSettings { latest -> latest.copy(dynamicColor = it) } },
-                            )
-                        },
+                        headlineContent = { Text(stringResource(R.string.setting_page_dynamic_color)) },
                     )
                 }
             }

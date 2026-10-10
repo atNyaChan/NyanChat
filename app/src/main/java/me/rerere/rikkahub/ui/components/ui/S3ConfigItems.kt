@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -89,15 +88,11 @@ fun CardGroupScope.s3ConnectionItems(
             )
         },
     )
-    item(
-        headlineContent = { Text(stringResource(R.string.backup_page_s3_path_style)) },
+    switchItem(
+        checked = config.pathStyle,
+        onCheckedChange = { onUpdate(config.copy(pathStyle = it)) },
         supportingContent = { Text(stringResource(R.string.backup_page_s3_path_style_desc)) },
-        trailingContent = {
-            Switch(
-                checked = config.pathStyle,
-                onCheckedChange = { onUpdate(config.copy(pathStyle = it)) },
-            )
-        },
+        headlineContent = { Text(stringResource(R.string.backup_page_s3_path_style)) },
     )
     item(
         headlineContent = {},

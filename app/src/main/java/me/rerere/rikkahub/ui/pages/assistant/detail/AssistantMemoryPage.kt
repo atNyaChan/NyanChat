@@ -23,7 +23,6 @@ import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -46,6 +45,7 @@ import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.AssistantMemory
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.ui.components.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.hooks.EditStateContent
 import me.rerere.rikkahub.ui.hooks.useEditState
@@ -175,66 +175,54 @@ private fun AssistantMemoryContent(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         CardGroup {
-            item(
-                headlineContent = { Text(stringResource(R.string.assistant_page_memory)) },
+            switchItem(
+                checked = assistant.enableMemory,
+                onCheckedChange = {
+                    onUpdateAssistant(
+                        assistant.copy(
+                            enableMemory = it
+                        )
+                    )
+                },
                 supportingContent = {
                     Text(
                         text = stringResource(R.string.assistant_page_memory_desc),
                     )
                 },
-                trailingContent = {
-                    Switch(
-                        checked = assistant.enableMemory,
-                        onCheckedChange = {
-                            onUpdateAssistant(
-                                assistant.copy(
-                                    enableMemory = it
-                                )
-                            )
-                        }
-                    )
-                }
+                headlineContent = { Text(stringResource(R.string.assistant_page_memory)) },
             )
-            item(
-                headlineContent = { Text(stringResource(R.string.assistant_page_global_memory)) },
+            switchItem(
+                checked = assistant.useGlobalMemory,
+                onCheckedChange = {
+                    onUpdateAssistant(
+                        assistant.copy(
+                            useGlobalMemory = it
+                        )
+                    )
+                },
+                enabled = assistant.enableMemory,
                 supportingContent = {
                     Text(
                         text = stringResource(R.string.assistant_page_global_memory_desc),
                     )
                 },
-                trailingContent = {
-                    Switch(
-                        checked = assistant.useGlobalMemory,
-                        onCheckedChange = {
-                            onUpdateAssistant(
-                                assistant.copy(
-                                    useGlobalMemory = it
-                                )
-                            )
-                        },
-                        enabled = assistant.enableMemory
-                    )
-                }
+                headlineContent = { Text(stringResource(R.string.assistant_page_global_memory)) },
             )
-            item(
-                headlineContent = { Text(stringResource(R.string.assistant_page_recent_chats)) },
+            switchItem(
+                checked = assistant.enableRecentChatsReference,
+                onCheckedChange = {
+                    onUpdateAssistant(
+                        assistant.copy(
+                            enableRecentChatsReference = it
+                        )
+                    )
+                },
                 supportingContent = {
                     Text(
                         text = stringResource(R.string.assistant_page_recent_chats_desc),
                     )
                 },
-                trailingContent = {
-                    Switch(
-                        checked = assistant.enableRecentChatsReference,
-                        onCheckedChange = {
-                            onUpdateAssistant(
-                                assistant.copy(
-                                    enableRecentChatsReference = it
-                                )
-                            )
-                        }
-                    )
-                }
+                headlineContent = { Text(stringResource(R.string.assistant_page_recent_chats)) },
             )
         }
 

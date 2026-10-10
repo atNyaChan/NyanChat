@@ -41,7 +41,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -89,6 +88,7 @@ import androidx.compose.ui.res.stringResource
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.components.ui.ImagePreviewDialog
 import me.rerere.ui.components.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalNavController
@@ -714,14 +714,10 @@ private fun WorkspaceBasicPage(
                         }
                     },
                 ) {
-                    item(
+                    switchItem(
+                        checked = workspace.shellCompatibilityMode,
+                        onCheckedChange = onShellCompatibilityModeChange,
                         headlineContent = { Text(stringResource(R.string.workspace_detail_compatibility_mode)) },
-                        trailingContent = {
-                            Switch(
-                                checked = workspace.shellCompatibilityMode,
-                                onCheckedChange = onShellCompatibilityModeChange,
-                            )
-                        },
                     )
                 }
             }
@@ -757,8 +753,10 @@ private fun WorkspaceToolApprovalCard(
         },
     ) {
         tools.forEach { (toolName, label) ->
-            item(
-                headlineContent = { Text(label) },
+            switchItem(
+                checked = resolveWorkspaceToolApproval(toolName, overrides),
+                onCheckedChange = { onToolApprovalChange(toolName, it) },
+                enabled = workspace != null,
                 supportingContent = {
                     Text(
                         text = toolName,
@@ -766,13 +764,7 @@ private fun WorkspaceToolApprovalCard(
                         overflow = TextOverflow.Ellipsis,
                     )
                 },
-                trailingContent = {
-                    Switch(
-                        checked = resolveWorkspaceToolApproval(toolName, overrides),
-                        onCheckedChange = { onToolApprovalChange(toolName, it) },
-                        enabled = workspace != null,
-                    )
-                },
+                headlineContent = { Text(label) },
             )
         }
     }

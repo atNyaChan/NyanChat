@@ -12,7 +12,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -41,6 +40,7 @@ import me.rerere.rikkahub.ui.components.ai.rememberModelListState
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupScope
+import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.plus
 import org.koin.androidx.compose.koinViewModel
@@ -181,16 +181,12 @@ private fun SuggestionSettingItem(
     onEditPrompt: (PromptType) -> Unit,
 ) {
     CardGroup {
-        item(
-            headlineContent = { Text(stringResource(R.string.setting_model_page_enable_suggestion)) },
-            trailingContent = {
-                Switch(
-                    checked = settings.enableSuggestion,
-                    onCheckedChange = {
-                        vm.updateSettings { latest -> latest.copy(enableSuggestion = it) }
-                    }
-                )
+        switchItem(
+            checked = settings.enableSuggestion,
+            onCheckedChange = {
+                vm.updateSettings { latest -> latest.copy(enableSuggestion = it) }
             },
+            headlineContent = { Text(stringResource(R.string.setting_model_page_enable_suggestion)) },
         )
         promptSettingItem(PromptType.SUGGESTION) { onEditPrompt(PromptType.SUGGESTION) }
     }

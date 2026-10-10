@@ -19,7 +19,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderState
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -51,6 +50,7 @@ import me.rerere.rikkahub.ui.components.ai.ContextCachePicker
 import me.rerere.rikkahub.ui.components.ai.ReasoningButton
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.components.ui.CompactNumberField
 import me.rerere.rikkahub.ui.components.ui.TagsInput
 import me.rerere.rikkahub.ui.components.ui.UIAvatar
@@ -185,7 +185,6 @@ internal fun AssistantBasicContent(
 
         CardGroup {
             FormItem(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {},
             ) {
                 OutlinedTextField(
@@ -205,7 +204,6 @@ internal fun AssistantBasicContent(
                 label = {
                     Text(stringResource(R.string.assistant_page_tags))
                 },
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             ) {
                 TagsInput(
                     value = assistant.tags,
@@ -217,31 +215,25 @@ internal fun AssistantBasicContent(
             }
 
 
-            FormItem(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                label = {
-                    Text(stringResource(R.string.assistant_page_use_assistant_avatar))
+            switchItem(
+                checked = assistant.useAssistantAvatar,
+                onCheckedChange = {
+                    onUpdate(
+                        assistant.copy(
+                            useAssistantAvatar = it
+                        )
+                    )
                 },
-                description = {
+                supportingContent = {
                     Text(stringResource(R.string.assistant_page_use_assistant_avatar_desc))
                 },
-                tail = {
-                    Switch(
-                        checked = assistant.useAssistantAvatar,
-                        onCheckedChange = {
-                            onUpdate(
-                                assistant.copy(
-                                    useAssistantAvatar = it
-                                )
-                            )
-                        }
-                    )
-                }
+                headlineContent = {
+                    Text(stringResource(R.string.assistant_page_use_assistant_avatar))
+                },
             )
 
             FormItem(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
                     .onGloballyPositioned { contextLimitTop = it.positionInRoot().y },
                 label = {
                     Text(stringResource(R.string.assistant_page_context_message_limit))
@@ -301,26 +293,20 @@ internal fun AssistantBasicContent(
         }
 
         CardGroup {
-            FormItem(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                label = {
-                    Text(stringResource(R.string.assistant_page_time_reminder))
+            switchItem(
+                checked = assistant.enableTimeReminder,
+                onCheckedChange = {
+                    onUpdate(assistant.copy(enableTimeReminder = it))
                 },
-                description = {
+                supportingContent = {
                     Text(stringResource(R.string.assistant_page_time_reminder_desc))
                 },
-                tail = {
-                    Switch(
-                        checked = assistant.enableTimeReminder,
-                        onCheckedChange = {
-                            onUpdate(assistant.copy(enableTimeReminder = it))
-                        }
-                    )
-                }
+                headlineContent = {
+                    Text(stringResource(R.string.assistant_page_time_reminder))
+                },
             )
             if (assistant.enableTimeReminder) {
                 FormItem(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     label = {
                         Text(stringResource(R.string.assistant_page_time_reminder_interval))
                     },
@@ -344,26 +330,20 @@ internal fun AssistantBasicContent(
         }
 
         CardGroup {
-            FormItem(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                label = {
-                    Text(stringResource(R.string.assistant_page_gradient_background))
+            switchItem(
+                checked = assistant.useGradientBackground,
+                onCheckedChange = {
+                    onUpdate(assistant.copy(useGradientBackground = it))
                 },
-                description = {
+                supportingContent = {
                     Text(stringResource(R.string.assistant_page_gradient_background_desc))
                 },
-                tail = {
-                    Switch(
-                        checked = assistant.useGradientBackground,
-                        onCheckedChange = {
-                            onUpdate(assistant.copy(useGradientBackground = it))
-                        }
-                    )
-                }
+                headlineContent = {
+                    Text(stringResource(R.string.assistant_page_gradient_background))
+                },
             )
             if (!assistant.useGradientBackground) {
                 FormItem(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     label = {
                         Text(stringResource(R.string.assistant_page_chat_background))
                     },
@@ -382,7 +362,6 @@ internal fun AssistantBasicContent(
                 if (assistant.background != null) {
                     val backgroundOpacity = assistant.backgroundOpacity.coerceIn(0.1f, 1f)
                     FormItem(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         label = {
                             Text(stringResource(R.string.assistant_page_background_opacity))
                         },
@@ -454,42 +433,31 @@ internal fun AssistantBasicContent(
                         }
                     },
                 )
-            FormItem(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                label = {
-                    Text(stringResource(R.string.assistant_page_stream_output))
+            switchItem(
+                checked = assistant.streamOutput,
+                onCheckedChange = {
+                    onUpdate(assistant.copy(streamOutput = it))
                 },
-                description = {
+                supportingContent = {
                     Text(stringResource(R.string.assistant_page_stream_output_desc))
                 },
-                tail = {
-                    Switch(
-                        checked = assistant.streamOutput,
-                        onCheckedChange = {
-                            onUpdate(assistant.copy(streamOutput = it))
-                        }
-                    )
-                }
-            )
-            FormItem(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                label = {
-                    Text(stringResource(R.string.assistant_page_return_thinking))
+                headlineContent = {
+                    Text(stringResource(R.string.assistant_page_stream_output))
                 },
-                description = {
+            )
+            switchItem(
+                checked = assistant.includeHistoryReasoning,
+                onCheckedChange = {
+                    onUpdate(assistant.copy(includeHistoryReasoning = it))
+                },
+                supportingContent = {
                     Text(stringResource(R.string.assistant_page_return_thinking_desc))
                 },
-                tail = {
-                    Switch(
-                        checked = assistant.includeHistoryReasoning,
-                        onCheckedChange = {
-                            onUpdate(assistant.copy(includeHistoryReasoning = it))
-                        }
-                    )
-                }
+                headlineContent = {
+                    Text(stringResource(R.string.assistant_page_return_thinking))
+                },
             )
             FormItem(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {
                     Text(stringResource(R.string.assistant_page_thinking_budget))
                 },
@@ -503,7 +471,6 @@ internal fun AssistantBasicContent(
                 },
             )
             FormItem(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = { Text(stringResource(R.string.assistant_page_context_cache)) },
                 description = {
                     Text(stringResource(R.string.assistant_page_context_cache_desc))
@@ -516,7 +483,6 @@ internal fun AssistantBasicContent(
                 },
             )
             FormItem(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {
                     Text(stringResource(R.string.assistant_page_temperature))
                 },
@@ -556,7 +522,6 @@ internal fun AssistantBasicContent(
                 )
             }
             FormItem(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {
                     Text(stringResource(R.string.assistant_page_top_p))
                 },
@@ -596,7 +561,6 @@ internal fun AssistantBasicContent(
                 )
             }
             FormItem(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 label = {
                     Text(stringResource(R.string.assistant_page_max_tokens))
                 },

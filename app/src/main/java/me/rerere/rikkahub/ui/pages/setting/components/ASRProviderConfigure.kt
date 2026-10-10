@@ -541,6 +541,7 @@ private fun CardGroupScope.StepASRConfiguration(
     }
 
     FormItem(
+        onClick = { onValueChange(setting.copy(enableItn = !setting.enableItn)) },
         label = { Text(stringResource(R.string.setting_asr_configure_step_itn)) },
         description = { Text(stringResource(R.string.setting_asr_configure_step_itn_desc)) }
     ) {
@@ -551,6 +552,7 @@ private fun CardGroupScope.StepASRConfiguration(
     }
 
     FormItem(
+        onClick = { onValueChange(setting.copy(enableTimestamp = !setting.enableTimestamp)) },
         label = { Text(stringResource(R.string.setting_asr_configure_step_timestamp)) },
         description = { Text(stringResource(R.string.setting_asr_configure_step_timestamp_desc)) }
     ) {

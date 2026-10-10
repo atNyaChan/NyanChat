@@ -25,7 +25,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -55,6 +54,7 @@ import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.service.WebServerService
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.components.ui.CompactNumberField
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionLocalNetwork
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionManager
@@ -234,23 +234,19 @@ fun SettingWebPage() {
                             )
                         },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_page_web_server_localhost_only)) },
-                        supportingContent = { Text(stringResource(R.string.setting_page_web_server_localhost_only_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = settings.webServerLocalhostOnly,
-                                onCheckedChange = { checked ->
-                                    scope.launch {
-                                        settingsStore.update {
-                                            it.copy(webServerLocalhostOnly = checked)
-                                        }
-                                    }
-                                },
-                                // 运行中不允许切换 需重启服务生效
-                                enabled = !serverState.isRunning,
-                            )
+                    switchItem(
+                        checked = settings.webServerLocalhostOnly,
+                        onCheckedChange = { checked ->
+                            scope.launch {
+                                settingsStore.update {
+                                    it.copy(webServerLocalhostOnly = checked)
+                                }
+                            }
                         },
+                        // 运行中不允许切换 需重启服务生效
+                        enabled = !serverState.isRunning,
+                        supportingContent = { Text(stringResource(R.string.setting_page_web_server_localhost_only_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_page_web_server_localhost_only)) },
                     )
                     item(
                         headlineContent = { Text(stringResource(R.string.setting_page_web_server_password)) },

@@ -93,6 +93,7 @@ interface CardGroupScope {
         label: @Composable () -> Unit,
         description: (@Composable () -> Unit)? = null,
         tail: (@Composable () -> Unit)? = null,
+        onClick: (() -> Unit)? = null,
         content: (@Composable ColumnScope.() -> Unit)? = null,
     )
 }
@@ -131,9 +132,12 @@ private class CardGroupScopeImpl : CardGroupScope {
         label: @Composable () -> Unit,
         description: (@Composable () -> Unit)?,
         tail: (@Composable () -> Unit)?,
+        onClick: (() -> Unit)?,
         content: (@Composable ColumnScope.() -> Unit)?,
     ) {
         item(
+            onClick = onClick,
+            modifier = modifier,
             headlineContent = label,
             supportingContent = if (description != null || content != null) {
                 {

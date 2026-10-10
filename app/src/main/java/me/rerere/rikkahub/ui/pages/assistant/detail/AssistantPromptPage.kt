@@ -82,6 +82,7 @@ import me.rerere.rikkahub.data.model.toMessageNode
 import me.rerere.rikkahub.ui.components.message.ChatMessage
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.components.ui.FormItem
 import me.rerere.rikkahub.ui.components.ui.rememberCardGroupItemShape
 import me.rerere.rikkahub.ui.components.ui.ExtensionSelector
@@ -219,25 +220,21 @@ private fun AssistantPromptContent(
                     }
                 },
             )
-            FormItem(
-                label = {
-                    Text(stringResource(R.string.assistant_page_allow_conversation_system_prompt))
+            switchItem(
+                checked = assistant.allowConversationSystemPrompt,
+                onCheckedChange = {
+                    onUpdate(
+                        assistant.copy(
+                            allowConversationSystemPrompt = it
+                        )
+                    )
                 },
-                description = {
+                supportingContent = {
                     Text(stringResource(R.string.assistant_page_allow_conversation_system_prompt_desc))
                 },
-                tail = {
-                    Switch(
-                        checked = assistant.allowConversationSystemPrompt,
-                        onCheckedChange = {
-                            onUpdate(
-                                assistant.copy(
-                                    allowConversationSystemPrompt = it
-                                )
-                            )
-                        }
-                    )
-                }
+                headlineContent = {
+                    Text(stringResource(R.string.assistant_page_allow_conversation_system_prompt))
+                },
             )
         }
 

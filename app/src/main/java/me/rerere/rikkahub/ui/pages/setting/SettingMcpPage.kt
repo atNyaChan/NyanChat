@@ -548,6 +548,19 @@ private fun McpCommonOptionsConfigure(
     ) {
         CardGroup {
         FormItem(
+            onClick = {
+                update(
+                    when (config) {
+                        is McpServerConfig.SseTransportServer -> config.copy(
+                            commonOptions = config.commonOptions.copy(enable = !config.commonOptions.enable)
+                        )
+
+                        is McpServerConfig.StreamableHTTPServer -> config.copy(
+                            commonOptions = config.commonOptions.copy(enable = !config.commonOptions.enable)
+                        )
+                    }
+                )
+            },
             label = {
                 Text(stringResource(R.string.setting_mcp_page_enable))
             },

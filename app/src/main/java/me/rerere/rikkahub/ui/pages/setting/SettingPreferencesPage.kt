@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -29,6 +28,7 @@ import me.rerere.rikkahub.data.datastore.DisplaySetting
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.Select
+import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.plus
@@ -75,65 +75,45 @@ fun SettingPreferencesPage(vm: SettingVM = koinViewModel()) {
         ) {
             item {
                 CardGroup(modifier = Modifier.padding(horizontal = 8.dp)) {
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_user_avatar_title)) },
+                    switchItem(
+                        checked = displaySetting.showUserAvatar,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(showUserAvatar = it))
+                        },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_show_user_avatar_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.showUserAvatar,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(showUserAvatar = it))
-                                },
-                            )
-                        },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_user_avatar_title)) },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_chat_list_model_icon_title)) },
+                    switchItem(
+                        checked = displaySetting.showModelIcon,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(showModelIcon = it))
+                        },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_chat_list_model_icon_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.showModelIcon,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(showModelIcon = it))
-                                },
-                            )
-                        },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_chat_list_model_icon_title)) },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_model_name_title)) },
+                    switchItem(
+                        checked = displaySetting.showModelName,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(showModelName = it))
+                        },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_show_model_name_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.showModelName,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(showModelName = it))
-                                },
-                            )
-                        },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_model_name_title)) },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_datetime_in_message_title)) },
+                    switchItem(
+                        checked = displaySetting.showDateTimeInMessage,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(showDateTimeInMessage = it))
+                        },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_show_datetime_in_message_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.showDateTimeInMessage,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(showDateTimeInMessage = it))
-                                },
-                            )
-                        },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_datetime_in_message_title)) },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_token_usage_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_show_token_usage_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.showTokenUsage,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(showTokenUsage = it))
-                                },
-                            )
+                    switchItem(
+                        checked = displaySetting.showTokenUsage,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(showTokenUsage = it))
                         },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_show_token_usage_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_token_usage_title)) },
                     )
                     item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_show_message_jumper_title)) },

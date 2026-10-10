@@ -33,7 +33,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderState
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -84,6 +83,7 @@ import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CompactNumberField
 import me.rerere.rikkahub.ui.components.ui.Select
+import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.ui.components.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionManager
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionNotification
@@ -335,77 +335,53 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                     modifier = Modifier.padding(horizontal = 8.dp),
                     title = { Text(stringResource(R.string.setting_page_chat_settings)) },
                 ) {
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_create_new_conversation_on_start_title)) },
+                    switchItem(
+                        checked = createNewConversationOnStart,
+                        onCheckedChange = { createNewConversationOnStart = it },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_create_new_conversation_on_start_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = createNewConversationOnStart,
-                                onCheckedChange = { createNewConversationOnStart = it },
-                            )
-                        },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_create_new_conversation_on_start_title)) },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_send_on_enter_title)) },
+                    switchItem(
+                        checked = displaySetting.sendOnEnter,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(sendOnEnter = it))
+                        },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_send_on_enter_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.sendOnEnter,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(sendOnEnter = it))
-                                },
-                            )
-                        },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_send_on_enter_title)) },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_enable_auto_scroll_title)) },
+                    switchItem(
+                        checked = displaySetting.enableAutoScroll,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(enableAutoScroll = it))
+                        },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_enable_auto_scroll_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.enableAutoScroll,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(enableAutoScroll = it))
-                                },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_enable_auto_scroll_title)) },
+                    )
+                    switchItem(
+                        checked = displaySetting.enableMessageGenerationHapticEffect,
+                        onCheckedChange = {
+                            updateDisplaySetting(
+                                displaySetting.copy(enableMessageGenerationHapticEffect = it)
                             )
                         },
-                    )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_enable_message_generation_haptic_effect_title)) },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_enable_message_generation_haptic_effect_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.enableMessageGenerationHapticEffect,
-                                onCheckedChange = {
-                                    updateDisplaySetting(
-                                        displaySetting.copy(enableMessageGenerationHapticEffect = it)
-                                    )
-                                },
-                            )
-                        },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_enable_message_generation_haptic_effect_title)) },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_skip_crop_image_title)) },
+                    switchItem(
+                        checked = displaySetting.skipCropImage,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(skipCropImage = it))
+                        },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_skip_crop_image_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.skipCropImage,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(skipCropImage = it))
-                                },
-                            )
-                        },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_skip_crop_image_title)) },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_parse_mid_think_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_parse_mid_think_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.parseMidThink,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(parseMidThink = it))
-                                }
-                            )
+                    switchItem(
+                        checked = displaySetting.parseMidThink,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(parseMidThink = it))
                         },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_parse_mid_think_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_parse_mid_think_title)) },
                     )
                     item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_notification_message_generated)) },
@@ -535,17 +511,13 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                             )
                         },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_assistant_bubble_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_show_assistant_bubble_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.showAssistantBubble,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(showAssistantBubble = it))
-                                }
-                            )
+                    switchItem(
+                        checked = displaySetting.showAssistantBubble,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(showAssistantBubble = it))
                         },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_show_assistant_bubble_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_assistant_bubble_title)) },
                     )
                     item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_bubble_opacity_title)) },
@@ -600,17 +572,13 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                             )
                         },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_auto_collapse_thinking_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_auto_collapse_thinking_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.autoCloseThinking,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(autoCloseThinking = it))
-                                }
-                            )
+                    switchItem(
+                        checked = displaySetting.autoCloseThinking,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(autoCloseThinking = it))
                         },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_auto_collapse_thinking_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_auto_collapse_thinking_title)) },
                     )
                 }
             }
@@ -731,30 +699,25 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                             )
                         },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_amoled_dark_mode_title)) },
+                    switchItem(
+                        checked = amoledDarkMode,
+                        onCheckedChange = { amoledDarkMode = it },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_amoled_dark_mode_desc)) },
-                        trailingContent = {
-                            Switch(checked = amoledDarkMode, onCheckedChange = { amoledDarkMode = it })
-                        },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_amoled_dark_mode_title)) },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_page_preferences_network_auto_retry)) },
-                        supportingContent = { Text(stringResource(R.string.setting_page_preferences_network_auto_retry_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = settings.networkSetting.enableAutoRetry,
-                                onCheckedChange = { enabled ->
-                                    vm.updateSettings {
-                                        it.copy(
-                                            networkSetting = it.networkSetting.copy(
-                                                enableAutoRetry = enabled,
-                                            ),
-                                        )
-                                    }
-                                },
-                            )
+                    switchItem(
+                        checked = settings.networkSetting.enableAutoRetry,
+                        onCheckedChange = { enabled ->
+                            vm.updateSettings {
+                                it.copy(
+                                    networkSetting = it.networkSetting.copy(
+                                        enableAutoRetry = enabled,
+                                    ),
+                                )
+                            }
                         },
+                        supportingContent = { Text(stringResource(R.string.setting_page_preferences_network_auto_retry_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_page_preferences_network_auto_retry)) },
                     )
                     item(
                         headlineContent = { Text(stringResource(R.string.setting_page_preferences_network_user_agent)) },
@@ -873,20 +836,16 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                             }
                         }
                     )
-                    item(
-                        headlineContent = {
-                            Text(stringResource(R.string.setting_display_page_use_chat_font_globally_title))
+                    switchItem(
+                        checked = displaySetting.useChatFontGlobally,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(useChatFontGlobally = it))
                         },
                         supportingContent = {
                             Text(stringResource(R.string.setting_display_page_use_chat_font_globally_desc))
                         },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.useChatFontGlobally,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(useChatFontGlobally = it))
-                                },
-                            )
+                        headlineContent = {
+                            Text(stringResource(R.string.setting_display_page_use_chat_font_globally_title))
                         },
                     )
                     item(
@@ -1018,65 +977,45 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                     modifier = Modifier.padding(horizontal = 8.dp),
                     title = { Text(stringResource(R.string.setting_page_formula_code_settings)) },
                 ) {
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_enable_latex_rendering_title)) },
+                    switchItem(
+                        checked = displaySetting.enableLatexRendering,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(enableLatexRendering = it))
+                        },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_enable_latex_rendering_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.enableLatexRendering,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(enableLatexRendering = it))
-                                }
-                            )
-                        },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_enable_latex_rendering_title)) },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_code_block_auto_wrap_title)) },
+                    switchItem(
+                        checked = displaySetting.codeBlockAutoWrap,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(codeBlockAutoWrap = it))
+                        },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_code_block_auto_wrap_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.codeBlockAutoWrap,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(codeBlockAutoWrap = it))
-                                }
-                            )
-                        },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_code_block_auto_wrap_title)) },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_code_block_auto_collapse_title)) },
+                    switchItem(
+                        checked = displaySetting.codeBlockAutoCollapse,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(codeBlockAutoCollapse = it))
+                        },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_code_block_auto_collapse_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.codeBlockAutoCollapse,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(codeBlockAutoCollapse = it))
-                                }
-                            )
-                        },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_code_block_auto_collapse_title)) },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_line_numbers_title)) },
+                    switchItem(
+                        checked = displaySetting.showLineNumbers,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(showLineNumbers = it))
+                        },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_show_line_numbers_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.showLineNumbers,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(showLineNumbers = it))
-                                }
-                            )
-                        },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_line_numbers_title)) },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_enable_ligatures_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_enable_ligatures_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.enableCodeLigatures,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(enableCodeLigatures = it))
-                                }
-                            )
+                    switchItem(
+                        checked = displaySetting.enableCodeLigatures,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(enableCodeLigatures = it))
                         },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_enable_ligatures_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_enable_ligatures_title)) },
                     )
                 }
             }
@@ -1115,41 +1054,29 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                             }
                         },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_tts_only_read_quoted_title)) },
+                    switchItem(
+                        checked = displaySetting.ttsOnlyReadQuoted,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(ttsOnlyReadQuoted = it))
+                        },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_tts_only_read_quoted_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.ttsOnlyReadQuoted,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(ttsOnlyReadQuoted = it))
-                                },
-                            )
-                        },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_tts_only_read_quoted_title)) },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_tts_read_outside_brackets_title)) },
+                    switchItem(
+                        checked = displaySetting.ttsOnlyReadOutsideBrackets,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(ttsOnlyReadOutsideBrackets = it))
+                        },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_tts_read_outside_brackets_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.ttsOnlyReadOutsideBrackets,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(ttsOnlyReadOutsideBrackets = it))
-                                },
-                            )
-                        },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_tts_read_outside_brackets_title)) },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_auto_play_tts_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_auto_play_tts_desc)) },
-                        trailingContent = {
-                            Switch(
-                                checked = displaySetting.autoPlayTTSAfterGeneration,
-                                onCheckedChange = {
-                                    updateDisplaySetting(displaySetting.copy(autoPlayTTSAfterGeneration = it))
-                                },
-                            )
+                    switchItem(
+                        checked = displaySetting.autoPlayTTSAfterGeneration,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(autoPlayTTSAfterGeneration = it))
                         },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_auto_play_tts_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_auto_play_tts_title)) },
                     )
                 }
             }

@@ -1,5 +1,6 @@
 package me.rerere.rikkahub.ui.components.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -43,6 +44,7 @@ fun FormItem(
     label: @Composable () -> Unit,
     description: @Composable (() -> Unit)? = null,
     tail: (@Composable () -> Unit)? = null,
+    onClick: (() -> Unit)? = null,
     content: (@Composable ColumnScope.() -> Unit)? = null,
 ) {
     val grouped = LocalGroupedFormItem.current
@@ -54,6 +56,13 @@ fun FormItem(
                     Modifier
                 } else {
                     Modifier.clip(rememberScreenEdgeCornerShape())
+                }
+            )
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable(onClick = onClick)
+                } else {
+                    Modifier
                 }
             ),
         supportingContent = if (description != null || content != null) {

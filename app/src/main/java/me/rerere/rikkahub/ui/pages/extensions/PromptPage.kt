@@ -45,7 +45,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -81,6 +80,7 @@ import me.rerere.rikkahub.data.model.Lorebook
 import me.rerere.rikkahub.data.model.PromptInjection
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.components.ui.ExportDialog
 import me.rerere.rikkahub.ui.components.ui.FormItem
 import me.rerere.rikkahub.ui.components.ui.longPressReorder
@@ -400,14 +400,10 @@ private fun ModeInjectionEditSheet(
                         headlineContent = {},
                     )
 
-                    FormItem(
-                        label = { Text(stringResource(R.string.prompt_page_enabled)) },
-                        tail = {
-                            Switch(
-                                checked = injection.enabled,
-                                onCheckedChange = { onEdit(injection.copy(enabled = it)) }
-                            )
-                        }
+                    switchItem(
+                        checked = injection.enabled,
+                        onCheckedChange = { onEdit(injection.copy(enabled = it)) },
+                        headlineContent = { Text(stringResource(R.string.prompt_page_enabled)) },
                     )
 
                     item(
@@ -878,14 +874,10 @@ private fun LorebookEditSheet(
                         headlineContent = {},
                     )
 
-                    FormItem(
-                        label = { Text(stringResource(R.string.prompt_page_enabled)) },
-                        tail = {
-                            Switch(
-                                checked = book.enabled,
-                                onCheckedChange = { onEdit(book.copy(enabled = it)) }
-                            )
-                        }
+                    switchItem(
+                        checked = book.enabled,
+                        onCheckedChange = { onEdit(book.copy(enabled = it)) },
+                        headlineContent = { Text(stringResource(R.string.prompt_page_enabled)) },
                     )
                 }
 
@@ -1125,14 +1117,10 @@ private fun RegexInjectionEditDialog(
                         headlineContent = {},
                     )
 
-                    FormItem(
-                        label = { Text(stringResource(R.string.prompt_page_enabled)) },
-                        tail = {
-                            Switch(
-                                checked = entry.enabled,
-                                onCheckedChange = { onEdit(entry.copy(enabled = it)) }
-                            )
-                        }
+                    switchItem(
+                        checked = entry.enabled,
+                        onCheckedChange = { onEdit(entry.copy(enabled = it)) },
+                        headlineContent = { Text(stringResource(R.string.prompt_page_enabled)) },
                     )
 
                     item(
@@ -1245,35 +1233,23 @@ private fun RegexInjectionEditDialog(
                         headlineContent = {},
                     )
 
-                    FormItem(
-                        label = { Text(stringResource(R.string.prompt_page_use_regex)) },
-                        tail = {
-                            Switch(
-                                checked = entry.useRegex,
-                                onCheckedChange = { onEdit(entry.copy(useRegex = it)) }
-                            )
-                        }
+                    switchItem(
+                        checked = entry.useRegex,
+                        onCheckedChange = { onEdit(entry.copy(useRegex = it)) },
+                        headlineContent = { Text(stringResource(R.string.prompt_page_use_regex)) },
                     )
 
-                    FormItem(
-                        label = { Text(stringResource(R.string.prompt_page_case_sensitive)) },
-                        tail = {
-                            Switch(
-                                checked = entry.caseSensitive,
-                                onCheckedChange = { onEdit(entry.copy(caseSensitive = it)) }
-                            )
-                        }
+                    switchItem(
+                        checked = entry.caseSensitive,
+                        onCheckedChange = { onEdit(entry.copy(caseSensitive = it)) },
+                        headlineContent = { Text(stringResource(R.string.prompt_page_case_sensitive)) },
                     )
 
-                    FormItem(
-                        label = { Text(stringResource(R.string.prompt_page_constant_active)) },
-                        description = { Text(stringResource(R.string.prompt_page_constant_active_desc)) },
-                        tail = {
-                            Switch(
-                                checked = entry.constantActive,
-                                onCheckedChange = { onEdit(entry.copy(constantActive = it)) }
-                            )
-                        }
+                    switchItem(
+                        checked = entry.constantActive,
+                        onCheckedChange = { onEdit(entry.copy(constantActive = it)) },
+                        supportingContent = { Text(stringResource(R.string.prompt_page_constant_active_desc)) },
+                        headlineContent = { Text(stringResource(R.string.prompt_page_constant_active)) },
                     )
 
                     item(

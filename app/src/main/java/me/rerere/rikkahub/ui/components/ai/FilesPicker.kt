@@ -23,7 +23,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -70,6 +69,7 @@ import me.rerere.rikkahub.ui.components.ui.ExtensionSelector
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupRow
 import me.rerere.rikkahub.ui.components.ui.CardGroupScope
+import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.hooks.ChatInputState
@@ -188,39 +188,31 @@ internal fun FilesPicker(
                 )
             }
 
-            item(
-                trailingContent = {
-                    Switch(
-                        checked = conversation.config?.followAssistant ?: false,
-                        onCheckedChange = onUpdateFollowAssistant,
-                    )
-                },
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Text(stringResource(R.string.chat_page_follow_assistant_settings))
-                    IconButton(onClick = { showFollowAssistantHelp = true }) {
-                        Icon(
-                            imageVector = HugeIcons.HelpCircle,
-                            contentDescription = stringResource(R.string.chat_page_follow_assistant_settings_help),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+            switchItem(
+                checked = conversation.config?.followAssistant ?: false,
+                onCheckedChange = onUpdateFollowAssistant,
+                headlineContent = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Text(stringResource(R.string.chat_page_follow_assistant_settings))
+                        IconButton(onClick = { showFollowAssistantHelp = true }) {
+                            Icon(
+                                imageVector = HugeIcons.HelpCircle,
+                                contentDescription = stringResource(R.string.chat_page_follow_assistant_settings_help),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
-                }
-            }
-
-            item(
-                trailingContent = {
-                    Switch(
-                        checked = assistant.includeHistoryReasoning,
-                        onCheckedChange = { onUpdateAssistant(assistant.copy(includeHistoryReasoning = it)) },
-                    )
                 },
-            ) {
-                Text(stringResource(R.string.assistant_page_return_thinking))
-            }
+            )
+
+            switchItem(
+                checked = assistant.includeHistoryReasoning,
+                onCheckedChange = { onUpdateAssistant(assistant.copy(includeHistoryReasoning = it)) },
+                headlineContent = { Text(stringResource(R.string.assistant_page_return_thinking)) },
+            )
 
             if (showContextCache) {
                 item(
