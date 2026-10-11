@@ -270,6 +270,7 @@ fun SettingFilesPage(
             attachment = target,
             assistantNames = assistantNames,
             loadPreviews = conversationRepo::getMessagePreviews,
+            loadDisplayNames = filesManager::uploadDisplayNames,
             onDismiss = { referenceAttachment = null },
             onOpenMessage = { reference ->
                 referenceAttachment = null
@@ -580,14 +581,15 @@ private fun folderDisplayName(folder: String): String = when (folder) {
 }
 
 /**
- * 展示某个附件被哪些消息使用: 每条引用先显示 `upload` 下的软链接文件名, 再显示与搜索结果
- * 一致的消息预览卡片, 点击卡片跳转到对应消息。
+ * 展示某个附件被哪些消息使用: 每条引用先显示该软链接对应的展示名 (缺失时退回软链接文件名),
+ * 再显示与搜索结果一致的消息预览卡片, 点击卡片跳转到对应消息。
  */
 @Composable
 private fun UsedByMessagesDialog(
     attachment: CasAttachment,
     assistantNames: Map<String, String>,
     loadPreviews: suspend (List<MessagePreviewKey>) -> Map<MessagePreviewKey, MessageSearchResult>,
+    loadDisplayNames: suspend () -> Map<String, String>,
     onDismiss: () -> Unit,
     onOpenMessage: (ChatAttachmentEntry) -> Unit,
 ) {
@@ -595,7 +597,11 @@ private fun UsedByMessagesDialog(
     var previews by remember(attachment) {
         mutableStateOf<Map<MessagePreviewKey, MessageSearchResult>?>(null)
     }
+    var displayNames by remember(attachment) {
+        mutableStateOf<Map<String, String>>(emptyMap())
+    }
     LaunchedEffect(attachment) {
+        displayNames = loadDisplayNames()
         previews = loadPreviews(
             references.map { MessagePreviewKey(it.conversationId, it.nodeId, it.messageId) }
         )
@@ -633,7 +639,7 @@ private fun UsedByMessagesDialog(
                             messageId = reference.messageId,
                         )
                         Text(
-                            text = reference.fileName,
+                            text = displayNames[reference.fileName] ?: reference.fileName,
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -724,6 +730,14 @@ private fun FileItem(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
+                // 没有可用的引用展示名时标题已经退回 sha256 缩写, 不再重复显示四位缩写
+                if (attachment.referenceDisplayNames.isNotEmpty()) {
+                    Text(
+                        text = attachment.sha256Short,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 Text(
                     text = "${attachment.mimeType}  ${attachment.sizeBytes.fileSizeToString()}",
                     style = MaterialTheme.typography.bodySmall,

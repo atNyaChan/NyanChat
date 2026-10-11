@@ -121,6 +121,10 @@ class FilesManager(
     suspend fun list(folder: String = FileFolders.UPLOAD): List<ManagedFileEntity> =
         repository.listByFolder(folder).first()
 
+    /** `upload` 软链接文件名 -> 展示名, 供“使用了该文件的消息”列表显示人类可读名称。 */
+    suspend fun uploadDisplayNames(): Map<String, String> =
+        list(FileFolders.UPLOAD).associate { it.relativePath.substringAfterLast('/') to it.displayName }
+
     suspend fun get(id: Long): ManagedFileEntity? = repository.getById(id)
 
     suspend fun getByRelativePath(relativePath: String): ManagedFileEntity? = repository.getByPath(relativePath)
@@ -150,14 +154,22 @@ class FilesManager(
                     AttachmentCas.readIndex(context.cacheDir) ?: rebuildAttachmentIndex()
                 }
             }
-            // 附件的时间不写入索引, 统一从 managed_files 表读取该实体全部软链接的登记时间
-            val managedTimesBySha = managedUploadTimes()
+            // 附件的时间与展示名不写入索引, 统一从 managed_files 表读取该实体全部软链接的信息
+            val uploadsBySha = managedUploads()
             uploadCasDir.listFiles().orEmpty()
                 .filter { it.isFile && !AttachmentCas.isTemporary(it) }
                 .map { entity ->
                     val sha256 = entity.name
                     val entries = index[sha256].orEmpty()
-                    val times = managedTimesBySha[sha256].orEmpty()
+                    val uploads = uploadsBySha[sha256].orEmpty()
+                    val times = uploads.map { it.createdAt }
+                    val displayNameByFileName = uploads.associate { it.fileName to it.displayName }
+                    val createdAtByFileName = uploads.associate { it.fileName to it.createdAt }
+                    // 引用按登记时间从新到旧排序后取展示名并去重, 首项即“最新的引用”的展示名
+                    val referenceDisplayNames = entries
+                        .sortedByDescending { createdAtByFileName[it.fileName] ?: Long.MIN_VALUE }
+                        .mapNotNull { displayNameByFileName[it.fileName] }
+                        .distinct()
                     val fallback = entity.lastModified()
                     CasAttachment(
                         sha256 = sha256,
@@ -169,20 +181,32 @@ class FilesManager(
                         latestManagedAt = times.maxOrNull() ?: fallback,
                         oldestManagedAt = times.minOrNull() ?: fallback,
                         references = entries,
+                        referenceDisplayNames = referenceDisplayNames,
                     )
                 }
         }
 
+    /** [managedUploads] 汇总的一个软链接: 文件名、展示名与在 `managed_files` 中的登记时间。 */
+    private data class ManagedUpload(
+        val fileName: String,
+        val displayName: String,
+        val createdAt: Long,
+    )
+
     /**
-     * 读取 `upload` 下每个软链接在 `managed_files` 中的登记时间, 按 sha256 汇总该实体的全部登记时间。
-     * 附件排序与清理都使用这份时间, 不再写入 `chat_attachments.json`。
+     * 读取 `upload` 下每个软链接在 `managed_files` 中的展示名与登记时间, 按 sha256 汇总该实体的
+     * 全部软链接。附件排序、清理与“最新引用展示名”都使用这份信息, 不再写入 `chat_attachments.json`。
      */
-    private suspend fun managedUploadTimes(): Map<String, List<Long>> {
-        val result = linkedMapOf<String, MutableList<Long>>()
+    private suspend fun managedUploads(): Map<String, List<ManagedUpload>> {
+        val result = linkedMapOf<String, MutableList<ManagedUpload>>()
         repository.listByFolder(FileFolders.UPLOAD).first().forEach { entity ->
             val fileName = entity.relativePath.substringAfterLast('/')
             val sha256 = AttachmentCas.readSha(File(uploadDir, fileName)) ?: return@forEach
-            result.getOrPut(sha256) { mutableListOf() } += entity.createdAt
+            result.getOrPut(sha256) { mutableListOf() } += ManagedUpload(
+                fileName = fileName,
+                displayName = entity.displayName,
+                createdAt = entity.createdAt,
+            )
         }
         return result
     }
@@ -283,37 +307,41 @@ class FilesManager(
     fun getFile(entity: ManagedFileEntity): File =
         File(context.filesDir, entity.relativePath)
 
-    fun createChatFilesByContents(uris: List<Uri>): List<Uri> {
-        val newUris = mutableListOf<Uri>()
-        uris.forEach { uri ->
-            runCatching {
-                val sourceName = getFileNameFromUri(uri) ?: uri.lastPathSegment ?: "file"
-                val sourceMime = getFileMimeType(uri)
-                val file = storeUploadFile(sourceName, sourceMime) { output ->
-                    val inputStream = context.contentResolver.openInputStream(uri)
-                        ?: error("Failed to open input stream for $uri")
-                    inputStream.use { input ->
-                        input.copyTo(output)
-                    }
-                }
-                val guessedMime = sourceMime ?: guessMimeType(file, sourceName)
-                trackManagedFile(
-                    folder = FileFolders.UPLOAD,
-                    file = file,
-                    displayName = sourceName,
-                    mimeType = guessedMime
-                )
-                newUris.add(file.toUri())
-            }.onFailure {
-                it.printStackTrace()
-                Log.e(TAG, "createChatFilesByContents: Failed to save file from $uri", it)
-                Logging.log(
-                    TAG,
-                    "createChatFilesByContents: Failed to save file from $uri ${it.message} | ${it.stackTraceToString()}"
-                )
-            }
+    fun createChatFilesByContents(uris: List<Uri>): List<Uri> =
+        uris.mapNotNull { uri ->
+            storeUploadFromUri(
+                uri = uri,
+                displayName = getFileNameFromUri(uri) ?: uri.lastPathSegment ?: "file",
+                mimeType = null,
+            )
         }
-        return newUris
+
+    private fun storeUploadFromUri(uri: Uri, displayName: String, mimeType: String?): Uri? {
+        return runCatching {
+            val sourceMime = mimeType ?: getFileMimeType(uri)
+            val file = storeUploadFile(displayName, sourceMime) { output ->
+                val inputStream = context.contentResolver.openInputStream(uri)
+                    ?: error("Failed to open input stream for $uri")
+                inputStream.use { input ->
+                    input.copyTo(output)
+                }
+            }
+            val guessedMime = sourceMime ?: guessMimeType(file, displayName)
+            trackManagedFile(
+                folder = FileFolders.UPLOAD,
+                file = file,
+                displayName = displayName,
+                mimeType = guessedMime
+            )
+            file.toUri()
+        }.onFailure {
+            it.printStackTrace()
+            Log.e(TAG, "storeUploadFromUri: Failed to save file from $uri", it)
+            Logging.log(
+                TAG,
+                "storeUploadFromUri: Failed to save file from $uri ${it.message} | ${it.stackTraceToString()}"
+            )
+        }.getOrNull()
     }
 
     fun createChatFilesByByteArrays(
@@ -787,9 +815,25 @@ data class CasAttachment(
     val latestManagedAt: Long,
     val oldestManagedAt: Long,
     val references: List<ChatAttachmentEntry>,
+    /** 引用该实体的全部软链接展示名, 按登记时间从新到旧去重; 首项即“最新的引用”的展示名。 */
+    val referenceDisplayNames: List<String> = emptyList(),
 ) {
-    /** 存储管理页展示的文件名: sha256 的前 6 位与后 6 位, 中间省略。 */
+    /**
+     * 存储管理页的卡片标题: 有引用时取最新引用的展示名, 多个引用的展示名不完全一致时
+     * 在后加 `, ...`; 没有任何可用的引用展示名时退回 sha256 缩写。
+     */
     val displayName: String
+        get() = when {
+            referenceDisplayNames.isEmpty() -> sha256Abbreviation
+            referenceDisplayNames.size == 1 -> referenceDisplayNames.first()
+            else -> "${referenceDisplayNames.first()}, ..."
+        }
+
+    /** sha256 的前 6 位与后 6 位, 中间用 `...` 连接。 */
+    val sha256Short: String
+        get() = "${sha256.take(6)}...${sha256.takeLast(6)}"
+
+    private val sha256Abbreviation: String
         get() = if (sha256.length > 12) "${sha256.take(6)}…${sha256.takeLast(6)}" else sha256
 }
 

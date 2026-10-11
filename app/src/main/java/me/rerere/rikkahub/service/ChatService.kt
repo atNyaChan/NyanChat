@@ -117,16 +117,23 @@ internal fun backgroundTextGenerationParams(
     sessionId = conversationId.toString(),
 )
 
-private val forkTitleSuffixRegex = Regex("""\((\d+)\)$""")
+private val forkSuffixRegex = Regex("""\((\d+)\)$""")
+
+/** 拆出末尾 ` (N)` 后缀：返回不含后缀的基础名与下一次可用的起始序号。 */
+private fun forkSuffixParts(sourceName: String): Pair<String, Int> {
+    // 源名称已带 (N) 后缀时递增序号，避免多次 fork 后叠加成 xxx (1) (1)
+    val suffix = forkSuffixRegex.find(sourceName)
+    val stem = suffix?.let { sourceName.removeRange(it.range).trimEnd() } ?: sourceName
+    val start = suffix?.groupValues?.get(1)?.toIntOrNull()?.plus(1) ?: 1
+    return stem to start
+}
+
+private fun nextForkName(start: Int, existingNames: Set<String>, build: (Int) -> String): String =
+    generateSequence(start) { it + 1 }.map(build).first { it !in existingNames }
 
 internal fun forkConversationTitle(sourceTitle: String, existingTitles: Set<String>): String {
-    // 源标题已带 (N) 后缀时递增序号，避免多次 fork 后叠加成 xxx(1)(1)(1)
-    val suffix = forkTitleSuffixRegex.find(sourceTitle)
-    val baseTitle = suffix?.let { sourceTitle.removeRange(it.range).trimEnd() } ?: sourceTitle
-    val start = suffix?.groupValues?.get(1)?.toIntOrNull()?.plus(1) ?: 1
-    return generateSequence(start) { it + 1 }
-        .map { "$baseTitle ($it)" }
-        .first { it !in existingTitles }
+    val (stem, start) = forkSuffixParts(sourceTitle)
+    return nextForkName(start, existingTitles) { "$stem ($it)" }
 }
 
 internal fun createForkConversation(
