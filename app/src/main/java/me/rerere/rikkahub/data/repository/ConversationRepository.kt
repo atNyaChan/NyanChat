@@ -518,6 +518,7 @@ class ConversationRepository(
 
     suspend fun updateConversationAssistant(conversationId: Uuid, assistantId: Uuid) {
         conversationDAO.updateAssistantId(conversationId.toString(), assistantId.toString())
+        runCatching { filesManager.updateAttachmentAssistant(conversationId, assistantId) }
     }
 
     /**
@@ -541,6 +542,7 @@ class ConversationRepository(
             id = conversationId.toString(),
             folderId = folderId?.toString() ?: ""
         )
+        runCatching { filesManager.updateAttachmentFolder(conversationId, folderId) }
     }
 
     private fun conversationSummaryToConversation(entity: LightConversationEntity): Conversation {

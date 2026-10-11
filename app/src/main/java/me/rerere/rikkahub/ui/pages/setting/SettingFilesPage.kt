@@ -9,6 +9,7 @@ import me.rerere.hugeicons.stroke.Clean
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.Refresh01
 import me.rerere.hugeicons.stroke.Share04
+import me.rerere.hugeicons.stroke.Sorting01
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -69,25 +72,25 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import com.dokar.sonner.ToastType
 import kotlinx.coroutines.launch
-import me.rerere.rikkahub.data.db.dao.ManagedFileWithReference
-import me.rerere.rikkahub.data.db.entity.ManagedFileEntity
+import me.rerere.rikkahub.data.files.CasAttachment
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.ImagePreviewDialog
-import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.CustomColors
+import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.utils.fileSizeToString
-import me.rerere.rikkahub.utils.navigateToChatPage
 import org.koin.compose.koinInject
 import java.io.File
 import java.util.concurrent.TimeUnit
-import kotlin.uuid.Uuid
 import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 private const val UNUSED_ATTACHMENTS = "unused_attachments"
+
+/** 附件排序方式在整个应用启动期间有效, 进程重启后回到默认值。 */
+private var sessionAttachmentSortOrder by mutableStateOf(AttachmentSortOrder.LATEST_REFERENCE)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -98,7 +101,6 @@ fun SettingFilesPage(
     val gridState = rememberLazyStaggeredGridState()
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
-    val navController = LocalNavController.current
 
     // 预先获取字符串资源
     val deletedToast = stringResource(R.string.setting_files_page_deleted_toast)
@@ -107,18 +109,17 @@ fun SettingFilesPage(
     val cleanFailedToast = stringResource(R.string.setting_files_page_clean_failed_toast)
 
     var selectedFolder by remember { mutableStateOf(FileFolders.UPLOAD) }
-    var pendingDelete by remember { mutableStateOf<ManagedFileEntity?>(null) }
+    val sortOrder = sessionAttachmentSortOrder
+    var pendingDelete by remember { mutableStateOf<CasAttachment?>(null) }
     var showCleanSheet by remember { mutableStateOf(false) }
     var selectedCleanRange by remember { mutableStateOf(CleanRange.DAYS_30) }
     var showRebuildDialog by remember { mutableStateOf(false) }
-    var loadedFiles by remember { mutableStateOf<List<ManagedFileWithReference>?>(null) }
+    var loadedFiles by remember { mutableStateOf<List<CasAttachment>?>(null) }
     var isRebuilding by remember { mutableStateOf(false) }
     LaunchedEffect(filesManager) {
-        loadedFiles = filesManager.listWithReferences(FileFolders.UPLOAD)
+        loadedFiles = filesManager.listCasAttachments()
     }
-    val hasUnusedAttachments = loadedFiles?.any {
-        it.conversationId == null || it.nodeId == null
-    } == true
+    val hasUnusedAttachments = loadedFiles?.any { it.references.isEmpty() } == true
     val folders = remember(hasUnusedAttachments) {
         if (hasUnusedAttachments) {
             listOf(FileFolders.UPLOAD, UNUSED_ATTACHMENTS)
@@ -131,10 +132,24 @@ fun SettingFilesPage(
             selectedFolder = FileFolders.UPLOAD
         }
     }
-    val files = loadedFiles.orEmpty().filter {
-        val hasReference = it.conversationId != null && it.nodeId != null
-        if (selectedFolder == UNUSED_ATTACHMENTS) !hasReference else hasReference
+    // 切换排序后回到顶部, 否则列表会停留在切换前的索引位置
+    LaunchedEffect(sortOrder) {
+        gridState.scrollToItem(0)
     }
+    val files = loadedFiles.orEmpty()
+        .filter {
+            if (selectedFolder == UNUSED_ATTACHMENTS) it.references.isEmpty() else it.references.isNotEmpty()
+        }
+        .sortedWith(
+            when (sortOrder) {
+                // 两种排序都把较新的卡片放在上方, 只是取每个附件的“时间”不同:
+                // 最新引用取它在 managed_files 里最晚的登记时间, 最旧引用取最早的登记时间
+                AttachmentSortOrder.LATEST_REFERENCE ->
+                    compareByDescending<CasAttachment> { it.latestManagedAt }
+                AttachmentSortOrder.OLDEST_REFERENCE ->
+                    compareByDescending<CasAttachment> { it.oldestManagedAt }
+            }
+        )
     val loading = loadedFiles == null
 
     if (showRebuildDialog) {
@@ -151,10 +166,7 @@ fun SettingFilesPage(
                         isRebuilding = true
                         scope.launch {
                             try {
-                                loadedFiles = filesManager.listWithReferences(
-                                    folder = FileFolders.UPLOAD,
-                                    forceRebuild = true,
-                                )
+                                loadedFiles = filesManager.listCasAttachments(forceRebuild = true)
                             } finally {
                                 isRebuilding = false
                             }
@@ -209,10 +221,10 @@ fun SettingFilesPage(
                 TextButton(
                     onClick = {
                         scope.launch {
-                            val ok = filesManager.delete(target.id, deleteFromDisk = true)
+                            val ok = filesManager.deleteCasAttachments(listOf(target.sha256))
                             if (ok) {
                                 toaster.show(deletedToast)
-                                loadedFiles = loadedFiles?.filterNot { it.file.id == target.id }
+                                loadedFiles = loadedFiles?.filterNot { it.sha256 == target.sha256 }
                             } else {
                                 toaster.show(deleteFailedToast, type = ToastType.Error)
                             }
@@ -246,25 +258,19 @@ fun SettingFilesPage(
                 onClean = {
                     showCleanSheet = false
                     scope.launch {
-                        val ok = if (selectedFolder == UNUSED_ATTACHMENTS) {
-                            val cutoff = selectedCleanRange.days?.let { days ->
-                                System.currentTimeMillis() - TimeUnit.DAYS.toMillis(days.toLong())
-                            }
-                            filesManager.deleteAll(
-                                ids = files
-                                    .filter { file -> cutoff == null || file.file.createdAt < cutoff }
-                                    .map { it.file.id },
-                                deleteFromDisk = true,
-                            )
-                        } else {
-                            selectedCleanRange.days?.let { days ->
-                                filesManager.deleteOlderThan(
-                                    folder = selectedFolder,
-                                    cutoffMillis = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(days.toLong()),
-                                )
-                            } ?: filesManager.deleteAll(selectedFolder)
+                        val cutoff = selectedCleanRange.days?.let { days ->
+                            System.currentTimeMillis() - TimeUnit.DAYS.toMillis(days.toLong())
                         }
-                        loadedFiles = filesManager.listWithReferences(folder = FileFolders.UPLOAD)
+                        val ok = if (cutoff == null && selectedFolder != UNUSED_ATTACHMENTS) {
+                            filesManager.deleteAllCasAttachments()
+                        } else {
+                            filesManager.deleteCasAttachments(
+                                files
+                                    .filter { attachment -> cutoff == null || attachment.latestManagedAt < cutoff }
+                                    .map { it.sha256 }
+                            )
+                        }
+                        loadedFiles = filesManager.listCasAttachments()
                         toaster.show(
                             if (ok) cleanedToast else cleanFailedToast,
                             type = if (ok) ToastType.Success else ToastType.Error,
@@ -299,6 +305,10 @@ fun SettingFilesPage(
                             contentDescription = stringResource(R.string.setting_files_page_clean_content_description),
                         )
                     }
+                    AttachmentSortMenu(
+                        sortOrder = sortOrder,
+                        onSortOrderChange = { sessionAttachmentSortOrder = it },
+                    )
                 },
                 scrollBehavior = scrollBehavior,
                 colors = CustomColors.topBarColors
@@ -351,20 +361,13 @@ fun SettingFilesPage(
                         state = gridState,
                         columns = StaggeredGridCells.Fixed(2)
                     ) {
-                        items(files, key = { it.file.id }) { item ->
+                        items(files, key = { it.sha256 }) { item ->
                             FileItem(
-                                file = item.file,
-                                fileOnDisk = filesManager.getFile(item.file),
+                                attachment = item,
+                                fileOnDisk = item.file,
                                 showReference = selectedFolder != UNUSED_ATTACHMENTS,
-                                reference = item,
-                                onReference = { conversationId, nodeId ->
-                                    navigateToChatPage(
-                                        navigator = navController,
-                                        chatId = Uuid.parse(conversationId),
-                                        nodeId = Uuid.parse(nodeId),
-                                    )
-                                },
-                                onDelete = { pendingDelete = item.file },
+                                onReference = { /* 跳转待实现, 暂时留空 */ },
+                                onDelete = { pendingDelete = item },
                             )
                         }
                     }
@@ -379,6 +382,63 @@ private enum class CleanRange(val days: Int?) {
     DAYS_14(14),
     DAYS_30(30),
     ALL(null),
+}
+
+/** “存储管理”页的附件排序方式, 在整个应用启动期间有效。 */
+private enum class AttachmentSortOrder {
+    /** 取每个附件最晚的 `managed_files` 登记时间作为它的时间, 较新的卡片在上方。 */
+    LATEST_REFERENCE,
+
+    /** 取每个附件最早的 `managed_files` 登记时间作为它的时间, 较新的卡片在上方。 */
+    OLDEST_REFERENCE,
+}
+
+@Composable
+private fun AttachmentSortMenu(
+    sortOrder: AttachmentSortOrder,
+    onSortOrderChange: (AttachmentSortOrder) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { expanded = true }) {
+            Icon(
+                imageVector = HugeIcons.Sorting01,
+                contentDescription = stringResource(R.string.setting_files_page_sort),
+            )
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            shape = rememberScreenEdgeCornerShape(),
+        ) {
+            AttachmentSortOrder.entries.forEach { order ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            stringResource(
+                                when (order) {
+                                    AttachmentSortOrder.LATEST_REFERENCE ->
+                                        R.string.setting_files_page_sort_latest_reference
+                                    AttachmentSortOrder.OLDEST_REFERENCE ->
+                                        R.string.setting_files_page_sort_oldest_reference
+                                }
+                            )
+                        )
+                    },
+                    leadingIcon = {
+                        RadioButton(
+                            selected = order == sortOrder,
+                            onClick = null,
+                        )
+                    },
+                    onClick = {
+                        expanded = false
+                        onSortOrderChange(order)
+                    },
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -470,11 +530,10 @@ private fun folderDisplayName(folder: String): String = when (folder) {
 
 @Composable
 private fun FileItem(
-    file: ManagedFileEntity,
+    attachment: CasAttachment,
     fileOnDisk: File,
     showReference: Boolean,
-    reference: ManagedFileWithReference,
-    onReference: (conversationId: String, nodeId: String) -> Unit,
+    onReference: () -> Unit,
     onDelete: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -488,10 +547,10 @@ private fun FileItem(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = CustomColors.listItemColors.containerColor),
         onClick = {
-            if (file.mimeType.startsWith("image/")) {
+            if (attachment.mimeType.startsWith("image/")) {
                 if (fileOnDisk.isFile) showImagePreview = true
             } else {
-                openManagedFile(context, fileOnDisk, file.mimeType)
+                openManagedFile(context, fileOnDisk, attachment.mimeType)
             }
         },
     ) {
@@ -499,10 +558,10 @@ private fun FileItem(
             Box(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                if (file.mimeType.startsWith("image/")) {
+                if (attachment.mimeType.startsWith("image/")) {
                     AsyncImage(
                         model = fileOnDisk,
-                        contentDescription = file.displayName,
+                        contentDescription = attachment.displayName,
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(4f / 3f),
@@ -531,13 +590,13 @@ private fun FileItem(
                     .padding(12.dp)
             ) {
                 Text(
-                    text = file.displayName,
+                    text = attachment.displayName,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = "${file.mimeType}  ${file.sizeBytes.fileSizeToString()}",
+                    text = "${attachment.mimeType}  ${attachment.sizeBytes.fileSizeToString()}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -554,14 +613,12 @@ private fun FileItem(
                             .height(38.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        if (showReference && reference.conversationId != null && reference.nodeId != null) {
+                        if (showReference && attachment.references.isNotEmpty()) {
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
                                     .fillMaxSize()
-                                    .clickable {
-                                        onReference(reference.conversationId, reference.nodeId)
-                                    },
+                                    .clickable(onClick = onReference),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Icon(

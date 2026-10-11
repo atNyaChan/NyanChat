@@ -647,9 +647,9 @@ class BackupManager(
                 )
             }
             if (restored) {
-                // 附件目录可能被整体替换, 丢弃旧软链接索引, 下次使用时从磁盘重建
+                // 附件目录可能被整体替换, 丢弃旧附件索引, 下次使用时从磁盘与会话重建
                 runCatching { AttachmentCas.clearIndex(context.cacheDir) }
-                    .onFailure { Log.w(TAG, "Failed to clear attachment symlink index", it) }
+                    .onFailure { Log.w(TAG, "Failed to clear attachment index", it) }
                 runCatching { RestoredAttachmentUrlRewriter.rewrite(context, json) }
                     .onFailure { Log.w(TAG, "Failed to rewrite restored attachment URLs", it) }
                 if (needsWorkspaceReset) {

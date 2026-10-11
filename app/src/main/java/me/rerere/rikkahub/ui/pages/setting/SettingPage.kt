@@ -53,6 +53,7 @@ import me.rerere.hugeicons.stroke.Zap
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.datastore.isNotConfigured
+import me.rerere.rikkahub.data.files.CasStorageStats
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
@@ -211,7 +212,7 @@ fun SettingPage(vm: SettingVM = koinViewModel()) {
             }
 
             item("dataSettings") {
-                val storageState by produceState(-1 to 0L) {
+                val storageState by produceState<CasStorageStats?>(null) {
                     value = filesManager.countChatFiles()
                 }
                 CardGroup(
@@ -228,14 +229,16 @@ fun SettingPage(vm: SettingVM = koinViewModel()) {
                         onClick = { navController.navigate(Screen.SettingFiles) },
                         leadingContent = { Icon(HugeIcons.ImageUpload, null) },
                         supportingContent = {
-                            if (storageState.first == -1) {
+                            val stats = storageState
+                            if (stats == null) {
                                 Text(stringResource(R.string.calculating))
                             } else {
                                 Text(
                                     stringResource(
                                         R.string.setting_page_chat_storage_desc,
-                                        storageState.first,
-                                        storageState.second / 1024 / 1024.0
+                                        stats.fileCount,
+                                        stats.referenceCount,
+                                        stats.sizeBytes / 1048576.0
                                     )
                                 )
                             }

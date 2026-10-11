@@ -98,8 +98,8 @@ class BackupVM(
 
     suspend fun restore(item: WebDavBackupItem) {
         trackBackupOrRestore {
+            // 全量恢复只暂存到 pending, 应用 pending 时会清空附件索引, 无需在当前进程重建
             webDavSync.restore(config = settings.value.webDavConfig, item = item)
-            filesManager.invalidateAttachmentIndex()
         }
     }
 
@@ -121,8 +121,8 @@ class BackupVM(
     }
 
     suspend fun restoreFromLocalFile(file: File) {
+        // 全量恢复只暂存到 pending, 应用 pending 时会清空附件索引, 无需在当前进程重建
         webDavSync.restoreFromLocalFile(file)
-        filesManager.invalidateAttachmentIndex()
     }
 
     suspend fun restoreFromChatBox(file: File): ChatboxRestoreResult = withContext(Dispatchers.IO) {
@@ -236,8 +236,8 @@ class BackupVM(
 
     suspend fun restoreFromS3(item: S3BackupItem) {
         trackBackupOrRestore {
+            // 全量恢复只暂存到 pending, 应用 pending 时会清空附件索引, 无需在当前进程重建
             s3Sync.restoreFromS3(config = settings.value.s3Config, item = item)
-            filesManager.invalidateAttachmentIndex()
         }
     }
 

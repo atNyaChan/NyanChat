@@ -722,6 +722,9 @@
   <string name="setting_files_page_folder_unused">المرفقات غير المستخدمة</string>
   <string name="setting_files_page_rebuild_index">إعادة بناء فهرس مرفقات الدردشة</string>
   <string name="setting_files_page_open_reference">الانتقال إلى الرسالة المرجعية</string>
+  <string name="setting_files_page_sort">ترتيب</string>
+  <string name="setting_files_page_sort_latest_reference">الأحدث مرجعًا أولًا</string>
+  <string name="setting_files_page_sort_oldest_reference">الأقدم مرجعًا أولًا</string>
   <string name="setting_files_page_no_files">لا توجد ملفات</string>
   <string name="setting_mcp_page_add_header">إضافة ترويسة</string>
   <string name="setting_mcp_page_add_one_to_get_started">أضف واحدًا للبدء</string>
@@ -788,7 +791,7 @@
   <string name="setting_page_chat_storage">إدارة التخزين</string>
   <string name="chat_message_attachment_deleted">حُذف المرفق</string>
   <string name="chat_message_cannot_edit_tool_call">لا يمكن تحرير الرسائل التي تحتوي على استدعاءات أدوات</string>
-  <string name="setting_page_chat_storage_desc">%1$d ملفات، %2$.2f ميجابايت</string>
+  <string name="setting_page_chat_storage_desc">%1$d ملفات (%2$d مراجع)، %3$.2f MiB</string>
   <string name="setting_page_color_mode">وضع الألوان</string>
   <string name="setting_page_color_mode_dark">داكن</string>
   <string name="setting_page_color_mode_light">فاتح</string>

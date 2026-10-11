@@ -722,6 +722,9 @@
   <string name="setting_files_page_folder_unused">未使用的附件</string>
   <string name="setting_files_page_rebuild_index">重建聊天附件索引</string>
   <string name="setting_files_page_open_reference">跳至引用訊息</string>
+  <string name="setting_files_page_sort">排序</string>
+  <string name="setting_files_page_sort_latest_reference">按最新的引用排序</string>
+  <string name="setting_files_page_sort_oldest_reference">按最舊的引用排序</string>
   <string name="setting_files_page_no_files">無檔案</string>
   <string name="setting_mcp_page_add_header">添加請求頭</string>
   <string name="setting_mcp_page_add_one_to_get_started">新增一個即可開始使用</string>
@@ -788,7 +791,7 @@
   <string name="setting_page_chat_storage">儲存空間管理</string>
   <string name="chat_message_attachment_deleted">附件已被刪除</string>
   <string name="chat_message_cannot_edit_tool_call">無法編輯含有工具呼叫的訊息</string>
-  <string name="setting_page_chat_storage_desc">%1$d 個檔案，%2$.2f MB</string>
+  <string name="setting_page_chat_storage_desc">%1$d 個檔案（%2$d 個引用），%3$.2f MiB</string>
   <string name="setting_page_color_mode">顏色模式</string>
   <string name="setting_page_color_mode_dark">深色</string>
   <string name="setting_page_color_mode_light">淺色</string>

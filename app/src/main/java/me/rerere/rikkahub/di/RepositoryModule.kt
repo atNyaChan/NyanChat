@@ -25,7 +25,7 @@ val repositoryModule = module {
     }
 
     single {
-        FolderRepository(get(), get())
+        FolderRepository(get(), get(), get())
     }
 
     single {

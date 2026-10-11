@@ -287,7 +287,7 @@ private suspend fun WorkspaceRepository.readRootfsBuffer(
 ): ByteArrayOutputStream {
     val size = rootfsFileSize(workspaceId, path)
     require(size <= MAX_READ_FILE_BYTES) {
-        "File is too large to read: $path (${size / 1024 / 1024}MB, max ${MAX_READ_FILE_BYTES / 1024 / 1024}MB). Use shell commands like head, tail, or grep to read parts of it."
+        "File is too large to read: $path (${size / 1024 / 1024}MiB, max ${MAX_READ_FILE_BYTES / 1024 / 1024}MiB). Use shell commands like head, tail, or grep to read parts of it."
     }
     return ByteArrayOutputStream(size.toInt()).also { exportRootfsFile(workspaceId, path, it) }
 }

@@ -722,6 +722,9 @@
   <string name="setting_files_page_folder_unused">Неиспользуемые вложения</string>
   <string name="setting_files_page_rebuild_index">Пересоздать индекс вложений чата</string>
   <string name="setting_files_page_open_reference">Перейти к сообщению со вложением</string>
+  <string name="setting_files_page_sort">Сортировка</string>
+  <string name="setting_files_page_sort_latest_reference">Сначала новые ссылки</string>
+  <string name="setting_files_page_sort_oldest_reference">Сначала старые ссылки</string>
   <string name="setting_files_page_no_files">Нет файлов</string>
   <string name="setting_mcp_page_add_header">Добавить заголовок</string>
   <string name="setting_mcp_page_add_one_to_get_started">Добавьте один, чтобы начать</string>
@@ -788,7 +791,7 @@
   <string name="setting_page_chat_storage">Управление хранилищем</string>
   <string name="chat_message_attachment_deleted">Вложение удалено</string>
   <string name="chat_message_cannot_edit_tool_call">Невозможно редактировать сообщения, содержащие вызовы инструментов</string>
-  <string name="setting_page_chat_storage_desc">%1$d файлов, %2$.2f МБ</string>
+  <string name="setting_page_chat_storage_desc">%1$d файлов (%2$d ссылок), %3$.2f MiB</string>
   <string name="setting_page_color_mode">Цветовая схема</string>
   <string name="setting_page_color_mode_dark">Тёмная</string>
   <string name="setting_page_color_mode_light">Светлая</string>

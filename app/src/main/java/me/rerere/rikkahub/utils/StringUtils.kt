@@ -46,7 +46,7 @@ fun String.applyPlaceholders(
 
 fun Long.fileSizeToString(): String {
     if (this < 1024) return "$this B"
-    val units = arrayOf("KB", "MB", "GB", "TB")
+    val units = arrayOf("KiB", "MiB", "GiB", "TiB")
     var value = toDouble() / 1024.0
     var unitIndex = 0
     while (value >= 1024 && unitIndex < units.lastIndex) {

@@ -722,6 +722,9 @@
   <string name="setting_files_page_folder_unused">Unused Attachments</string>
   <string name="setting_files_page_rebuild_index">Rebuild Chat Attachment Index</string>
   <string name="setting_files_page_open_reference">Go to referenced message</string>
+  <string name="setting_files_page_sort">Sort</string>
+  <string name="setting_files_page_sort_latest_reference">Latest reference first</string>
+  <string name="setting_files_page_sort_oldest_reference">Oldest reference first</string>
   <string name="setting_files_page_no_files">No Files</string>
   <string name="setting_mcp_page_add_header">Add Header</string>
   <string name="setting_mcp_page_add_one_to_get_started">Add one to get started</string>
@@ -788,7 +791,7 @@
   <string name="setting_page_chat_storage">Storage Management</string>
   <string name="chat_message_attachment_deleted">Attachment deleted</string>
   <string name="chat_message_cannot_edit_tool_call">Cannot edit messages containing tool calls</string>
-  <string name="setting_page_chat_storage_desc">%1$d files, %2$.2f MB</string>
+  <string name="setting_page_chat_storage_desc">%1$d files (%2$d references), %3$.2f MiB</string>
   <string name="setting_page_color_mode">Color Mode</string>
   <string name="setting_page_color_mode_dark">Dark</string>
   <string name="setting_page_color_mode_light">Light</string>

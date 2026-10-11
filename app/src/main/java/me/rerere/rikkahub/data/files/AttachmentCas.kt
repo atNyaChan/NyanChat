@@ -18,11 +18,17 @@ import java.security.MessageDigest
  * 附件的真实内容保存在 `files/upload-cas/<sha256>` 下, `files/upload` 里只保存指向
  * `../upload-cas/<sha256>` 的相对软链接。相同内容只落一份实体文件, 多个软链接可以共享它。
  *
- * `chat_attachment_symlinks.json` 记录 sha256 -> 引用该实体的软链接文件名列表, 用于删除
- * 软链接时判断实体文件是否还有引用 (索引丢失时可以直接扫描 `upload` 目录重建)。
+ * `cacheDir/chat_attachments.json` 是完整、可随时重建的附件引用缓存, 只记录 `version` 与 `entries`:
+ * `entries` 以 sha256 为键, 记录**全部使用了该附件的消息** (软链接文件名、会话、节点、消息、助手、
+ * 文件夹)。不记录未被任何消息引用的软链接, 这类“未使用的附件”由“存储管理”页直接对比
+ * `upload-cas` 实体集合得到; 引用的时间不写入缓存, 需要时从 `managed_files` 表读取。
+ *
+ * 缓存不存在或损坏时由 `FilesManager.rebuildAttachmentIndex()` 扫描消息库与 `upload`/`upload-cas`
+ * 完整重建; 新增或删除附件时 [FilesManager] 会在同一把锁内更新它。所有索引读写都经过 [indexLock],
+ * 避免并发修改互相覆盖。
  */
 object AttachmentCas {
-    const val SYMLINK_INDEX_FILE = "chat_attachment_symlinks.json"
+    const val INDEX_FILE = "chat_attachments.json"
 
     /** 软链接指向 `upload` 同级的 `upload-cas`, 使用相对路径以便整个目录可以整体搬迁/打包。 */
     private const val LINK_TARGET_PREFIX = "../${FileFolders.UPLOAD_CAS}/"
@@ -35,13 +41,14 @@ object AttachmentCas {
     private const val STALE_TEMP_MAX_AGE_MILLIS = 60 * 60 * 1000L
     private val HEX = "0123456789abcdef".toCharArray()
 
+    /** 索引读写的唯一锁: 新增、删除与重建都经过它, 防止互相覆盖。 */
     private val indexLock = Any()
 
     fun uploadDir(filesRoot: File): File = File(filesRoot, FileFolders.UPLOAD)
 
     fun casDir(filesRoot: File): File = File(filesRoot, FileFolders.UPLOAD_CAS)
 
-    fun indexFile(cacheDir: File): File = File(cacheDir, SYMLINK_INDEX_FILE)
+    fun indexFile(cacheDir: File): File = File(cacheDir, INDEX_FILE)
 
     fun sha256(file: File): String {
         val digest = MessageDigest.getInstance("SHA-256")
@@ -86,6 +93,7 @@ object AttachmentCas {
      * - 导入不带 `upload-cas` 的 TAR 备份时, `upload` 里是真实文件。
      *
      * 已经是软链接的条目会跳过, 因此对已经转换过的目录重复调用是安全的。
+     * 转换发生在恢复流程中, 调用方随后会清空索引, 由下次启动或“存储管理”页完整重建。
      */
     fun convertUploadFolderToCas(filesRoot: File) {
         val upload = uploadDir(filesRoot)
@@ -149,13 +157,14 @@ object AttachmentCas {
     }
 
     /**
-     * 把 [sha256] 实体落盘并在 `upload` 下建立指向它的软链接, 索引一并更新。
+     * 把 [sha256] 实体落盘并在 `upload` 下建立指向它的软链接。实体落盘与建立软链接必须在同一把锁内
+     * 完成, 否则「[removeLinks] 判断实体已无引用并删除它」可能穿插在「本方法判断实体已存在」与
+     * 「建立软链接」之间, 留下指向已删实体的软链接。
      *
-     * 实体落盘与建立软链接必须在同一把锁内完成: 否则「[removeLinks] 判断实体已无引用并删除它」
-     * 可能穿插在「本方法判断实体已存在」与「建立软链接」之间, 留下指向已删实体的软链接。
+     * 索引里只保存消息引用, 新建软链接本身不产生引用, 因此这里不写索引; 消息真正引用附件时由
+     * `FilesManager.updateAttachmentIndex()` 登记。
      */
     fun linkEntity(
-        cacheDir: File,
         filesRoot: File,
         sha256: String,
         linkName: String,
@@ -171,51 +180,91 @@ object AttachmentCas {
         }
         val link = File(uploadDir(filesRoot).apply { mkdirs() }, linkName)
         createSymlink(link, sha256)
-        val index = readIndexLocked(cacheDir, filesRoot)
-        val links = index.getOrPut(sha256) { mutableListOf() }
-        if (linkName !in links) {
-            links += linkName
-        }
-        writeIndexLocked(cacheDir, index)
         link
     }
 
     /**
-     * 一次性移除一批软链接的引用 (调用方已先删除对应的软链接文件), 并删除不再被任何软链接引用的实体。
+     * 一次性移除一批软链接的引用 (调用方已先删除对应的软链接文件), 删除不再被任何软链接引用的实体,
+     * 并把索引里所有引用这些软链接文件名的消息条目一并删除。
      *
-     * 索引可能缺失或过期, 因此是否还有引用以磁盘上的软链接为准; 无论删除多少个引用, 索引只读写一次、
-     * `upload` 目录只回扫一次, 批量清理不会退化成逐个删除的平方级开销。
+     * 实体是否仍被引用以磁盘上的软链接为准 (索引不再保存软链接集合), 因此这里回扫一次 `upload`。
+     * [updateIndex] 为 false 时只删除实体、不改索引, 供调用方把索引更新合并到后续一次读写里。
      */
-    fun removeLinks(cacheDir: File, filesRoot: File, links: List<LinkRef>) = synchronized(indexLock) {
-        val index = readIndexLocked(cacheDir, filesRoot)
-        val candidates = linkedSetOf<String>()
-        links.forEach { ref ->
-            val names = index[ref.sha256]
-            if (names != null) {
-                names.remove(ref.linkName)
-                if (names.isEmpty()) index.remove(ref.sha256)
-            }
-            // 只在索引已不含该实体 (刚删空或索引过期) 时才考虑删除, 避免误删仍被引用的实体
-            if (ref.sha256 !in index) {
-                candidates += ref.sha256
-            }
-        }
-        if (candidates.isNotEmpty()) {
+    fun removeLinks(
+        cacheDir: File,
+        filesRoot: File,
+        links: List<LinkRef>,
+        updateIndex: Boolean = true,
+    ) {
+        if (links.isEmpty()) return
+        synchronized(indexLock) {
             val stillReferenced = linkedShas(filesRoot)
-            candidates.forEach { sha256 ->
+            links.map { it.sha256 }.toSet().forEach { sha256 ->
                 if (sha256 !in stillReferenced) {
                     File(casDir(filesRoot), sha256).delete()
                 }
             }
+            if (!updateIndex) return@synchronized
+            val removedFileNames = links.mapTo(HashSet()) { it.linkName }
+            updateIndexIfPresentLocked(cacheDir) { entries ->
+                val iterator = entries.entries.iterator()
+                while (iterator.hasNext()) {
+                    val item = iterator.next()
+                    item.value.removeAll { it.fileName in removedFileNames }
+                    if (item.value.isEmpty()) iterator.remove()
+                }
+            }
         }
-        writeIndexLocked(cacheDir, index)
     }
 
-    /** 扫描 `upload` 目录, 返回仍被软链接引用的 sha256 集合。 */
-    private fun linkedShas(filesRoot: File): Set<String> =
-        uploadDir(filesRoot).listFiles().orEmpty().mapNotNull { readSha(it) }.toSet()
+    /**
+     * 删除不再被任何软链接引用的指定实体 (调用方需先删除对应软链接, 例如孤立实体)。
+     * 以磁盘上的软链接为准, 回扫 `upload` 目录, 并返回扫描到的仍被引用的 sha256 集合,
+     * 供调用方判断哪些 sha256 的索引条目仍应保留。
+     */
+    fun deleteUnreferencedEntities(filesRoot: File, shas: Set<String>): Set<String> {
+        if (shas.isEmpty()) return emptySet()
+        return synchronized(indexLock) {
+            val stillReferenced = linkedShas(filesRoot)
+            shas.forEach { sha256 ->
+                if (sha256 !in stillReferenced) {
+                    File(casDir(filesRoot), sha256).delete()
+                }
+            }
+            stillReferenced
+        }
+    }
 
-    /** 清空索引 (例如整目录替换或恢复后), 后续读取会从磁盘扫描重建。 */
+    /** 读取附件索引 (sha256 -> 全部消息引用条目); 文件不存在、损坏或版本不匹配时返回 null。 */
+    fun readIndex(cacheDir: File): Map<String, List<ChatAttachmentEntry>>? = synchronized(indexLock) {
+        readIndexFileLocked(cacheDir)?.mapValuesTo(linkedMapOf()) { (_, entries) -> entries.toList() }
+    }
+
+    /** 索引是否缺失或损坏, 需要完整重建。 */
+    fun needsRebuild(cacheDir: File): Boolean = synchronized(indexLock) {
+        readIndexFileLocked(cacheDir) == null
+    }
+
+    /** 用完整重建的结果整体替换索引 (sha256 -> 消息引用)。 */
+    fun replaceIndex(
+        cacheDir: File,
+        entries: Map<String, List<ChatAttachmentEntry>>,
+    ) = synchronized(indexLock) {
+        writeNormalizedIndexLocked(cacheDir, normalizedIndex(entries))
+    }
+
+    /**
+     * 索引文件存在时在锁内读取并原地修改它; 文件不存在或损坏时返回 false 且不写入, 交由完整重建补齐,
+     * 避免只根据当前一次更新写出不完整的索引。
+     */
+    fun updateIndexIfPresent(
+        cacheDir: File,
+        transform: (MutableMap<String, MutableList<ChatAttachmentEntry>>) -> Unit,
+    ): Boolean = synchronized(indexLock) {
+        updateIndexIfPresentLocked(cacheDir, transform)
+    }
+
+    /** 清空索引 (例如恢复后), 后续读取会从消息库与磁盘扫描重建。 */
     fun clearIndex(cacheDir: File) = synchronized(indexLock) {
         indexFile(cacheDir).delete()
     }
@@ -226,38 +275,71 @@ object AttachmentCas {
         indexFile(cacheDir).delete()
     }
 
-    private fun readIndexLocked(cacheDir: File, filesRoot: File): MutableMap<String, MutableList<String>> {
+    /** 扫描 `upload` 目录, 返回仍被软链接引用的 sha256 集合。 */
+    private fun linkedShas(filesRoot: File): Set<String> =
+        uploadDir(filesRoot).listFiles().orEmpty().mapNotNull { readSha(it) }.toSet()
+
+    private fun updateIndexIfPresentLocked(
+        cacheDir: File,
+        transform: (MutableMap<String, MutableList<ChatAttachmentEntry>>) -> Unit,
+    ): Boolean {
+        val loaded = readIndexFileLocked(cacheDir) ?: return false
+        // 文件始终以规范化形式写出, 读回的 loaded 就是上一次的规范形式; 这里只做一次浅拷贝用于比较,
+        // 不必为了判断「是否变化」再对整个索引排序一次, 避免每次保存会话都重复排序。
+        val before: Map<String, List<ChatAttachmentEntry>> =
+            loaded.mapValuesTo(linkedMapOf<String, List<ChatAttachmentEntry>>()) { (_, entries) -> entries.toList() }
+        transform(loaded)
+        val after = normalizedIndex(loaded)
+        // 内容没有变化时不重写文件, 避免每次保存会话都整份读写索引
+        if (after != before) {
+            writeNormalizedIndexLocked(cacheDir, after)
+        }
+        return true
+    }
+
+    private fun readIndexFileLocked(cacheDir: File): MutableMap<String, MutableList<ChatAttachmentEntry>>? {
         val indexFile = indexFile(cacheDir)
-        if (indexFile.isFile) {
-            val parsed = runCatching {
-                JsonInstant.decodeFromString<SymlinkIndex>(indexFile.readText())
-            }.getOrNull()
-            if (parsed?.version == INDEX_VERSION) {
-                return parsed.entries
-                    .mapValuesTo(linkedMapOf<String, MutableList<String>>()) { (_, links) -> links.toMutableList() }
-            }
-        }
-        return rebuildIndexLocked(cacheDir, filesRoot)
+        if (!indexFile.isFile) return null
+        val parsed = runCatching {
+            JsonInstant.decodeFromString<ChatAttachmentsIndex>(indexFile.readText())
+        }.getOrNull()
+        if (parsed?.version != INDEX_VERSION) return null
+        return parsed.entries.mapValuesTo(linkedMapOf()) { (_, entries) -> entries.toMutableList() }
     }
 
-    private fun rebuildIndexLocked(cacheDir: File, filesRoot: File): MutableMap<String, MutableList<String>> {
-        val index = linkedMapOf<String, MutableList<String>>()
-        uploadDir(filesRoot).listFiles().orEmpty().forEach { file ->
-            val sha256 = readSha(file) ?: return@forEach
-            index.getOrPut(sha256) { mutableListOf() }.add(file.name)
+    /** 索引的规范形式: 丢弃空列表、按 sha256 排序、同一 sha256 的条目按文件名与消息标识排序。 */
+    private fun normalizedIndex(
+        entries: Map<String, List<ChatAttachmentEntry>>,
+    ): Map<String, List<ChatAttachmentEntry>> = entries.entries
+        .filter { it.value.isNotEmpty() }
+        .sortedBy { it.key }
+        .associateTo(linkedMapOf<String, List<ChatAttachmentEntry>>()) { (sha256, list) ->
+            sha256 to list.sortedWith(
+                compareBy(
+                    { it.fileName },
+                    { it.conversationId },
+                    { it.nodeId },
+                    { it.messageId },
+                )
+            )
         }
-        writeIndexLocked(cacheDir, index)
-        return index
-    }
 
-    private fun writeIndexLocked(cacheDir: File, index: Map<String, List<String>>) {
+    /** 写入已经过 [normalizedIndex] 规范化的索引, 调用方不得传入未排序的条目。 */
+    private fun writeNormalizedIndexLocked(
+        cacheDir: File,
+        entries: Map<String, List<ChatAttachmentEntry>>,
+    ) {
         val indexFile = indexFile(cacheDir)
         indexFile.parentFile?.mkdirs()
-        val sorted = index.entries
-            .sortedBy { it.key }
-            .associateTo(linkedMapOf<String, List<String>>()) { (sha256, links) -> sha256 to links.sorted() }
         val temporary = File(indexFile.parentFile, "${indexFile.name}.tmp")
-        temporary.writeText(JsonInstant.encodeToString(SymlinkIndex(entries = sorted)))
+        temporary.writeText(
+            JsonInstant.encodeToString(
+                ChatAttachmentsIndex(
+                    version = INDEX_VERSION,
+                    entries = entries,
+                )
+            )
+        )
         if (!temporary.renameTo(indexFile)) {
             indexFile.writeText(temporary.readText())
             temporary.delete()
@@ -275,8 +357,25 @@ object AttachmentCas {
     }
 }
 
+/**
+ * 某个 sha256 实体下的一条附件引用: 一条使用了该附件的消息。
+ *
+ * [fileName] 是 `upload` 下的软链接文件名 (不带 `upload/` 前缀)。同一个 sha256 被多条消息
+ * 使用时会在列表中出现多条记录。引用时间不写入缓存, 需要时按 [fileName] 从 `managed_files` 读取。
+ */
 @Serializable
-private data class SymlinkIndex(
+data class ChatAttachmentEntry(
+    val fileName: String,
+    val conversationId: String,
+    val nodeId: String,
+    val messageId: String,
+    val folderId: String? = null,
+    val assistantId: String? = null,
+)
+
+@Serializable
+private data class ChatAttachmentsIndex(
     val version: Int = 1,
-    val entries: Map<String, List<String>> = emptyMap(),
+    /** sha256 -> 全部消息引用条目。 */
+    val entries: Map<String, List<ChatAttachmentEntry>> = emptyMap(),
 )

@@ -17,18 +17,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import me.rerere.ai.ui.UIMessage
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.common.android.Logging
 import me.rerere.rikkahub.AppScope
 import me.rerere.rikkahub.data.db.entity.ManagedFileEntity
-import me.rerere.rikkahub.data.db.dao.ManagedFileWithReference
 import me.rerere.rikkahub.data.repository.FilesRepository
 import me.rerere.rikkahub.data.model.Conversation
-import me.rerere.rikkahub.utils.JsonInstant
 import me.rerere.rikkahub.utils.exportImage
 import me.rerere.rikkahub.utils.exportImageFile
 import me.rerere.rikkahub.utils.getActivity
@@ -43,11 +38,9 @@ class FilesManager(
 ) {
     companion object {
         private const val TAG = "FilesManager"
-        private const val ATTACHMENT_INDEX_FILE = "chat_attachment_index.json"
     }
 
     private val attachmentIndexMutex = Mutex()
-    private val attachmentIndexFile get() = File(context.cacheDir, ATTACHMENT_INDEX_FILE)
 
     private val filesRoot get() = context.filesDir
     private val uploadDir get() = AttachmentCas.uploadDir(filesRoot)
@@ -132,113 +125,214 @@ class FilesManager(
 
     suspend fun getByRelativePath(relativePath: String): ManagedFileEntity? = repository.getByPath(relativePath)
 
-    suspend fun listWithReferences(
-        folder: String = FileFolders.UPLOAD,
-        forceRebuild: Boolean = false,
-    ): List<ManagedFileWithReference> = withContext(Dispatchers.IO) {
+    /**
+     * 启动时确保附件索引存在, 不存在或损坏时扫描消息库与 `upload`/`upload-cas` 完整重建。
+     * 索引就绪后, 新增/删除附件等路径会原地更新它。
+     */
+    suspend fun ensureAttachmentIndex() = withContext(Dispatchers.IO) {
         attachmentIndexMutex.withLock {
-            val files = repository.listByFolder(folder).first()
-            val cached = if (!forceRebuild) readAttachmentIndex() else null
-            val entries = cached ?: rebuildAttachmentIndex(folder)
-            val references = entries.associateBy { it.relativePath }
-            files.map { file ->
-                val reference = references[file.relativePath]
-                ManagedFileWithReference(
-                    file = file,
-                    conversationId = reference?.conversationId,
-                    nodeId = reference?.nodeId,
-                )
+            if (AttachmentCas.needsRebuild(context.cacheDir)) {
+                rebuildAttachmentIndex()
             }
         }
     }
 
+    /**
+     * 列出全部 `upload-cas` 实体, 每个实体的引用来自索引。排序交给调用方 (存储管理页支持切换排序),
+     * 这里不排序。
+     */
+    suspend fun listCasAttachments(forceRebuild: Boolean = false): List<CasAttachment> =
+        withContext(Dispatchers.IO) {
+            val index = attachmentIndexMutex.withLock {
+                if (forceRebuild) {
+                    rebuildAttachmentIndex()
+                } else {
+                    AttachmentCas.readIndex(context.cacheDir) ?: rebuildAttachmentIndex()
+                }
+            }
+            // 附件的时间不写入索引, 统一从 managed_files 表读取该实体全部软链接的登记时间
+            val managedTimesBySha = managedUploadTimes()
+            uploadCasDir.listFiles().orEmpty()
+                .filter { it.isFile && !AttachmentCas.isTemporary(it) }
+                .map { entity ->
+                    val sha256 = entity.name
+                    val entries = index[sha256].orEmpty()
+                    val times = managedTimesBySha[sha256].orEmpty()
+                    val fallback = entity.lastModified()
+                    CasAttachment(
+                        sha256 = sha256,
+                        file = entity,
+                        // 实体文件名只有 sha256, 用软链接文件名 (带扩展名) 判断类型, 没有引用时按内容嗅探
+                        mimeType = FileUtils.guessMimeType(entity, entries.firstOrNull()?.fileName.orEmpty()),
+                        sizeBytes = entity.length(),
+                        // 清理时以最新登记时间为准: 只要还有近期登记就不算过期
+                        latestManagedAt = times.maxOrNull() ?: fallback,
+                        oldestManagedAt = times.minOrNull() ?: fallback,
+                        references = entries,
+                    )
+                }
+        }
+
+    /**
+     * 读取 `upload` 下每个软链接在 `managed_files` 中的登记时间, 按 sha256 汇总该实体的全部登记时间。
+     * 附件排序与清理都使用这份时间, 不再写入 `chat_attachments.json`。
+     */
+    private suspend fun managedUploadTimes(): Map<String, List<Long>> {
+        val result = linkedMapOf<String, MutableList<Long>>()
+        repository.listByFolder(FileFolders.UPLOAD).first().forEach { entity ->
+            val fileName = entity.relativePath.substringAfterLast('/')
+            val sha256 = AttachmentCas.readSha(File(uploadDir, fileName)) ?: return@forEach
+            result.getOrPut(sha256) { mutableListOf() } += entity.createdAt
+        }
+        return result
+    }
+
     suspend fun updateAttachmentIndex(conversation: Conversation) = withContext(Dispatchers.IO) {
         attachmentIndexMutex.withLock {
-            val existing = readAttachmentIndex() ?: return@withLock
-            val referencedNodes = buildMap {
-                conversation.messageNodes.forEach { node ->
-                    node.messages.forEach { message ->
-                        message.parts.collectAttachmentFileNames().forEach { fileName ->
-                            put(fileName, node.id.toString())
-                        }
+            val conversationId = conversation.id.toString()
+            val assistantId = conversation.assistantId.toString()
+            val folderId = conversation.folderId?.toString()
+            val references = mutableListOf<AttachmentMessageReference>()
+            conversation.messageNodes.forEach { node ->
+                node.messages.forEach { message ->
+                    message.parts.collectAttachmentFileNames().forEach { fileName ->
+                        references += AttachmentMessageReference(
+                            fileName = fileName,
+                            nodeId = node.id.toString(),
+                            messageId = message.id.toString(),
+                        )
                     }
                 }
             }
-            val conversationId = conversation.id.toString()
-            val updated = existing
-                .filterNot { it.conversationId == conversationId }
-                .associateByTo(linkedMapOf()) { it.relativePath }
-            referencedNodes.forEach { (fileName, nodeId) ->
-                val relativePath = "${FileFolders.UPLOAD}/$fileName"
-                updated[relativePath] = AttachmentIndexEntry(
-                    relativePath = relativePath,
-                    conversationId = conversationId,
-                    nodeId = nodeId,
-                )
-            }
-            val newEntries = updated.values.toList()
-            if (newEntries != existing) {
-                writeAttachmentIndex(newEntries)
+            AttachmentCas.updateIndexIfPresent(context.cacheDir) { entries ->
+                // 先移除该会话的旧引用, 再按当前消息重新写入全部引用
+                val iterator = entries.entries.iterator()
+                while (iterator.hasNext()) {
+                    val item = iterator.next()
+                    item.value.removeAll { it.conversationId == conversationId }
+                    if (item.value.isEmpty()) iterator.remove()
+                }
+                references.forEach { reference ->
+                    // 索引不再保存软链接集合, 直接读软链接得到 sha256; 软链接已不存在则跳过
+                    val sha256 = AttachmentCas.readSha(File(uploadDir, reference.fileName))
+                        ?: return@forEach
+                    entries.getOrPut(sha256) { mutableListOf() } += ChatAttachmentEntry(
+                        fileName = reference.fileName,
+                        conversationId = conversationId,
+                        nodeId = reference.nodeId,
+                        messageId = reference.messageId,
+                        folderId = folderId,
+                        assistantId = assistantId,
+                    )
+                }
             }
         }
     }
 
     suspend fun removeConversationFromAttachmentIndex(conversationId: Uuid) = withContext(Dispatchers.IO) {
         attachmentIndexMutex.withLock {
-            val existing = readAttachmentIndex() ?: return@withLock
-            val updated = existing.filterNot { it.conversationId == conversationId.toString() }
-            if (updated.size != existing.size) {
-                writeAttachmentIndex(updated)
+            val id = conversationId.toString()
+            AttachmentCas.updateIndexIfPresent(context.cacheDir) { entries ->
+                val iterator = entries.entries.iterator()
+                while (iterator.hasNext()) {
+                    val item = iterator.next()
+                    item.value.removeAll { it.conversationId == id }
+                    if (item.value.isEmpty()) iterator.remove()
+                }
+            }
+        }
+    }
+
+    /** 会话移动到其它助手时更新索引里的助手与文件夹 (文件夹会被清空, 与数据库保持一致)。 */
+    suspend fun updateAttachmentAssistant(conversationId: Uuid, assistantId: Uuid) = withContext(Dispatchers.IO) {
+        attachmentIndexMutex.withLock {
+            val id = conversationId.toString()
+            val assistant = assistantId.toString()
+            AttachmentCas.updateIndexIfPresent(context.cacheDir) { entries ->
+                entries.values.forEach { list ->
+                    for (index in list.indices) {
+                        val entry = list[index]
+                        if (entry.conversationId == id) {
+                            list[index] = entry.copy(assistantId = assistant, folderId = null)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /** 会话在助手内移动文件夹时更新索引里的文件夹。 */
+    suspend fun updateAttachmentFolder(conversationId: Uuid, folderId: Uuid?) = withContext(Dispatchers.IO) {
+        attachmentIndexMutex.withLock {
+            val id = conversationId.toString()
+            val folder = folderId?.toString()
+            AttachmentCas.updateIndexIfPresent(context.cacheDir) { entries ->
+                entries.values.forEach { list ->
+                    for (index in list.indices) {
+                        val entry = list[index]
+                        if (entry.conversationId == id) list[index] = entry.copy(folderId = folder)
+                    }
+                }
+            }
+        }
+    }
+
+    /** 删除文件夹时清空索引里属于该文件夹的会话的文件夹归属。 */
+    suspend fun clearAttachmentFolder(folderId: Uuid) = withContext(Dispatchers.IO) {
+        attachmentIndexMutex.withLock {
+            val id = folderId.toString()
+            AttachmentCas.updateIndexIfPresent(context.cacheDir) { entries ->
+                entries.values.forEach { list ->
+                    for (index in list.indices) {
+                        val entry = list[index]
+                        if (entry.folderId == id) list[index] = entry.copy(folderId = null)
+                    }
+                }
             }
         }
     }
 
     suspend fun invalidateAttachmentIndex() = withContext(Dispatchers.IO) {
         attachmentIndexMutex.withLock {
-            attachmentIndexFile.delete()
+            // 清空后立即重建, 避免下次启动前 updateIndexIfPresent 因索引缺失而丢弃更新
+            AttachmentCas.clearIndex(context.cacheDir)
+            rebuildAttachmentIndex()
         }
-        AttachmentCas.clearIndex(context.cacheDir)
     }
 
-    private suspend fun rebuildAttachmentIndex(folder: String): List<AttachmentIndexEntry> {
-        val files = repository.listByFolder(folder).first()
-        val filesByName = files.associateBy { it.relativePath.substringAfter('/') }
-        val conversationIds = repository.listConversationIdsByLatest()
-        val entriesByPath = linkedMapOf<String, AttachmentIndexEntry>()
-        conversationIds.forEach { conversationId ->
+    /**
+     * 扫描 `upload` 软链接、`upload-cas` 实体与全部会话中的附件引用, 重建 sha256 -> 全部消息引用索引。
+     * 只有真实存在实体的引用才会写入缓存, 避免留下指向已删实体的陈年条目。
+     */
+    private suspend fun rebuildAttachmentIndex(): Map<String, List<ChatAttachmentEntry>> {
+        val shaByFileName = linkedMapOf<String, String>()
+        uploadDir.listFiles().orEmpty().forEach { link ->
+            val sha256 = AttachmentCas.readSha(link) ?: return@forEach
+            shaByFileName[link.name] = sha256
+        }
+        val existingEntities = uploadCasDir.listFiles().orEmpty()
+            .filter { it.isFile && !AttachmentCas.isTemporary(it) }
+            .mapTo(HashSet()) { it.name }
+        val index = linkedMapOf<String, MutableList<ChatAttachmentEntry>>()
+        repository.listConversationIdsByLatest().forEach { conversationId ->
             repository.listAttachmentReferences(conversationId).forEach references@{ reference ->
-                val file = filesByName.entries.firstOrNull { (fileName, _) ->
-                    reference.attachmentUrl.contains(fileName)
-                }?.value ?: return@references
-                entriesByPath.putIfAbsent(
-                    file.relativePath,
-                    AttachmentIndexEntry(
-                        relativePath = file.relativePath,
-                        conversationId = conversationId,
-                        nodeId = reference.nodeId,
-                    ),
+                val fileName = reference.attachmentUrl.toUri().lastPathSegment ?: return@references
+                val sha256 = shaByFileName[fileName] ?: return@references
+                if (sha256 !in existingEntities) return@references
+                index.getOrPut(sha256) { mutableListOf() } += ChatAttachmentEntry(
+                    fileName = fileName,
+                    conversationId = conversationId,
+                    nodeId = reference.nodeId,
+                    messageId = reference.messageId,
+                    folderId = reference.folderId.ifBlank { null },
+                    assistantId = reference.assistantId.ifBlank { null },
                 )
             }
         }
-        val entries = entriesByPath.values.toList()
-        writeAttachmentIndex(entries)
-        return entries
-    }
-
-    private fun readAttachmentIndex(): List<AttachmentIndexEntry>? = runCatching {
-        if (!attachmentIndexFile.isFile) return null
-        JsonInstant.decodeFromString<AttachmentIndexCache>(attachmentIndexFile.readText())
-            .takeIf { it.version == 1 }
-            ?.entries
-    }.getOrNull()
-
-    private fun writeAttachmentIndex(entries: List<AttachmentIndexEntry>) {
-        val temporary = File(attachmentIndexFile.parentFile, "${attachmentIndexFile.name}.tmp")
-        temporary.writeText(JsonInstant.encodeToString(AttachmentIndexCache(entries = entries)))
-        if (!temporary.renameTo(attachmentIndexFile)) {
-            attachmentIndexFile.writeText(temporary.readText())
-            temporary.delete()
-        }
+        // 同一条消息内同一附件可能被 json_tree 多次展开, 去重后与增量更新的结果保持一致
+        val result = index.mapValuesTo(linkedMapOf()) { (_, entries) -> entries.distinct() }
+        AttachmentCas.replaceIndex(context.cacheDir, entries = result)
+        return result
     }
 
     fun getFile(entity: ManagedFileEntity): File =
@@ -364,20 +458,17 @@ class FilesManager(
         }
     }
 
-    suspend fun countChatFiles(): Pair<Int, Long> = withContext(Dispatchers.IO) {
-        val dir = uploadDir
-        if (!dir.exists()) {
-            return@withContext Pair(0, 0)
-        }
-        val files = dir.listFiles() ?: return@withContext Pair(0, 0)
-        val count = files.size
-        // 软链接会跟随到实体文件, 直接相加会把共享的实体重复计算; 实体只按实际存储统计一次。
-        val legacySize = files.filterNot(AttachmentCas::isSymlink).sumOf { it.length() }
-        val entitySize = uploadCasDir.listFiles()
-            ?.filterNot(AttachmentCas::isTemporary)
-            ?.sumOf { it.length() }
-            ?: 0L
-        Pair(count, legacySize + entitySize)
+    suspend fun countChatFiles(): CasStorageStats = withContext(Dispatchers.IO) {
+        // 存储管理按 upload-cas 实体统计, 相同内容只算一份
+        val files = uploadCasDir.listFiles()
+            ?.filter { it.isFile && !AttachmentCas.isTemporary(it) }
+            ?: return@withContext CasStorageStats(fileCount = 0, referenceCount = 0, sizeBytes = 0)
+        CasStorageStats(
+            fileCount = files.size,
+            // 引用数按 `upload` 下的软链接数量统计: 同一份实体可以被多个软链接共享
+            referenceCount = uploadDir.listFiles().orEmpty().count { AttachmentCas.isSymlink(it) },
+            sizeBytes = files.sumOf { it.length() },
+        )
     }
 
     fun createChatTextFile(text: String): UIMessagePart.Document {
@@ -523,79 +614,59 @@ class FilesManager(
     }
 
     /**
-     * 批量删除指定附件: 磁盘文件与共享索引只处理一次, 再删除数据库记录。
-     * 返回所有数据库记录是否都删除成功。
+     * 删除指定 sha256 实体: 一并删除指向它的全部软链接、附件索引条目与数据库记录。
+     * 返回所有软链接是否都删除成功。
      */
-    suspend fun deleteAll(ids: List<Long>, deleteFromDisk: Boolean = true): Boolean = withContext(Dispatchers.IO) {
-        val entities = ids.distinct().mapNotNull { repository.getById(it) }
-        if (entities.isEmpty()) return@withContext true
-        if (deleteFromDisk) {
-            deleteEntitiesFromDisk(entities)
+    suspend fun deleteCasAttachments(shas: Collection<String>): Boolean = withContext(Dispatchers.IO) {
+        val targets = shas.toSet()
+        if (targets.isEmpty()) return@withContext true
+        // 索引不再保存软链接集合, 直接扫描 `upload` 定位指向目标实体的软链接
+        val links = uploadDir.listFiles().orEmpty().filter { AttachmentCas.readSha(it) in targets }
+        // 跳过 deleteUploadFiles 的索引更新, 与下面的孤儿实体清理合并成一次索引读写
+        val deleted = deleteUploadFiles(links, updateIndex = false)
+        // 删除失败的软链接仍在磁盘上, 只为确实删掉的链接移除数据库记录, 避免留下无法再定位的残留链接
+        val removedLinks = links.filterIndexed { index, _ -> deleted[index] }
+        removedLinks.forEach { link ->
+            repository.deleteByPath("${FileFolders.UPLOAD}/${link.name}")
         }
-        var allDeleted = true
-        entities.forEach { entity ->
-            if (repository.deleteById(entity.id) == 0) {
-                allDeleted = false
+        // 没有软链接的孤立实体不会被 deleteUploadFiles 处理, 这里一并删除;
+        // 返回值是磁盘上仍被引用的 sha256 集合, 用于决定哪些索引桶不能清除
+        val stillReferenced = AttachmentCas.deleteUnreferencedEntities(filesRoot, targets)
+        val removedFileNames = removedLinks.mapTo(HashSet()) { it.name }
+        // 一次索引更新同时完成两件事: 移除已删软链接的消息引用, 以及清除已无软链接的 sha256 的整个索引桶
+        // (软链接已缺失的陈旧条目也靠这一步兜底); 仍有软链接的 sha256 必须保留引用信息,
+        // 否则会被误判成 "未使用的附件"
+        AttachmentCas.updateIndexIfPresent(context.cacheDir) { entries ->
+            val iterator = entries.entries.iterator()
+            while (iterator.hasNext()) {
+                val item = iterator.next()
+                if (item.key in targets && item.key !in stillReferenced) {
+                    iterator.remove()
+                    continue
+                }
+                item.value.removeAll { it.fileName in removedFileNames }
+                if (item.value.isEmpty()) iterator.remove()
             }
         }
-        allDeleted
+        deleted.all { it }
     }
 
-    suspend fun deleteAll(folder: String = FileFolders.UPLOAD): Boolean = withContext(Dispatchers.IO) {
-        val dir = File(context.filesDir, folder)
-        val entries = dir.listFiles()
-        if (dir.exists() && entries == null) {
+    /** 清空全部 `upload-cas` 实体及其软链接与数据库记录。 */
+    suspend fun deleteAllCasAttachments(): Boolean = withContext(Dispatchers.IO) {
+        val files = uploadDir.listFiles().orEmpty().toList()
+        val results = deleteUploadFiles(files)
+        if (!results.all { it }) {
+            // 只为确实删掉的软链接移除数据库记录, 保留删除失败链接的记录与实体, 避免留下悬空链接
+            files.filterIndexed { index, _ -> results[index] }.forEach { file ->
+                repository.deleteByPath("${FileFolders.UPLOAD}/${file.name}")
+            }
             return@withContext false
         }
-
-        var allDeletedFromDisk = true
-        entries.orEmpty().forEach { entry ->
-            if (!runCatching { entry.deleteRecursively() }.getOrDefault(false)) {
-                allDeletedFromDisk = false
-            }
-        }
-
-        if (folder == FileFolders.UPLOAD) {
-            // 软链接已全部移除: 实体文件与索引也一并清掉; 否则至少丢弃索引以便扫描重建
-            if (allDeletedFromDisk) {
-                AttachmentCas.clearAll(context.cacheDir, filesRoot)
-            } else {
-                AttachmentCas.clearIndex(context.cacheDir)
-            }
-        }
-
-        if (allDeletedFromDisk) {
-            repository.deleteByFolder(folder)
-            return@withContext true
-        }
-
-        repository.listByFolder(folder).first().forEach { entity ->
-            if (!getFile(entity).exists()) {
-                repository.deleteById(entity.id)
-            }
-        }
-        false
-    }
-
-    suspend fun deleteOlderThan(
-        folder: String = FileFolders.UPLOAD,
-        cutoffMillis: Long,
-    ): Boolean = withContext(Dispatchers.IO) {
-        val candidates = repository.listByFolder(folder).first()
-            .filter { it.createdAt < cutoffMillis }
-        // 一次处理全部软链接, 避免逐个删除时反复读写共享索引
-        val deletedFromDisk = deleteEntitiesFromDisk(candidates)
-        var allDeleted = true
-        candidates.forEachIndexed { index, entity ->
-            if (deletedFromDisk[index]) {
-                if (repository.deleteById(entity.id) == 0) {
-                    allDeleted = false
-                }
-            } else {
-                allDeleted = false
-            }
-        }
-        allDeleted
+        // 全部删除成功: 顺带清掉没有对应文件的孤立数据库记录
+        repository.deleteByFolder(FileFolders.UPLOAD)
+        // deleteUploadFiles 已按引用删除实体; 清空场景直接把残留实体与索引一并丢弃
+        AttachmentCas.clearAll(context.cacheDir, filesRoot)
+        true
     }
 
     /**
@@ -611,8 +682,8 @@ class FilesManager(
         val (temporary, sha256) = AttachmentCas.writeTemporary(casDir, writeContent)
         try {
             val linkName = buildUuidFileName(displayName, mimeType)
-            // 实体落盘、建立软链接与索引更新由 AttachmentCas 在同一把锁内完成, 避免与并发删除互相穿插
-            return AttachmentCas.linkEntity(context.cacheDir, filesRoot, sha256, linkName, temporary)
+            // 实体落盘与建立软链接由 AttachmentCas 在同一把锁内完成, 避免与并发删除互相穿插
+            return AttachmentCas.linkEntity(filesRoot, sha256, linkName, temporary)
         } catch (e: Throwable) {
             temporary.delete()
             throw e
@@ -640,10 +711,11 @@ class FilesManager(
     }
 
     /**
-     * 删除一批 `upload` 下的软链接, 并一次性更新共享索引; 当实体文件不再被任何软链接引用时将其删除。
+     * 删除一批 `upload` 下的软链接; 当实体文件不再被任何软链接引用时将其删除。
+     * [updateIndex] 为 true 时同时更新共享索引, 否则由调用方合并到后续的索引读写里。
      * 返回与 [files] 一一对应的「删除后该位置已不存在软链接」结果。
      */
-    private fun deleteUploadFiles(files: List<File>): List<Boolean> {
+    private fun deleteUploadFiles(files: List<File>, updateIndex: Boolean = true): List<Boolean> {
         val refs = mutableListOf<AttachmentCas.LinkRef>()
         val results = files.map { file ->
             if (!AttachmentCas.isSymlink(file)) {
@@ -658,7 +730,7 @@ class FilesManager(
             }
         }
         if (refs.isNotEmpty()) {
-            AttachmentCas.removeLinks(context.cacheDir, filesRoot, refs)
+            AttachmentCas.removeLinks(context.cacheDir, filesRoot, refs, updateIndex)
         }
         return results
     }
@@ -757,17 +829,37 @@ class FilesManager(
         FileUtils.guessMimeType(file, fileName)
 }
 
-@Serializable
-private data class AttachmentIndexCache(
-    val version: Int = 1,
-    val entries: List<AttachmentIndexEntry>,
+/**
+ * “存储管理”页展示的一个 `upload-cas` 实体: 相同内容的多个软链接只显示一张卡片。
+ * [latestManagedAt] 与 [oldestManagedAt] 取自 `managed_files` 表中该实体全部软链接的登记时间;
+ * 没有任何登记记录时退回实体文件的修改时间。
+ */
+data class CasAttachment(
+    val sha256: String,
+    val file: File,
+    val mimeType: String,
+    val sizeBytes: Long,
+    val latestManagedAt: Long,
+    val oldestManagedAt: Long,
+    val references: List<ChatAttachmentEntry>,
+) {
+    /** 存储管理页展示的文件名: sha256 的前 6 位与后 6 位, 中间省略。 */
+    val displayName: String
+        get() = if (sha256.length > 12) "${sha256.take(6)}…${sha256.takeLast(6)}" else sha256
+}
+
+/** “存储管理”统计: [fileCount] 为 `upload-cas` 实体数, [referenceCount] 为 `upload` 下的软链接数量。 */
+data class CasStorageStats(
+    val fileCount: Int,
+    val referenceCount: Int,
+    val sizeBytes: Long,
 )
 
-@Serializable
-private data class AttachmentIndexEntry(
-    val relativePath: String,
-    val conversationId: String,
+/** [FilesManager.updateAttachmentIndex] 扫描一条消息时得到的一条附件引用。 */
+private data class AttachmentMessageReference(
+    val fileName: String,
     val nodeId: String,
+    val messageId: String,
 )
 
 private fun List<UIMessagePart>.collectAttachmentFileNames(): Set<String> = buildSet {

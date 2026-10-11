@@ -1,7 +1,6 @@
 package me.rerere.rikkahub.data.db.dao
 
 import androidx.room.Dao
-import androidx.room.Embedded
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -9,15 +8,12 @@ import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import me.rerere.rikkahub.data.db.entity.ManagedFileEntity
 
-data class ManagedFileWithReference(
-    @Embedded val file: ManagedFileEntity,
-    val conversationId: String?,
-    val nodeId: String?,
-)
-
 data class AttachmentReference(
     val nodeId: String,
+    val messageId: String,
     val attachmentUrl: String,
+    val assistantId: String,
+    val folderId: String,
 )
 
 @Dao
@@ -42,8 +38,13 @@ interface ManagedFileDAO {
 
     @Query(
         """
-        SELECT mn.id AS nodeId, json_extract(part.value, '$.url') AS attachmentUrl
+        SELECT mn.id AS nodeId,
+               IFNULL(json_extract(message.value, '$.id'), '') AS messageId,
+               json_extract(part.value, '$.url') AS attachmentUrl,
+               IFNULL(c.assistant_id, '') AS assistantId,
+               IFNULL(c.folder_id, '') AS folderId
         FROM message_node mn
+        JOIN conversationentity c ON c.id = mn.conversation_id
         JOIN json_each(mn.messages) message
         JOIN json_tree(message.value, '$.parts') part
         WHERE mn.conversation_id = :conversationId

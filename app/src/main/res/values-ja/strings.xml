@@ -722,6 +722,9 @@
   <string name="setting_files_page_folder_unused">未使用の添付ファイル</string>
   <string name="setting_files_page_rebuild_index">チャット添付ファイルインデックスを再構築</string>
   <string name="setting_files_page_open_reference">参照元のメッセージへ移動</string>
+  <string name="setting_files_page_sort">並べ替え</string>
+  <string name="setting_files_page_sort_latest_reference">最新の参照順</string>
+  <string name="setting_files_page_sort_oldest_reference">最古の参照順</string>
   <string name="setting_files_page_no_files">ファイルがありません</string>
   <string name="setting_mcp_page_add_header">ヘッダーを追加</string>
   <string name="setting_mcp_page_add_one_to_get_started">1つ追加して始める</string>
@@ -788,7 +791,7 @@
   <string name="setting_page_chat_storage">ストレージ管理</string>
   <string name="chat_message_attachment_deleted">添付ファイルは削除されました</string>
   <string name="chat_message_cannot_edit_tool_call">ツール呼び出しを含むメッセージは編集できません</string>
-  <string name="setting_page_chat_storage_desc">%1$d ファイル、%2$.2f MB</string>
+  <string name="setting_page_chat_storage_desc">%1$d ファイル（%2$d 件の参照）、%3$.2f MiB</string>
   <string name="setting_page_color_mode">カラーモード</string>
   <string name="setting_page_color_mode_dark">ダーク</string>
   <string name="setting_page_color_mode_light">ライト</string>

@@ -722,6 +722,9 @@
   <string name="setting_files_page_folder_unused">사용하지 않는 첨부 파일</string>
   <string name="setting_files_page_rebuild_index">채팅 첨부 파일 색인 재구축</string>
   <string name="setting_files_page_open_reference">참조 메시지로 이동</string>
+  <string name="setting_files_page_sort">정렬</string>
+  <string name="setting_files_page_sort_latest_reference">최근 참조순</string>
+  <string name="setting_files_page_sort_oldest_reference">오래된 참조순</string>
   <string name="setting_files_page_no_files">파일 없음</string>
   <string name="setting_mcp_page_add_header">헤더 추가</string>
   <string name="setting_mcp_page_add_one_to_get_started">시작하려면 하나를 추가하세요</string>
@@ -788,7 +791,7 @@
   <string name="setting_page_chat_storage">저장 공간 관리</string>
   <string name="chat_message_attachment_deleted">첨부 파일이 삭제되었습니다</string>
   <string name="chat_message_cannot_edit_tool_call">도구 호출이 포함된 메시지는 편집할 수 없습니다</string>
-  <string name="setting_page_chat_storage_desc">%1$d개 파일, %2$.2f MB</string>
+  <string name="setting_page_chat_storage_desc">%1$d개 파일(%2$d개 참조), %3$.2f MiB</string>
   <string name="setting_page_color_mode">색상 모드</string>
   <string name="setting_page_color_mode_dark">어두움</string>
   <string name="setting_page_color_mode_light">밝음</string>

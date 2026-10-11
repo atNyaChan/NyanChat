@@ -2,6 +2,10 @@ package me.rerere.rikkahub.data.files
 
 import java.io.File
 import java.nio.file.Files
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
@@ -26,10 +30,26 @@ class AttachmentCasTest {
     private fun link(content: String, linkName: String): Pair<File, String> {
         val cas = AttachmentCas.casDir(filesRoot).apply { mkdirs() }
         val (temporary, sha256) = AttachmentCas.writeTemporary(cas) { it.write(content.toByteArray()) }
-        return AttachmentCas.linkEntity(cacheDir, filesRoot, sha256, linkName, temporary) to sha256
+        return AttachmentCas.linkEntity(filesRoot, sha256, linkName, temporary) to sha256
     }
 
     private fun entity(sha256: String) = File(AttachmentCas.casDir(filesRoot), sha256)
+
+    private fun entry(
+        fileName: String,
+        conversationId: String = "conv",
+        nodeId: String = "node",
+        messageId: String = "message",
+        folderId: String? = null,
+        assistantId: String? = null,
+    ) = ChatAttachmentEntry(
+        fileName = fileName,
+        conversationId = conversationId,
+        nodeId = nodeId,
+        messageId = messageId,
+        folderId = folderId,
+        assistantId = assistantId,
+    )
 
     @Test
     fun `identical content shares one entity while every link resolves`() {
@@ -67,32 +87,33 @@ class AttachmentCasTest {
     }
 
     @Test
-    fun `missing index is rebuilt from disk and never drops a referenced entity`() {
+    fun `removeLinks keeps an entity that is still referenced when the index is missing`() {
         setUpRoots()
 
         val (linkA, shaA) = link("payload", "a.bin")
         val (linkB, _) = link("payload", "b.bin")
         val casEntity = entity(shaA)
 
-        // 索引丢失后仍以磁盘上的软链接为准
-        assertTrue(AttachmentCas.indexFile(cacheDir).delete())
+        // 索引不存在时仍以磁盘上的软链接为准
+        assertFalse(AttachmentCas.indexFile(cacheDir).isFile)
         linkA.delete()
         AttachmentCas.removeLinks(cacheDir, filesRoot, listOf(AttachmentCas.LinkRef(shaA, "a.bin")))
 
         assertTrue("entity still referenced by b.bin", casEntity.exists())
         assertTrue(linkB.exists())
-        assertTrue(AttachmentCas.indexFile(cacheDir).isFile)
+        // 索引缺失时不在删除路径里写出不完整的索引, 等下次访问时完整重建
+        assertFalse(AttachmentCas.indexFile(cacheDir).isFile)
     }
 
     @Test
-    fun `removeLinks tolerates a stale index that misses the deleted link`() {
+    fun `removeLinks deletes the entity only when no link references it on disk`() {
         setUpRoots()
 
         val (linkA, shaA) = link("payload", "a.bin")
         val (linkB, _) = link("payload", "b.bin")
         val casEntity = entity(shaA)
 
-        // 索引里只留下 a.bin, b.bin 变成过期条目
+        // 只删掉其中一条软链接时实体必须保留, 删掉最后一条才删除实体
         linkB.delete()
         AttachmentCas.removeLinks(cacheDir, filesRoot, listOf(AttachmentCas.LinkRef(shaA, "b.bin")))
         assertTrue(casEntity.exists())
@@ -137,5 +158,142 @@ class AttachmentCasTest {
 
         assertEquals(sha, AttachmentCas.readSha(File(upload, "x.bin")))
         assertEquals(1, AttachmentCas.casDir(filesRoot).listFiles().orEmpty().count { it.isFile })
+    }
+
+    @Test
+    fun `index stores every message reference and sorts by file name`() {
+        setUpRoots()
+
+        val (_, shaA) = link("payload", "a.bin")
+        AttachmentCas.replaceIndex(
+            cacheDir,
+            entries = mapOf(
+                shaA to listOf(
+                    entry("a.bin", nodeId = "node2", messageId = "message2", folderId = "folder", assistantId = "assistant"),
+                    entry("a.bin", nodeId = "node1", messageId = "message1", folderId = "folder", assistantId = "assistant"),
+                )
+            ),
+        )
+
+        val entries = AttachmentCas.readIndex(cacheDir)!!.getValue(shaA)
+        assertEquals(2, entries.size)
+        assertEquals(listOf("a.bin", "a.bin"), entries.map { it.fileName })
+        assertEquals(listOf("message1", "message2"), entries.map { it.messageId })
+        assertTrue(entries.all { it.conversationId == "conv" })
+        assertTrue(entries.all { it.assistantId == "assistant" && it.folderId == "folder" })
+    }
+
+    @Test
+    fun `index file only contains version and entries`() {
+        setUpRoots()
+
+        val (_, shaA) = link("payload", "a.bin")
+        AttachmentCas.replaceIndex(cacheDir, entries = mapOf(shaA to listOf(entry("a.bin"))))
+
+        val json = Json.parseToJsonElement(AttachmentCas.indexFile(cacheDir).readText()).jsonObject
+        assertEquals(setOf("version", "entries"), json.keys)
+        assertEquals(1, json.getValue("version").jsonPrimitive.int)
+    }
+
+    @Test
+    fun `removeLinks drops message references for the deleted links`() {
+        setUpRoots()
+
+        val (linkA, shaA) = link("payload", "a.bin")
+        val (linkB, _) = link("payload", "b.bin")
+        AttachmentCas.replaceIndex(
+            cacheDir,
+            entries = mapOf(
+                shaA to listOf(
+                    entry("a.bin"),
+                    entry("b.bin"),
+                )
+            ),
+        )
+
+        linkA.delete()
+        AttachmentCas.removeLinks(cacheDir, filesRoot, listOf(AttachmentCas.LinkRef(shaA, "a.bin")))
+
+        val entries = AttachmentCas.readIndex(cacheDir)!!.getValue(shaA)
+        assertEquals(listOf("b.bin"), entries.map { it.fileName })
+    }
+
+    @Test
+    fun `updateIndexIfPresent keeps other entries while changing the target`() {
+        setUpRoots()
+
+        val (_, shaA) = link("payload", "a.bin")
+        val (_, shaB) = link("other payload", "b.bin")
+        AttachmentCas.replaceIndex(
+            cacheDir,
+            entries = mapOf(
+                shaA to listOf(entry("a.bin", conversationId = "conv")),
+                shaB to listOf(entry("b.bin", conversationId = "other")),
+            ),
+        )
+
+        val updated = AttachmentCas.updateIndexIfPresent(cacheDir) { entries ->
+            entries.values.forEach { list -> list.removeAll { it.conversationId == "conv" } }
+        }
+
+        assertTrue(updated)
+        val index = AttachmentCas.readIndex(cacheDir)!!
+        assertFalse(index.containsKey(shaA))
+        assertEquals(listOf("b.bin"), index.getValue(shaB).map { it.fileName })
+    }
+
+    @Test
+    fun `updateIndexIfPresent leaves an unchanged index file untouched`() {
+        setUpRoots()
+
+        val (_, shaA) = link("payload", "a.bin")
+        AttachmentCas.replaceIndex(
+            cacheDir,
+            entries = mapOf(shaA to listOf(entry("a.bin", conversationId = "conv"))),
+        )
+        val indexFile = AttachmentCas.indexFile(cacheDir)
+        val stamp = 1_000_000L
+        assertTrue(indexFile.setLastModified(stamp))
+
+        val updated = AttachmentCas.updateIndexIfPresent(cacheDir) { /* 不修改任何条目 */ }
+
+        assertTrue(updated)
+        assertEquals(stamp, indexFile.lastModified())
+    }
+
+    @Test
+    fun `updateIndexIfPresent also skips a rewrite when a transform only reorders entries`() {
+        setUpRoots()
+
+        val (_, shaA) = link("payload", "a.bin")
+        AttachmentCas.replaceIndex(
+            cacheDir,
+            entries = mapOf(
+                shaA to listOf(
+                    entry("a.bin", conversationId = "conv1"),
+                    entry("a.bin", conversationId = "conv2"),
+                )
+            ),
+        )
+        val indexFile = AttachmentCas.indexFile(cacheDir)
+        val stamp = 1_000_000L
+        assertTrue(indexFile.setLastModified(stamp))
+
+        AttachmentCas.updateIndexIfPresent(cacheDir) { entries ->
+            entries.values.forEach { list -> list.reverse() }
+        }
+
+        // 顺序变化不是内容变化, 不应重写文件
+        assertEquals(stamp, indexFile.lastModified())
+    }
+
+    @Test
+    fun `needsRebuild detects missing and present index`() {
+        setUpRoots()
+        assertTrue(AttachmentCas.needsRebuild(cacheDir))
+
+        AttachmentCas.replaceIndex(cacheDir, entries = emptyMap())
+
+        assertFalse(AttachmentCas.needsRebuild(cacheDir))
     }
 }

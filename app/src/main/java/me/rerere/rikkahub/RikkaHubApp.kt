@@ -101,6 +101,9 @@ class RikkaHubApp : Application() {
         // sync upload files to DB
         syncManagedFiles()
 
+        // ensure the chat attachment index exists (deletion paths rely on it)
+        ensureAttachmentIndex()
+
         // Extract builtin skills from assets after install/update
         extractBuiltinSkills()
 
@@ -192,6 +195,16 @@ class RikkaHubApp : Application() {
                 get<FilesManager>().syncFolder()
             }.onFailure {
                 Log.e(TAG, "syncManagedFiles failed", it)
+            }
+        }
+    }
+
+    private fun ensureAttachmentIndex() {
+        get<AppScope>().launch(Dispatchers.IO) {
+            runCatching {
+                get<FilesManager>().ensureAttachmentIndex()
+            }.onFailure {
+                Log.e(TAG, "ensureAttachmentIndex failed", it)
             }
         }
     }
