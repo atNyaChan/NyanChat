@@ -368,15 +368,6 @@
   <string name="imggen_page_save_failed">Не удалось сохранить: %1$s</string>
   <string name="imggen_page_settings_title">Настройки генерации изображений</string>
   <string name="imggen_page_title">Генерация изображений</string>
-  <string name="language_english">🇺🇸 Английский</string>
-  <string name="language_french">🇫🇷 Французский</string>
-  <string name="language_german">🇩🇪 Немецкий</string>
-  <string name="language_italian">🇮🇹 Итальянский</string>
-  <string name="language_japanese">🇯🇵 Японский</string>
-  <string name="language_korean">🇰🇷 Корейский</string>
-  <string name="language_simplified_chinese">🇷🇺 Упрощённый китайский</string>
-  <string name="language_spanish">🇪🇸 Испанский</string>
-  <string name="language_traditional_chinese">🇨🇳 繁體中文</string>
   <string name="mcp_picker_syncing">Синхронизация MCP-серверов…</string>
   <string name="mcp_picker_title">Серверы MCP</string>
   <string name="menu_page_afternoon_greeting">Добрый день👋</string>
@@ -701,7 +692,7 @@
   <string name="setting_display_page_screen_corner_adaptation_square">Прямые углы</string>
   <string name="setting_display_page_screen_corner_adaptation_cannot_read">, не удалось прочитать скругление экрана.</string>
   <string name="setting_display_page_screen_corner_adaptation_value_read">, считанное значение: %1$s dp</string>
-  <string name="setting_display_page_screen_corner_adaptation_small_value">, меньше 28dp, невозможно адаптировать к скруглению экрана</string>
+  <string name="setting_display_page_screen_corner_adaptation_small_value">, меньше или равно 28dp, невозможно адаптировать к скруглению экрана</string>
   <string name="setting_display_page_volume_key_scroll_desc">Задаёт величину прокрутки при перелистывании клавишами громкости, подходит для экранов E-Ink</string>
   <string name="setting_display_page_volume_key_scroll_title">Прокрутка клавишами громкости</string>
   <string name="setting_files_page_clean_action">Очистить</string>
@@ -1258,8 +1249,6 @@
   <string name="chat_page_delete_folder_generating">Некоторые беседы в этой папке все еще генерируются. Пожалуйста, остановите их перед удалением.</string>
   <string name="setting_general_language">Язык</string>
   <string name="setting_general_language_system">Как в системе</string>
-  <string name="language_arabic">🇸🇦 Арабский</string>
-  <string name="language_russian">🇷🇺 Русский</string>
   <string name="conversation_select_all">Выбрать все</string>
   <string name="conversation_cancel_selection">Отменить выбор</string>
   <string name="conversation_multi_select">Выбрать несколько</string>

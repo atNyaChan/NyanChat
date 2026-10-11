@@ -28,6 +28,7 @@ import me.rerere.rikkahub.ui.context.SystemToaster
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
+import kotlin.system.exitProcess
 
 private const val TAG = "ContextUtil"
 
@@ -140,6 +141,17 @@ fun Context.getComponentActivity(): ComponentActivity? {
         context = context.baseContext
     }
     return null
+}
+
+/**
+ * 重启应用：以全新的任务栈拉起启动页，随后结束当前进程。
+ * 进程结束后系统会重新启动应用，待恢复的数据会在下一次启动时应用。
+ */
+fun Context.restartApp() {
+    packageManager.getLaunchIntentForPackage(packageName)?.component?.let { component ->
+        startActivity(Intent.makeRestartActivityTask(component))
+    }
+    exitProcess(0)
 }
 
 fun Context.exportImage(

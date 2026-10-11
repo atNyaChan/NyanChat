@@ -13,7 +13,7 @@
 - ⚠️ **Delete Confirmation** — Confirmation dialog before deleting messages or conversations (yes, the original didn't have one)
 - 💰 **Message Price Display** — See the cost of each message directly for better budget management *(though price calculation may be inaccurate when caching is enabled)*
 - 🔍 **Better Message Search** — Search by title, or precise text matching (the original only had fuzzy search)
-- 🖼️ **Better Chat Attachment Management** — View all attachments in chat history and jump directly to the message using that attachment, making storage management easier
+- 🖼️ **Better Chat Attachment Management** — View all attachments in chat history and jump directly to the message using that attachment, making storage management easier. **After forking a conversation, the same attachments will not occupy space repeatedly!**
 - 💼 **Workspace Export/Import** — When exporting backups, workspace files are also fully preserved! (the original only saves chat text and attachments)
 - 📂 **Batch Move Conversations** — Multi-select and move chats to different folders for better conversation management
 - 📍 **Device Context Awareness** — Can access location, battery level, and more, bringing AI closer to reality
@@ -24,18 +24,14 @@
 
 > See [NyanwChanges.md](docs/NyanwChanges.md) for the full list of changes.
 
-## 🔮 Planned Future Features
-- 🧠 **Experimental [Tidal Memory](https://github.com/0xblewalker/tidal-memory) support** — From [@3nvoy](https://www.xiaohongshu.com/user/profile/67f3dfbe000000000e0113e5)'s open source project! Makes AI memory more human-like and optimizes cache hit rate.
-- 📱 **Instant Messaging Style Interaction (?)**: Send multiple short messages continuously; the LLM replies when it sees fit, or responds to multiple messages at once, just like chatting with a real person!
-
 ## 🎯 Existing RikkaHub Features
 
+- 🖥️ **Web remote access** — Can open the same conversation on computer and phone at the same time, sync chat!
 - 🔄 Support for multiple providers and custom APIs.
 - 🧠 Precise memory (but consumes more tokens)
 - 📦 proot-based Linux workspace
 - 🔍 Web search (Bing, Perplexity, etc.)
 - 🛠️ MCP support
-- 🖥️ Web remote access (chat from your computer while NyanChat is running on your phone!)
 - 🖼️ Image generation API support
 
 ## 📝 About Issues / PRs
@@ -52,7 +48,7 @@
 
 - Supports importing data from RikkaHub 2.x and exporting data to RikkaHub Latest (**chat text can be migrated bidirectionally without data loss!**).
 - Notes:
-  - Due to RikkaHub limitations, some data (such as workspaces, assistant avatars, and backgrounds) cannot be imported from RikkaHub.
+  - Due to RikkaHub limitations, some data (such as workspaces) cannot be imported from RikkaHub.
   - When exporting to RikkaHub, NyanChat-specific settings and metadata (such as model pricing) will be lost.
   - NyanChat only supports importing data from RikkaHub 2.x. To import data from RikkaHub 1.x, first update RikkaHub to 2.x and complete the database migration. Migrated data cannot be re-imported into RikkaHub 1.x.
   - Older versions of RikkaHub (e.g., `2.4.x`) cannot read NyanChat archives. Please update RikkaHub to at least `2.5.1` first.

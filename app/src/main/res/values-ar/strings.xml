@@ -368,15 +368,6 @@
   <string name="imggen_page_save_failed">فشل الحفظ: %1$s</string>
   <string name="imggen_page_settings_title">إعدادات توليد الصور</string>
   <string name="imggen_page_title">توليد الصور</string>
-  <string name="language_english">🇺🇸 الإنجليزية</string>
-  <string name="language_french">🇫🇷 الفرنسية</string>
-  <string name="language_german">🇩🇪 الألمانية</string>
-  <string name="language_italian">🇮🇹 Italiano</string>
-  <string name="language_japanese">🇯🇵 日本語</string>
-  <string name="language_korean">🇰🇷 한국어</string>
-  <string name="language_simplified_chinese">🇨🇳 简体中文</string>
-  <string name="language_spanish">🇪🇸 Español</string>
-  <string name="language_traditional_chinese">🇨🇳 繁體中文</string>
   <string name="mcp_picker_syncing">جارٍ مزامنة خوادم MCP...</string>
   <string name="mcp_picker_title">خوادم MCP</string>
   <string name="menu_page_afternoon_greeting">مساء الخير\uD83D\uDC4B</string>
@@ -701,7 +692,7 @@
   <string name="setting_display_page_screen_corner_adaptation_square">زوايا قائمة</string>
   <string name="setting_display_page_screen_corner_adaptation_cannot_read">، تعذّر قراءة نصف قطر زوايا الشاشة.</string>
   <string name="setting_display_page_screen_corner_adaptation_value_read">، نصف قطر زوايا الشاشة الحالي: %1$s dp</string>
-  <string name="setting_display_page_screen_corner_adaptation_small_value">، أقل من 28dp، لا يمكن الملاءمة مع زوايا الشاشة</string>
+  <string name="setting_display_page_screen_corner_adaptation_small_value">، أقل من أو يساوي 28dp، لا يمكن الملاءمة مع زوايا الشاشة</string>
   <string name="setting_display_page_volume_key_scroll_desc">تعيين مقدار التمرير عند استخدام مفاتيح الصوت لتقليب الصفحات، مناسب لشاشات الحبر الإلكتروني</string>
   <string name="setting_display_page_volume_key_scroll_title">تمرير الصفحات بمفاتيح الصوت</string>
   <string name="setting_files_page_clean_action">تنظيف</string>
@@ -1258,8 +1249,6 @@
   <string name="chat_page_delete_folder_generating">بعض المحادثات في هذا المجلد لا تزال قيد التوليد. يرجى إيقافها قبل الحذف.</string>
   <string name="setting_general_language">اللغة</string>
   <string name="setting_general_language_system">اتباع النظام</string>
-  <string name="language_arabic">🇸🇦 العربية</string>
-  <string name="language_russian">🇷🇺 Русский</string>
   <string name="conversation_select_all">تحديد الكل</string>
   <string name="conversation_cancel_selection">إلغاء التحديد</string>
   <string name="conversation_multi_select">تحديد متعدد</string>

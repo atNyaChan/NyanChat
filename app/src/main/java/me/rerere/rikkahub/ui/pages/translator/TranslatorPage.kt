@@ -248,18 +248,17 @@ private fun LanguageSelector(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    @Composable
     fun getLanguageDisplayName(locale: Locale): String {
         return when (locale) {
-            Locale.SIMPLIFIED_CHINESE -> stringResource(R.string.language_simplified_chinese)
-            Locale.ENGLISH -> stringResource(R.string.language_english)
-            Locale.TRADITIONAL_CHINESE -> stringResource(R.string.language_traditional_chinese)
-            Locale.JAPANESE -> stringResource(R.string.language_japanese)
-            Locale.KOREAN -> stringResource(R.string.language_korean)
-            Locale.FRENCH -> stringResource(R.string.language_french)
-            Locale.GERMAN -> stringResource(R.string.language_german)
-            Locale.ITALIAN -> stringResource(R.string.language_italian)
-            Locale.Builder().setLanguage("es").setRegion("ES").build() -> stringResource(R.string.language_spanish)
+            Locale.SIMPLIFIED_CHINESE -> "🇨🇳 简体中文"
+            Locale.ENGLISH -> "🇺🇸 English"
+            Locale.TRADITIONAL_CHINESE -> "🇨🇳 繁體中文"
+            Locale.JAPANESE -> "🇯🇵 日本語"
+            Locale.KOREAN -> "🇰🇷 한국어"
+            Locale.FRENCH -> "🇫🇷 Français"
+            Locale.GERMAN -> "🇩🇪 Deutsch"
+            Locale.ITALIAN -> "🇮🇹 Italiano"
+            Locale.Builder().setLanguage("es").setRegion("ES").build() -> "🇪🇸 Español"
             else -> locale.getDisplayLanguage(Locale.getDefault())
         }
     }

@@ -368,15 +368,6 @@
   <string name="imggen_page_save_failed">저장 실패: %1$s</string>
   <string name="imggen_page_settings_title">이미지 생성 설정</string>
   <string name="imggen_page_title">이미지 생성</string>
-  <string name="language_english">🇺🇸 영어</string>
-  <string name="language_french">🇫🇷 프랑스어</string>
-  <string name="language_german">🇩🇪 독일어</string>
-  <string name="language_italian">🇮🇹 이탈리아어</string>
-  <string name="language_japanese">🇯🇵 일본어</string>
-  <string name="language_korean">🇰🇷 한국어</string>
-  <string name="language_simplified_chinese">🇨🇳 중국어(간체)</string>
-  <string name="language_spanish">🇪🇸 스페인어</string>
-  <string name="language_traditional_chinese">🇨🇳 중국어(번체)</string>
   <string name="mcp_picker_syncing">MCP 서버 동기화 중...</string>
   <string name="mcp_picker_title">MCP 서버</string>
   <string name="menu_page_afternoon_greeting">좋은 오후입니다\uD83D\uDC4B</string>
@@ -701,7 +692,7 @@
   <string name="setting_display_page_screen_corner_adaptation_square">직각</string>
   <string name="setting_display_page_screen_corner_adaptation_cannot_read">, 화면 모서리 둥글기 값을 읽을 수 없습니다.</string>
   <string name="setting_display_page_screen_corner_adaptation_value_read">, 현재 읽은 값은 %1$s dp입니다</string>
-  <string name="setting_display_page_screen_corner_adaptation_small_value">, 28dp 미만으로 화면 모서리에 맞출 수 없습니다</string>
+  <string name="setting_display_page_screen_corner_adaptation_small_value">, 28dp 이하로 화면 모서리에 맞출 수 없습니다</string>
   <string name="setting_display_page_volume_key_scroll_desc">볼륨 키로 페이지를 넘길 때의 스크롤 양을 설정합니다. 전자 잉크 화면에 적합합니다</string>
   <string name="setting_display_page_volume_key_scroll_title">볼륨 키 페이지 스크롤</string>
   <string name="setting_files_page_clean_action">정리</string>
@@ -1258,8 +1249,6 @@
   <string name="chat_page_delete_folder_generating">이 폴더의 일부 대화가 아직 생성 중입니다. 삭제하기 전에 중지해 주세요.</string>
   <string name="setting_general_language">언어</string>
   <string name="setting_general_language_system">시스템 설정 따르기</string>
-  <string name="language_arabic">🇸🇦 아랍어</string>
-  <string name="language_russian">🇷🇺 러시아어</string>
   <string name="conversation_select_all">모두 선택</string>
   <string name="conversation_cancel_selection">다중 선택 취소</string>
   <string name="conversation_multi_select">다중 선택</string>

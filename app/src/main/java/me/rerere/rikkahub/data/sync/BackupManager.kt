@@ -34,7 +34,6 @@ import me.rerere.rikkahub.data.files.withUpstreamLocalFiles
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.rikkahub.utils.fileSizeToString
 import me.rerere.workspace.RootfsInstaller
-import me.rerere.workspace.WorkspaceShellStatus
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream
@@ -290,7 +289,8 @@ class BackupManager(
         tar.putArchiveEntry(TarArchiveEntry(WORKSPACES_ENTRY))
         tar.closeArchiveEntry()
         workspaceRepository.list()
-            .filter { it.shellStatus != WorkspaceShellStatus.DISABLED.name }
+            // 导出工作区时永远包含所有非空工作区, 不因 shell 被禁用而跳过
+            .filter { workspaceRepository.workspaceHasContent(it.id) }
             .forEach { workspace ->
                 val archive = File.createTempFile("workspace_", ".tar.zst", context.cacheDir)
                 try {

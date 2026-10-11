@@ -46,7 +46,7 @@ of adding per-screen variants.
   (app/src/main/java/me/rerere/rikkahub/ui/components/ui/SearchFieldShape.kt) instead of the
   screen-corner shape. Large containers (`CardGroup`, page cards, dialogs) adapt to the physical
   screen corner via `rememberScreenEdgeCornerShape`
-  (app/src/main/java/me/rerere/rikkahub/ui/theme/ScreenCornerShape.kt), falling back to 24dp (the
+  (app/src/main/java/me/rerere/rikkahub/ui/theme/ScreenCornerShape.kt), falling back to 28dp (the
   "直角" mode uses 4dp); message bubbles, thinking blocks, shared outlined list cards and file item
   cards keep their own shape.
 - **Shared components**: loading uses `AppLoadingIndicator`; color picking uses the shared

@@ -84,6 +84,7 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.repository.ConversationRepository
+import me.rerere.rikkahub.ui.components.ai.CountBadge
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.AppLoadingIndicator
 import me.rerere.rikkahub.ui.components.ui.ImagePreviewDialog
@@ -771,6 +772,16 @@ private fun FileItem(
                                     ),
                                     modifier = Modifier.size(20.dp),
                                 )
+                                // 一个附件被不止一处引用时, 在跳转键右上角标注引用次数:
+                                // 点击后不会直接跳转, 而是先弹出引用列表供选择
+                                if (attachment.references.size > 1) {
+                                    CountBadge(
+                                        count = attachment.references.size,
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .padding(top = 2.dp, end = 4.dp),
+                                    )
+                                }
                             }
                             VerticalDivider(
                                 modifier = Modifier.height(22.dp),

@@ -368,15 +368,6 @@
   <string name="imggen_page_save_failed">Save failed: %1$s</string>
   <string name="imggen_page_settings_title">Image Generation Settings</string>
   <string name="imggen_page_title">Image Generation</string>
-  <string name="language_english">🇺🇸 English</string>
-  <string name="language_french">🇫🇷 Français</string>
-  <string name="language_german">🇩🇪 Deutsch</string>
-  <string name="language_italian">🇮🇹 Italiano</string>
-  <string name="language_japanese">🇯🇵 日本語</string>
-  <string name="language_korean">🇰🇷 한국어</string>
-  <string name="language_simplified_chinese">🇨🇳 简体中文</string>
-  <string name="language_spanish">🇪🇸 Español</string>
-  <string name="language_traditional_chinese">🇨🇳 繁體中文</string>
   <string name="mcp_picker_syncing">Syncing MCP servers...</string>
   <string name="mcp_picker_title">MCP Servers</string>
   <string name="menu_page_afternoon_greeting">Good afternoon\uD83D\uDC4B</string>
@@ -701,7 +692,7 @@
   <string name="setting_display_page_screen_corner_adaptation_square">Square</string>
   <string name="setting_display_page_screen_corner_adaptation_cannot_read">, unable to read the screen corner radius.</string>
   <string name="setting_display_page_screen_corner_adaptation_value_read">, current screen corner radius: %1$s dp</string>
-  <string name="setting_display_page_screen_corner_adaptation_small_value">, less than 28dp, cannot adapt to the screen corners</string>
+  <string name="setting_display_page_screen_corner_adaptation_small_value">, less than or equal to 28dp, cannot adapt to the screen corners</string>
   <string name="setting_display_page_volume_key_scroll_desc">Set the scroll amount when using volume keys to turn pages, suitable for e-ink screens</string>
   <string name="setting_display_page_volume_key_scroll_title">Volume Key Page Scroll</string>
   <string name="setting_files_page_clean_action">Clean</string>
@@ -1258,8 +1249,6 @@
   <string name="chat_page_delete_folder_generating">Some conversations in this folder are still generating. Please stop them before deleting.</string>
   <string name="setting_general_language">Language</string>
   <string name="setting_general_language_system">Follow system</string>
-  <string name="language_arabic">🇸🇦 العربية</string>
-  <string name="language_russian">🇷🇺 Русский</string>
   <string name="conversation_select_all">Select all</string>
   <string name="conversation_cancel_selection">Cancel selection</string>
   <string name="conversation_multi_select">Select multiple</string>

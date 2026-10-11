@@ -9,15 +9,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import me.rerere.rikkahub.R
-import kotlin.system.exitProcess
+import me.rerere.rikkahub.utils.restartApp
 
 @Composable
 fun BackupDialog(
     importing: Boolean = false,
     exporting: Boolean = false,
 ) {
+    val context = LocalContext.current
     AlertDialog(
         containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = {},
@@ -41,7 +43,7 @@ fun BackupDialog(
             if (!importing && !exporting) {
                 Button(
                     onClick = {
-                        exitProcess(0)
+                        context.restartApp()
                     }
                 ) {
                     Text(stringResource(R.string.backup_page_restart_app))

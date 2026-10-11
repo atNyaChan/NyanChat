@@ -551,8 +551,9 @@ private fun ExtensionPickerPage(
 
 // 列表项尾部的已启用数量
 @Composable
-internal fun CountBadge(count: Int) {
+internal fun CountBadge(count: Int, modifier: Modifier = Modifier) {
     Badge(
+        modifier = modifier,
         containerColor = MaterialTheme.colorScheme.primaryContainer,
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
     ) {

@@ -600,7 +600,7 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                                         LocaleListCompat.forLanguageTags(language.tag)
                                     )
                                 },
-                                optionToString = { stringResource(it.labelRes) },
+                                optionToString = { it.displayName() },
                                 fitToOptions = true,
                             )
                         },
@@ -654,7 +654,7 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                                                 formatCornerRadiusDp(cornerRadiusDp),
                                             )
                                         )
-                                        if (cornerRadiusDp < MIN_TRUSTED_CORNER_RADIUS_DP) {
+                                        if (cornerRadiusDp <= MIN_TRUSTED_CORNER_RADIUS_DP) {
                                             append(
                                                 stringResource(
                                                     R.string.setting_display_page_screen_corner_adaptation_small_value
@@ -669,7 +669,7 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                             val cornerRadiusDp = rememberScreenCornerRadiusDp()
                             val canAdapt =
                                 cornerRadiusDp != null &&
-                                    cornerRadiusDp >= MIN_TRUSTED_CORNER_RADIUS_DP
+                                    cornerRadiusDp > MIN_TRUSTED_CORNER_RADIUS_DP
                             LaunchedEffect(canAdapt, displaySetting.screenCornerAdaptation) {
                                 if (!canAdapt &&
                                     displaySetting.screenCornerAdaptation == ScreenCornerAdaptation.ALL
@@ -1366,13 +1366,16 @@ private fun formatCornerRadiusDp(value: Float): String {
     }
 }
 
-internal enum class AppLanguage(val tag: String, val labelRes: Int) {
+internal enum class AppLanguage(val tag: String, val labelRes: Int? = null, val label: String? = null) {
     SYSTEM("", R.string.setting_general_language_system),
-    ENGLISH("en", R.string.language_english),
-    SIMPLIFIED_CHINESE("zh-CN", R.string.language_simplified_chinese),
-    TRADITIONAL_CHINESE("zh-TW", R.string.language_traditional_chinese),
-    JAPANESE("ja", R.string.language_japanese),
-    KOREAN("ko-KR", R.string.language_korean),
-    RUSSIAN("ru", R.string.language_russian),
-    ARABIC("ar", R.string.language_arabic),
+    ENGLISH("en", label = "🇺🇸 English"),
+    SIMPLIFIED_CHINESE("zh-CN", label = "🇨🇳 简体中文"),
+    TRADITIONAL_CHINESE("zh-TW", label = "🇨🇳 繁體中文"),
+    JAPANESE("ja", label = "🇯🇵 日本語"),
+    KOREAN("ko-KR", label = "🇰🇷 한국어"),
+    RUSSIAN("ru", label = "🇷🇺 Русский"),
+    ARABIC("ar", label = "🇸🇦 العربية"),
 }
+
+@Composable
+private fun AppLanguage.displayName(): String = label ?: stringResource(labelRes!!)

@@ -368,15 +368,6 @@
   <string name="imggen_page_save_failed">保存に失敗しました: %1$s</string>
   <string name="imggen_page_settings_title">画像生成設定</string>
   <string name="imggen_page_title">画像生成</string>
-  <string name="language_english">🇺🇸 English</string>
-  <string name="language_french">🇫🇷 Français</string>
-  <string name="language_german">🇩🇪 Deutsch</string>
-  <string name="language_italian">🇮🇹 Italiano</string>
-  <string name="language_japanese">🇯🇵 日本語</string>
-  <string name="language_korean">🇰🇷 한국어</string>
-  <string name="language_simplified_chinese">🇨🇳 简体中文</string>
-  <string name="language_spanish">🇪🇸 スペイン語</string>
-  <string name="language_traditional_chinese">🇨🇳 繁體中文</string>
   <string name="mcp_picker_syncing">MCPサーバーを同期中...</string>
   <string name="mcp_picker_title">MCPサーバー</string>
   <string name="menu_page_afternoon_greeting">こんにちは\uD83D\uDC4B</string>
@@ -701,7 +692,7 @@
   <string name="setting_display_page_screen_corner_adaptation_square">直角</string>
   <string name="setting_display_page_screen_corner_adaptation_cannot_read">、現在画面の角丸を読み取れません。</string>
   <string name="setting_display_page_screen_corner_adaptation_value_read">、現在読み取った値は %1$s dp</string>
-  <string name="setting_display_page_screen_corner_adaptation_small_value">、28dp 未満のため画面の角丸に合わせられません</string>
+  <string name="setting_display_page_screen_corner_adaptation_small_value">、28dp 以下のため画面の角丸に合わせられません</string>
   <string name="setting_display_page_volume_key_scroll_desc">音量キーでページを送る際のスクロール量を設定します。電子ペーパーに適しています</string>
   <string name="setting_display_page_volume_key_scroll_title">音量キーでページスクロール</string>
   <string name="setting_files_page_clean_action">クリーンアップ</string>
@@ -1258,8 +1249,6 @@
   <string name="chat_page_delete_folder_generating">フォルダ内の一部の会話がまだ生成中です。削除する前にそれらを停止してください。</string>
   <string name="setting_general_language">言語</string>
   <string name="setting_general_language_system">システムに従う</string>
-  <string name="language_arabic">🇸🇦 アラビア語</string>
-  <string name="language_russian">🇷🇺 ロシア語</string>
   <string name="conversation_select_all">すべて選択</string>
   <string name="conversation_cancel_selection">複数選択を解除</string>
   <string name="conversation_multi_select">複数選択</string>

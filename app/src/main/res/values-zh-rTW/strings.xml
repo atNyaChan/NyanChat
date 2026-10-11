@@ -152,7 +152,7 @@
   <string name="assistant_page_template_variable_role">角色</string>
   <string name="assistant_page_template_variable_time">時間</string>
   <string name="assistant_page_template_variables_label">變數:</string>
-  <string name="assistant_page_thinking_budget">思考預算</string>
+  <string name="assistant_page_thinking_budget">思考強度</string>
   <string name="assistant_page_time_reminder">時間提醒</string>
   <string name="assistant_page_time_reminder_desc">自動在時間間隔較大的訊息前插入時間提醒，幫助 AI 理解對話間隔</string>
   <string name="assistant_page_time_reminder_interval">時間提醒間隔</string>
@@ -368,15 +368,6 @@
   <string name="imggen_page_save_failed">保存失敗： %1$s</string>
   <string name="imggen_page_settings_title">圖片生成設定</string>
   <string name="imggen_page_title">圖片生成</string>
-  <string name="language_english">🇺🇸 English</string>
-  <string name="language_french">🇫🇷 Français</string>
-  <string name="language_german">🇩🇪 Deutsch</string>
-  <string name="language_italian">🇮🇹 Italiano</string>
-  <string name="language_japanese">🇯🇵 日本語</string>
-  <string name="language_korean">🇰🇷 한국어</string>
-  <string name="language_simplified_chinese">🇨🇳 简体中文</string>
-  <string name="language_spanish">🇪🇸 西班牙文</string>
-  <string name="language_traditional_chinese">🇨🇳 繁體中文</string>
   <string name="mcp_picker_syncing">正在同步 MCP 伺服器...</string>
   <string name="mcp_picker_title">MCP 伺服器</string>
   <string name="menu_page_afternoon_greeting">下午好\uD83D\uDC4B</string>
@@ -701,7 +692,7 @@
   <string name="setting_display_page_screen_corner_adaptation_square">直角</string>
   <string name="setting_display_page_screen_corner_adaptation_cannot_read">，目前無法讀取螢幕圓角。</string>
   <string name="setting_display_page_screen_corner_adaptation_value_read">，目前讀取到的值為 %1$s dp</string>
-  <string name="setting_display_page_screen_corner_adaptation_small_value">，小於 28dp，無法適配螢幕圓角</string>
+  <string name="setting_display_page_screen_corner_adaptation_small_value">，小於等於 28dp，無法適配螢幕圓角</string>
   <string name="setting_display_page_volume_key_scroll_desc">設定使用音量鍵翻頁時的捲動幅度，適合電子墨水螢幕</string>
   <string name="setting_display_page_volume_key_scroll_title">音量鍵翻頁</string>
   <string name="setting_files_page_clean_action">清理</string>
@@ -1258,8 +1249,6 @@
   <string name="chat_page_delete_folder_generating">此資料夾中的部分對話仍在生成中。請先停止它們再刪除。</string>
   <string name="setting_general_language">語言</string>
   <string name="setting_general_language_system">跟隨系統</string>
-  <string name="language_arabic">🇸🇦 阿拉伯語</string>
-  <string name="language_russian">🇷🇺 俄語</string>
   <string name="conversation_select_all">全選</string>
   <string name="conversation_cancel_selection">取消多選</string>
   <string name="conversation_multi_select">多選</string>
