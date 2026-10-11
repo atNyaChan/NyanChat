@@ -26,6 +26,9 @@ import me.rerere.rikkahub.data.db.dao.MessageNodeDAO
 import me.rerere.rikkahub.data.db.entity.ConversationEntity
 import me.rerere.rikkahub.data.db.entity.MessageNodeEntity
 import me.rerere.rikkahub.data.files.FilesManager
+import me.rerere.rikkahub.data.files.LocalFileUrls
+import me.rerere.rikkahub.data.files.withRuntimeLocalUrls
+import me.rerere.rikkahub.data.files.withStoredLocalUrls
 import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.data.model.MessageNode
 import me.rerere.rikkahub.utils.JsonInstant
@@ -45,8 +48,18 @@ class ConversationRepository(
         private const val INITIAL_LOAD_SIZE = 40
     }
 
+    /** 落盘形式消息 JSON 的唯一编码口：附件 url 一律折叠成相对 filesDir 的路径。 */
+    private fun encodeMessages(messages: List<UIMessage>): String =
+        JsonInstant.encodeToString(messages.withStoredLocalUrls(filesManager.filesDir))
+
+    /** [encodeMessages] 的逆操作：读出的相对路径展开成当前安装的绝对 url。 */
+    private fun decodeMessages(json: String): List<UIMessage> =
+        JsonInstant.decodeFromString<List<UIMessage>>(json).withRuntimeLocalUrls(filesManager.filesDir)
+
     suspend fun hasFileReference(fileUrl: String): Boolean =
-        messageNodeDAO.hasFileReference(JsonInstant.encodeToString(fileUrl))
+        messageNodeDAO.hasFileReference(
+            JsonInstant.encodeToString(LocalFileUrls.toStored(filesManager.filesDir, fileUrl))
+        )
 
     suspend fun getRecentConversations(assistantId: Uuid, limit: Int = 10): List<Conversation> {
         return conversationDAO.getRecentConversationsOfAssistant(
@@ -341,7 +354,7 @@ class ConversationRepository(
                     id = node.id.toString(),
                     conversationId = conversationId,
                     nodeIndex = index,
-                    messages = JsonInstant.encodeToString(node.messages),
+                    messages = encodeMessages(node.messages),
                     selectIndex = node.selectIndex,
                 )
                 val previous = existing[entity.id]
@@ -419,7 +432,7 @@ class ConversationRepository(
                     val page = messageNodeDAO.getNodesOfConversationPaged(conversationId, pageSize, offset)
                     if (page.isEmpty()) break
                     page.forEach { entity ->
-                        val messages = JsonInstant.decodeFromString<List<UIMessage>>(entity.messages)
+                        val messages = decodeMessages(entity.messages)
                         var nodeChanged = false
                         val migratedMessages = messages.map { message ->
                             if (message.role == MessageRole.ASSISTANT && message.modelId == sourceModelId) {
@@ -432,7 +445,7 @@ class ConversationRepository(
                         }
                         if (nodeChanged) {
                             messageNodeDAO.update(
-                                entity.copy(messages = JsonInstant.encodeToString(migratedMessages))
+                                entity.copy(messages = encodeMessages(migratedMessages))
                             )
                         }
                     }
@@ -586,7 +599,7 @@ class ConversationRepository(
                 }
                 if (page.isEmpty()) break
                 page.forEach { entity ->
-                    val messages = JsonInstant.decodeFromString<List<UIMessage>>(entity.messages)
+                    val messages = decodeMessages(entity.messages)
                     val nodeId = Uuid.parse(entity.id)
                     nodes.add(
                         MessageNode(
@@ -609,7 +622,7 @@ class ConversationRepository(
                 id = node.id.toString(),
                 conversationId = conversationId,
                 nodeIndex = index,
-                messages = JsonInstant.encodeToString(node.messages),
+                messages = encodeMessages(node.messages),
                 selectIndex = node.selectIndex
             )
         }

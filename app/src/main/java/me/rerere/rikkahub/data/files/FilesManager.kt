@@ -43,6 +43,10 @@ class FilesManager(
     private val attachmentIndexMutex = Mutex()
 
     private val filesRoot get() = context.filesDir
+
+    /** 供落盘形式的相对附件路径换算使用（见 [LocalFileUrls]）。 */
+    val filesDir: File get() = context.filesDir
+
     private val uploadDir get() = AttachmentCas.uploadDir(filesRoot)
     private val uploadCasDir get() = AttachmentCas.casDir(filesRoot)
 

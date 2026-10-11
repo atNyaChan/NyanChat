@@ -110,7 +110,7 @@ val dataSourceModule = module {
     }
 
     single {
-        MessageFtsManager(get())
+        MessageFtsManager(get(), get<Context>().filesDir)
     }
 
     single { McpManager(settingsStore = get(), appScope = get(), filesManager = get(), context = get()) }

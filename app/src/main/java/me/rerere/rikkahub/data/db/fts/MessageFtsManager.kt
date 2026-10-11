@@ -11,8 +11,10 @@ import me.rerere.ai.core.MessageRole
 import me.rerere.ai.ui.UIMessage
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.rikkahub.data.db.AppDatabase
+import me.rerere.rikkahub.data.files.withRuntimeLocalUrls
 import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.utils.JsonInstant
+import java.io.File
 import java.time.Instant
 import kotlin.time.toJavaInstant
 import kotlin.uuid.Uuid
@@ -73,7 +75,7 @@ data class MessageSearchRequest(
         get() = modelId != null || manuallyEdited || attachmentState != null
 }
 
-class MessageFtsManager(private val database: AppDatabase) {
+class MessageFtsManager(private val database: AppDatabase, private val filesDir: File) {
 
     private val db get() = database.openHelper.writableDatabase
 
@@ -244,8 +246,9 @@ class MessageFtsManager(private val database: AppDatabase) {
                         if (message.role != MessageRole.ASSISTANT || message.modelId != modelId) continue
                     }
                 }
+                // 库里是相对路径，附件存在性判断需要展开成当前安装的绝对 url
                 if (attachmentState != null &&
-                    !message.matchesAttachmentState(attachmentState)
+                    !message.withRuntimeLocalUrls(filesDir).matchesAttachmentState(attachmentState)
                 ) {
                     continue
                 }

@@ -216,7 +216,7 @@ class SettingsStoreTest {
 private class OpenedStore(file: File, loadGate: CompletableDeferred<Unit>?) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     val disk = GatedDataStore(PreferenceDataStoreFactory.create(scope = scope) { file }, loadGate)
-    val store = SettingsStore(disk, scope)
+    val store = SettingsStore(disk, file.parentFile ?: File("."), scope)
 
     suspend fun close() = scope.coroutineContext.job.cancelAndJoin()
 }

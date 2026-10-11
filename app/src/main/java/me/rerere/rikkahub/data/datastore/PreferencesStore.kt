@@ -37,6 +37,8 @@ import me.rerere.ai.provider.BuiltInTools
 import me.rerere.rikkahub.AppScope
 import me.rerere.rikkahub.data.datastore.migration.PreferenceStoreV3Migration
 import me.rerere.rikkahub.data.datastore.migration.PreferenceStoreV4Migration
+import me.rerere.rikkahub.data.files.withRuntimeLocalFiles
+import me.rerere.rikkahub.data.files.withStoredLocalFiles
 import me.rerere.rikkahub.data.model.Assistant
 import java.io.File
 import kotlin.time.Duration.Companion.milliseconds
@@ -87,9 +89,10 @@ private fun createSettingsDataStore(context: Context): DataStore<Preferences> {
  */
 class SettingsStore internal constructor(
     private val dataStore: DataStore<Preferences>,
+    private val filesDir: File,
     scope: CoroutineScope,
 ) {
-    constructor(context: Context, scope: AppScope) : this(context.settingsStore, scope)
+    constructor(context: Context, scope: AppScope) : this(context.settingsStore, context.filesDir, scope)
 
     companion object {
         // 版本号
@@ -181,7 +184,7 @@ class SettingsStore internal constructor(
             // 启动次数和设置在同一次写入里落盘
             context.settingsStore.edit { preferences ->
                 preferences[LAUNCH_COUNT] = launchCount
-                preferences.putSettings(settings.normalized())
+                preferences.putSettings(settings.normalized().withStoredLocalFiles(context.filesDir))
             }
         }
     }
@@ -217,7 +220,7 @@ class SettingsStore internal constructor(
         // 整份设置的 JSON 解码很重，不能放在主线程
         scope.launch(Dispatchers.Default) {
             state.value = try {
-                preferencesFlow.first().toSettings().normalized()
+                preferencesFlow.first().toSettings().normalized().withRuntimeLocalFiles(filesDir)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Throwable) {
@@ -267,7 +270,12 @@ class SettingsStore internal constructor(
                 val latest = state.value
                 val base = persisted
                 if (latest !== base) {
-                    dataStore.edit { preferences -> preferences.putSettings(latest, base) }
+                    dataStore.edit { preferences ->
+                        preferences.putSettings(
+                            settings = latest.withStoredLocalFiles(filesDir),
+                            persisted = base?.withStoredLocalFiles(filesDir),
+                        )
+                    }
                     persisted = latest
                 }
             }

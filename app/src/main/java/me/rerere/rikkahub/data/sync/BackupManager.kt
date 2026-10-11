@@ -27,7 +27,10 @@ import me.rerere.rikkahub.data.db.AppDatabaseFactory
 import me.rerere.rikkahub.data.db.SQLiteConfiguration
 import me.rerere.rikkahub.data.files.AttachmentCas
 import me.rerere.rikkahub.data.files.FileFolders
+import me.rerere.rikkahub.data.files.LocalFileUrls
 import me.rerere.rikkahub.data.files.MediaCreationFiles
+import me.rerere.rikkahub.data.files.withStoredLocalFiles
+import me.rerere.rikkahub.data.files.withUpstreamLocalFiles
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.rikkahub.utils.fileSizeToString
 import me.rerere.workspace.RootfsInstaller
@@ -74,7 +77,8 @@ class BackupManager(
         val archive = File(context.cacheDir, "NyanChatBackup-$timestamp$EXTENSION")
         val staging = Files.createTempDirectory(context.cacheDir.toPath(), "backup-").toFile()
         try {
-            val settings = settingsStore.awaitLoaded()
+            // 备份里的设置与数据库一样只写相对 filesDir 的附件路径，与包名无关
+            val settings = settingsStore.awaitLoaded().withStoredLocalFiles(context.filesDir)
             TarArchiveOutputStream(FileOutputStream(archive).buffered()).use { tar ->
                 tar.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX)
                 // 附件按内容去重：逐字节相同的文件只在 tar 里存一份，后续同名内容写成 TAR 硬链接
@@ -144,6 +148,12 @@ class BackupManager(
                 // 与上游一致：VACUUM INTO 生成包含已提交 WAL 数据的一致、独立快照，只导出这一个数据库文件
                 val snapshot = File(staging, SQLiteConfiguration.DATABASE_NAME)
                 DatabaseBackup.createSnapshot(database.openHelper.writableDatabase, snapshot)
+                // 库里是相对路径，上游只认自己的绝对 url，导出时按上游 release 包名展开
+                RestoredAttachmentUrlRewriter.rewriteDatabase(
+                    databaseFile = snapshot,
+                    json = json,
+                    relocate = { url -> LocalFileUrls.toUpstreamAbsolute(legacyUpstreamFilesDir(), url) },
+                )
                 addFileToZip(zipOut, snapshot, DatabaseBackup.ARCHIVE_DATABASE)
 
                 if (includeFiles) {
@@ -200,8 +210,22 @@ class BackupManager(
     }
 
     private fun legacyCompatibleSettingsJson(settings: Settings): String = makeRikkaHubCompatible(
-        json.encodeToJsonElement(Settings.serializer(), settings)
+        json.encodeToJsonElement(
+            Settings.serializer(),
+            settings.withUpstreamLocalFiles(legacyUpstreamFilesDir()),
+        )
     ).toString()
+
+    /**
+     * 旧版 ZIP 面向上游 RikkaHub，附件 url 必须写上游安装目录下的绝对路径。
+     * 用当前数据目录前缀替换包名，兼容 `/data/user/<n>/` 与 `/data/data/` 等布局；
+     * 上游 debug 版（`applicationIdSuffix = ".debug"`）无法覆盖。
+     */
+    private fun legacyUpstreamFilesDir(): File {
+        val appDir = context.filesDir.parentFile
+        val userDir = appDir?.parentFile ?: appDir ?: context.filesDir
+        return File(userDir, "$LEGACY_UPSTREAM_PACKAGE/files")
+    }
 
     private fun addFileToZip(
         zipOut: ZipOutputStream,
@@ -613,6 +637,9 @@ class BackupManager(
 
         // 启动次数不在 Settings 里，备份文件里仍放在 settings.json 的这个字段，和旧备份保持一致
         private const val LAUNCH_COUNT_KEY = "launchCount"
+
+        /** 旧版 ZIP 面向上游 RikkaHub release 版；上游 debug 版（`.debug` 后缀）不覆盖。 */
+        private const val LEGACY_UPSTREAM_PACKAGE = "me.rerere.rikkahub"
 
         private fun Json.encodeSettings(settings: Settings, launchCount: Int): String {
             val fields = encodeToJsonElement(settings).jsonObject + (LAUNCH_COUNT_KEY to JsonPrimitive(launchCount))
