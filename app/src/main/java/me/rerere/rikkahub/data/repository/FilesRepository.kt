@@ -2,6 +2,7 @@ package me.rerere.rikkahub.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import me.rerere.rikkahub.data.db.dao.ManagedFileDAO
+import me.rerere.rikkahub.data.db.dao.AttachmentMessageFileName
 import me.rerere.rikkahub.data.db.dao.AttachmentReference
 import me.rerere.rikkahub.data.db.entity.ManagedFileEntity
 
@@ -27,6 +28,9 @@ class FilesRepository(
 
     suspend fun listAttachmentReferences(conversationId: String): List<AttachmentReference> =
         dao.listAttachmentReferences(conversationId)
+
+    suspend fun listAttachmentMessageFileNames(): List<AttachmentMessageFileName> =
+        dao.listAttachmentMessageFileNames()
 
     suspend fun deleteById(id: Long): Int = dao.deleteById(id)
 

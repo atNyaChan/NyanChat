@@ -469,6 +469,7 @@
 	- 恢复时若存档包含非空 `upload` 或 `upload-cas`，会在应用阶段把原 `filesDir/upload`、`filesDir/upload-cas` 分别整体移到 `pending/originals-upload`、`pending/originals-upload-cas` 备份，再用存档里的对应目录整体替换；恢复失败回滚时删掉新目录并把备份放回。存档既没有 `upload` 也没有 `upload-cas`（或均为空）时不动本地目录。
 	- 导入时统一把展开的 `upload` 转换成 `upload-cas` + 软链接 `upload`：导入 ZIP 且 `upload` 非空时总是转换；导入 TAR 且 `upload` 非空、但没有 `upload-cas` 文件夹时转换；TAR 已带 `upload-cas` 时按原样还原其中的软链接。转换时已是软链接的条目会跳过，重复执行安全。
 	- 本地、WebDAV 和 S3 使用相同的新格式。
+- 导入存档时顺带回填 `managed_files` 的展示名：消息库中附件 part 记录了真实文件名（目前文档附件才有）时，把该表中该软链接的缺失、空白或仍等于软链接名（UUID）的展示名改写成消息库的文件名，表里没有记录的软链接则直接补一条；消息库也没有文件名时保持软链接名。回填在恢复后的那一次启动里完成，导出路径不触发。之后启动时若仍有未登记或展示名缺失的附件，也会从消息库回退读取。
 - 导入根据文件后缀识别新 `.tar` 与旧 `.zip`，旧 ZIP 备份仍可还原；还原时只读取单个 `rikka_hub.db`，不再合并旧 zip 的 `-wal`/`-shm` 旁路文件。
 - 本地导出额外提供旧 ZIP 兼容格式（移除 Fork 新增的模型价格、排序、显示、上下文缓存、回传思考、本地工具授权、中途思考、自定义字体字重与内置搜索字段；`chatFontFamily` 的 `outfit` 回落为 `serif`；`webDavConfig`/`s3Config`/`uploadS3Config` 的备份项去除 `WORKSPACE`；过滤官方版本无法反序列化的电池和定位本地工具；并标注“兼容 RikkaHub 2.5.1+”）。
 - 兼容 ZIP 中 `rikka_hub.db` 与 `settings.json` 使用 deflate 5 级压缩，其余附件条目只储存（STORED）不压缩。

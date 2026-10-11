@@ -547,26 +547,48 @@ class FilesManager(
         // 磁盘 -> 数据库：补录尚未登记的文件
         var inserted = 0
         val diskRelativePaths = HashSet<String>()
+        // 导入的存档可能没有 managed_files 记录（如上游/旧版备份），此时从消息库回退读取展示名；
+        // 只在真的需要解析展示名时才扫描消息库，避免每次启动都全表遍历。
+        var messageFileNames: Map<String, String>? = null
         diskFiles.forEach { file ->
             val relativePath = "${folder}/${file.name}"
             diskRelativePaths.add(relativePath)
             val existing = repository.getByPath(relativePath)
-            if (existing == null) {
+            if (existing == null || existing.displayName.isBlank()) {
+                if (folder == FileFolders.UPLOAD && messageFileNames == null) {
+                    messageFileNames = attachmentFileNamesFromMessages()
+                }
+                val messageName = if (folder == FileFolders.UPLOAD) {
+                    messageFileNames?.get(file.name)?.takeIf { it.isNotBlank() }
+                } else {
+                    null
+                }
                 val now = System.currentTimeMillis()
-                val displayName = file.name
-                val mimeType = guessMimeType(file, displayName)
-                repository.insert(
-                    ManagedFileEntity(
-                        folder = folder,
-                        relativePath = relativePath,
-                        displayName = displayName,
-                        mimeType = mimeType,
-                        sizeBytes = file.length(),
-                        createdAt = file.lastModified().takeIf { it > 0 } ?: now,
-                        updatedAt = now,
+                if (existing == null) {
+                    val displayName = messageName ?: file.name
+                    val mimeType = guessMimeType(file, displayName)
+                    repository.insert(
+                        ManagedFileEntity(
+                            folder = folder,
+                            relativePath = relativePath,
+                            displayName = displayName,
+                            mimeType = mimeType,
+                            sizeBytes = file.length(),
+                            createdAt = file.lastModified().takeIf { it > 0 } ?: now,
+                            updatedAt = now,
+                        )
                     )
-                )
-                inserted += 1
+                    inserted += 1
+                } else {
+                    val displayName = messageName ?: file.name
+                    repository.update(
+                        existing.copy(
+                            displayName = displayName,
+                            mimeType = guessMimeType(file, displayName),
+                            updatedAt = now,
+                        )
+                    )
+                }
             }
         }
 
@@ -645,6 +667,18 @@ class FilesManager(
         AttachmentCas.clearAll(context.cacheDir, filesRoot)
         true
     }
+
+    /**
+     * `upload` 软链接名 -> 消息库里记录的附件展示文件名。
+     * 用于 `managed_files` 缺少记录时（如导入不含该表的上游/旧版存档）回退出人类可读的文件名。
+     */
+    private suspend fun attachmentFileNamesFromMessages(): Map<String, String> =
+        repository.listAttachmentMessageFileNames()
+            .mapNotNull { row ->
+                val linkName = row.attachmentUrl.toUri().lastPathSegment ?: return@mapNotNull null
+                row.fileName.takeIf { it.isNotBlank() }?.let { linkName to it }
+            }
+            .toMap()
 
     /**
      * 把上传内容写入内容寻址存储, 并在 `upload` 下创建指向 `../upload-cas/<sha256>` 的软链接。
