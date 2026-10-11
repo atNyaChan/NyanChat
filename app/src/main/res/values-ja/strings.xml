@@ -722,6 +722,7 @@
   <string name="setting_files_page_folder_unused">未使用の添付ファイル</string>
   <string name="setting_files_page_rebuild_index">チャット添付ファイルインデックスを再構築</string>
   <string name="setting_files_page_open_reference">参照元のメッセージへ移動</string>
+  <string name="setting_files_page_used_by_messages">このファイルを使用するメッセージ</string>
   <string name="setting_files_page_sort">並べ替え</string>
   <string name="setting_files_page_sort_latest_reference">最新の参照順</string>
   <string name="setting_files_page_sort_oldest_reference">最古の参照順</string>

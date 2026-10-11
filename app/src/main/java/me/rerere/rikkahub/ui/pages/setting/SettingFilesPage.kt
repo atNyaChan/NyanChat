@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
@@ -37,6 +38,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
@@ -67,24 +69,35 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import com.dokar.sonner.ToastType
 import kotlinx.coroutines.launch
+import me.rerere.rikkahub.data.datastore.SettingsStore
+import me.rerere.rikkahub.data.db.fts.MessagePreviewKey
+import me.rerere.rikkahub.data.db.fts.MessageSearchResult
 import me.rerere.rikkahub.data.files.CasAttachment
+import me.rerere.rikkahub.data.files.ChatAttachmentEntry
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.files.FilesManager
+import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ui.AppLoadingIndicator
 import me.rerere.rikkahub.ui.components.ui.ImagePreviewDialog
+import me.rerere.rikkahub.ui.components.ui.MessageSearchResultCard
+import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.utils.fileSizeToString
+import me.rerere.rikkahub.utils.navigateToChatPage
 import org.koin.compose.koinInject
 import java.io.File
 import java.util.concurrent.TimeUnit
+import kotlin.uuid.Uuid
 import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 private const val UNUSED_ATTACHMENTS = "unused_attachments"
@@ -96,11 +109,18 @@ private var sessionAttachmentSortOrder by mutableStateOf(AttachmentSortOrder.LAT
 @Composable
 fun SettingFilesPage(
     filesManager: FilesManager = koinInject(),
+    conversationRepo: ConversationRepository = koinInject(),
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val gridState = rememberLazyStaggeredGridState()
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
+    val navController = LocalNavController.current
+    val settingsStore = koinInject<SettingsStore>()
+    val settings by settingsStore.settingsFlow.collectAsStateWithLifecycle()
+    val assistantNames = remember(settings.assistants) {
+        settings.assistants.associate { it.id.toString() to it.name }
+    }
 
     // 预先获取字符串资源
     val deletedToast = stringResource(R.string.setting_files_page_deleted_toast)
@@ -111,6 +131,7 @@ fun SettingFilesPage(
     var selectedFolder by remember { mutableStateOf(FileFolders.UPLOAD) }
     val sortOrder = sessionAttachmentSortOrder
     var pendingDelete by remember { mutableStateOf<CasAttachment?>(null) }
+    var referenceAttachment by remember { mutableStateOf<CasAttachment?>(null) }
     var showCleanSheet by remember { mutableStateOf(false) }
     var selectedCleanRange by remember { mutableStateOf(CleanRange.DAYS_30) }
     var showRebuildDialog by remember { mutableStateOf(false) }
@@ -243,6 +264,24 @@ fun SettingFilesPage(
         )
     }
 
+    if (referenceAttachment != null) {
+        val target = referenceAttachment!!
+        UsedByMessagesDialog(
+            attachment = target,
+            assistantNames = assistantNames,
+            loadPreviews = conversationRepo::getMessagePreviews,
+            onDismiss = { referenceAttachment = null },
+            onOpenMessage = { reference ->
+                referenceAttachment = null
+                navigateToChatPage(
+                    navController,
+                    chatId = Uuid.parse(reference.conversationId),
+                    nodeId = Uuid.parse(reference.nodeId),
+                )
+            },
+        )
+    }
+
     if (showCleanSheet) {
         val sheetState = rememberBottomSheetState(
             initialValue = SheetValue.Hidden,
@@ -366,7 +405,19 @@ fun SettingFilesPage(
                                 attachment = item,
                                 fileOnDisk = item.file,
                                 showReference = selectedFolder != UNUSED_ATTACHMENTS,
-                                onReference = { /* 跳转待实现, 暂时留空 */ },
+                                onReference = {
+                                    // 只有一条引用时直接跳到消息, 多条引用才弹窗选择
+                                    val single = item.references.singleOrNull()
+                                    if (single != null) {
+                                        navigateToChatPage(
+                                            navController,
+                                            chatId = Uuid.parse(single.conversationId),
+                                            nodeId = Uuid.parse(single.nodeId),
+                                        )
+                                    } else {
+                                        referenceAttachment = item
+                                    }
+                                },
                                 onDelete = { pendingDelete = item },
                             )
                         }
@@ -526,6 +577,84 @@ private fun folderDisplayName(folder: String): String = when (folder) {
     FileFolders.UPLOAD -> stringResource(R.string.setting_files_page_folder_upload)
     UNUSED_ATTACHMENTS -> stringResource(R.string.setting_files_page_folder_unused)
     else -> folder
+}
+
+/**
+ * 展示某个附件被哪些消息使用: 每条引用先显示 `upload` 下的软链接文件名, 再显示与搜索结果
+ * 一致的消息预览卡片, 点击卡片跳转到对应消息。
+ */
+@Composable
+private fun UsedByMessagesDialog(
+    attachment: CasAttachment,
+    assistantNames: Map<String, String>,
+    loadPreviews: suspend (List<MessagePreviewKey>) -> Map<MessagePreviewKey, MessageSearchResult>,
+    onDismiss: () -> Unit,
+    onOpenMessage: (ChatAttachmentEntry) -> Unit,
+) {
+    val references = attachment.references
+    var previews by remember(attachment) {
+        mutableStateOf<Map<MessagePreviewKey, MessageSearchResult>?>(null)
+    }
+    LaunchedEffect(attachment) {
+        previews = loadPreviews(
+            references.map { MessagePreviewKey(it.conversationId, it.nodeId, it.messageId) }
+        )
+    }
+    AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.setting_files_page_used_by_messages)) },
+        text = {
+            val loaded = previews
+            if (loaded == null) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    AppLoadingIndicator()
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    references.forEachIndexed { index, reference ->
+                        if (index > 0) {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = 2.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant,
+                            )
+                        }
+                        val key = MessagePreviewKey(
+                            conversationId = reference.conversationId,
+                            nodeId = reference.nodeId,
+                            messageId = reference.messageId,
+                        )
+                        Text(
+                            text = reference.fileName,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        loaded[key]?.let { preview ->
+                            MessageSearchResultCard(
+                                result = preview,
+                                assistantName = preview.assistantId?.let { assistantNames[it] },
+                                onClick = { onOpenMessage(reference) },
+                                snippetMaxLines = 3,
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.common_close))
+            }
+        },
+    )
 }
 
 @Composable

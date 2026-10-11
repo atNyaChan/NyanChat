@@ -19,9 +19,10 @@ import java.security.MessageDigest
  * `../upload-cas/<sha256>` 的相对软链接。相同内容只落一份实体文件, 多个软链接可以共享它。
  *
  * `cacheDir/chat_attachments.json` 是完整、可随时重建的附件引用缓存, 只记录 `version` 与 `entries`:
- * `entries` 以 sha256 为键, 记录**全部使用了该附件的消息** (软链接文件名、会话、节点、消息、助手、
- * 文件夹)。不记录未被任何消息引用的软链接, 这类“未使用的附件”由“存储管理”页直接对比
- * `upload-cas` 实体集合得到; 引用的时间不写入缓存, 需要时从 `managed_files` 表读取。
+ * `entries` 以 sha256 为键, 记录**全部使用了该附件的消息** (软链接文件名、会话、节点、消息)。
+ * 助手与文件夹不写入缓存, 展示时由消息查询实时得到; 不记录未被任何消息引用的软链接, 这类
+ * “未使用的附件”由“存储管理”页直接对比 `upload-cas` 实体集合得到; 引用的时间不写入缓存,
+ * 需要时从 `managed_files` 表读取。
  *
  * 缓存不存在或损坏时由 `FilesManager.rebuildAttachmentIndex()` 扫描消息库与 `upload`/`upload-cas`
  * 完整重建; 新增或删除附件时 [FilesManager] 会在同一把锁内更新它。所有索引读写都经过 [indexLock],
@@ -369,8 +370,6 @@ data class ChatAttachmentEntry(
     val conversationId: String,
     val nodeId: String,
     val messageId: String,
-    val folderId: String? = null,
-    val assistantId: String? = null,
 )
 
 @Serializable

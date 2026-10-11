@@ -40,15 +40,11 @@ class AttachmentCasTest {
         conversationId: String = "conv",
         nodeId: String = "node",
         messageId: String = "message",
-        folderId: String? = null,
-        assistantId: String? = null,
     ) = ChatAttachmentEntry(
         fileName = fileName,
         conversationId = conversationId,
         nodeId = nodeId,
         messageId = messageId,
-        folderId = folderId,
-        assistantId = assistantId,
     )
 
     @Test
@@ -169,8 +165,8 @@ class AttachmentCasTest {
             cacheDir,
             entries = mapOf(
                 shaA to listOf(
-                    entry("a.bin", nodeId = "node2", messageId = "message2", folderId = "folder", assistantId = "assistant"),
-                    entry("a.bin", nodeId = "node1", messageId = "message1", folderId = "folder", assistantId = "assistant"),
+                    entry("a.bin", nodeId = "node2", messageId = "message2"),
+                    entry("a.bin", nodeId = "node1", messageId = "message1"),
                 )
             ),
         )
@@ -180,7 +176,6 @@ class AttachmentCasTest {
         assertEquals(listOf("a.bin", "a.bin"), entries.map { it.fileName })
         assertEquals(listOf("message1", "message2"), entries.map { it.messageId })
         assertTrue(entries.all { it.conversationId == "conv" })
-        assertTrue(entries.all { it.assistantId == "assistant" && it.folderId == "folder" })
     }
 
     @Test

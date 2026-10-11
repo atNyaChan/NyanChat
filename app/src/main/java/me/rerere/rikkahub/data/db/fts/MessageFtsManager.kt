@@ -17,6 +17,13 @@ import java.time.Instant
 import kotlin.time.toJavaInstant
 import kotlin.uuid.Uuid
 
+/** 按 (会话, 消息节点, 消息) 定位一条消息所需的最小信息, 用于附件引用弹窗的消息预览。 */
+data class MessagePreviewKey(
+    val conversationId: String,
+    val nodeId: String,
+    val messageId: String,
+)
+
 data class MessageSearchResult(
     val nodeId: String,
     val messageId: String,
@@ -305,6 +312,54 @@ class MessageFtsManager(private val database: AppDatabase) {
             MessageSearchSort.OLDEST_FIRST -> candidates.sortedBy { it.result.timeAt }
         }
         return ordered.map { it.result }
+    }
+
+    /**
+     * 按 (会话, 消息节点, 消息) 定位消息, 返回与搜索页一致的结果结构, 供附件引用弹窗预览。
+     * 消息正文为空时退回附件文件名, 保证预览仍有内容; 已不存在的消息不会出现在结果里。
+     */
+    suspend fun getMessagePreviews(
+        keys: List<MessagePreviewKey>,
+    ): Map<MessagePreviewKey, MessageSearchResult> = withContext(Dispatchers.IO) {
+        val wanted = keys.toSet()
+        if (wanted.isEmpty()) return@withContext emptyMap()
+        val previews = mutableMapOf<MessagePreviewKey, MessageSearchResult>()
+        wanted.map(MessagePreviewKey::nodeId).distinct().forEach { nodeId ->
+            val cursor = db.query(
+                """
+                SELECT mn.id, message.value, mn.conversation_id, c.title, c.assistant_id, f.name
+                FROM message_node mn
+                JOIN conversationentity c ON c.id = mn.conversation_id
+                LEFT JOIN conversation_folder f ON f.id = c.folder_id,
+                     json_each(mn.messages) message
+                WHERE mn.id = ?
+                """.trimIndent(),
+                arrayOf(nodeId),
+            )
+            cursor.use {
+                while (it.moveToNext()) {
+                    val message = JsonInstant.decodeFromString<UIMessage>(it.getString(1))
+                    val key = MessagePreviewKey(
+                        conversationId = it.getString(2),
+                        nodeId = it.getString(0),
+                        messageId = message.id.toString(),
+                    )
+                    if (key !in wanted) continue
+                    val text = message.extractFtsText()
+                    previews[key] = MessageSearchResult(
+                        nodeId = key.nodeId,
+                        messageId = key.messageId,
+                        conversationId = key.conversationId,
+                        title = it.getString(3),
+                        timeAt = message.createdAtInstant(),
+                        snippet = text.ifBlank { message.attachmentFileNames() },
+                        assistantId = it.getString(4),
+                        folderName = it.getString(5),
+                    )
+                }
+            }
+        }
+        previews
     }
 
     suspend fun countByModel(modelId: Uuid, assistantId: String? = null): Int = withContext(Dispatchers.IO) {

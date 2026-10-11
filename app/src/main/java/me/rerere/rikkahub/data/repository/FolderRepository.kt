@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.map
 import me.rerere.rikkahub.data.db.dao.ConversationDAO
 import me.rerere.rikkahub.data.db.dao.FolderDAO
 import me.rerere.rikkahub.data.db.entity.FolderEntity
-import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.model.Folder
 import java.time.Instant
 import kotlin.uuid.Uuid
@@ -14,7 +13,6 @@ import kotlin.uuid.Uuid
 class FolderRepository(
     private val folderDAO: FolderDAO,
     private val conversationDAO: ConversationDAO,
-    private val filesManager: FilesManager,
 ) {
     fun getFoldersOfAssistant(assistantId: Uuid): Flow<List<Folder>> {
         return folderDAO.getFoldersOfAssistant(assistantId.toString())
@@ -45,7 +43,6 @@ class FolderRepository(
     suspend fun deleteFolder(id: Uuid) {
         conversationDAO.clearFolder(id.toString())
         folderDAO.deleteById(id.toString())
-        runCatching { filesManager.clearAttachmentFolder(id) }
     }
 
     /**

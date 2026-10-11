@@ -722,6 +722,7 @@
   <string name="setting_files_page_folder_unused">المرفقات غير المستخدمة</string>
   <string name="setting_files_page_rebuild_index">إعادة بناء فهرس مرفقات الدردشة</string>
   <string name="setting_files_page_open_reference">الانتقال إلى الرسالة المرجعية</string>
+  <string name="setting_files_page_used_by_messages">الرسائل التي تستخدم هذا الملف</string>
   <string name="setting_files_page_sort">ترتيب</string>
   <string name="setting_files_page_sort_latest_reference">الأحدث مرجعًا أولًا</string>
   <string name="setting_files_page_sort_oldest_reference">الأقدم مرجعًا أولًا</string>

@@ -190,8 +190,6 @@ class FilesManager(
     suspend fun updateAttachmentIndex(conversation: Conversation) = withContext(Dispatchers.IO) {
         attachmentIndexMutex.withLock {
             val conversationId = conversation.id.toString()
-            val assistantId = conversation.assistantId.toString()
-            val folderId = conversation.folderId?.toString()
             val references = mutableListOf<AttachmentMessageReference>()
             conversation.messageNodes.forEach { node ->
                 node.messages.forEach { message ->
@@ -221,8 +219,6 @@ class FilesManager(
                         conversationId = conversationId,
                         nodeId = reference.nodeId,
                         messageId = reference.messageId,
-                        folderId = folderId,
-                        assistantId = assistantId,
                     )
                 }
             }
@@ -238,55 +234,6 @@ class FilesManager(
                     val item = iterator.next()
                     item.value.removeAll { it.conversationId == id }
                     if (item.value.isEmpty()) iterator.remove()
-                }
-            }
-        }
-    }
-
-    /** 会话移动到其它助手时更新索引里的助手与文件夹 (文件夹会被清空, 与数据库保持一致)。 */
-    suspend fun updateAttachmentAssistant(conversationId: Uuid, assistantId: Uuid) = withContext(Dispatchers.IO) {
-        attachmentIndexMutex.withLock {
-            val id = conversationId.toString()
-            val assistant = assistantId.toString()
-            AttachmentCas.updateIndexIfPresent(context.cacheDir) { entries ->
-                entries.values.forEach { list ->
-                    for (index in list.indices) {
-                        val entry = list[index]
-                        if (entry.conversationId == id) {
-                            list[index] = entry.copy(assistantId = assistant, folderId = null)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /** 会话在助手内移动文件夹时更新索引里的文件夹。 */
-    suspend fun updateAttachmentFolder(conversationId: Uuid, folderId: Uuid?) = withContext(Dispatchers.IO) {
-        attachmentIndexMutex.withLock {
-            val id = conversationId.toString()
-            val folder = folderId?.toString()
-            AttachmentCas.updateIndexIfPresent(context.cacheDir) { entries ->
-                entries.values.forEach { list ->
-                    for (index in list.indices) {
-                        val entry = list[index]
-                        if (entry.conversationId == id) list[index] = entry.copy(folderId = folder)
-                    }
-                }
-            }
-        }
-    }
-
-    /** 删除文件夹时清空索引里属于该文件夹的会话的文件夹归属。 */
-    suspend fun clearAttachmentFolder(folderId: Uuid) = withContext(Dispatchers.IO) {
-        attachmentIndexMutex.withLock {
-            val id = folderId.toString()
-            AttachmentCas.updateIndexIfPresent(context.cacheDir) { entries ->
-                entries.values.forEach { list ->
-                    for (index in list.indices) {
-                        val entry = list[index]
-                        if (entry.folderId == id) list[index] = entry.copy(folderId = null)
-                    }
                 }
             }
         }
@@ -324,8 +271,6 @@ class FilesManager(
                     conversationId = conversationId,
                     nodeId = reference.nodeId,
                     messageId = reference.messageId,
-                    folderId = reference.folderId.ifBlank { null },
-                    assistantId = reference.assistantId.ifBlank { null },
                 )
             }
         }

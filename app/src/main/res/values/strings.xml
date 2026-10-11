@@ -722,6 +722,7 @@
   <string name="setting_files_page_folder_unused">Unused Attachments</string>
   <string name="setting_files_page_rebuild_index">Rebuild Chat Attachment Index</string>
   <string name="setting_files_page_open_reference">Go to referenced message</string>
+  <string name="setting_files_page_used_by_messages">Messages using this file</string>
   <string name="setting_files_page_sort">Sort</string>
   <string name="setting_files_page_sort_latest_reference">Latest reference first</string>
   <string name="setting_files_page_sort_oldest_reference">Oldest reference first</string>

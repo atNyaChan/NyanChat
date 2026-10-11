@@ -15,6 +15,7 @@ import me.rerere.ai.ui.UIMessage
 import me.rerere.rikkahub.data.datastore.ConversationSortOrder
 import me.rerere.rikkahub.data.db.AppDatabase
 import me.rerere.rikkahub.data.db.fts.MessageFtsManager
+import me.rerere.rikkahub.data.db.fts.MessagePreviewKey
 import me.rerere.rikkahub.data.db.fts.MessageSearchSort
 import me.rerere.rikkahub.data.db.fts.MessageSearchMode
 import me.rerere.rikkahub.data.db.fts.MessageSearchRequest
@@ -391,6 +392,11 @@ class ConversationRepository(
     suspend fun searchMessages(request: MessageSearchRequest): List<MessageSearchResult> =
         messageFtsManager.searchCombined(request)
 
+    /** 按 (会话, 消息节点, 消息) 定位消息, 返回搜索页同款预览数据。 */
+    suspend fun getMessagePreviews(
+        keys: List<MessagePreviewKey>,
+    ): Map<MessagePreviewKey, MessageSearchResult> = messageFtsManager.getMessagePreviews(keys)
+
     suspend fun countMessagesByModel(modelId: Uuid, assistantId: Uuid? = null): Int =
         messageFtsManager.countByModel(modelId, assistantId?.toString())
 
@@ -518,7 +524,6 @@ class ConversationRepository(
 
     suspend fun updateConversationAssistant(conversationId: Uuid, assistantId: Uuid) {
         conversationDAO.updateAssistantId(conversationId.toString(), assistantId.toString())
-        runCatching { filesManager.updateAttachmentAssistant(conversationId, assistantId) }
     }
 
     /**
@@ -542,7 +547,6 @@ class ConversationRepository(
             id = conversationId.toString(),
             folderId = folderId?.toString() ?: ""
         )
-        runCatching { filesManager.updateAttachmentFolder(conversationId, folderId) }
     }
 
     private fun conversationSummaryToConversation(entity: LightConversationEntity): Conversation {

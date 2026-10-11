@@ -62,32 +62,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.db.fts.MessageAttachmentState
 import me.rerere.rikkahub.data.db.fts.MessageSearchMode
-import me.rerere.rikkahub.data.db.fts.MessageSearchResult
 import me.rerere.rikkahub.data.db.fts.MessageSearchSort
 import me.rerere.rikkahub.ui.components.ai.ModelListSheet
 import me.rerere.rikkahub.ui.components.ai.rememberModelListState
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
-import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
+import me.rerere.rikkahub.ui.components.ui.MessageSearchResultCard
 import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.navigateToChatPage
-import me.rerere.rikkahub.utils.toLocalDateTime
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import kotlin.uuid.Uuid
@@ -332,11 +327,12 @@ fun SearchPage(initialModelId: String? = null, vm: SearchVM = koinViewModel()) {
                                                 ?.name
                                         }
                                     }
-                                    SearchResultItem(
+                                    MessageSearchResultCard(
                                         result = result,
                                         assistantName = assistantName,
                                         query = vm.conditions.query,
-                                        limitToFiveSourceLines = limitToFiveSourceLines,
+                                        sourceLineLimit = if (limitToFiveSourceLines) 5 else null,
+                                        parseSnippetHighlight = true,
                                         highlightTitle = highlightTitle,
                                         onClick = {
                                             navigateToChatPage(
@@ -755,110 +751,6 @@ private fun SearchPagination(
         }
         IconButton(onClick = { onPageChange(totalPages) }, enabled = currentPage < totalPages) {
             Icon(HugeIcons.ArrowRightDouble, stringResource(R.string.search_page_last_page))
-        }
-    }
-}
-
-@Composable
-private fun SearchResultItem(
-    result: MessageSearchResult,
-    assistantName: String?,
-    query: String,
-    limitToFiveSourceLines: Boolean,
-    highlightTitle: Boolean,
-    onClick: () -> Unit,
-) {
-    val highlightColor = MaterialTheme.colorScheme.tertiaryContainer
-    val untitled = stringResource(R.string.conversation_untitled)
-    val snippetText = buildAnnotatedString {
-        val snippet = if (limitToFiveSourceLines) {
-            result.snippet.split('\n').take(5).joinToString("\n")
-        } else {
-            result.snippet
-        }
-        var index = 0
-        while (index < snippet.length) {
-            val start = snippet.indexOf('[', index)
-            if (start == -1) {
-                append(snippet.substring(index))
-                break
-            }
-            if (start > index) {
-                append(snippet.substring(index, start))
-            }
-            val end = snippet.indexOf(']', start + 1)
-            if (end == -1) {
-                append(snippet.substring(start))
-                break
-            }
-            val matched = snippet.substring(start + 1, end)
-            withStyle(SpanStyle(background = highlightColor)) {
-                append(matched)
-            }
-            index = end + 1
-        }
-    }
-    val formattedTime = remember(result.timeAt) {
-        result.timeAt.toLocalDateTime()
-    }
-    // 结果来源：助手/文件夹，例如 "Assistant/Folder"；缺失的部分会被省略。
-    val sourceLabel = remember(assistantName, result.folderName) {
-        listOfNotNull(
-            assistantName?.takeIf { it.isNotBlank() },
-            result.folderName?.takeIf { it.isNotBlank() },
-        ).joinToString("/")
-    }
-    val displayTitle = result.title.ifBlank { untitled }
-    val titleText = if (highlightTitle && result.title.isNotBlank() && query.isNotEmpty()) {
-        buildAnnotatedString {
-            var index = 0
-            while (index < displayTitle.length) {
-                val matchStart = displayTitle.indexOf(query, startIndex = index)
-                if (matchStart < 0) {
-                    append(displayTitle.substring(index))
-                    break
-                }
-                append(displayTitle.substring(index, matchStart))
-                withStyle(SpanStyle(background = highlightColor)) {
-                    append(displayTitle.substring(matchStart, matchStart + query.length))
-                }
-                index = matchStart + query.length
-            }
-        }
-    } else {
-        buildAnnotatedString { append(displayTitle) }
-    }
-
-    OutlinedItemCard(
-        onClick = onClick,
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = titleText,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            if (result.snippet.isNotEmpty()) {
-                Text(
-                    text = snippetText,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-            Text(
-                text = if (sourceLabel.isNotEmpty()) {
-                    "$formattedTime · $sourceLabel"
-                } else {
-                    formattedTime
-                },
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
     }
 }

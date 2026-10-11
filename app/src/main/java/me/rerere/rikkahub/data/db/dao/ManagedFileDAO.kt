@@ -12,8 +12,6 @@ data class AttachmentReference(
     val nodeId: String,
     val messageId: String,
     val attachmentUrl: String,
-    val assistantId: String,
-    val folderId: String,
 )
 
 @Dao
@@ -40,11 +38,8 @@ interface ManagedFileDAO {
         """
         SELECT mn.id AS nodeId,
                IFNULL(json_extract(message.value, '$.id'), '') AS messageId,
-               json_extract(part.value, '$.url') AS attachmentUrl,
-               IFNULL(c.assistant_id, '') AS assistantId,
-               IFNULL(c.folder_id, '') AS folderId
+               json_extract(part.value, '$.url') AS attachmentUrl
         FROM message_node mn
-        JOIN conversationentity c ON c.id = mn.conversation_id
         JOIN json_each(mn.messages) message
         JOIN json_tree(message.value, '$.parts') part
         WHERE mn.conversation_id = :conversationId

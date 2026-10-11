@@ -722,6 +722,7 @@
   <string name="setting_files_page_folder_unused">사용하지 않는 첨부 파일</string>
   <string name="setting_files_page_rebuild_index">채팅 첨부 파일 색인 재구축</string>
   <string name="setting_files_page_open_reference">참조 메시지로 이동</string>
+  <string name="setting_files_page_used_by_messages">이 파일을 사용하는 메시지</string>
   <string name="setting_files_page_sort">정렬</string>
   <string name="setting_files_page_sort_latest_reference">최근 참조순</string>
   <string name="setting_files_page_sort_oldest_reference">오래된 참조순</string>
