@@ -117,7 +117,6 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.ai.transformers.DocumentAsPromptTransformer
 import me.rerere.rikkahub.data.datastore.ScreenCornerAdaptation
 import me.rerere.rikkahub.data.datastore.Settings
-import me.rerere.rikkahub.data.datastore.effectiveBackgroundEffectType
 import me.rerere.rikkahub.data.datastore.getQuickMessagesOfAssistant
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.model.Assistant
@@ -128,8 +127,6 @@ import me.rerere.rikkahub.ui.components.ai.completion.ChatCompletionContext
 import me.rerere.rikkahub.ui.components.ai.completion.ChatCompletionItem
 import me.rerere.rikkahub.ui.components.ai.completion.ChatCompletionList
 import me.rerere.rikkahub.ui.components.ai.completion.ChatCompletionProvider
-import me.rerere.rikkahub.ui.components.hazeBackgroundEffect
-import me.rerere.rikkahub.ui.components.toRoundedCornerShape
 import me.rerere.rikkahub.ui.components.ui.KeepScreenOn
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionManager
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionRecordAudio
@@ -355,13 +352,11 @@ fun ChatInput(
                         spotColor = Color.Transparent,
                     )
                     .clip(containerShape)
-                    .then(
-                        Modifier.hazeBackgroundEffect(
-                            effectType = settings.displaySetting.effectiveBackgroundEffectType(),
-                            hazeState = hazeState,
-                            tintColor = hazeTintColor,
-                            shape = containerShape.toRoundedCornerShape(),
-                        )
+                    .chatInputHaze(
+                        hazeState = hazeState,
+                        displaySetting = settings.displaySetting,
+                        containerColor = hazeTintColor,
+                        shape = containerShape.toRoundedCornerShape(),
                     ),
                 shape = containerShape,
                 tonalElevation = 0.dp,

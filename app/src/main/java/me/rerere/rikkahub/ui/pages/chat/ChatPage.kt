@@ -41,6 +41,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -85,9 +88,9 @@ import me.rerere.rikkahub.ui.components.ai.FilesPicker
 import me.rerere.rikkahub.ui.components.ai.SearchMode
 import me.rerere.rikkahub.ui.components.ai.displayLabel
 import me.rerere.rikkahub.ui.components.ai.completion.WorkspaceCompletionProvider
+import me.rerere.rikkahub.ui.components.ai.chatInputHaze
 import me.rerere.rikkahub.ui.components.ai.rememberChatAttachmentPickerActions
-import me.rerere.rikkahub.ui.components.hazeBackgroundEffect
-import me.rerere.rikkahub.ui.components.toRoundedCornerShape
+import me.rerere.rikkahub.ui.components.ai.toRoundedCornerShape
 import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalToaster
@@ -782,14 +785,36 @@ private fun TopBar(
         squareBottom = true,
     ).toRoundedCornerShape()
 
+    // 顶部渐变遮罩：消息在标题栏下面滚动，遮罩从状态栏一直淡出到标题栏下沿之外，保证标题可读。
+    // 开启模糊/玻璃效果时标题栏由 haze 提供底色，无需再叠遮罩。
+    val scrimColor = MaterialTheme.colorScheme.surface
+    val backgroundEffectType = settings.displaySetting.effectiveBackgroundEffectType()
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
-        modifier = Modifier.hazeBackgroundEffect(
-            effectType = settings.displaySetting.effectiveBackgroundEffectType(),
-            hazeState = hazeState,
-            tintColor = MaterialTheme.colorScheme.surface,
-            shape = topBarShape,
-        ),
+        modifier = Modifier
+            .then(
+                if (backgroundEffectType == null) {
+                    Modifier.drawWithCache {
+                        val scrimHeight = size.height + 24.dp.toPx()
+                        val brush = Brush.verticalGradient(
+                            0f to scrimColor,
+                            0.6f to scrimColor.copy(alpha = 0.85f),
+                            1f to scrimColor.copy(alpha = 0f),
+                            startY = 0f,
+                            endY = scrimHeight,
+                        )
+                        onDrawBehind { drawRect(brush, size = Size(size.width, scrimHeight)) }
+                    }
+                } else {
+                    Modifier
+                }
+            )
+            .chatInputHaze(
+                hazeState = hazeState,
+                displaySetting = settings.displaySetting,
+                containerColor = scrimColor,
+                shape = topBarShape,
+            ),
         navigationIcon = {
             if (!bigScreen) {
                 IconButton(

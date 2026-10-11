@@ -72,7 +72,6 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.datastore.ConversationSortOrder
 import me.rerere.rikkahub.data.datastore.Settings
-import me.rerere.rikkahub.data.datastore.effectiveBackgroundEffectType
 import me.rerere.rikkahub.data.datastore.getCurrentAssistant
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.Conversation
@@ -80,7 +79,7 @@ import me.rerere.rikkahub.data.model.Folder
 import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.ai.core.MessageRole
 import me.rerere.rikkahub.ui.components.ai.AssistantPicker
-import me.rerere.rikkahub.ui.components.hazeBackgroundEffect
+import me.rerere.rikkahub.ui.components.ai.chatInputHaze
 import me.rerere.rikkahub.ui.components.ui.BackupReminderCard
 import me.rerere.rikkahub.ui.components.ui.Greeting
 import me.rerere.ui.components.Tooltip
@@ -219,10 +218,10 @@ fun ChatDrawerContent(
                 }
             )
             .then(
-                Modifier.hazeBackgroundEffect(
-                    effectType = settings.displaySetting.effectiveBackgroundEffectType(),
+                Modifier.chatInputHaze(
                     hazeState = hazeState,
-                    tintColor = MaterialTheme.colorScheme.surface,
+                    displaySetting = settings.displaySetting,
+                    containerColor = MaterialTheme.colorScheme.surface,
                     shape = drawerShape,
                 )
             ),
