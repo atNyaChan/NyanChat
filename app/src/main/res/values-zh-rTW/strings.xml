@@ -1624,6 +1624,8 @@
   <string name="assistant_page_memory_dream_no_changes">沒有新內容需要記住</string>
   <string name="assistant_page_memory_dream_updated">記憶已更新：%s</string>
   <string name="assistant_page_memory_dream_removed">移除 %s</string>
+  <string name="assistant_page_memory_auto_dream">自動做夢</string>
+  <string name="assistant_page_memory_auto_dream_desc">對話暫停後在背景整理記憶</string>
   <string name="assistant_page_memory_updated_at">更新於 %s</string>
   <string name="assistant_page_memory_section_you">關於你</string>
   <string name="assistant_page_memory_section_topics">主題</string>

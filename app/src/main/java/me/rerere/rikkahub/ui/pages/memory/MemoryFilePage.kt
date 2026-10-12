@@ -149,8 +149,13 @@ fun MemoryFilePage(memoryId: String, path: String?) {
                     )
                 },
                 subtitle = {
-                    if (path != null) {
-                        Text(text = file?.path ?: path, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    val subtitlePath = if (editing) {
+                        draftPath.ifBlank { file?.path ?: path.orEmpty() }
+                    } else {
+                        file?.path ?: path.orEmpty()
+                    }
+                    if (subtitlePath.isNotEmpty()) {
+                        Text(text = subtitlePath, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 },
                 navigationIcon = {

@@ -1624,6 +1624,8 @@
   <string name="assistant_page_memory_dream_no_changes">新しく覚えることはありません</string>
   <string name="assistant_page_memory_dream_updated">メモリを更新しました：%s</string>
   <string name="assistant_page_memory_dream_removed">%s を削除しました</string>
+  <string name="assistant_page_memory_auto_dream">自動ドリーム</string>
+  <string name="assistant_page_memory_auto_dream_desc">会話が一時停止するとバックグラウンドでメモリを整理します</string>
   <string name="assistant_page_memory_updated_at">%s に更新</string>
   <string name="assistant_page_memory_section_you">あなたについて</string>
   <string name="assistant_page_memory_section_topics">テーマ</string>

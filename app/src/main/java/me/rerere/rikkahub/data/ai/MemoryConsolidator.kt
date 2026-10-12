@@ -106,6 +106,13 @@ class MemoryConsolidator(
         advance(conversation.id, maxOf(System.currentTimeMillis(), conversation.updateAt.toEpochMilli()))
     }
 
+    // 全局记忆由多个助手共用，只要有任一助手开着自动做梦就继续自动整理
+    override suspend fun isAutoDreamEnabled(memoryId: String): Boolean = withContext(Dispatchers.IO) {
+        settingsStore.awaitLoaded().assistants.any {
+            it.enableMemory && it.memoryId == memoryId && it.enableAutoDream
+        }
+    }
+
     override suspend fun consolidate(
         memoryId: String,
         conversationIds: Set<Uuid>,

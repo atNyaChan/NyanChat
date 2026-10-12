@@ -103,7 +103,7 @@ class GenerationLoop(
 
             if (assistant.enableMemory) {
                 // 空记忆段不预留分隔换行, 否则系统提示里会攒出一堆空行
-                val memoryPrompt = buildMemoryPrompt(memories)
+                val memoryPrompt = buildMemoryPrompt(memories, autoDream = assistant.enableAutoDream)
                 if (memoryPrompt.isNotBlank()) {
                     appendLine()
                     append(memoryPrompt)

@@ -1624,6 +1624,8 @@
   <string name="assistant_page_memory_dream_no_changes">Новых воспоминаний нет</string>
   <string name="assistant_page_memory_dream_updated">Память обновлена: %s</string>
   <string name="assistant_page_memory_dream_removed">удалено %s</string>
+  <string name="assistant_page_memory_auto_dream">Автосон</string>
+  <string name="assistant_page_memory_auto_dream_desc">Упорядочивает память в фоне, когда беседа приостанавливается</string>
   <string name="assistant_page_memory_updated_at">Обновлено %s</string>
   <string name="assistant_page_memory_section_you">О вас</string>
   <string name="assistant_page_memory_section_topics">Темы</string>

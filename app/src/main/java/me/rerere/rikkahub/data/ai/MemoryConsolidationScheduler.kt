@@ -62,6 +62,9 @@ interface MemoryConsolidationWorker {
     /** 从数据库里找出记忆库 [memoryId] 下还有轮次没整理的对话，最多返回一次整理能处理的数量 */
     suspend fun findPending(memoryId: String): List<PendingMemoryConversation>
 
+    /** 这个记忆库是否开启了自动整理；关闭后只在用户手动触发时整理 */
+    suspend fun isAutoDreamEnabled(memoryId: String): Boolean
+
     /** 把 [conversation] 现有的内容都算作整理过，只有之后新增的轮次才会被整理 */
     suspend fun markConsolidated(conversation: Conversation)
 
@@ -119,6 +122,8 @@ class MemoryConsolidationScheduler(
             var handedOver = false
             try {
                 val item = worker.pendingOf(conversation) ?: return@launch
+                // 关掉自动做梦后新轮次不进待整理列表，也不占保活
+                if (!worker.isAutoDreamEnabled(item.memoryId)) return@launch
                 markPending(item)
                 if (item.turns >= maxPendingTurns) {
                     runAutomatically(item.memoryId)
@@ -139,7 +144,12 @@ class MemoryConsolidationScheduler(
 
     /** 应用被切到后台：之后空闲计时不一定还能走完，有待整理的就现在开始 */
     fun onAppHidden() {
-        synchronized(lock) { pending.filterValues { it.isNotEmpty() }.keys.toList() }.forEach(::launchRun)
+        scope.launch {
+            synchronized(lock) { pending.filterValues { it.isNotEmpty() }.keys.toList() }
+                .forEach { memoryId ->
+                    if (worker.isAutoDreamEnabled(memoryId)) launchRun(memoryId)
+                }
+        }
     }
 
     /** 用户离开了对话，不会马上再有新消息，不用等到空闲 */
@@ -147,13 +157,16 @@ class MemoryConsolidationScheduler(
         val memoryId = synchronized(lock) {
             pending.entries.firstOrNull { conversationId in it.value }?.key
         } ?: return
-        launchRun(memoryId)
+        scope.launch {
+            if (worker.isAutoDreamEnabled(memoryId)) launchRun(memoryId)
+        }
     }
 
     /** 应用启动时补上进程被杀前没来得及整理的对话 */
     suspend fun resumePending() {
         // 每个记忆库各查各的：一起查再截断的话，对话少的记忆库会被对话多的挤掉
         worker.memoryIdsWithUpdates().forEach { memoryId ->
+            if (!worker.isAutoDreamEnabled(memoryId)) return@forEach
             if (mergePending(memoryId, worker.findPending(memoryId))) restartTimer(memoryId)
         }
     }
@@ -184,6 +197,8 @@ class MemoryConsolidationScheduler(
 
     private suspend fun runAutomatically(memoryId: String) {
         cancelTimer(memoryId)
+        // 定时器可能在设置关掉之后才到点；这里再挡一道，手动整理不受影响
+        if (!worker.isAutoDreamEnabled(memoryId)) return
         run(memoryId, fullReview = false)
     }
 

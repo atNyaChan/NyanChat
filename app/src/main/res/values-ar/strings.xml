@@ -1624,6 +1624,8 @@
   <string name="assistant_page_memory_dream_no_changes">لا توجد أشياء جديدة لتذكرها</string>
   <string name="assistant_page_memory_dream_updated">تم تحديث الذاكرة: %s</string>
   <string name="assistant_page_memory_dream_removed">تمت إزالة %s</string>
+  <string name="assistant_page_memory_auto_dream">الحلم التلقائي</string>
+  <string name="assistant_page_memory_auto_dream_desc">ينظّم الذكريات في الخلفية عند توقف المحادثة</string>
   <string name="assistant_page_memory_updated_at">تم التحديث %s</string>
   <string name="assistant_page_memory_section_you">عنك</string>
   <string name="assistant_page_memory_section_topics">المواضيع</string>

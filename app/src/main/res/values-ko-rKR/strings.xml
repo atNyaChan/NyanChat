@@ -1624,6 +1624,8 @@
   <string name="assistant_page_memory_dream_no_changes">새로 기억할 내용이 없습니다</string>
   <string name="assistant_page_memory_dream_updated">기억 업데이트됨: %s</string>
   <string name="assistant_page_memory_dream_removed">%s 삭제됨</string>
+  <string name="assistant_page_memory_auto_dream">자동 꿈꾸기</string>
+  <string name="assistant_page_memory_auto_dream_desc">대화가 멈추면 백그라운드에서 기억을 정리합니다</string>
   <string name="assistant_page_memory_updated_at">%s에 업데이트</string>
   <string name="assistant_page_memory_section_you">사용자 정보</string>
   <string name="assistant_page_memory_section_topics">주제</string>

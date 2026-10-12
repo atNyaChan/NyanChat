@@ -159,6 +159,10 @@ private fun AssistantMemoryContent(
         if (assistant.enableMemory) {
             MemoryConsolidationSection(
                 status = consolidation,
+                autoDreamEnabled = assistant.enableAutoDream,
+                onAutoDreamChange = {
+                    onUpdateAssistant(assistant.copy(enableAutoDream = it))
+                },
                 onOrganize = onOrganizeMemory,
             )
         }
@@ -217,10 +221,12 @@ private fun AssistantMemoryContent(
     }
 }
 
-/** 后台整理的状态和手动入口 */
+/** 后台整理的状态、自动整理开关和手动入口 */
 @Composable
 private fun MemoryConsolidationSection(
     status: MemoryConsolidationStatus,
+    autoDreamEnabled: Boolean,
+    onAutoDreamChange: (Boolean) -> Unit,
     onOrganize: () -> Unit,
 ) {
     val lastRun = status.lastRun
@@ -245,6 +251,12 @@ private fun MemoryConsolidationSection(
                     }
                 }
             },
+        )
+        switchItem(
+            checked = autoDreamEnabled,
+            onCheckedChange = onAutoDreamChange,
+            headlineContent = { Text(stringResource(R.string.assistant_page_memory_auto_dream)) },
+            supportingContent = { Text(stringResource(R.string.assistant_page_memory_auto_dream_desc)) },
         )
     }
 }

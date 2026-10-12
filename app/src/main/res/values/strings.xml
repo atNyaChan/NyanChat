@@ -1624,6 +1624,8 @@
   <string name="assistant_page_memory_dream_no_changes">Nothing new to remember</string>
   <string name="assistant_page_memory_dream_updated">Memory updated: %s</string>
   <string name="assistant_page_memory_dream_removed">removed %s</string>
+  <string name="assistant_page_memory_auto_dream">Auto dream</string>
+  <string name="assistant_page_memory_auto_dream_desc">Organize memories in the background once a chat pauses</string>
   <string name="assistant_page_memory_updated_at">Updated %s</string>
   <string name="assistant_page_memory_section_you">You</string>
   <string name="assistant_page_memory_section_topics">Topics</string>

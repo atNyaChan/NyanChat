@@ -30,6 +30,7 @@ class MemoryConsolidationSchedulerTest {
         val memoryIdOf = mutableMapOf<Uuid, String>()
         val calls = mutableListOf<Call>()
         var failure: Exception? = null
+        var autoDreamEnabled = true
         var gate: CompletableDeferred<Unit>? = null
         // 查完数据库、结果还没返回时停在这里
         var scanGate: CompletableDeferred<Unit>? = null
@@ -51,6 +52,8 @@ class MemoryConsolidationSchedulerTest {
         override suspend fun markConsolidated(conversation: Conversation) {
             pending.remove(conversation.id)
         }
+
+        override suspend fun isAutoDreamEnabled(memoryId: String) = autoDreamEnabled
 
         override suspend fun consolidate(
             memoryId: String,
@@ -340,6 +343,43 @@ class MemoryConsolidationSchedulerTest {
         assertEquals(1, worker.calls.size)
         assertTrue(worker.calls.single().fullReview)
         assertTrue(worker.calls.single().conversationIds.isEmpty())
+    }
+
+    @Test
+    fun `turning auto dream off blocks every automatic trigger`() = runTest {
+        val scheduler = scheduler()
+        worker.autoDreamEnabled = false
+
+        // 攒够轮数、空闲到点、离开对话、切走应用都不该整理
+        scheduler.finishTurn(chat, pendingTurns = 3)
+        runCurrent()
+        scheduler.onConversationLeft(chat.id)
+        scheduler.onAppHidden()
+        runCurrent()
+        advanceTimeBy(10.minutes)
+        assertTrue(worker.calls.isEmpty())
+
+        // 手动整理不受开关影响
+        scheduler.organize(memoryId)
+        runCurrent()
+        assertEquals(1, worker.calls.size)
+        assertTrue(worker.calls.single().fullReview)
+    }
+
+    @Test
+    fun `turning auto dream back on resumes automatic consolidation`() = runTest {
+        val scheduler = scheduler()
+        worker.autoDreamEnabled = false
+
+        scheduler.finishTurn(chat, pendingTurns = 1)
+        runCurrent()
+        assertTrue(worker.calls.isEmpty())
+
+        worker.autoDreamEnabled = true
+        scheduler.finishTurn(chat, pendingTurns = 2)
+        advanceTimeBy(2.minutes + 1.seconds)
+
+        assertEquals(1, worker.calls.size)
     }
 
     @Test

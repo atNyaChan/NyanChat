@@ -6,14 +6,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -79,26 +75,24 @@ fun BackgroundPickerContent(
         }
 
         Row(
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            FilledTonalButton(
+            Button(
                 onClick = {
                     showPickOption = true
                 },
+                modifier = Modifier.weight(1f),
             ) {
-                Icon(
-                    imageVector = HugeIcons.Image02,
-                    contentDescription = null,
-                    modifier = Modifier.size(ButtonDefaults.IconSize),
-                )
-                Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                Icon(HugeIcons.Image02, contentDescription = null)
                 Text(
                     text = if (background != null) {
                         stringResource(R.string.assistant_page_change_background)
                     } else {
                         stringResource(R.string.assistant_page_select_background)
-                    }
+                    },
+                    modifier = Modifier.padding(start = 8.dp),
                 )
             }
             if (background != null) {

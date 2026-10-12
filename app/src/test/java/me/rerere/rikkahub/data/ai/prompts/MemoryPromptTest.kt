@@ -47,6 +47,17 @@ class MemoryPromptTest {
     }
 
     @Test
+    fun `turning auto dream off drops the background-process wording`() {
+        val auto = buildMemoryPrompt(listOf(profile))
+        assertTrue(auto.contains("A background process organizes memory"))
+        assertTrue(auto.contains("shared with the background process"))
+
+        val manual = buildMemoryPrompt(listOf(profile), autoDream = false)
+        assertFalse(manual.contains("background process"))
+        assertTrue(manual.contains("Write only when the user explicitly asks"))
+    }
+
+    @Test
     fun `consolidation input carries the memory state and each conversation's new turns`() {
         val input = buildMemoryConsolidationInput(
             files = listOf(profile, food),
