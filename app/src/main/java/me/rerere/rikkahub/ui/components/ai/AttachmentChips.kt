@@ -44,6 +44,7 @@ import me.rerere.hugeicons.stroke.Files02
 import me.rerere.hugeicons.stroke.MusicNote03
 import me.rerere.hugeicons.stroke.Video01
 import me.rerere.rikkahub.data.files.FilesManager
+import me.rerere.rikkahub.data.files.attachmentShaFromUrl
 import me.rerere.rikkahub.ui.hooks.ChatInputState
 import me.rerere.rikkahub.utils.formatNumber
 import me.rerere.ui.sketch.SketchDialog
@@ -55,13 +56,12 @@ internal fun MediaFileInputRow(
     documentWordCounts: Map<String, Int?>,
 ) {
     val filesManager: FilesManager = koinInject()
-    val managedFiles by filesManager.observe().collectAsState(initial = emptyList())
-    val displayNameByRelativePath = remember(managedFiles) {
-        managedFiles.associate { it.relativePath to it.displayName }
-    }
-    val displayNameByFileName = remember(managedFiles) {
-        managedFiles.associate { it.relativePath.substringAfterLast('/') to it.displayName }
-    }
+    // 输入框附件显示登记表里时间最晚那条记录的展示名，缺失时退回类型/自带文件名
+    val latestDisplayNamesFlow = remember(filesManager) { filesManager.latestDisplayNames() }
+    val latestDisplayNames by latestDisplayNamesFlow.collectAsState(initial = emptyMap())
+
+    fun inputDisplayName(url: String, fallback: String): String =
+        attachmentShaFromUrl(url)?.let { latestDisplayNames[it] }?.takeIf { it.isNotBlank() } ?: fallback
 
     val scope = rememberCoroutineScope()
 
@@ -109,12 +109,7 @@ internal fun MediaFileInputRow(
             when (part) {
                 is UIMessagePart.Image -> {
                     AttachmentChip(
-                        title = attachmentNameFromUrl(
-                            url = part.url,
-                            fallback = "image",
-                            displayNameByRelativePath = displayNameByRelativePath,
-                            displayNameByFileName = displayNameByFileName
-                        ),
+                        title = inputDisplayName(part.url, "image"),
                         leading = {
                             Surface(
                                 modifier = Modifier.size(34.dp),
@@ -136,12 +131,7 @@ internal fun MediaFileInputRow(
 
                 is UIMessagePart.Video -> {
                     AttachmentChip(
-                        title = attachmentNameFromUrl(
-                            url = part.url,
-                            fallback = "video",
-                            displayNameByRelativePath = displayNameByRelativePath,
-                            displayNameByFileName = displayNameByFileName
-                        ),
+                        title = inputDisplayName(part.url, "video"),
                         leading = { AttachmentLeadingIcon(icon = HugeIcons.Video01) },
                         onRemove = { removePart(part, part.url) }
                     )
@@ -149,12 +139,7 @@ internal fun MediaFileInputRow(
 
                 is UIMessagePart.Audio -> {
                     AttachmentChip(
-                        title = attachmentNameFromUrl(
-                            url = part.url,
-                            fallback = "audio",
-                            displayNameByRelativePath = displayNameByRelativePath,
-                            displayNameByFileName = displayNameByFileName
-                        ),
+                        title = inputDisplayName(part.url, "audio"),
                         leading = { AttachmentLeadingIcon(icon = HugeIcons.MusicNote03) },
                         onRemove = { removePart(part, part.url) }
                     )
@@ -162,12 +147,7 @@ internal fun MediaFileInputRow(
 
                 is UIMessagePart.Document -> {
                     AttachmentChip(
-                        title = attachmentNameFromUrl(
-                            url = part.url,
-                            fallback = part.fileName,
-                            displayNameByRelativePath = displayNameByRelativePath,
-                            displayNameByFileName = displayNameByFileName
-                        ),
+                        title = inputDisplayName(part.url, part.fileName),
                         detail = documentWordCounts[part.url]?.let { "${it.formatNumber()} word" },
                         leading = { AttachmentLeadingIcon(icon = HugeIcons.Files02) },
                         onRemove = { removePart(part, part.url) }
@@ -263,25 +243,4 @@ private fun AttachmentLeadingIcon(
             )
         }
     }
-}
-
-private fun attachmentNameFromUrl(
-    url: String,
-    fallback: String,
-    displayNameByRelativePath: Map<String, String>,
-    displayNameByFileName: Map<String, String>,
-): String {
-    val parsed = runCatching { url.toUri() }.getOrNull()
-    val relativePath = parsed?.path?.substringAfter("/files/", missingDelimiterValue = "")?.takeIf { it.isNotBlank() }
-    if (relativePath != null) {
-        displayNameByRelativePath[relativePath]?.let { return it }
-    }
-
-    val storedFileName = parsed?.lastPathSegment?.substringAfterLast('/')?.takeIf { it.isNotBlank() }
-    if (storedFileName != null) {
-        displayNameByFileName[storedFileName]?.let { return it }
-        return storedFileName
-    }
-
-    return fallback
 }

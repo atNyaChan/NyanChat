@@ -226,7 +226,6 @@ internal fun rememberChatAttachmentPickerActions(
 internal suspend fun FilesManager.createChatFileBySketch(result: SketchResult): Uri? = withContext(Dispatchers.IO) {
     createChatFilesByByteArrays(
         byteArrays = listOf(result.encode()),
-        displayName = "sketch.${result.extension}",
         mimeType = result.mimeType,
     ).firstOrNull()
 }

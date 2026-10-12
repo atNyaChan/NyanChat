@@ -16,9 +16,8 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.ktor.utils.io.readAvailable
-import me.rerere.rikkahub.data.db.entity.ManagedFileEntity
+import me.rerere.rikkahub.data.db.entity.ManagedFileCasEntity
 import me.rerere.rikkahub.data.files.FilesManager
-import me.rerere.rikkahub.data.files.saveUploadFromBytes
 import me.rerere.rikkahub.web.BadRequestException
 import me.rerere.rikkahub.web.NotFoundException
 import me.rerere.rikkahub.web.dto.UploadFilesResponseDto
@@ -58,7 +57,7 @@ fun Route.filesRoutes(
                                 displayName = displayName,
                                 mimeType = mimeType,
                             )
-                            uploadedFiles.add(entity.toUploadedFileDto(filesManager))
+                            uploadedFiles.add(entity.toUploadedFileDto(filesManager, displayName))
                         }
 
                         else -> {
@@ -136,7 +135,7 @@ fun Route.filesRoutes(
                 throw NotFoundException("File not found")
             }
 
-            // Use managed file MIME type first because on-disk file names are UUID-only.
+            // Use managed file MIME type first because on-disk file names are sha256 only.
             val managedFileMime = filesManager.getByRelativePath(relativePath)?.mimeType
             val contentType = if (!managedFileMime.isNullOrBlank()) {
                 managedFileMime
@@ -239,10 +238,10 @@ private fun sanitizeDisplayName(fileName: String): String {
         .ifBlank { "file" }
 }
 
-private fun ManagedFileEntity.toUploadedFileDto(filesManager: FilesManager) = UploadedFileDto(
+private fun ManagedFileCasEntity.toUploadedFileDto(filesManager: FilesManager, fileName: String) = UploadedFileDto(
     id = id,
     url = filesManager.getFile(this).toUri().toString(),
-    fileName = displayName,
+    fileName = fileName,
     mime = mimeType,
     size = sizeBytes,
 )

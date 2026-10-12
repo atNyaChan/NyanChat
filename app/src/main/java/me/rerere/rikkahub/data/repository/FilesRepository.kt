@@ -1,40 +1,38 @@
 package me.rerere.rikkahub.data.repository
 
-import kotlinx.coroutines.flow.Flow
-import me.rerere.rikkahub.data.db.dao.ManagedFileDAO
-import me.rerere.rikkahub.data.db.dao.AttachmentMessageFileName
 import me.rerere.rikkahub.data.db.dao.AttachmentReference
-import me.rerere.rikkahub.data.db.entity.ManagedFileEntity
+import me.rerere.rikkahub.data.db.dao.ManagedFileDAO
+import me.rerere.rikkahub.data.db.entity.ManagedFileCasEntity
+import kotlinx.coroutines.flow.Flow
 
 class FilesRepository(
     private val dao: ManagedFileDAO,
 ) {
-    suspend fun insert(file: ManagedFileEntity): ManagedFileEntity {
+    suspend fun insert(file: ManagedFileCasEntity): ManagedFileCasEntity {
         val id = dao.insert(file)
         return file.copy(id = id)
     }
 
-    suspend fun update(file: ManagedFileEntity) {
+    suspend fun update(file: ManagedFileCasEntity) {
         dao.update(file)
     }
 
-    suspend fun getById(id: Long): ManagedFileEntity? = dao.getById(id)
+    suspend fun getById(id: Long): ManagedFileCasEntity? = dao.getById(id)
 
-    suspend fun getByPath(relativePath: String): ManagedFileEntity? = dao.getByPath(relativePath)
+    suspend fun getBySha(sha256: String): ManagedFileCasEntity? = dao.getBySha(sha256)
 
-    fun listByFolder(folder: String): Flow<List<ManagedFileEntity>> = dao.listByFolder(folder)
+    suspend fun listAllNow(): List<ManagedFileCasEntity> = dao.listAllNow()
+
+    fun listAll(): Flow<List<ManagedFileCasEntity>> = dao.listAll()
 
     suspend fun listConversationIdsByLatest(): List<String> = dao.listConversationIdsByLatest()
 
     suspend fun listAttachmentReferences(conversationId: String): List<AttachmentReference> =
         dao.listAttachmentReferences(conversationId)
 
-    suspend fun listAttachmentMessageFileNames(): List<AttachmentMessageFileName> =
-        dao.listAttachmentMessageFileNames()
-
     suspend fun deleteById(id: Long): Int = dao.deleteById(id)
 
-    suspend fun deleteByPath(relativePath: String): Int = dao.deleteByPath(relativePath)
+    suspend fun deleteBySha(sha256: String): Int = dao.deleteBySha(sha256)
 
-    suspend fun deleteByFolder(folder: String): Int = dao.deleteByFolder(folder)
+    suspend fun deleteAll(): Int = dao.deleteAll()
 }

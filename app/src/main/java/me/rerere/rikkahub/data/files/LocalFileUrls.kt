@@ -12,11 +12,11 @@ import me.rerere.rikkahub.data.model.Avatar
 /**
  * 本地附件的「落盘形式」与「运行形式」之间的转换。
  *
- * - 落盘形式：相对 filesDir 的路径（例如 `upload/<uuid>.jpg`），与包名无关，备份可跨安装迁移。
+ * - 落盘形式：相对 filesDir 的路径（例如 `upload/<sha256>`），与包名无关，备份可跨安装迁移。
  * - 运行形式：当前安装下的绝对 `file://` url。
  *
  * 内存里的 [UIMessage] / [Settings] 一律持有运行形式；数据库与 DataStore 只保存落盘形式。
- * 导入存档时由 [me.rerere.rikkahub.data.sync.RestoredAttachmentUrlRewriter] 把旧绝对路径改写成落盘形式。
+ * 导入存档时由 [me.rerere.rikkahub.data.sync.ManagedFilesArchive] 把旧绝对路径改写成落盘形式。
  * 兼容旧版 ZIP 导出时用 [toUpstreamAbsolute] / [withUpstreamLocalFiles] 改回上游安装目录下的绝对 url。
  */
 object LocalFileUrls {
@@ -55,8 +55,15 @@ object LocalFileUrls {
         return Uri.fromFile(File(filesDir, url)).toString()
     }
 
-    /** 兼容旧版 ZIP 导出：把落盘形式或旧绝对路径改写成上游安装目录下的绝对 url。 */
-    fun toUpstreamAbsolute(upstreamFilesDir: File, url: String): String {
+    /**
+     * 兼容旧版 ZIP 导出：把落盘形式（`upload/<sha256>`）或旧绝对路径改写成上游安装目录下的绝对 url。
+     * [filenameBySha] 非空时把 `upload/<sha256>` 映射成该内容在旧布局里的 `upload/<uuid.ext>` 文件名。
+     */
+    fun toUpstreamAbsolute(
+        upstreamFilesDir: File,
+        url: String,
+        filenameBySha: Map<String, String>? = null,
+    ): String {
         if (url.isBlank()) return url
         val uri = runCatching { Uri.parse(url) }.getOrNull() ?: return url
         val relative = when (uri.scheme) {
@@ -64,12 +71,19 @@ object LocalFileUrls {
             "file" -> relativeFromAbsolutePath(uri.path) ?: return url
             else -> return url
         }
-        return Uri.fromFile(File(upstreamFilesDir, relative)).toString()
+        return Uri.fromFile(File(upstreamFilesDir, mapShaToLegacyName(relative, filenameBySha))).toString()
+    }
+
+    /** 把 `upload/<sha256>` 转成 `upload/<uuid.ext>`；非附件路径或映射缺失时原样返回。 */
+    private fun mapShaToLegacyName(relative: String, filenameBySha: Map<String, String>?): String {
+        if (filenameBySha == null || !relative.startsWith("$UPLOAD_FOLDER/")) return relative
+        val filename = filenameBySha[relative.substringAfterLast('/')] ?: return relative
+        return "$UPLOAD_FOLDER/$filename"
     }
 
     /**
      * 文件绝对路径相对 [filesDir] 的部分。用 [File.absolutePath] 而不是 `canonicalPath`，
-     * 避免跟随 `upload/<uuid>` 指向 `upload-cas/<sha256>` 的软链接后丢掉软链接名。
+     * 保留路径里原始的文件名。
      */
     fun relativeToFilesDir(filesDir: File, file: File): String? {
         val base = filesDir.absolutePath.trimEnd(File.separatorChar)
@@ -104,8 +118,8 @@ fun Avatar.withStoredLocalFiles(filesDir: File): Avatar =
 fun Avatar.withRuntimeLocalFiles(filesDir: File): Avatar =
     if (this is Avatar.Image) Avatar.Image(LocalFileUrls.toRuntime(filesDir, url)) else this
 
-fun Avatar.withUpstreamLocalFiles(upstreamFilesDir: File): Avatar =
-    if (this is Avatar.Image) Avatar.Image(LocalFileUrls.toUpstreamAbsolute(upstreamFilesDir, url)) else this
+fun Avatar.withUpstreamLocalFiles(upstreamFilesDir: File, filenameBySha: Map<String, String>? = null): Avatar =
+    if (this is Avatar.Image) Avatar.Image(LocalFileUrls.toUpstreamAbsolute(upstreamFilesDir, url, filenameBySha)) else this
 
 fun Assistant.withStoredLocalFiles(filesDir: File): Assistant = copy(
     avatar = avatar.withStoredLocalFiles(filesDir),
@@ -131,16 +145,33 @@ fun Settings.withRuntimeLocalFiles(filesDir: File): Settings = copy(
     ),
 )
 
+/**
+ * 设置里（助手头像、聊天背景、用户头像）引用到的附件 url，用于判断设置附件是否变化、
+ * 是否需要重建 [FilesManager.updateSettingsAttachmentUsages]。
+ */
+fun Settings.attachmentUrls(): List<String> = buildList {
+    assistants.forEach { assistant ->
+        (assistant.avatar as? Avatar.Image)?.url?.let(::add)
+        assistant.background?.let(::add)
+    }
+    (displaySetting.userAvatar as? Avatar.Image)?.url?.let(::add)
+}
+
 /** 兼容旧版 ZIP 导出：把助手头像、聊天背景与用户头像改写成上游安装目录下的绝对 url。 */
-fun Settings.withUpstreamLocalFiles(upstreamFilesDir: File): Settings = copy(
+fun Settings.withUpstreamLocalFiles(
+    upstreamFilesDir: File,
+    filenameBySha: Map<String, String>? = null,
+): Settings = copy(
     assistants = assistants.map { assistant ->
         assistant.copy(
-            avatar = assistant.avatar.withUpstreamLocalFiles(upstreamFilesDir),
-            background = assistant.background?.let { LocalFileUrls.toUpstreamAbsolute(upstreamFilesDir, it) },
+            avatar = assistant.avatar.withUpstreamLocalFiles(upstreamFilesDir, filenameBySha),
+            background = assistant.background?.let {
+                LocalFileUrls.toUpstreamAbsolute(upstreamFilesDir, it, filenameBySha)
+            },
         )
     },
     displaySetting = displaySetting.copy(
-        userAvatar = displaySetting.userAvatar.withUpstreamLocalFiles(upstreamFilesDir),
+        userAvatar = displaySetting.userAvatar.withUpstreamLocalFiles(upstreamFilesDir, filenameBySha),
     ),
 )
 

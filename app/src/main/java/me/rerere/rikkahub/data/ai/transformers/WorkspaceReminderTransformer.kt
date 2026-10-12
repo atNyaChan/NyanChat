@@ -150,7 +150,7 @@ private fun buildWorkspacePrompt(
     appendLine("- Prefer `workspace_shell` for tasks that standard Unix tools handle well, and prefer `workspace_edit_file` for targeted edits over rewriting whole files.")
     appendLine("- The skills directory is mounted at `/skills`. Each skill is a subdirectory `/skills/<skill-name>/` containing a `SKILL.md` (with `name` and `description` frontmatter) plus any supporting files. Read a skill's `SKILL.md` before using it, and follow its instructions.")
     appendLine("- Built-in skills shipped with the app are mounted at `/builtin_skills/<skill-name>/` with the same layout. Treat `/builtin_skills` as READ-ONLY: you may read files and run scripts there, but never modify, overwrite, or delete anything. A skill in `/skills` with the same name overrides the built-in one.")
-    appendLine("- Files the user uploaded are mounted at `/upload` as symbolic links pointing into `/upload-cas`, where their real content lives. The same file may be referenced by several links, so **never modify the contents of the `/upload` or `/upload-cas` folders**. Read uploaded files from `/upload/<file-name>`, and if you need to change one, copy it into `/workspace` first and edit the copy.")
+    appendLine("- Files the user uploaded live under `/upload`, named by their content sha256. The same content may be referenced from several places, so **never modify anything under `/upload`**. Read uploaded files from `/upload/<sha256>`, and if you need to change one, copy it into `/workspace` first and edit the copy.")
     if (!cwd.isNullOrBlank()) {
         appendLine("- Current working directory: `$cwd`. Use this as the default context for file operations and shell commands.")
     }

@@ -27,10 +27,12 @@ import me.rerere.rikkahub.data.db.AppDatabaseFactory
 import me.rerere.rikkahub.data.db.SQLiteConfiguration
 import me.rerere.rikkahub.data.files.AttachmentCas
 import me.rerere.rikkahub.data.files.FileFolders
-import me.rerere.rikkahub.data.files.LocalFileUrls
+import me.rerere.rikkahub.data.files.FileUtils
 import me.rerere.rikkahub.data.files.MediaCreationFiles
+import me.rerere.rikkahub.data.files.attachmentShaFromUrl
 import me.rerere.rikkahub.data.files.withStoredLocalFiles
 import me.rerere.rikkahub.data.files.withUpstreamLocalFiles
+import me.rerere.rikkahub.data.model.Avatar
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.rikkahub.utils.fileSizeToString
 import me.rerere.workspace.RootfsInstaller
@@ -44,7 +46,6 @@ import java.io.FileOutputStream
 import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.LinkOption
-import java.nio.file.Paths
 import java.nio.file.attribute.BasicFileAttributes
 import java.security.MessageDigest
 import java.time.LocalDateTime
@@ -138,34 +139,42 @@ class BackupManager(
         val staging = Files.createTempDirectory(context.cacheDir.toPath(), "backup-").toFile()
 
         val settings = settingsStore.awaitLoaded()
+        // 每份内容在旧布局里的基础文件名（uuid.ext）：设置里的头像等用它，消息里按各自的使用记录命名
+        val filenameBySha = database.managedFileDao().listAllNow()
+            .associate { it.sha256 to FileUtils.buildUuidFileName(null, it.mimeType) }
+        // 设置（助手头像/背景、用户头像）引用到的内容需要额外落一份基础文件
+        val settingsShas = collectAttachmentShas(settings)
+        val upstreamFilesDir = legacyUpstreamFilesDir()
         try {
             ZipOutputStream(FileOutputStream(backupFile)).use { zipOut ->
                 // rikka_hub.db 与 settings.json 用 deflate 5 级压缩，其余附件只储存不压缩
                 zipOut.setLevel(LEGACY_DEFLATE_LEVEL)
-                addVirtualFileToZip(zipOut, "settings.json", legacyCompatibleSettingsJson(settings))
+                addVirtualFileToZip(zipOut, "settings.json", legacyCompatibleSettingsJson(settings, filenameBySha))
 
                 // 与上游一致：VACUUM INTO 生成包含已提交 WAL 数据的一致、独立快照，只导出这一个数据库文件
                 val snapshot = File(staging, SQLiteConfiguration.DATABASE_NAME)
                 DatabaseBackup.createSnapshot(database.openHelper.writableDatabase, snapshot)
-                // 库里是相对路径，上游只认自己的绝对 url，导出时按上游 release 包名展开
-                RestoredAttachmentUrlRewriter.rewriteDatabase(
+                // 把 managed_files_cas 转回旧 managed_files，并把消息 url 改写成上游安装目录下的绝对路径
+                val legacyEntries = ManagedFilesArchive.prepareLegacyExportDatabase(
                     databaseFile = snapshot,
                     json = json,
-                    relocate = { url -> LocalFileUrls.toUpstreamAbsolute(legacyUpstreamFilesDir(), url) },
+                    upstreamFilesDir = upstreamFilesDir,
+                    filenameBySha = filenameBySha,
+                    baseShas = settingsShas,
                 )
                 addFileToZip(zipOut, snapshot, DatabaseBackup.ARCHIVE_DATABASE)
 
                 if (includeFiles) {
-                    val uploadFolder = File(context.filesDir, FileFolders.UPLOAD)
-                    if (uploadFolder.exists() && uploadFolder.isDirectory) {
-                        Log.i(TAG, "createLegacyBackup: Backing up files from ${uploadFolder.absolutePath}")
-                        uploadFolder.listFiles()?.forEach { file ->
-                            if (file.isFile) {
-                                addFileToZip(zipOut, file, "${FileFolders.UPLOAD}/${file.name}", store = true)
-                            }
+                    val uploadRoot = File(context.filesDir, FileFolders.UPLOAD)
+                    // 旧布局里每个使用位置一份 uuid.ext：同一内容被多次使用时复制多份。
+                    // 不同使用记录理论上可能撞名，按文件名去重，避免 ZipOutputStream 写入重复条目报错。
+                    val seenNames = mutableSetOf<String>()
+                    legacyEntries.forEach { (sha256, filename) ->
+                        if (!seenNames.add(filename)) return@forEach
+                        val file = File(uploadRoot, sha256)
+                        if (file.isFile) {
+                            addFileToZip(zipOut, file, "${FileFolders.UPLOAD}/$filename", store = true)
                         }
-                    } else {
-                        Log.w(TAG, "createLegacyBackup: Upload folder does not exist or is not a directory")
                     }
 
                     val skillsFolder = File(context.filesDir, FileFolders.SKILLS)
@@ -208,12 +217,26 @@ class BackupManager(
         backupFile
     }
 
-    private fun legacyCompatibleSettingsJson(settings: Settings): String = makeRikkaHubCompatible(
-        json.encodeToJsonElement(
-            Settings.serializer(),
-            settings.withUpstreamLocalFiles(legacyUpstreamFilesDir()),
-        )
-    ).toString()
+    /** 设置里（助手头像、聊天背景、用户头像）引用到的附件 sha256 集合。 */
+    private fun collectAttachmentShas(settings: Settings): Set<String> = buildSet {
+        fun addUrl(url: String?) {
+            val sha = url?.let { attachmentShaFromUrl(it) } ?: return
+            add(sha)
+        }
+        settings.assistants.forEach { assistant ->
+            addUrl((assistant.avatar as? Avatar.Image)?.url)
+            addUrl(assistant.background)
+        }
+        addUrl((settings.displaySetting.userAvatar as? Avatar.Image)?.url)
+    }
+
+    private fun legacyCompatibleSettingsJson(settings: Settings, filenameBySha: Map<String, String>): String =
+        makeRikkaHubCompatible(
+            json.encodeToJsonElement(
+                Settings.serializer(),
+                settings.withUpstreamLocalFiles(legacyUpstreamFilesDir(), filenameBySha),
+            )
+        ).toString()
 
     /**
      * 旧版 ZIP 面向上游 RikkaHub，附件 url 必须写上游安装目录下的绝对路径。
@@ -390,15 +413,6 @@ class BackupManager(
                         val name = entry.name
                         when {
                             entry.isDirectory -> Unit
-                            // 附件软链接 (upload/<name> -> ../upload-cas/<sha>) 原样还原成符号链接
-                            entry.isSymbolicLink -> {
-                                val linkName = entry.linkName
-                                targetOf(name)?.let { target ->
-                                    require(seen.add(name)) { "Duplicate backup entry: $name" }
-                                    createParent(target)
-                                    Files.createSymbolicLink(target.toPath(), validatedSymlinkTarget(target, linkName, File(payload, "files")))
-                                }
-                            }
                             // TAR 硬链接条目没有数据区, 记下目标, 等目标条目落盘后复制成独立文件
                             entry.isLink -> {
                                 val linkName = entry.linkName
@@ -431,12 +445,13 @@ class BackupManager(
                 }
             }
             expandHardLinks(hardLinks, extracted)
-            // 导入时把 upload 统一转换成 upload-cas + 软链接。
-            // TAR: 只有带非空 upload 且没有 upload-cas 文件夹时转换; ZIP: 只要 upload 非空就转换。
-            convertImportedUploadToCas(payload = payload, isTar = isTar)
+            // 把 upload 里的 uuid.ext 统一成 upload/<sha256>，并记录旧名 -> sha256 供改写 url 使用
+            val oldNameToSha = ManagedFilesArchive.normalizeUploadDir(File(payload, "files"))
             require(restoredEntries > 0) { "No data found in the backup" }
             if (stagedDatabase.exists()) {
                 DatabaseBackup.normalize(context, stagedDatabase)
+                // 先把旧的 managed_files 表转成 managed_files_cas，再交给 Room 校验/迁移
+                ManagedFilesArchive.convertLegacyDatabase(stagedDatabase, json, oldNameToSha, File(payload, "files"))
                 // Reject unsupported schemas before publishing; run supported old migrations on the copy.
                 val room = AppDatabaseFactory.create(context, stagedDatabase.absolutePath)
                 try {
@@ -453,7 +468,11 @@ class BackupManager(
 
             val settingsFile = File(staging, "settings.json")
             if (settingsFile.exists()) {
-                val migrated = SettingsJsonMigrator.migrate(settingsFile.readText())
+                // 附件目录已改成 upload/<sha256>，设置里旧的 upload/<uuid.ext> 同步改写
+                val migrated = ManagedFilesArchive.rewriteSettingsAttachments(
+                    SettingsJsonMigrator.migrate(settingsFile.readText()),
+                    oldNameToSha,
+                )
                 val settings = json.decodeFromString<Settings>(migrated)
                 require(!settings.init) { "Backup contains uninitialized settings" }
                 // 关闭备份里当前提供商类型不支持的内置工具
@@ -470,30 +489,6 @@ class BackupManager(
 
     private fun isWorkspaceArchiveEntry(name: String): Boolean =
         name.startsWith(WORKSPACES_ENTRY) && name.endsWith(".tar.zst")
-
-    /** 校验软链接目标不允许逃出附件根目录, 返回可直接交给 [Files.createSymbolicLink] 的相对路径。 */
-    private fun validatedSymlinkTarget(link: File, target: String, root: File): java.nio.file.Path {
-        val path = Paths.get(target)
-        require(!path.isAbsolute) { "Invalid symlink target: $target" }
-        val rootPath = root.canonicalFile.toPath()
-        val linkParent = requireNotNull(link.parentFile) { "Symlink has no parent directory" }
-        val resolved = linkParent.canonicalFile.toPath().resolve(path).normalize()
-        require(resolved.startsWith(rootPath)) { "Symlink escapes the files directory: $target" }
-        return path
-    }
-
-    /**
-     * 导入时把展开的 `upload` 目录转换成内容寻址的 `upload-cas` + 软链接 `upload`。
-     * 已经是软链接形式的归档不会被重复处理。
-     */
-    private fun convertImportedUploadToCas(payload: File, isTar: Boolean) {
-        val filesRoot = File(payload, "files")
-        val upload = File(filesRoot, FileFolders.UPLOAD)
-        if (!upload.isDirectory || upload.listFiles().orEmpty().isEmpty()) return
-        // TAR 归档已经带 upload-cas 时保持原样; 只有没有 upload-cas 文件夹才转换
-        if (isTar && File(filesRoot, FileFolders.UPLOAD_CAS).isDirectory) return
-        AttachmentCas.convertUploadFolderToCas(filesRoot)
-    }
 
     /**
      * 打包时写入的 TAR 硬链接条目没有数据区，恢复时在目标条目落盘后把它展开成独立副本
@@ -558,26 +553,13 @@ class BackupManager(
                 return@forEach
             }
             // 写入实体时可能残留的临时文件不属于任何附件, 不打包
-            if (prefix == FileFolders.UPLOAD_CAS && AttachmentCas.isTemporary(file)) {
+            if (prefix == FileFolders.UPLOAD && AttachmentCas.isTemporary(file)) {
                 return@forEach
             }
             val relative = file.relativeTo(root).invariantSeparatorsPath
             val name = "$prefix/$relative"
-            // upload 里是指向 upload-cas 的软链接, 原样写成 TAR 符号链接条目
-            if (Files.isSymbolicLink(file.toPath())) {
-                addSymbolicLink(tar, name, Files.readSymbolicLink(file.toPath()).toString())
-            } else {
-                addFile(tar, file, name, deduplicator)
-            }
+            addFile(tar, file, name, deduplicator)
         }
-    }
-
-    private fun addSymbolicLink(tar: TarArchiveOutputStream, name: String, target: String) {
-        val entry = TarArchiveEntry(name, TarConstants.LF_SYMLINK).apply {
-            linkName = target
-        }
-        tar.putArchiveEntry(entry)
-        tar.closeArchiveEntry()
     }
 
     private fun addFile(
@@ -626,7 +608,6 @@ class BackupManager(
         private val ATTACHMENT_FOLDERS =
             listOf(
                 FileFolders.UPLOAD,
-                FileFolders.UPLOAD_CAS,
                 FileFolders.SKILLS,
                 FileFolders.FONTS,
                 FileFolders.MEDIA_CREATION,
@@ -674,11 +655,6 @@ class BackupManager(
                 )
             }
             if (restored) {
-                // 附件目录可能被整体替换, 丢弃旧附件索引, 下次使用时从磁盘与会话重建
-                runCatching { AttachmentCas.clearIndex(context.cacheDir) }
-                    .onFailure { Log.w(TAG, "Failed to clear attachment index", it) }
-                runCatching { RestoredAttachmentUrlRewriter.rewrite(context, json) }
-                    .onFailure { Log.w(TAG, "Failed to rewrite restored attachment URLs", it) }
                 if (needsWorkspaceReset) {
                     runCatching { RestoredWorkspaceStatusResetter.resetAfterRestore(context) }
                         .onFailure { Log.w(TAG, "Failed to reset workspace status after restore", it) }

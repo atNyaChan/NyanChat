@@ -25,7 +25,6 @@ import org.junit.runner.RunWith
 import org.koin.core.context.GlobalContext
 import java.io.File
 import java.nio.file.Files
-import java.nio.file.Paths
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
@@ -233,34 +232,7 @@ class BackupManagerTest {
         assertEquals(1, links)
     }
 
-    @Test fun uploadSymlinksArePackedAsSymlinksAlongsideCasEntities() = runBlocking {
-        val cas = File(context.filesDir, "upload-cas").apply { mkdirs() }
-        val upload = File(context.filesDir, "upload").apply { mkdirs() }
-        File(cas, "sha256deadbeef").writeText("content")
-        Files.createSymbolicLink(
-            File(upload, "linked.bin").toPath(),
-            Paths.get("../upload-cas/sha256deadbeef"),
-        )
-
-        val archive = manager.createBackup(includeDatabase = false, includeFiles = true, includeWorkspace = false)
-        var symlink: TarArchiveEntry? = null
-        var casEntry = false
-        TarArchiveInputStream(archive.inputStream().buffered()).use { tar ->
-            var entry = tar.nextEntry
-            while (entry != null) {
-                when (entry.name) {
-                    "upload/linked.bin" -> symlink = entry
-                    "upload-cas/sha256deadbeef" -> casEntry = true
-                }
-                entry = tar.nextEntry
-            }
-        }
-        assertTrue(symlink!!.isSymbolicLink)
-        assertEquals("../upload-cas/sha256deadbeef", symlink!!.linkName)
-        assertTrue(casEntry)
-    }
-
-    @Test fun restoredUploadIsConvertedIntoCasEntitiesAndSymlinks() = runBlocking {
+    @Test fun restoredUploadIsNormalizedToSha256Entities() = runBlocking {
         val upload = File(context.filesDir, "upload").apply { mkdirs() }
         File(upload, "original.bin").writeText("shared payload")
         File(upload, "copy.bin").writeText("shared payload")
@@ -272,14 +244,11 @@ class BackupManagerTest {
         assertTrue(File(context.noBackupFilesDir, "backup-restore/pending/settings.json").delete())
         assertTrue(BackupManager.applyPendingRestore(context, JsonInstant))
 
-        val restoredOriginal = File(upload, "original.bin")
-        val restoredCopy = File(upload, "copy.bin")
-        // 恢复时转换为内容寻址存储: 相同内容只保留一份实体, 两个文件名都是指向它的软链接
-        assertTrue(Files.isSymbolicLink(restoredOriginal.toPath()))
-        assertTrue(Files.isSymbolicLink(restoredCopy.toPath()))
-        assertEquals(1, File(context.filesDir, "upload-cas").listFiles()!!.size)
-        assertEquals("shared payload", restoredOriginal.readText())
-        assertEquals("shared payload", restoredCopy.readText())
+        // 恢复时转换为内容寻址存储: 相同内容只保留一份以 sha256 命名的实体
+        val files = upload.listFiles().orEmpty().filter { it.isFile }
+        assertEquals(1, files.size)
+        assertEquals("shared payload", files.first().readText())
+        assertFalse(Files.isSymbolicLink(files.first().toPath()))
     }
 
     @Test fun restoreReplacesExistingUploadFolderWhenArchiveHasUpload() = runBlocking {
@@ -294,7 +263,9 @@ class BackupManagerTest {
         assertTrue(BackupManager.applyPendingRestore(context, JsonInstant))
 
         assertFalse(File(upload, "old.bin").exists())
-        assertEquals("new", File(upload, "new.bin").readText())
+        val files = upload.listFiles().orEmpty().filter { it.isFile }
+        assertEquals(1, files.size)
+        assertEquals("new", files.first().readText())
     }
 
     @Test fun restoreKeepsExistingUploadWhenArchiveHasNoUpload() = runBlocking {

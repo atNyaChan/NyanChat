@@ -50,7 +50,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 val dataSourceModule = module {
     single {
-        SettingsStore(context = get(), scope = get())
+        SettingsStore(context = get(), scope = get(), filesManager = get())
     }
 
     single {

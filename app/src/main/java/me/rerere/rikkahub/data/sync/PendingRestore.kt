@@ -54,7 +54,7 @@ internal class PendingRestore(
             }
         }
         try {
-            // upload / upload-cas 带非空内容时整体替换, 逐文件日志里不再包含这些目录的条目
+            // upload 带非空内容时整体替换, 逐文件日志里不再包含这些目录的条目
             if (replaceFolders.isNotEmpty()) {
                 // 先落持久标记, 保证「旧目录已移走 / 存档目录已移入」后进程中断时,
                 // 重试仍按整体替换处理, 不会退化成逐文件合并而漏掉失败回滚。
@@ -108,7 +108,7 @@ internal class PendingRestore(
             it.relativeTo(payload).invariantSeparatorsPath
         }.toList().sorted()
         val entries = paths
-            // upload / upload-cas 由 replaceDirectories 整体处理, 不进逐文件日志
+            // upload 由 replaceDirectories 整体处理, 不进逐文件日志
             .filter { path -> replaceFolders.none { path.startsWith("files/$it/") } }
             .map { path ->
                 RestoreEntry(path, install = true, hadOriginal = targetFile(path).exists())
@@ -214,8 +214,8 @@ internal class PendingRestore(
     private data class RestoreEntry(val path: String, val install: Boolean, val hadOriginal: Boolean)
 
     companion object {
-        /** 需要整体替换的附件目录 (内容寻址存储改造后 upload 与 upload-cas 成对替换)。 */
-        private val REPLACEABLE_FOLDERS = listOf(FileFolders.UPLOAD, FileFolders.UPLOAD_CAS)
+        /** 需要整体替换的附件目录。 */
+        private val REPLACEABLE_FOLDERS = listOf(FileFolders.UPLOAD)
 
         private fun replaceMarker(folder: String): String = "replace-$folder"
 

@@ -75,12 +75,12 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import com.dokar.sonner.ToastType
 import kotlinx.coroutines.launch
+import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.SettingsStore
+import me.rerere.rikkahub.data.db.entity.FileUsage
 import me.rerere.rikkahub.data.db.fts.MessagePreviewKey
 import me.rerere.rikkahub.data.db.fts.MessageSearchResult
 import me.rerere.rikkahub.data.files.CasAttachment
-import me.rerere.rikkahub.data.files.ChatAttachmentEntry
-import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.repository.ConversationRepository
@@ -141,7 +141,7 @@ fun SettingFilesPage(
     LaunchedEffect(filesManager) {
         loadedFiles = filesManager.listCasAttachments()
     }
-    val hasUnusedAttachments = loadedFiles?.any { it.references.isEmpty() } == true
+    val hasUnusedAttachments = loadedFiles?.any { it.isUnused } == true
     val folders = remember(hasUnusedAttachments) {
         if (hasUnusedAttachments) {
             listOf(FileFolders.UPLOAD, UNUSED_ATTACHMENTS)
@@ -160,12 +160,13 @@ fun SettingFilesPage(
     }
     val files = loadedFiles.orEmpty()
         .filter {
-            if (selectedFolder == UNUSED_ATTACHMENTS) it.references.isEmpty() else it.references.isNotEmpty()
+            // 设置类使用只写库不展示：只被头像/背景引用的内容两边都不出现
+            if (selectedFolder == UNUSED_ATTACHMENTS) it.isUnused else it.references.isNotEmpty()
         }
         .sortedWith(
             when (sortOrder) {
                 // 两种排序都把较新的卡片放在上方, 只是取每个附件的“时间”不同:
-                // 最新引用取它在 managed_files 里最晚的登记时间, 最旧引用取最早的登记时间
+                // 最新引用取它在 usages 里最晚的使用时间, 最旧引用取最早的使用时间
                 AttachmentSortOrder.LATEST_REFERENCE ->
                     compareByDescending<CasAttachment> { it.latestManagedAt }
                 AttachmentSortOrder.OLDEST_REFERENCE ->
@@ -271,14 +272,14 @@ fun SettingFilesPage(
             attachment = target,
             assistantNames = assistantNames,
             loadPreviews = conversationRepo::getMessagePreviews,
-            loadDisplayNames = filesManager::uploadDisplayNames,
             onDismiss = { referenceAttachment = null },
             onOpenMessage = { reference ->
                 referenceAttachment = null
+                val key = reference.messagePreviewKey() ?: return@UsedByMessagesDialog
                 navigateToChatPage(
                     navController,
-                    chatId = Uuid.parse(reference.conversationId),
-                    nodeId = Uuid.parse(reference.nodeId),
+                    chatId = Uuid.parse(key.conversationId),
+                    nodeId = Uuid.parse(key.nodeId),
                 )
             },
         )
@@ -409,7 +410,7 @@ fun SettingFilesPage(
                                 showReference = selectedFolder != UNUSED_ATTACHMENTS,
                                 onReference = {
                                     // 只有一条引用时直接跳到消息, 多条引用才弹窗选择
-                                    val single = item.references.singleOrNull()
+                                    val single = item.references.singleOrNull()?.messagePreviewKey()
                                     if (single != null) {
                                         navigateToChatPage(
                                             navController,
@@ -439,10 +440,10 @@ private enum class CleanRange(val days: Int?) {
 
 /** “存储管理”页的附件排序方式, 在整个应用启动期间有效。 */
 private enum class AttachmentSortOrder {
-    /** 取每个附件最晚的 `managed_files` 登记时间作为它的时间, 较新的卡片在上方。 */
+    /** 取每个附件最新一次使用的消息时间作为它的时间, 较新的卡片在上方。 */
     LATEST_REFERENCE,
 
-    /** 取每个附件最早的 `managed_files` 登记时间作为它的时间, 较新的卡片在上方。 */
+    /** 取每个附件最早一次使用的消息时间作为它的时间, 较新的卡片在上方。 */
     OLDEST_REFERENCE,
 }
 
@@ -582,7 +583,7 @@ private fun folderDisplayName(folder: String): String = when (folder) {
 }
 
 /**
- * 展示某个附件被哪些消息使用: 每条引用先显示该软链接对应的展示名 (缺失时退回软链接文件名),
+ * 展示某个附件被哪些消息使用: 每条引用先显示该次使用的展示名 (缺失时退回 `uuid.ext` 文件名),
  * 再显示与搜索结果一致的消息预览卡片, 点击卡片跳转到对应消息。
  */
 @Composable
@@ -590,22 +591,15 @@ private fun UsedByMessagesDialog(
     attachment: CasAttachment,
     assistantNames: Map<String, String>,
     loadPreviews: suspend (List<MessagePreviewKey>) -> Map<MessagePreviewKey, MessageSearchResult>,
-    loadDisplayNames: suspend () -> Map<String, String>,
     onDismiss: () -> Unit,
-    onOpenMessage: (ChatAttachmentEntry) -> Unit,
+    onOpenMessage: (FileUsage) -> Unit,
 ) {
     val references = attachment.references
     var previews by remember(attachment) {
         mutableStateOf<Map<MessagePreviewKey, MessageSearchResult>?>(null)
     }
-    var displayNames by remember(attachment) {
-        mutableStateOf<Map<String, String>>(emptyMap())
-    }
     LaunchedEffect(attachment) {
-        displayNames = loadDisplayNames()
-        previews = loadPreviews(
-            references.map { MessagePreviewKey(it.conversationId, it.nodeId, it.messageId) }
-        )
+        previews = loadPreviews(references.mapNotNull { it.messagePreviewKey() })
     }
     AlertDialog(
         containerColor = MaterialTheme.colorScheme.surface,
@@ -621,26 +615,27 @@ private fun UsedByMessagesDialog(
                     AppLoadingIndicator()
                 }
             } else {
+                // 新文件显示在上面：按引用消息的时间从新到旧排列
+                val ordered = references.sortedByDescending { reference ->
+                    reference.messagePreviewKey()?.let { loaded[it] }?.timeAt?.toEpochMilli()
+                        ?: Long.MIN_VALUE
+                }
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    references.forEachIndexed { index, reference ->
+                    ordered.forEachIndexed { index, reference ->
                         if (index > 0) {
                             HorizontalDivider(
                                 modifier = Modifier.padding(vertical = 2.dp),
                                 color = MaterialTheme.colorScheme.outlineVariant,
                             )
                         }
-                        val key = MessagePreviewKey(
-                            conversationId = reference.conversationId,
-                            nodeId = reference.nodeId,
-                            messageId = reference.messageId,
-                        )
+                        val key = reference.messagePreviewKey() ?: return@forEachIndexed
                         Text(
-                            text = displayNames[reference.fileName] ?: reference.fileName,
+                            text = reference.displayName.ifBlank { reference.filename },
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -731,8 +726,8 @@ private fun FileItem(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-                // 没有可用的引用展示名时标题已经退回 sha256 缩写, 不再重复显示四位缩写
-                if (attachment.referenceDisplayNames.isNotEmpty()) {
+                // 没有可用的展示名时标题已经退回 sha256 缩写, 这里仅在展示名不是 sha256 时补一行缩写
+                if (attachment.displayName != attachment.sha256Short) {
                     Text(
                         text = attachment.sha256Short,
                         style = MaterialTheme.typography.bodySmall,
@@ -807,6 +802,14 @@ private fun FileItem(
             }
         }
     }
+}
+
+/** 从消息使用记录里取出消息定位；非消息类型或字段缺失时返回 null。 */
+private fun FileUsage.messagePreviewKey(): MessagePreviewKey? {
+    val conversationId = details["conversationId"] ?: return null
+    val nodeId = details["nodeId"] ?: return null
+    val messageId = details["messageId"] ?: return null
+    return MessagePreviewKey(conversationId, nodeId, messageId)
 }
 
 private fun openManagedFile(context: Context, file: File, mimeType: String) {

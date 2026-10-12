@@ -25,7 +25,6 @@ import me.rerere.oauth.OAuthLoopbackCallbackServer
 import me.rerere.rikkahub.AppScope
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.files.FilesManager
-import me.rerere.rikkahub.data.files.saveUploadFromBytes
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.utils.JsonInstant
 import okhttp3.OkHttpClient
@@ -154,13 +153,7 @@ class McpManager(
 
     private suspend fun convertImageContentToFilePart(image: ImageContent): UIMessagePart.Image {
         val bytes = Base64.decode(image.data)
-        val extension = android.webkit.MimeTypeMap.getSingleton()
-            .getExtensionFromMimeType(image.mimeType) ?: "bin"
-        val entity = filesManager.saveUploadFromBytes(
-            bytes = bytes,
-            displayName = "mcp_image.$extension",
-            mimeType = image.mimeType,
-        )
+        val entity = filesManager.saveUploadFromBytes(bytes = bytes, mimeType = image.mimeType)
         return UIMessagePart.Image(url = filesManager.getFile(entity).toUri().toString())
     }
 }

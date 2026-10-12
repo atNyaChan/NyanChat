@@ -28,9 +28,6 @@ object FileUtils {
         return "${Uuid.random()}.$ext"
     }
 
-    fun buildRelativePath(folder: String, file: File): String =
-        "$folder/${file.name}"
-
     fun getRelativePathInFilesDir(filesDir: File, file: File): String? {
         val canonicalFile = runCatching { file.canonicalFile }.getOrNull() ?: return null
         val canonicalFilesDir = runCatching { filesDir.canonicalFile }.getOrNull() ?: return null

@@ -20,7 +20,7 @@ import me.rerere.rikkahub.data.db.entity.ConversationEntity
 import me.rerere.rikkahub.data.db.entity.FavoriteEntity
 import me.rerere.rikkahub.data.db.entity.FolderEntity
 import me.rerere.rikkahub.data.db.entity.GenMediaEntity
-import me.rerere.rikkahub.data.db.entity.ManagedFileEntity
+import me.rerere.rikkahub.data.db.entity.ManagedFileCasEntity
 import me.rerere.rikkahub.data.db.entity.MediaCreationNodeEntity
 import me.rerere.rikkahub.data.db.entity.MediaCreationRecordEntity
 import me.rerere.rikkahub.data.db.entity.MediaCreationSessionEntity
@@ -39,7 +39,7 @@ import me.rerere.rikkahub.utils.JsonInstant
         MemoryConsolidationEntity::class,
         GenMediaEntity::class,
         MessageNodeEntity::class,
-        ManagedFileEntity::class,
+        ManagedFileCasEntity::class,
         FavoriteEntity::class,
         WorkspaceEntity::class,
         FolderEntity::class,
@@ -47,7 +47,7 @@ import me.rerere.rikkahub.utils.JsonInstant
         MediaCreationNodeEntity::class,
         MediaCreationRecordEntity::class,
     ],
-    version = 29,
+    version = 100,
     autoMigrations = [
         AutoMigration(from = 16, to = 17, spec = Migration_16_17::class),
         AutoMigration(from = 17, to = 18),

@@ -63,16 +63,18 @@ class RikkaHubApp : Application() {
     override fun onCreate() {
         super.onCreate()
         // Restore files and settings before eager Koin singletons or workers can access them.
-        try {
+        val restoredAtStartup = try {
             val restored = runBlocking(Dispatchers.IO) {
                 BackupManager.applyPendingRestore(this@RikkaHubApp, JsonInstant)
             }
             if (restored) {
                 Toast.makeText(this, R.string.backup_page_restore_success, Toast.LENGTH_LONG).show()
             }
+            restored
         } catch (e: RestoreFailedException) {
             Log.e(TAG, "Backup restore rolled back", e)
             Toast.makeText(this, R.string.backup_page_restore_failed_preserved, Toast.LENGTH_LONG).show()
+            false
         }
         startKoin {
             androidLogger()
@@ -106,8 +108,10 @@ class RikkaHubApp : Application() {
         // sync upload files to DB
         syncManagedFiles()
 
-        // ensure the chat attachment index exists (deletion paths rely on it)
-        ensureAttachmentIndex()
+        // rebuild assistant avatar/background and user avatar usages only after a restore
+        if (restoredAtStartup) {
+            syncSettingsAttachmentUsages()
+        }
 
         // Extract builtin skills from assets after install/update
         extractBuiltinSkills()
@@ -204,7 +208,7 @@ class RikkaHubApp : Application() {
     private fun cleanupAttachmentTemps() {
         get<AppScope>().launch(Dispatchers.IO) {
             runCatching {
-                AttachmentCas.deleteStaleTemporaryFiles(filesDir)
+                AttachmentCas.deleteStaleTemporaryFiles(File(filesDir, FileFolders.UPLOAD))
             }.onFailure {
                 Log.e(TAG, "cleanupAttachmentTemps failed", it)
             }
@@ -214,19 +218,20 @@ class RikkaHubApp : Application() {
     private fun syncManagedFiles() {
         get<AppScope>().launch(Dispatchers.IO) {
             runCatching {
-                get<FilesManager>().syncFolder()
+                get<FilesManager>().syncManagedFiles()
             }.onFailure {
                 Log.e(TAG, "syncManagedFiles failed", it)
             }
         }
     }
 
-    private fun ensureAttachmentIndex() {
+    private fun syncSettingsAttachmentUsages() {
         get<AppScope>().launch(Dispatchers.IO) {
             runCatching {
-                get<FilesManager>().ensureAttachmentIndex()
+                val settings = get<SettingsStore>().awaitLoaded()
+                get<FilesManager>().updateSettingsAttachmentUsages(settings)
             }.onFailure {
-                Log.e(TAG, "ensureAttachmentIndex failed", it)
+                Log.e(TAG, "syncSettingsAttachmentUsages failed", it)
             }
         }
     }

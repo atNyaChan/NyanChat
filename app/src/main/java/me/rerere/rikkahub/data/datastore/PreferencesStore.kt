@@ -37,6 +37,8 @@ import me.rerere.ai.provider.BuiltInTools
 import me.rerere.rikkahub.AppScope
 import me.rerere.rikkahub.data.datastore.migration.PreferenceStoreV3Migration
 import me.rerere.rikkahub.data.datastore.migration.PreferenceStoreV4Migration
+import me.rerere.rikkahub.data.files.FilesManager
+import me.rerere.rikkahub.data.files.attachmentUrls
 import me.rerere.rikkahub.data.files.withRuntimeLocalFiles
 import me.rerere.rikkahub.data.files.withStoredLocalFiles
 import me.rerere.rikkahub.data.model.Assistant
@@ -91,8 +93,10 @@ class SettingsStore internal constructor(
     private val dataStore: DataStore<Preferences>,
     private val filesDir: File,
     scope: CoroutineScope,
+    private val filesManager: FilesManager? = null,
 ) {
-    constructor(context: Context, scope: AppScope) : this(context.settingsStore, context.filesDir, scope)
+    constructor(context: Context, scope: AppScope, filesManager: FilesManager) :
+        this(context.settingsStore, context.filesDir, scope, filesManager)
 
     companion object {
         // 版本号
@@ -265,10 +269,11 @@ class SettingsStore internal constructor(
     // 不跟着调用方取消：页面关闭（viewModelScope 取消）时修改已经在内存里生效，不能只差落盘这一步。
     // DataStore 在调用方的上下文里执行编码，所以要在这里切到后台线程
     private suspend fun persist() {
-        withContext(NonCancellable + Dispatchers.Default) {
+        val attachmentsChanged = withContext(NonCancellable + Dispatchers.Default) {
             persistMutex.withLock {
                 val latest = state.value
                 val base = persisted
+                val changed = latest.attachmentUrls() != base?.attachmentUrls()
                 if (latest !== base) {
                     dataStore.edit { preferences ->
                         preferences.putSettings(
@@ -278,6 +283,17 @@ class SettingsStore internal constructor(
                     }
                     persisted = latest
                 }
+                changed
+            }
+        }
+        // 助手头像/背景、用户头像变化时同步 managed_files_cas 里的设置类使用记录
+        if (attachmentsChanged) {
+            try {
+                filesManager?.updateSettingsAttachmentUsages(state.value)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                Log.w(TAG, "Failed to refresh settings attachment usages", e)
             }
         }
     }

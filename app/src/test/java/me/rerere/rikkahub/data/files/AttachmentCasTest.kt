@@ -1,14 +1,9 @@
 package me.rerere.rikkahub.data.files
 
 import java.io.File
-import java.nio.file.Files
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.int
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
+import me.rerere.rikkahub.data.sync.ManagedFilesArchive
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -19,276 +14,113 @@ class AttachmentCasTest {
     val folder = TemporaryFolder()
 
     private lateinit var filesRoot: File
-    private lateinit var cacheDir: File
 
     private fun setUpRoots() {
         filesRoot = folder.newFolder("files")
-        cacheDir = folder.newFolder("cache")
     }
 
-    /** 把内容写入 cas 临时文件并建软链接, 返回 (软链接文件, sha256)。 */
-    private fun link(content: String, linkName: String): Pair<File, String> {
-        val cas = AttachmentCas.casDir(filesRoot).apply { mkdirs() }
-        val (temporary, sha256) = AttachmentCas.writeTemporary(cas) { it.write(content.toByteArray()) }
-        return AttachmentCas.linkEntity(filesRoot, sha256, linkName, temporary) to sha256
+    private fun uploadDir() = File(filesRoot, FileFolders.UPLOAD).apply { mkdirs() }
+
+    /** 通过 [AttachmentCas] 落一份内容, 返回 (sha256, 实体文件)。 */
+    private fun commit(content: String): Pair<String, File> {
+        val dir = uploadDir()
+        val (temporary, sha256) = AttachmentCas.writeTemporary(dir) { it.write(content.toByteArray()) }
+        return sha256 to AttachmentCas.commitTemporary(dir, sha256, temporary)
     }
-
-    private fun entity(sha256: String) = File(AttachmentCas.casDir(filesRoot), sha256)
-
-    private fun entry(
-        fileName: String,
-        conversationId: String = "conv",
-        nodeId: String = "node",
-        messageId: String = "message",
-    ) = ChatAttachmentEntry(
-        fileName = fileName,
-        conversationId = conversationId,
-        nodeId = nodeId,
-        messageId = messageId,
-    )
 
     @Test
-    fun `identical content shares one entity while every link resolves`() {
+    fun `identical content commits to one sha256 named entity`() {
         setUpRoots()
 
-        val (linkA, shaA) = link("shared payload", "a.bin")
-        val (linkB, shaB) = link("shared payload", "b.bin")
+        val (shaA, fileA) = commit("shared payload")
+        val (shaB, fileB) = commit("shared payload")
 
         assertEquals(shaA, shaB)
-        assertEquals(1, AttachmentCas.casDir(filesRoot).listFiles().orEmpty().count { it.isFile })
-        assertTrue(AttachmentCas.isSymlink(linkA))
-        assertTrue(AttachmentCas.isSymlink(linkB))
-        // 软链接用相对路径指向 upload 同级的 upload-cas, 以便整体搬迁
-        assertEquals("../${FileFolders.UPLOAD_CAS}/$shaA", Files.readSymbolicLink(linkA.toPath()).toString())
-        assertEquals("shared payload", linkA.readText())
-        assertEquals("shared payload", linkB.readText())
+        assertEquals(fileA, fileB)
+        assertEquals("shared payload", fileA.readText())
+        assertEquals(
+            1,
+            uploadDir().listFiles().orEmpty().count { it.isFile && !AttachmentCas.isTemporary(it) },
+        )
+        // 相同内容再次提交时临时文件被丢弃
+        assertTrue(uploadDir().listFiles().orEmpty().none { AttachmentCas.isTemporary(it) })
     }
 
     @Test
-    fun `entity is deleted only after the last link is removed`() {
+    fun `commitTemporary keeps distinct content in separate entities`() {
         setUpRoots()
 
-        val (linkA, shaA) = link("payload", "a.bin")
-        val (linkB, _) = link("payload", "b.bin")
-        val casEntity = entity(shaA)
+        val (shaA, fileA) = commit("payload")
+        val (shaB, fileB) = commit("other")
 
-        linkA.delete()
-        AttachmentCas.removeLinks(cacheDir, filesRoot, listOf(AttachmentCas.LinkRef(shaA, "a.bin")))
-        assertTrue(casEntity.exists())
-        assertTrue(linkB.exists())
-
-        linkB.delete()
-        AttachmentCas.removeLinks(cacheDir, filesRoot, listOf(AttachmentCas.LinkRef(shaA, "b.bin")))
-        assertFalse(casEntity.exists())
+        assertTrue(shaA != shaB)
+        assertEquals(fileA.name, shaA)
+        assertEquals(fileB.name, shaB)
+        assertEquals(2, uploadDir().listFiles().orEmpty().count { it.isFile })
     }
 
     @Test
-    fun `removeLinks keeps an entity that is still referenced when the index is missing`() {
+    fun `deleteStaleTemporaryFiles removes only old temporary files`() {
         setUpRoots()
 
-        val (linkA, shaA) = link("payload", "a.bin")
-        val (linkB, _) = link("payload", "b.bin")
-        val casEntity = entity(shaA)
+        val dir = uploadDir()
+        val stale = File.createTempFile("upload-", ".tmp", dir).apply { writeText("stale") }
+        stale.setLastModified(0L)
+        val fresh = File.createTempFile("upload-", ".tmp", dir).apply { writeText("fresh") }
+        val entity = File(dir, "a".repeat(64)).apply { writeText("entity") }
 
-        // 索引不存在时仍以磁盘上的软链接为准
-        assertFalse(AttachmentCas.indexFile(cacheDir).isFile)
-        linkA.delete()
-        AttachmentCas.removeLinks(cacheDir, filesRoot, listOf(AttachmentCas.LinkRef(shaA, "a.bin")))
+        AttachmentCas.deleteStaleTemporaryFiles(dir)
 
-        assertTrue("entity still referenced by b.bin", casEntity.exists())
-        assertTrue(linkB.exists())
-        // 索引缺失时不在删除路径里写出不完整的索引, 等下次访问时完整重建
-        assertFalse(AttachmentCas.indexFile(cacheDir).isFile)
+        assertFalse(stale.exists())
+        assertTrue(fresh.exists())
+        assertTrue(entity.exists())
+        fresh.delete()
     }
 
     @Test
-    fun `removeLinks deletes the entity only when no link references it on disk`() {
+    fun `normalizeUploadDir renames legacy files to sha256 and dedups content`() {
         setUpRoots()
 
-        val (linkA, shaA) = link("payload", "a.bin")
-        val (linkB, _) = link("payload", "b.bin")
-        val casEntity = entity(shaA)
-
-        // 只删掉其中一条软链接时实体必须保留, 删掉最后一条才删除实体
-        linkB.delete()
-        AttachmentCas.removeLinks(cacheDir, filesRoot, listOf(AttachmentCas.LinkRef(shaA, "b.bin")))
-        assertTrue(casEntity.exists())
-
-        linkA.delete()
-        AttachmentCas.removeLinks(cacheDir, filesRoot, listOf(AttachmentCas.LinkRef(shaA, "a.bin")))
-        assertFalse(casEntity.exists())
-    }
-
-    @Test
-    fun `convertUploadFolderToCas dedups real files into entities and relative symlinks`() {
-        setUpRoots()
-
-        val upload = AttachmentCas.uploadDir(filesRoot).apply { mkdirs() }
+        val upload = uploadDir()
         File(upload, "x.bin").writeText("same")
         File(upload, "y.bin").writeText("same")
         File(upload, "z.bin").writeText("other")
 
-        AttachmentCas.convertUploadFolderToCas(filesRoot)
+        val renamed = ManagedFilesArchive.normalizeUploadDir(filesRoot)
 
-        val shaX = AttachmentCas.readSha(File(upload, "x.bin"))
-        val shaY = AttachmentCas.readSha(File(upload, "y.bin"))
-        val shaZ = AttachmentCas.readSha(File(upload, "z.bin"))
-        assertEquals(shaX, shaY)
-        assertNotEquals(shaX, shaZ)
-        assertTrue(AttachmentCas.isSymlink(File(upload, "x.bin")))
-        assertEquals(2, AttachmentCas.casDir(filesRoot).listFiles().orEmpty().count { it.isFile })
-        assertEquals("same", File(upload, "x.bin").readText())
-        assertEquals("other", File(upload, "z.bin").readText())
-    }
-
-    @Test
-    fun `convertUploadFolderToCas is idempotent`() {
-        setUpRoots()
-
-        val upload = AttachmentCas.uploadDir(filesRoot).apply { mkdirs() }
-        File(upload, "x.bin").writeText("same")
-        AttachmentCas.convertUploadFolderToCas(filesRoot)
-        val sha = AttachmentCas.readSha(File(upload, "x.bin"))
-
-        AttachmentCas.convertUploadFolderToCas(filesRoot)
-
-        assertEquals(sha, AttachmentCas.readSha(File(upload, "x.bin")))
-        assertEquals(1, AttachmentCas.casDir(filesRoot).listFiles().orEmpty().count { it.isFile })
-    }
-
-    @Test
-    fun `index stores every message reference and sorts by file name`() {
-        setUpRoots()
-
-        val (_, shaA) = link("payload", "a.bin")
-        AttachmentCas.replaceIndex(
-            cacheDir,
-            entries = mapOf(
-                shaA to listOf(
-                    entry("a.bin", nodeId = "node2", messageId = "message2"),
-                    entry("a.bin", nodeId = "node1", messageId = "message1"),
-                )
-            ),
+        assertEquals(3, renamed.size)
+        assertEquals(renamed.getValue("x.bin"), renamed.getValue("y.bin"))
+        assertTrue(renamed.getValue("x.bin") != renamed.getValue("z.bin"))
+        // 旧文件名不再存在，内容以 sha256 命名
+        assertEquals(
+            2,
+            upload.listFiles().orEmpty().count { it.isFile && !AttachmentCas.isTemporary(it) },
         )
-
-        val entries = AttachmentCas.readIndex(cacheDir)!!.getValue(shaA)
-        assertEquals(2, entries.size)
-        assertEquals(listOf("a.bin", "a.bin"), entries.map { it.fileName })
-        assertEquals(listOf("message1", "message2"), entries.map { it.messageId })
-        assertTrue(entries.all { it.conversationId == "conv" })
+        assertTrue(renamed.values.all { upload.resolve(it).isFile })
+        assertEquals("same", upload.resolve(renamed.getValue("x.bin")).readText())
+        assertEquals("other", upload.resolve(renamed.getValue("z.bin")).readText())
     }
 
     @Test
-    fun `index file only contains version and entries`() {
+    fun `normalizeUploadDir is a no-op for already sha256 named files`() {
         setUpRoots()
 
-        val (_, shaA) = link("payload", "a.bin")
-        AttachmentCas.replaceIndex(cacheDir, entries = mapOf(shaA to listOf(entry("a.bin"))))
+        val upload = uploadDir()
+        val (sha256, _) = commit("payload")
 
-        val json = Json.parseToJsonElement(AttachmentCas.indexFile(cacheDir).readText()).jsonObject
-        assertEquals(setOf("version", "entries"), json.keys)
-        assertEquals(1, json.getValue("version").jsonPrimitive.int)
+        val renamed = ManagedFilesArchive.normalizeUploadDir(filesRoot)
+
+        assertTrue(renamed.isEmpty())
+        assertTrue(upload.resolve(sha256).isFile)
     }
 
     @Test
-    fun `removeLinks drops message references for the deleted links`() {
+    fun `isTemporary matches writeTemporary output`() {
         setUpRoots()
 
-        val (linkA, shaA) = link("payload", "a.bin")
-        val (linkB, _) = link("payload", "b.bin")
-        AttachmentCas.replaceIndex(
-            cacheDir,
-            entries = mapOf(
-                shaA to listOf(
-                    entry("a.bin"),
-                    entry("b.bin"),
-                )
-            ),
-        )
-
-        linkA.delete()
-        AttachmentCas.removeLinks(cacheDir, filesRoot, listOf(AttachmentCas.LinkRef(shaA, "a.bin")))
-
-        val entries = AttachmentCas.readIndex(cacheDir)!!.getValue(shaA)
-        assertEquals(listOf("b.bin"), entries.map { it.fileName })
-    }
-
-    @Test
-    fun `updateIndexIfPresent keeps other entries while changing the target`() {
-        setUpRoots()
-
-        val (_, shaA) = link("payload", "a.bin")
-        val (_, shaB) = link("other payload", "b.bin")
-        AttachmentCas.replaceIndex(
-            cacheDir,
-            entries = mapOf(
-                shaA to listOf(entry("a.bin", conversationId = "conv")),
-                shaB to listOf(entry("b.bin", conversationId = "other")),
-            ),
-        )
-
-        val updated = AttachmentCas.updateIndexIfPresent(cacheDir) { entries ->
-            entries.values.forEach { list -> list.removeAll { it.conversationId == "conv" } }
-        }
-
-        assertTrue(updated)
-        val index = AttachmentCas.readIndex(cacheDir)!!
-        assertFalse(index.containsKey(shaA))
-        assertEquals(listOf("b.bin"), index.getValue(shaB).map { it.fileName })
-    }
-
-    @Test
-    fun `updateIndexIfPresent leaves an unchanged index file untouched`() {
-        setUpRoots()
-
-        val (_, shaA) = link("payload", "a.bin")
-        AttachmentCas.replaceIndex(
-            cacheDir,
-            entries = mapOf(shaA to listOf(entry("a.bin", conversationId = "conv"))),
-        )
-        val indexFile = AttachmentCas.indexFile(cacheDir)
-        val stamp = 1_000_000L
-        assertTrue(indexFile.setLastModified(stamp))
-
-        val updated = AttachmentCas.updateIndexIfPresent(cacheDir) { /* 不修改任何条目 */ }
-
-        assertTrue(updated)
-        assertEquals(stamp, indexFile.lastModified())
-    }
-
-    @Test
-    fun `updateIndexIfPresent also skips a rewrite when a transform only reorders entries`() {
-        setUpRoots()
-
-        val (_, shaA) = link("payload", "a.bin")
-        AttachmentCas.replaceIndex(
-            cacheDir,
-            entries = mapOf(
-                shaA to listOf(
-                    entry("a.bin", conversationId = "conv1"),
-                    entry("a.bin", conversationId = "conv2"),
-                )
-            ),
-        )
-        val indexFile = AttachmentCas.indexFile(cacheDir)
-        val stamp = 1_000_000L
-        assertTrue(indexFile.setLastModified(stamp))
-
-        AttachmentCas.updateIndexIfPresent(cacheDir) { entries ->
-            entries.values.forEach { list -> list.reverse() }
-        }
-
-        // 顺序变化不是内容变化, 不应重写文件
-        assertEquals(stamp, indexFile.lastModified())
-    }
-
-    @Test
-    fun `needsRebuild detects missing and present index`() {
-        setUpRoots()
-        assertTrue(AttachmentCas.needsRebuild(cacheDir))
-
-        AttachmentCas.replaceIndex(cacheDir, entries = emptyMap())
-
-        assertFalse(AttachmentCas.needsRebuild(cacheDir))
+        val dir = uploadDir()
+        val (temporary, _) = AttachmentCas.writeTemporary(dir) { it.write("x".toByteArray()) }
+        assertTrue(AttachmentCas.isTemporary(temporary))
+        temporary.delete()
     }
 }
