@@ -27,7 +27,8 @@ import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.datastore.DisplaySetting
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
-import me.rerere.rikkahub.ui.components.ui.Select
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceLabel
 import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.theme.CustomColors
@@ -115,26 +116,25 @@ fun SettingPreferencesPage(vm: SettingVM = koinViewModel()) {
                         supportingContent = { Text(stringResource(R.string.setting_display_page_show_token_usage_desc)) },
                         headlineContent = { Text(stringResource(R.string.setting_display_page_show_token_usage_title)) },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_message_jumper_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_show_message_jumper_desc)) },
-                        trailingContent = {
-                            Select(
-                                options = MessageJumperMode.entries,
-                                selectedOption = messageJumperMode,
-                                onOptionSelected = { mode ->
-                                    updateDisplaySetting(
-                                        displaySetting.copy(
-                                            showMessageJumper = mode != MessageJumperMode.OFF,
-                                            messageJumperOnLeft = mode == MessageJumperMode.LEFT,
-                                        )
+                    FormItem(
+                        label = { Text(stringResource(R.string.setting_display_page_show_message_jumper_title)) },
+                        description = { Text(stringResource(R.string.setting_display_page_show_message_jumper_desc)) },
+                    ) {
+                        ConnectedChoiceButtons(
+                            options = MessageJumperMode.entries,
+                            selected = messageJumperMode,
+                            onSelect = { mode ->
+                                updateDisplaySetting(
+                                    displaySetting.copy(
+                                        showMessageJumper = mode != MessageJumperMode.OFF,
+                                        messageJumperOnLeft = mode == MessageJumperMode.LEFT,
                                     )
-                                },
-                                optionToString = { stringResource(it.labelRes) },
-                                fitToOptions = true,
-                            )
-                        },
-                    )
+                                )
+                            },
+                        ) { mode, selected ->
+                            ConnectedChoiceLabel(text = stringResource(mode.labelRes), selected = selected)
+                        }
+                    }
                     item(
                         onClick = { navController.navigate(Screen.SettingTheme) },
                         headlineContent = { Text(stringResource(R.string.setting_page_theme_setting)) },

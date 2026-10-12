@@ -66,6 +66,9 @@ import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.ArrowRight01
 import me.rerere.hugeicons.stroke.Delete02
 import me.rerere.hugeicons.stroke.FileImport
+import me.rerere.hugeicons.stroke.Moon02
+import me.rerere.hugeicons.stroke.SmartPhone01
+import me.rerere.hugeicons.stroke.Sun01
 import me.rerere.hugeicons.stroke.View
 import me.rerere.hugeicons.stroke.ViewOff
 import me.rerere.rikkahub.BuildConfig
@@ -81,7 +84,10 @@ import me.rerere.rikkahub.data.files.FileUtils
 import me.rerere.rikkahub.data.network.toProxyOrNull
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CardGroupValue
 import me.rerere.rikkahub.ui.components.ui.CompactNumberField
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceLabel
 import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.ui.components.RikkaConfirmDialog
@@ -383,29 +389,28 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                         supportingContent = { Text(stringResource(R.string.setting_display_page_parse_mid_think_desc)) },
                         headlineContent = { Text(stringResource(R.string.setting_display_page_parse_mid_think_title)) },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_notification_message_generated)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_notification_message_generated_desc)) },
-                        trailingContent = {
-                            Select(
-                                options = NotificationMode.entries,
-                                selectedOption = notificationMode,
-                                onOptionSelected = { mode ->
-                                    if (mode != NotificationMode.OFF && !permissionState.allPermissionsGranted) {
-                                        permissionState.requestPermissions()
-                                    }
-                                    updateDisplaySetting(
-                                        displaySetting.copy(
-                                            enableNotificationOnMessageGeneration = mode != NotificationMode.OFF,
-                                            enableLiveUpdateNotification = mode == NotificationMode.REALTIME,
-                                        )
+                    FormItem(
+                        label = { Text(stringResource(R.string.setting_display_page_notification_message_generated)) },
+                        description = { Text(stringResource(R.string.setting_display_page_notification_message_generated_desc)) },
+                    ) {
+                        ConnectedChoiceButtons(
+                            options = NotificationMode.entries,
+                            selected = notificationMode,
+                            onSelect = { mode ->
+                                if (mode != NotificationMode.OFF && !permissionState.allPermissionsGranted) {
+                                    permissionState.requestPermissions()
+                                }
+                                updateDisplaySetting(
+                                    displaySetting.copy(
+                                        enableNotificationOnMessageGeneration = mode != NotificationMode.OFF,
+                                        enableLiveUpdateNotification = mode == NotificationMode.REALTIME,
                                     )
-                                },
-                                optionToString = { stringResource(it.labelRes) },
-                                fitToOptions = true,
-                            )
-                        },
-                    )
+                                )
+                            },
+                        ) { mode, selected ->
+                            ConnectedChoiceLabel(text = stringResource(mode.labelRes), selected = selected)
+                        }
+                    }
                     item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_volume_key_scroll_title)) },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_volume_key_scroll_desc)) },
@@ -485,32 +490,32 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                     modifier = Modifier.padding(horizontal = 8.dp),
                     title = { Text(stringResource(R.string.setting_page_interface_settings)) },
                 ) {
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_enable_blur_effect_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_enable_blur_effect_desc)) },
-                        trailingContent = {
-                            Select(
-                                options = listOf(null, BackgroundEffectType.BLUR, BackgroundEffectType.GLASS),
-                                selectedOption = displaySetting.effectiveBackgroundEffectType(),
-                                onOptionSelected = { selected ->
-                                    updateDisplaySetting(
-                                        displaySetting.copy(
-                                            enableBlurEffect = selected != null,
-                                            backgroundEffectType = selected ?: BackgroundEffectType.BLUR,
-                                        )
+                    FormItem(
+                        label = { Text(stringResource(R.string.setting_display_page_enable_blur_effect_title)) },
+                        description = { Text(stringResource(R.string.setting_display_page_enable_blur_effect_desc)) },
+                    ) {
+                        ConnectedChoiceButtons(
+                            options = listOf(null, BackgroundEffectType.BLUR, BackgroundEffectType.GLASS),
+                            selected = displaySetting.effectiveBackgroundEffectType(),
+                            onSelect = { selected ->
+                                updateDisplaySetting(
+                                    displaySetting.copy(
+                                        enableBlurEffect = selected != null,
+                                        backgroundEffectType = selected ?: BackgroundEffectType.BLUR,
                                     )
+                                )
+                            },
+                        ) { selected, isSelected ->
+                            ConnectedChoiceLabel(
+                                text = when (selected) {
+                                    null -> stringResource(R.string.common_off)
+                                    BackgroundEffectType.BLUR -> stringResource(R.string.setting_display_page_background_effect_blur)
+                                    BackgroundEffectType.GLASS -> stringResource(R.string.setting_display_page_background_effect_glass)
                                 },
-                                fitToOptions = true,
-                                optionToString = { selected ->
-                                    when (selected) {
-                                        null -> stringResource(R.string.common_off)
-                                        BackgroundEffectType.BLUR -> stringResource(R.string.setting_display_page_background_effect_blur)
-                                        BackgroundEffectType.GLASS -> stringResource(R.string.setting_display_page_background_effect_glass)
-                                    }
-                                },
+                                selected = isSelected,
                             )
-                        },
-                    )
+                        }
+                    }
                     switchItem(
                         checked = displaySetting.showAssistantBubble,
                         onCheckedChange = {
@@ -519,59 +524,62 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                         supportingContent = { Text(stringResource(R.string.setting_display_page_show_assistant_bubble_desc)) },
                         headlineContent = { Text(stringResource(R.string.setting_display_page_show_assistant_bubble_title)) },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_bubble_opacity_title)) },
-                        supportingContent = {
+                    FormItem(
+                        label = {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
-                                val bubbleOpacityState = remember {
-                                    SliderState(value = displaySetting.bubbleOpacity, trackRange = 0.1f..1.0f, steps = 8)
-                                }
-                                LaunchedEffect(displaySetting.bubbleOpacity) {
-                                    if (bubbleOpacityState.value != displaySetting.bubbleOpacity) {
-                                        bubbleOpacityState.value = displaySetting.bubbleOpacity
-                                    }
-                                }
-                                Slider(
-                                    state = bubbleOpacityState,
-                                    onValueChange = {
-                                        bubbleOpacityState.value = it
-                                        updateDisplaySetting(displaySetting.copy(bubbleOpacity = it))
-                                    },
-                                    modifier = Modifier.weight(1f)
+                                Text(
+                                    text = stringResource(R.string.setting_display_page_bubble_opacity_title),
+                                    modifier = Modifier.weight(1f),
                                 )
-                                Text(text = "${(displaySetting.bubbleOpacity * 100).roundToInt()}%")
+                                CardGroupValue("${(displaySetting.bubbleOpacity * 100).roundToInt()}%")
+                            }
+                        },
+                    ) {
+                        val bubbleOpacityState = remember {
+                            SliderState(value = displaySetting.bubbleOpacity, trackRange = 0.1f..1.0f, steps = 8)
+                        }
+                        LaunchedEffect(displaySetting.bubbleOpacity) {
+                            if (bubbleOpacityState.value != displaySetting.bubbleOpacity) {
+                                bubbleOpacityState.value = displaySetting.bubbleOpacity
                             }
                         }
-                    )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_thinking_content_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_show_thinking_content_desc)) },
-                        trailingContent = {
-                            val thinkingMode = when {
-                                !displaySetting.showThinkingContent -> ThinkingDisplayMode.COLLAPSED
-                                displaySetting.showThinkingContentPreview -> ThinkingDisplayMode.PREVIEW
-                                else -> ThinkingDisplayMode.EXPANDED
-                            }
-                            Select(
-                                options = ThinkingDisplayMode.entries,
-                                selectedOption = thinkingMode,
-                                onOptionSelected = { mode ->
-                                    val newSetting = when (mode) {
-                                        ThinkingDisplayMode.COLLAPSED -> displaySetting.copy(showThinkingContent = false)
-                                        ThinkingDisplayMode.PREVIEW -> displaySetting.copy(showThinkingContent = true, showThinkingContentPreview = true)
-                                        ThinkingDisplayMode.EXPANDED -> displaySetting.copy(showThinkingContent = true, showThinkingContentPreview = false)
-                                    }
-                                    updateDisplaySetting(newSetting)
-                                },
-                                optionToString = { stringResource(it.labelRes) },
-                                fitToOptions = true,
-                            )
-                        },
-                    )
+                        Slider(
+                            state = bubbleOpacityState,
+                            onValueChange = {
+                                bubbleOpacityState.value = it
+                                updateDisplaySetting(displaySetting.copy(bubbleOpacity = it))
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                    FormItem(
+                        label = { Text(stringResource(R.string.setting_display_page_show_thinking_content_title)) },
+                        description = { Text(stringResource(R.string.setting_display_page_show_thinking_content_desc)) },
+                    ) {
+                        val thinkingMode = when {
+                            !displaySetting.showThinkingContent -> ThinkingDisplayMode.COLLAPSED
+                            displaySetting.showThinkingContentPreview -> ThinkingDisplayMode.PREVIEW
+                            else -> ThinkingDisplayMode.EXPANDED
+                        }
+                        ConnectedChoiceButtons(
+                            options = ThinkingDisplayMode.entries,
+                            selected = thinkingMode,
+                            onSelect = { mode ->
+                                val newSetting = when (mode) {
+                                    ThinkingDisplayMode.COLLAPSED -> displaySetting.copy(showThinkingContent = false)
+                                    ThinkingDisplayMode.PREVIEW -> displaySetting.copy(showThinkingContent = true, showThinkingContentPreview = true)
+                                    ThinkingDisplayMode.EXPANDED -> displaySetting.copy(showThinkingContent = true, showThinkingContentPreview = false)
+                                }
+                                updateDisplaySetting(newSetting)
+                            },
+                        ) { mode, selected ->
+                            ConnectedChoiceLabel(text = stringResource(mode.labelRes), selected = selected)
+                        }
+                    }
                     switchItem(
                         checked = displaySetting.autoCloseThinking,
                         onCheckedChange = {
@@ -605,38 +613,28 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                             )
                         },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_page_color_mode)) },
-                        supportingContent = {
-                            Text(
-                                when (colorMode) {
+                    FormItem(
+                        label = { Text(stringResource(R.string.setting_page_color_mode)) },
+                    ) {
+                        ConnectedChoiceButtons(
+                            options = ColorMode.entries,
+                            selected = colorMode,
+                            onSelect = { colorMode = it },
+                        ) { mode, selected ->
+                            ConnectedChoiceLabel(
+                                text = when (mode) {
                                     ColorMode.SYSTEM -> stringResource(R.string.setting_page_color_mode_system)
                                     ColorMode.LIGHT -> stringResource(R.string.setting_page_color_mode_light)
                                     ColorMode.DARK -> stringResource(R.string.setting_page_color_mode_dark)
-                                }
-                            )
-                        },
-                        trailingContent = {
-                            Select(
-                                options = ColorMode.entries,
-                                selectedOption = colorMode,
-                                onOptionSelected = { colorMode = it },
-                                optionToString = {
-                                    when (it) {
-                                        ColorMode.SYSTEM -> stringResource(R.string.setting_page_color_mode_system)
-                                        ColorMode.LIGHT -> stringResource(R.string.setting_page_color_mode_light)
-                                        ColorMode.DARK -> stringResource(R.string.setting_page_color_mode_dark)
-                                    }
                                 },
-                                fitToOptions = true,
+                                selected = selected,
+                                icon = mode.icon(),
                             )
-                        },
-                    )
-                    item(
-                        headlineContent = {
-                            Text(stringResource(R.string.setting_display_page_screen_corner_adaptation_title))
-                        },
-                        supportingContent = {
+                        }
+                    }
+                    FormItem(
+                        label = { Text(stringResource(R.string.setting_display_page_screen_corner_adaptation_title)) },
+                        description = {
                             val cornerRadiusDp = rememberScreenCornerRadiusDp()
                             Text(
                                 buildString {
@@ -665,40 +663,39 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                                 }
                             )
                         },
-                        trailingContent = {
-                            val cornerRadiusDp = rememberScreenCornerRadiusDp()
-                            val canAdapt =
-                                cornerRadiusDp != null &&
-                                    cornerRadiusDp > MIN_TRUSTED_CORNER_RADIUS_DP
-                            LaunchedEffect(canAdapt, displaySetting.screenCornerAdaptation) {
-                                if (!canAdapt &&
-                                    displaySetting.screenCornerAdaptation == ScreenCornerAdaptation.ALL
-                                ) {
-                                    updateDisplaySetting(
-                                        displaySetting.copy(
-                                            screenCornerAdaptation = ScreenCornerAdaptation.DISABLED
-                                        )
+                    ) {
+                        val cornerRadiusDp = rememberScreenCornerRadiusDp()
+                        val canAdapt =
+                            cornerRadiusDp != null &&
+                                cornerRadiusDp > MIN_TRUSTED_CORNER_RADIUS_DP
+                        LaunchedEffect(canAdapt, displaySetting.screenCornerAdaptation) {
+                            if (!canAdapt &&
+                                displaySetting.screenCornerAdaptation == ScreenCornerAdaptation.ALL
+                            ) {
+                                updateDisplaySetting(
+                                    displaySetting.copy(
+                                        screenCornerAdaptation = ScreenCornerAdaptation.DISABLED
                                     )
-                                }
+                                )
                             }
-                            val options = if (canAdapt) {
-                                ScreenCornerAdaptation.entries
-                            } else {
-                                ScreenCornerAdaptation.entries.filterNot {
-                                    it == ScreenCornerAdaptation.ALL
-                                }
+                        }
+                        val options = if (canAdapt) {
+                            ScreenCornerAdaptation.entries
+                        } else {
+                            ScreenCornerAdaptation.entries.filterNot {
+                                it == ScreenCornerAdaptation.ALL
                             }
-                            Select(
-                                options = options,
-                                selectedOption = displaySetting.screenCornerAdaptation,
-                                onOptionSelected = {
-                                    updateDisplaySetting(displaySetting.copy(screenCornerAdaptation = it))
-                                },
-                                optionToString = { stringResource(it.labelRes) },
-                                fitToSelectedOption = true,
-                            )
-                        },
-                    )
+                        }
+                        ConnectedChoiceButtons(
+                            options = options,
+                            selected = displaySetting.screenCornerAdaptation,
+                            onSelect = {
+                                updateDisplaySetting(displaySetting.copy(screenCornerAdaptation = it))
+                            },
+                        ) { mode, selected ->
+                            ConnectedChoiceLabel(text = stringResource(mode.labelRes), selected = selected)
+                        }
+                    }
                     switchItem(
                         checked = amoledDarkMode,
                         onCheckedChange = { amoledDarkMode = it },
@@ -768,36 +765,37 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                     modifier = Modifier.padding(horizontal = 8.dp),
                     title = { Text(stringResource(R.string.setting_page_font_settings)) },
                 ) {
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_chat_font_family_title)) },
-                        trailingContent = {
-                            Select(
-                                options = ChatFontFamily.entries,
-                                selectedOption = displaySetting.chatFontFamily,
-                                onOptionSelected = { family ->
-                                    if (family == ChatFontFamily.CUSTOM && displaySetting.chatCustomFontPath.isBlank()) {
-                                        fontPickerLauncher.launch(CustomFontMimeTypesUI)
-                                    } else {
-                                        updateDisplaySetting(displaySetting.copy(chatFontFamily = family))
-                                    }
-                                },
-                                fitToOptions = true,
-                                optionToString = { it.labelUI() },
-                                leading = {
-                                    Text(
-                                        text = "Aa",
-                                        fontFamily = displaySetting.chatFontFamily.toFontFamilyUI(context, customChatFontFamily),
-                                    )
-                                },
-                                optionLeading = { family ->
-                                    Text(
-                                        text = "Aa",
-                                        fontFamily = family.toFontFamilyUI(context, customChatFontFamily),
-                                    )
+                    FormItem(
+                        label = { Text(stringResource(R.string.setting_display_page_chat_font_family_title)) },
+                    ) {
+                        ConnectedChoiceButtons(
+                            options = ChatFontFamily.entries,
+                            selected = displaySetting.chatFontFamily,
+                            onSelect = { family ->
+                                if (family == ChatFontFamily.CUSTOM && displaySetting.chatCustomFontPath.isBlank()) {
+                                    fontPickerLauncher.launch(CustomFontMimeTypesUI)
+                                } else {
+                                    updateDisplaySetting(displaySetting.copy(chatFontFamily = family))
                                 }
-                            )
+                            },
+                            minHeight = 64.dp,
+                        ) { family, _ ->
+                            // 每个按钮用对应的字体写一个样字
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "Aa",
+                                    fontFamily = family.toFontFamilyUI(context, customChatFontFamily),
+                                    style = MaterialTheme.typography.titleMedium,
+                                )
+                                Text(
+                                    text = family.labelUI(),
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                            }
                         }
-                    )
+                    }
                     item(
                         // 整卡可点击：点击卡片任意位置即可导入自定义字体
                         onClick = { fontPickerLauncher.launch(CustomFontMimeTypesUI) },
@@ -850,34 +848,38 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                             Text(stringResource(R.string.setting_display_page_use_chat_font_globally_title))
                         },
                     )
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_font_size_title)) },
-                        supportingContent = {
+                    FormItem(
+                        label = {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
-                                val fontSizeRatioState = remember {
-                                    SliderState(value = displaySetting.fontSizeRatio, trackRange = 0.5f..2f, steps = 11)
-                                }
-                                LaunchedEffect(displaySetting.fontSizeRatio) {
-                                    if (fontSizeRatioState.value != displaySetting.fontSizeRatio) {
-                                        fontSizeRatioState.value = displaySetting.fontSizeRatio
-                                    }
-                                }
-                                Slider(
-                                    state = fontSizeRatioState,
-                                    onValueChange = {
-                                        fontSizeRatioState.value = it
-                                        updateDisplaySetting(displaySetting.copy(fontSizeRatio = it))
-                                    },
-                                    modifier = Modifier.weight(1f)
+                                Text(
+                                    text = stringResource(R.string.setting_display_page_font_size_title),
+                                    modifier = Modifier.weight(1f),
                                 )
-                                Text(text = "${(displaySetting.fontSizeRatio * 100).toInt()}%")
+                                CardGroupValue("${(displaySetting.fontSizeRatio * 100).toInt()}%")
+                            }
+                        },
+                    ) {
+                        val fontSizeRatioState = remember {
+                            SliderState(value = displaySetting.fontSizeRatio, trackRange = 0.5f..2f, steps = 11)
+                        }
+                        LaunchedEffect(displaySetting.fontSizeRatio) {
+                            if (fontSizeRatioState.value != displaySetting.fontSizeRatio) {
+                                fontSizeRatioState.value = displaySetting.fontSizeRatio
                             }
                         }
-                    )
+                        Slider(
+                            state = fontSizeRatioState,
+                            onValueChange = {
+                                fontSizeRatioState.value = it
+                                updateDisplaySetting(displaySetting.copy(fontSizeRatio = it))
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                     item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_default_font_weight_title)) },
                         supportingContent = { Text(stringResource(R.string.setting_display_page_default_font_weight_desc)) },
@@ -1027,35 +1029,35 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                     modifier = Modifier.padding(horizontal = 8.dp),
                     title = { Text(stringResource(R.string.setting_page_tts_settings)) },
                 ) {
-                    item(
-                        headlineContent = {
-                            Text(stringResource(R.string.setting_tts_page_default_playback_speed))
-                        },
-                        supportingContent = {
-                            Column {
-                                Text(stringResource(R.string.setting_tts_page_default_playback_speed_description))
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                ) {
-                                    Slider(
-                                        state = ttsPlaybackSpeedState,
-                                        onValueChange = {
-                                            ttsPlaybackSpeedState.value = (it * 10).roundToInt() / 10f
-                                        },
-                                        onValueChangeFinished = {
-                                            vm.updateSettings {
-                                                it.copy(defaultTTSPlaybackSpeed = ttsPlaybackSpeedState.value)
-                                            }
-                                        },
-                                        modifier = Modifier.weight(1f),
-                                    )
-                                    Text(text = "x${"%.1f".format(ttsPlaybackSpeedState.value)}")
-                                }
+                    FormItem(
+                        label = {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.setting_tts_page_default_playback_speed),
+                                    modifier = Modifier.weight(1f),
+                                )
+                                CardGroupValue("x${"%.1f".format(ttsPlaybackSpeedState.value)}")
                             }
                         },
-                    )
+                        description = { Text(stringResource(R.string.setting_tts_page_default_playback_speed_description)) },
+                    ) {
+                        Slider(
+                            state = ttsPlaybackSpeedState,
+                            onValueChange = {
+                                ttsPlaybackSpeedState.value = (it * 10).roundToInt() / 10f
+                            },
+                            onValueChangeFinished = {
+                                vm.updateSettings {
+                                    it.copy(defaultTTSPlaybackSpeed = ttsPlaybackSpeedState.value)
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
                     switchItem(
                         checked = displaySetting.ttsOnlyReadQuoted,
                         onCheckedChange = {
@@ -1327,6 +1329,12 @@ private fun deleteCustomChatFontInternal(context: Context, relativePath: String)
 internal const val APP_LANGUAGE_KEY = "app_language"
 
 private const val PROXY_TEST_URL = "https://www.google.com/generate_204"
+
+private fun ColorMode.icon(): androidx.compose.ui.graphics.vector.ImageVector = when (this) {
+    ColorMode.SYSTEM -> HugeIcons.SmartPhone01
+    ColorMode.LIGHT -> HugeIcons.Sun01
+    ColorMode.DARK -> HugeIcons.Moon02
+}
 
 private enum class NotificationMode(val labelRes: Int) {
     OFF(R.string.common_off),

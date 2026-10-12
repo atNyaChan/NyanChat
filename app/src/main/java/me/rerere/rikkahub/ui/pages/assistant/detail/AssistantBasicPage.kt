@@ -50,6 +50,7 @@ import me.rerere.rikkahub.ui.components.ai.ContextCachePicker
 import me.rerere.rikkahub.ui.components.ai.ReasoningButton
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CardGroupValue
 import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.components.ui.CompactNumberField
 import me.rerere.rikkahub.ui.components.ui.TagsInput
@@ -363,40 +364,43 @@ internal fun AssistantBasicContent(
                     val backgroundOpacity = assistant.backgroundOpacity.coerceIn(0.1f, 1f)
                     FormItem(
                         label = {
-                            Text(stringResource(R.string.assistant_page_background_opacity))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.assistant_page_background_opacity),
+                                    modifier = Modifier.weight(1f),
+                                )
+                                CardGroupValue("${(backgroundOpacity * 100).roundToInt()}%")
+                            }
                         },
                         description = {
                             Text(stringResource(R.string.assistant_page_background_opacity_desc))
-                        }
+                        },
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            val backgroundOpacityState = remember {
-                                SliderState(value = backgroundOpacity, trackRange = 0.1f..1f, steps = 8)
-                            }
-                            LaunchedEffect(backgroundOpacity) {
-                                if (backgroundOpacityState.value != backgroundOpacity) {
-                                    backgroundOpacityState.value = backgroundOpacity
-                                }
-                            }
-                            Slider(
-                                state = backgroundOpacityState,
-                                onValueChange = {
-                                    backgroundOpacityState.value = it
-                                    onUpdate(
-                                        assistant.copy(
-                                            backgroundOpacity = it.toFixed(2).toFloatOrNull()
-                                                ?.coerceIn(0.1f, 1f) ?: 1.0f
-                                        )
-                                    )
-                                },
-                                modifier = Modifier.weight(1f)
-                            )
-                            Text(text = "${(backgroundOpacity * 100).roundToInt()}%")
+                        val backgroundOpacityState = remember {
+                            SliderState(value = backgroundOpacity, trackRange = 0.1f..1f, steps = 8)
                         }
+                        LaunchedEffect(backgroundOpacity) {
+                            if (backgroundOpacityState.value != backgroundOpacity) {
+                                backgroundOpacityState.value = backgroundOpacity
+                            }
+                        }
+                        Slider(
+                            state = backgroundOpacityState,
+                            onValueChange = {
+                                backgroundOpacityState.value = it
+                                onUpdate(
+                                    assistant.copy(
+                                        backgroundOpacity = it.toFixed(2).toFloatOrNull()
+                                            ?.coerceIn(0.1f, 1f) ?: 1.0f
+                                    )
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 }
             }
