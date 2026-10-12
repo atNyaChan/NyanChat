@@ -14,6 +14,7 @@ import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.Avatar
 import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.rikkahub.data.repository.MemoryRepository
+import me.rerere.rikkahub.data.repository.memoryId
 import kotlin.uuid.Uuid
 
 class AssistantVM(
@@ -55,7 +56,7 @@ class AssistantVM(
                     assistantId = fallbackAssistantId ?: settings.assistantId,
                 )
             }
-            memoryRepository.deleteMemoriesOfAssistant(assistant.id.toString())
+            memoryRepository.deleteFilesOfAssistant(assistant.id.toString())
             conversationRepo.deleteConversationOfAssistant(assistant.id)
             val fallbackChatId = fallbackAssistantId?.let { Uuid.random() }
             onRemoved(fallbackChatId)
@@ -73,19 +74,14 @@ class AssistantVM(
         }
     }
 
-    fun getMemories(assistant: Assistant) =
-        if (assistant.useGlobalMemory) {
-            memoryRepository.getGlobalMemoriesFlow()
-        } else {
-            memoryRepository.getMemoriesOfAssistantFlow(assistant.id.toString())
-        }
+    fun getMemories(assistant: Assistant) = memoryRepository.getFilesFlow(assistant.memoryId)
 
     fun copyMemories(fromAssistantId: String, toAssistantId: String) {
         viewModelScope.launch {
-            memoryRepository.copyMemories(fromAssistantId, toAssistantId)
+            memoryRepository.copyFiles(fromAssistantId, toAssistantId)
         }
     }
 
     suspend fun hasMemories(assistantId: String): Boolean =
-        memoryRepository.getMemoriesOfAssistant(assistantId).isNotEmpty()
+        memoryRepository.getFiles(assistantId).isNotEmpty()
 }

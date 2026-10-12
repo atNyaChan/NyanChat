@@ -41,11 +41,12 @@ import java.io.File
 import me.rerere.rikkahub.data.ai.transformers.onGenerationFinish
 import me.rerere.rikkahub.data.ai.transformers.transforms
 import me.rerere.rikkahub.data.ai.transformers.visualTransforms
+import me.rerere.rikkahub.data.ai.prompts.buildMemoryPrompt
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.findProvider
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.ContextCache
-import me.rerere.rikkahub.data.model.AssistantMemory
+import me.rerere.rikkahub.data.model.MemoryFile
 import java.io.IOException
 import java.net.ConnectException
 import java.net.NoRouteToHostException
@@ -83,7 +84,7 @@ class GenerationLoop(
         messages: List<UIMessage>,
         inputTransformers: List<MessageTransformer>,
         assistant: Assistant,
-        memories: List<AssistantMemory>,
+        memories: List<MemoryFile>,
         tools: List<Tool>,
         conversationSystemPrompt: String?,
         workspaceCwd: String?,
@@ -102,7 +103,7 @@ class GenerationLoop(
 
             if (assistant.enableMemory) {
                 // 空记忆段不预留分隔换行, 否则系统提示里会攒出一堆空行
-                val memoryPrompt = buildMemoryPrompt(memories = memories)
+                val memoryPrompt = buildMemoryPrompt(memories)
                 if (memoryPrompt.isNotBlank()) {
                     appendLine()
                     append(memoryPrompt)
@@ -138,7 +139,7 @@ class GenerationLoop(
         inputTransformers: List<InputMessageTransformer> = emptyList(),
         outputTransformers: List<OutputMessageTransformer> = emptyList(),
         assistant: Assistant,
-        memories: List<AssistantMemory>? = null,
+        memories: List<MemoryFile>? = null,
         tools: List<Tool> = emptyList(),
         maxSteps: Int = 256,
         processingStatus: MutableStateFlow<String?> = MutableStateFlow(null),
@@ -394,7 +395,7 @@ class GenerationLoop(
         providerImpl: Provider<ProviderSetting>,
         provider: ProviderSetting,
         tools: List<Tool>,
-        memories: List<AssistantMemory>,
+        memories: List<MemoryFile>,
         stream: Boolean,
         processingStatus: MutableStateFlow<String?> = MutableStateFlow(null),
         conversationSystemPrompt: String? = null,

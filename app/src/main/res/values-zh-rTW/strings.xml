@@ -97,15 +97,12 @@
   <string name="assistant_page_local_tools_tts_title">文字轉語音</string>
   <string name="assistant_page_manage_memory_title">管理記憶</string>
   <string name="assistant_memory_add_title">新增記憶</string>
-  <string name="assistant_memory_edit_title">編輯記憶</string>
-  <string name="assistant_memory_delete_title">刪除記憶</string>
-  <string name="assistant_memory_content_label">記憶內容</string>
   <string name="assistant_memory_delete_confirm">確定刪除記憶 #%1$d 嗎？此操作無法復原。</string>
   <string name="assistant_page_max_tokens">最大 Token 數</string>
   <string name="assistant_page_max_tokens_desc">生成的 Token 的最大數量，留空表示無限制</string>
   <string name="assistant_page_max_tokens_no_limit">無限制</string>
   <string name="assistant_page_memory">記憶</string>
-  <string name="assistant_page_memory_desc">啟用記憶後，模型在與你對話時嘗試主動記錄你的資訊，並在後續其他對話中使用，此功能需要模型支援工具調用才能正常工作</string>
+  <string name="assistant_page_memory_desc">開啟記憶後，助手會記住你告訴它的內容，並在之後的對話中使用。對話暫停後會在背景整理記憶。此功能需要模型支援工具呼叫才能正常運作</string>
   <string name="assistant_page_message_template">聊天內容模板</string>
   <string name="assistant_page_message_template_desc">控制聊天訊息在發送給 LLM 之前的內容格式，通常不需要修改</string>
   <string name="assistant_page_message_template_missing_message">範本未包含 {{ message }}，使用者訊息將不會被傳送</string>
@@ -923,7 +920,6 @@
   <string name="setting_provider_page_model_display_name_placeholder">例如：GPT-3.5, 用於 UI 顯示</string>
   <string name="setting_provider_page_model_id">模型 ID</string>
   <string name="setting_provider_page_model_id_placeholder">例如：gpt-3.5-turbo</string>
-  <string name="setting_provider_page_model_id_not_recommended">不建議修改</string>
   <string name="setting_provider_page_model_name">模型名稱</string>
   <string name="setting_provider_page_set_price">設定價格</string>
   <string name="setting_provider_page_price_formula_without_cache">沒有快取讀取：輸入價格 × 輸入 token + 輸出價格 × 輸出 token</string>
@@ -1213,6 +1209,7 @@
   <string name="common_confirm_action">確認</string>
   <string name="common_no">不要</string>
   <string name="common_yes">好</string>
+  <string name="common_not_recommended_to_modify">不建議修改</string>
   <string name="tool_ui_edit_file">編輯：%s</string>
   <string name="tool_ui_edit_file_default">編輯檔案</string>
   <string name="tool_ui_read_file">讀取: %s</string>
@@ -1225,7 +1222,6 @@
   <string name="tool_ui_shell_exit">exit %s</string>
   <string name="tool_ui_speaking">說話：%s</string>
   <string name="tool_ui_replay">重播</string>
-  <string name="tool_ui_delete_memory">刪除記憶</string>
   <string name="workspace_page_name_duplicate">名稱已存在</string>
   <string name="setting_mcp_page_name_invalid">名稱只能包含英文字母和數字</string>
   <string name="chat_message_tool_recent_chats">查看最近聊天</string>
@@ -1617,5 +1613,33 @@
   <string name="chat_page_sort_conversations">排序方式</string>
   <string name="chat_page_sort_by_update_time">依更新時間</string>
   <string name="chat_page_sort_by_create_time">依建立時間</string>
+  <string name="memory_dreaming">做夢…</string>
+  <string name="memory_dream_title">做夢</string>
+  <string name="memory_dream_notification_text">將對話整理成記憶</string>
+  <string name="assistant_page_memory_dream_now">現在做夢</string>
+  <string name="assistant_page_memory_dream_retry">重試</string>
+  <string name="assistant_page_memory_dream_pending">有待整理的對話輪次：%d</string>
+  <string name="assistant_page_memory_dream_hint">對話暫停後會在背景整理成記憶</string>
+  <string name="assistant_page_memory_dream_failed">做夢失敗：%s</string>
+  <string name="assistant_page_memory_dream_no_changes">沒有新內容需要記住</string>
+  <string name="assistant_page_memory_dream_updated">記憶已更新：%s</string>
+  <string name="assistant_page_memory_dream_removed">移除 %s</string>
+  <string name="assistant_page_memory_updated_at">更新於 %s</string>
+  <string name="assistant_page_memory_section_you">關於你</string>
+  <string name="assistant_page_memory_section_topics">主題</string>
+  <string name="assistant_page_memory_section_areas">進行中</string>
+  <string name="assistant_page_memory_section_people">人物</string>
+  <string name="memory_file_page_path_conflict">該路徑已存在一個記憶</string>
+  <string name="memory_file_page_new">新增記憶</string>
+  <string name="memory_file_page_missing">該記憶已不存在</string>
+  <string name="memory_file_page_last_updated">最後更新</string>
+  <string name="memory_file_page_summary">摘要</string>
+  <string name="memory_file_page_aliases">別名</string>
+  <string name="memory_file_page_details">內文</string>
+  <string name="memory_file_page_path">路徑</string>
+  <string name="chat_message_tool_read_memory">讀取記憶</string>
+  <string name="chat_message_tool_list_memory">記憶清單</string>
+  <string name="memory_file_page_title">標題</string>
+  <string name="memory_file_page_edit_warning">盡量不要手動編輯記憶，而是在聊天中讓模型幫你記住或修改</string>
 </resources>
 

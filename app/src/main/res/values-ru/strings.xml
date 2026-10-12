@@ -97,15 +97,12 @@
   <string name="assistant_page_local_tools_tts_title">Преобразование текста в речь</string>
   <string name="assistant_page_manage_memory_title">Управление памятью</string>
   <string name="assistant_memory_add_title">Добавить воспоминание</string>
-  <string name="assistant_memory_edit_title">Изменить воспоминание</string>
-  <string name="assistant_memory_delete_title">Удалить память</string>
-  <string name="assistant_memory_content_label">Содержимое памяти</string>
   <string name="assistant_memory_delete_confirm">Удалить память #%1$d? Это действие нельзя отменить.</string>
   <string name="assistant_page_max_tokens">Макс. токенов</string>
   <string name="assistant_page_max_tokens_desc">Максимальное количество генерируемых токенов. Оставьте пустым, чтобы не ограничивать.</string>
   <string name="assistant_page_max_tokens_no_limit">Без ограничений</string>
   <string name="assistant_page_memory">Память</string>
-  <string name="assistant_page_memory_desc">Когда память включена, модель будет стараться активно записывать вашу информацию во время разговоров и использовать её в последующих беседах. Для работы этой функции модель должна поддерживать вызовы инструментов</string>
+  <string name="assistant_page_memory_desc">Когда память включена, ассистент запоминает то, что вы ему сообщаете, и использует это в последующих беседах. Когда разговор приостанавливается, память упорядочивается в фоновом режиме. Для работы этой функции модель должна поддерживать вызовы инструментов</string>
   <string name="assistant_page_message_template">Шаблон содержимого сообщения</string>
   <string name="assistant_page_message_template_desc">Управляет форматом содержимого сообщений чата перед отправкой в LLM, обычно изменять не требуется</string>
   <string name="assistant_page_message_template_missing_message">Шаблон не содержит {{ message }}, сообщения пользователя не будут отправлены</string>
@@ -923,7 +920,6 @@
   <string name="setting_provider_page_model_display_name_placeholder">например: GPT-3.5, для отображения в интерфейсе</string>
   <string name="setting_provider_page_model_id">ID модели</string>
   <string name="setting_provider_page_model_id_placeholder">например: gpt-3.5-turbo</string>
-  <string name="setting_provider_page_model_id_not_recommended">Менять не рекомендуется</string>
   <string name="setting_provider_page_model_name">Название модели</string>
   <string name="setting_provider_page_set_price">Настроить цены</string>
   <string name="setting_provider_page_price_formula_without_cache">Без чтения кэша: цена ввода × входные токены + цена вывода × выходные токены</string>
@@ -1213,6 +1209,7 @@
   <string name="common_confirm_action">Подтвердить</string>
   <string name="common_no">Нет</string>
   <string name="common_yes">Хорошо</string>
+  <string name="common_not_recommended_to_modify">Менять не рекомендуется</string>
   <string name="tool_ui_edit_file">Редактировать: %s</string>
   <string name="tool_ui_edit_file_default">Редактировать файл</string>
   <string name="tool_ui_read_file">Чтение: %s</string>
@@ -1225,7 +1222,6 @@
   <string name="tool_ui_shell_exit">exit %s</string>
   <string name="tool_ui_speaking">Говорит: %s</string>
   <string name="tool_ui_replay">Повторить</string>
-  <string name="tool_ui_delete_memory">Удалить память</string>
   <string name="workspace_page_name_duplicate">Такое имя уже существует</string>
   <string name="setting_mcp_page_name_invalid">Имя может содержать только латинские буквы и цифры</string>
   <string name="chat_message_tool_recent_chats">Посмотреть недавние чаты</string>
@@ -1617,5 +1613,33 @@
   <string name="chat_page_sort_conversations">Сортировать чаты</string>
   <string name="chat_page_sort_by_update_time">По последнему обновлению</string>
   <string name="chat_page_sort_by_create_time">По дате создания</string>
+  <string name="memory_dreaming">Обработка…</string>
+  <string name="memory_dream_title">Упорядочение</string>
+  <string name="memory_dream_notification_text">Превращаем ваши беседы в воспоминания</string>
+  <string name="assistant_page_memory_dream_now">Упорядочить сейчас</string>
+  <string name="assistant_page_memory_dream_retry">Повторить</string>
+  <string name="assistant_page_memory_dream_pending">Ожидают обработки: %d</string>
+  <string name="assistant_page_memory_dream_hint">Превращает ваши беседы в воспоминания после паузы</string>
+  <string name="assistant_page_memory_dream_failed">Не удалось обработать: %s</string>
+  <string name="assistant_page_memory_dream_no_changes">Новых воспоминаний нет</string>
+  <string name="assistant_page_memory_dream_updated">Память обновлена: %s</string>
+  <string name="assistant_page_memory_dream_removed">удалено %s</string>
+  <string name="assistant_page_memory_updated_at">Обновлено %s</string>
+  <string name="assistant_page_memory_section_you">О вас</string>
+  <string name="assistant_page_memory_section_topics">Темы</string>
+  <string name="assistant_page_memory_section_areas">Проекты</string>
+  <string name="assistant_page_memory_section_people">Люди</string>
+  <string name="memory_file_page_path_conflict">По этому пути уже существует воспоминание</string>
+  <string name="memory_file_page_new">Новое воспоминание</string>
+  <string name="memory_file_page_missing">Это воспоминание больше не существует</string>
+  <string name="memory_file_page_last_updated">Последнее обновление</string>
+  <string name="memory_file_page_summary">Краткое содержание</string>
+  <string name="memory_file_page_aliases">Другие названия</string>
+  <string name="memory_file_page_details">Содержание</string>
+  <string name="memory_file_page_path">Путь</string>
+  <string name="chat_message_tool_read_memory">Чтение памяти</string>
+  <string name="chat_message_tool_list_memory">Список воспоминаний</string>
+  <string name="memory_file_page_title">Заголовок</string>
+  <string name="memory_file_page_edit_warning">Старайтесь не редактировать воспоминания вручную. Вместо этого попросите ИИ в чате запомнить или изменить что-то за вас</string>
 </resources>
 

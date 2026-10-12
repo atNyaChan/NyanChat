@@ -97,15 +97,12 @@
   <string name="assistant_page_local_tools_tts_title">تحويل النص إلى كلام</string>
   <string name="assistant_page_manage_memory_title">إدارة الذاكرة</string>
   <string name="assistant_memory_add_title">إضافة ذاكرة</string>
-  <string name="assistant_memory_edit_title">تعديل الذاكرة</string>
-  <string name="assistant_memory_delete_title">حذف الذاكرة</string>
-  <string name="assistant_memory_content_label">محتوى الذاكرة</string>
   <string name="assistant_memory_delete_confirm">حذف الذاكرة #%1$d؟ لا يمكن التراجع عن هذا الإجراء.</string>
   <string name="assistant_page_max_tokens">الحد الأقصى لعدد Tokens</string>
   <string name="assistant_page_max_tokens_desc">الحد الأقصى لعدد Tokens المولّدة. اتركه فارغًا لعدم وجود حد.</string>
   <string name="assistant_page_max_tokens_no_limit">بلا حد</string>
   <string name="assistant_page_memory">الذاكرة</string>
-  <string name="assistant_page_memory_desc">عند تمكين الذاكرة، سيحاول النموذج تسجيل معلوماتك بنشاط أثناء المحادثات واستخدامها في المحادثات اللاحقة. تتطلب هذه الميزة دعم النموذج لاستدعاءات الأدوات لكي تعمل بشكل صحيح</string>
+  <string name="assistant_page_memory_desc">عند تمكين الذاكرة، يتذكر المساعد ما تخبره به ويستخدمه في المحادثات اللاحقة. يتم تنظيم الذكريات في الخلفية عند توقف المحادثة. تتطلب هذه الميزة دعم النموذج لاستدعاءات الأدوات لكي تعمل بشكل صحيح</string>
   <string name="assistant_page_message_template">قالب محتوى الرسالة</string>
   <string name="assistant_page_message_template_desc">يتحكم في تنسيق محتوى رسائل الدردشة قبل إرسالها إلى LLM، وعادةً لا حاجة لتعديله</string>
   <string name="assistant_page_message_template_missing_message">القالب لا يحتوي على {{ message }}، لن يتم إرسال رسائل المستخدم</string>
@@ -923,7 +920,6 @@
   <string name="setting_provider_page_model_display_name_placeholder">مثال: GPT-3.5، للعرض في واجهة المستخدم</string>
   <string name="setting_provider_page_model_id">معرّف النموذج</string>
   <string name="setting_provider_page_model_id_placeholder">مثال: gpt-3.5-turbo</string>
-  <string name="setting_provider_page_model_id_not_recommended">يُفضّل عدم التعديل</string>
   <string name="setting_provider_page_model_name">اسم النموذج</string>
   <string name="setting_provider_page_set_price">تعيين الأسعار</string>
   <string name="setting_provider_page_price_formula_without_cache">بدون قراءات من الذاكرة المؤقتة: سعر الإدخال × رموز الإدخال + سعر الإخراج × رموز الإخراج</string>
@@ -1213,6 +1209,7 @@
   <string name="common_confirm_action">تأكيد</string>
   <string name="common_no">لا</string>
   <string name="common_yes">حسنًا</string>
+  <string name="common_not_recommended_to_modify">يُفضّل عدم التعديل</string>
   <string name="tool_ui_edit_file">تعديل: %s</string>
   <string name="tool_ui_edit_file_default">تعديل ملف</string>
   <string name="tool_ui_read_file">قراءة: %s</string>
@@ -1225,7 +1222,6 @@
   <string name="tool_ui_shell_exit">خروج %s</string>
   <string name="tool_ui_speaking">جارٍ التحدث: %s</string>
   <string name="tool_ui_replay">إعادة التشغيل</string>
-  <string name="tool_ui_delete_memory">حذف الذاكرة</string>
   <string name="workspace_page_name_duplicate">الاسم موجود بالفعل</string>
   <string name="setting_mcp_page_name_invalid">يمكن أن يحتوي الاسم على أحرف إنجليزية وأرقام فقط</string>
   <string name="chat_message_tool_recent_chats">عرض المحادثات الأخيرة</string>
@@ -1617,5 +1613,33 @@
   <string name="chat_page_sort_conversations">ترتيب المحادثات</string>
   <string name="chat_page_sort_by_update_time">حسب آخر تحديث</string>
   <string name="chat_page_sort_by_create_time">حسب تاريخ الإنشاء</string>
+  <string name="memory_dreaming">جارٍ المعالجة…</string>
+  <string name="memory_dream_title">تنظيم</string>
+  <string name="memory_dream_notification_text">تحويل محادثاتك إلى ذكريات</string>
+  <string name="assistant_page_memory_dream_now">نظِّم الآن</string>
+  <string name="assistant_page_memory_dream_retry">إعادة المحاولة</string>
+  <string name="assistant_page_memory_dream_pending">جولات بانتظار المعالجة: %d</string>
+  <string name="assistant_page_memory_dream_hint">تحوّل محادثاتك إلى ذكريات عند توقفها</string>
+  <string name="assistant_page_memory_dream_failed">فشل التنظيم: %s</string>
+  <string name="assistant_page_memory_dream_no_changes">لا توجد أشياء جديدة لتذكرها</string>
+  <string name="assistant_page_memory_dream_updated">تم تحديث الذاكرة: %s</string>
+  <string name="assistant_page_memory_dream_removed">تمت إزالة %s</string>
+  <string name="assistant_page_memory_updated_at">تم التحديث %s</string>
+  <string name="assistant_page_memory_section_you">عنك</string>
+  <string name="assistant_page_memory_section_topics">المواضيع</string>
+  <string name="assistant_page_memory_section_areas">المشاريع</string>
+  <string name="assistant_page_memory_section_people">الأشخاص</string>
+  <string name="memory_file_page_path_conflict">توجد ذاكرة بالفعل في هذا المسار</string>
+  <string name="memory_file_page_new">ذاكرة جديدة</string>
+  <string name="memory_file_page_missing">لم تعد هذه الذاكرة موجودة</string>
+  <string name="memory_file_page_last_updated">آخر تحديث</string>
+  <string name="memory_file_page_summary">الملخص</string>
+  <string name="memory_file_page_aliases">أسماء أخرى</string>
+  <string name="memory_file_page_details">التفاصيل</string>
+  <string name="memory_file_page_path">المسار</string>
+  <string name="chat_message_tool_read_memory">قراءة الذاكرة</string>
+  <string name="chat_message_tool_list_memory">قائمة الذكريات</string>
+  <string name="memory_file_page_title">العنوان</string>
+  <string name="memory_file_page_edit_warning">حاول ألا تعدّل الذاكرة يدويًا. بدلاً من ذلك اطلب من الذكاء الاصطناعي في الدردشة أن يتذكر أو يغيّر الأشياء عنك</string>
 </resources>
 

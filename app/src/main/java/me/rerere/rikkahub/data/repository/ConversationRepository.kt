@@ -405,6 +405,10 @@ class ConversationRepository(
     suspend fun searchMessages(request: MessageSearchRequest): List<MessageSearchResult> =
         messageFtsManager.searchCombined(request)
 
+    /** 只在 [assistantIds] 这些助手的对话里搜索 */
+    suspend fun searchMessagesOfAssistants(keyword: String, assistantIds: Set<Uuid>) =
+        messageFtsManager.searchOfAssistants(keyword, MessageSearchSort.RELEVANCE, assistantIds.map { it.toString() })
+
     /** 按 (会话, 消息节点, 消息) 定位消息, 返回搜索页同款预览数据。 */
     suspend fun getMessagePreviews(
         keys: List<MessagePreviewKey>,

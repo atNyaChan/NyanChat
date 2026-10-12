@@ -1284,7 +1284,7 @@ private fun ModelSettingsForm(
                                             },
                                             supportingText = {
                                                 if (isEdit) {
-                                                    Text(stringResource(R.string.setting_provider_page_model_id_not_recommended))
+                                                    Text(stringResource(R.string.common_not_recommended_to_modify))
                                                 }
                                             }
                                         )

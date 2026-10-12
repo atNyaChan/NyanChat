@@ -123,7 +123,16 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
         offset: Int = 0,
         assistantId: String? = null,
     ): List<MessageSearchResult> = withContext(Dispatchers.IO) {
-        searchCached(keyword, sort, mode, assistantId).drop(offset).take(limit)
+        searchCached(keyword, sort, mode, listOfNotNull(assistantId)).drop(offset).take(limit)
+    }
+
+    /** 只在给定的这些助手的对话里搜索 */
+    suspend fun searchOfAssistants(
+        keyword: String,
+        sort: MessageSearchSort = MessageSearchSort.RELEVANCE,
+        assistantIds: List<String>,
+    ): List<MessageSearchResult> = withContext(Dispatchers.IO) {
+        searchCached(keyword, sort, MessageSearchMode.FUZZY, assistantIds)
     }
 
     /**
@@ -134,7 +143,7 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
     suspend fun searchCombined(request: MessageSearchRequest): List<MessageSearchResult> =
         withContext(Dispatchers.IO) {
             if (!request.hasMessageFilter) {
-                searchCached(request.keyword, request.sort, request.mode, request.assistantId)
+                searchCached(request.keyword, request.sort, request.mode, listOfNotNull(request.assistantId))
             } else {
                 searchCombinedScan(request)
             }
@@ -144,10 +153,10 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
         keyword: String,
         sort: MessageSearchSort,
         mode: MessageSearchMode,
-        assistantId: String? = null,
+        assistantIds: List<String> = emptyList(),
     ): List<MessageSearchResult> {
         if (mode != MessageSearchMode.FUZZY) {
-            return searchExact(keyword, sort, mode, assistantId)
+            return searchExact(keyword, sort, mode, assistantIds)
         }
         val terms = keyword.split(Regex("\\s+")).filter(String::isNotEmpty)
         if (terms.isEmpty()) return emptyList()
@@ -165,10 +174,10 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
             JOIN conversationentity c ON c.id = msc.conversation_id
             LEFT JOIN conversation_folder f ON f.id = c.folder_id
             WHERE instr(lower(msc.text), lower(?)) > 0
-            ${assistantFilter(assistantId)}
+            ${assistantFilter(assistantIds)}
             ORDER BY $orderBy
             """.trimIndent(),
-            sqlArgs(terms.first(), assistantId),
+            (arrayOf(terms.first()) + assistantIds.toTypedArray()),
         )
         val matches = buildList {
             cursor.use {
@@ -406,17 +415,17 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
     private fun conversationAssistantFilter(assistantId: String?): String =
         if (assistantId != null) " AND c.assistant_id = ?" else ""
 
-    private fun assistantFilter(assistantId: String?): String =
-        if (assistantId != null) {
+    private fun assistantFilter(assistantIds: List<String>): String =
+        if (assistantIds.isEmpty()) {
+            ""
+        } else {
             """
             AND EXISTS (
                 SELECT 1 FROM conversationentity AS conversation
                 WHERE conversation.id = msc.conversation_id
-                  AND conversation.assistant_id = ?
+                  AND conversation.assistant_id IN (${assistantIds.joinToString(",") { "?" }})
             )
             """.trimIndent()
-        } else {
-            ""
         }
 
     private fun sqlArgs(vararg args: Any?): Array<Any?> = args.filterNotNull().toTypedArray()
@@ -425,7 +434,7 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
         keyword: String,
         sort: MessageSearchSort,
         mode: MessageSearchMode,
-        assistantId: String? = null,
+        assistantIds: List<String> = emptyList(),
     ): List<MessageSearchResult> {
         val titleOnly = mode == MessageSearchMode.TITLE_ONLY
         val direction = if (sort == MessageSearchSort.OLDEST_FIRST) "ASC" else "DESC"
@@ -441,11 +450,11 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
             JOIN conversationentity c ON c.id = msc.conversation_id
             LEFT JOIN conversation_folder f ON f.id = c.folder_id
             WHERE instr(${if (titleOnly) "msc.title" else "msc.text"}, ?) > 0
-            ${assistantFilter(assistantId)}
+            ${assistantFilter(assistantIds)}
             $groupBy
             ORDER BY $timeColumn $direction
             """.trimIndent(),
-            sqlArgs(keyword, assistantId),
+            (arrayOf(keyword) + assistantIds.toTypedArray()),
         )
         return buildList {
             cursor.use {

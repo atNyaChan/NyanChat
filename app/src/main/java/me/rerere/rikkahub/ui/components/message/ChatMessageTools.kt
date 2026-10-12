@@ -29,11 +29,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,7 +46,6 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.intOrNull
 import me.rerere.ai.ui.ToolApprovalState
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.hugeicons.HugeIcons
@@ -57,7 +54,7 @@ import me.rerere.hugeicons.stroke.Cancel01
 import me.rerere.hugeicons.stroke.Tick01
 import me.rerere.hugeicons.stroke.Tools
 import me.rerere.rikkahub.R
-import me.rerere.rikkahub.data.repository.MemoryRepository
+import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.ui.components.message.tools.DefaultToolPreview
 import me.rerere.rikkahub.ui.components.message.tools.ToolUIContext
 import me.rerere.rikkahub.ui.components.message.tools.ToolUIRegistry
@@ -66,7 +63,6 @@ import me.rerere.rikkahub.ui.components.ui.ChainOfThoughtScope
 import me.rerere.ui.components.DotLoading
 import me.rerere.rikkahub.ui.modifier.shimmer
 import me.rerere.rikkahub.utils.JsonInstant
-import org.koin.compose.koinInject
 
 private const val ASK_USER_TOOL_NAME = "ask_user"
 
@@ -103,6 +99,7 @@ fun ChainOfThoughtScope.ChatMessageServerToolStep(tool: UIMessagePart.ServerTool
 fun ChainOfThoughtScope.ChatMessageToolStep(
     tool: UIMessagePart.Tool,
     loading: Boolean = false,
+    assistant: Assistant? = null,
     onToolApproval: ((toolCallId: String, approved: Boolean, reason: String) -> Unit)? = null,
     onToolAnswer: ((toolCallId: String, answer: String) -> Unit)? = null,
 ) {
@@ -130,40 +127,24 @@ fun ChainOfThoughtScope.ChatMessageToolStep(
     }
     // 输出不是 JSON (例如超长被截断后只剩文本预览) 时, 定制渲染器读不到任何字段, 详情改用默认渲染展示原文
     val outputUnparsable = tool.isExecuted && outputJson == null
-    val context = remember(tool, loading) {
+    val context = remember(tool, loading, assistant) {
         ToolUIContext(
             tool = tool,
             arguments = tool.inputAsJson(),
             content = if (tool.isExecuted) outputJson ?: JsonObject(emptyMap()) else null,
             loading = loading,
+            assistant = assistant,
         )
     }
 
     var showResult by remember { mutableStateOf(false) }
     var showDenyDialog by remember { mutableStateOf(false) }
-    var showMemoryDeleteConfirm by remember { mutableStateOf(false) }
     // 打开对话时工具结果默认折叠, 点击步骤展开/查看更多
     var expanded by remember { mutableStateOf(false) }
     val isPending = tool.isPending
     val isDenied = tool.approvalState is ToolApprovalState.Denied
     val images = tool.output.filterIsInstance<UIMessagePart.Image>()
     val arguments = context.arguments.jsonObject
-    val memoryDeleteId = if (tool.toolName == "memory_tool" &&
-        arguments["action"]?.jsonPrimitive?.contentOrNull == "delete"
-    ) {
-        arguments["id"]?.jsonPrimitive?.intOrNull
-    } else {
-        null
-    }
-    val memoryRepository: MemoryRepository = koinInject()
-    val memoryToDelete by produceState<String?>(null, memoryDeleteId) {
-        value = memoryDeleteId?.let { memoryRepository.getMemory(it)?.content }
-    }
-    LaunchedEffect(isPending, memoryDeleteId) {
-        if (isPending && memoryDeleteId != null && onToolApproval != null) {
-            showMemoryDeleteConfirm = true
-        }
-    }
 
     // 摘要由注册的渲染器决定; 图片输出与拒绝原因为所有工具通用
     val hasExtraContent = renderer.hasSummary(context) || isDenied || images.isNotEmpty()
@@ -195,7 +176,7 @@ fun ChainOfThoughtScope.ChatMessageToolStep(
                 overflow = TextOverflow.Ellipsis,
             )
         },
-        extra = if (isPending && onToolApproval != null && memoryDeleteId == null) {
+        extra = if (isPending && onToolApproval != null) {
             {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -269,55 +250,6 @@ fun ChainOfThoughtScope.ChatMessageToolStep(
                 showDenyDialog = false
                 onToolApproval(tool.toolCallId, false, reason)
             }
-        )
-    }
-
-    if (showMemoryDeleteConfirm && memoryDeleteId != null && onToolApproval != null) {
-        AlertDialog(
-            containerColor = MaterialTheme.colorScheme.surface,
-            onDismissRequest = {
-                showMemoryDeleteConfirm = false
-                onToolApproval(tool.toolCallId, false, "")
-            },
-            title = { Text(stringResource(R.string.assistant_memory_delete_title)) },
-            text = {
-                Column(
-                    modifier = Modifier.verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Text(
-                        stringResource(
-                            R.string.assistant_memory_delete_confirm,
-                            memoryDeleteId,
-                        )
-                    )
-                    OutlinedTextField(
-                        value = memoryToDelete.orEmpty(),
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text(stringResource(R.string.assistant_memory_content_label)) },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showMemoryDeleteConfirm = false
-                        onToolApproval(tool.toolCallId, true, "")
-                    }
-                ) { Text(stringResource(R.string.common_delete)) }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        showMemoryDeleteConfirm = false
-                        onToolApproval(tool.toolCallId, false, "")
-                    }
-                ) {
-                    Text(stringResource(R.string.common_cancel))
-                }
-            },
         )
     }
 

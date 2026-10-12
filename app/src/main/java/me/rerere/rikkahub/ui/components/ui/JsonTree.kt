@@ -27,7 +27,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,9 +56,7 @@ import me.rerere.hugeicons.stroke.ArrowDown01
 import me.rerere.hugeicons.stroke.ArrowRight01
 import me.rerere.hugeicons.stroke.Copy01
 import me.rerere.rikkahub.R
-import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
-import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.utils.writeClipboardText
@@ -179,10 +176,8 @@ private fun PreviewStringDialog(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     if (enableMarkdown) {
-                        CompositionLocalProvider(LocalSettings provides Settings()) {
-                            SelectionContainer {
-                                MarkdownBlock(content)
-                            }
+                        SelectionContainer {
+                            MarkdownBlock(content)
                         }
                     } else {
                         BasicTextField(

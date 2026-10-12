@@ -1,37 +1,30 @@
 package me.rerere.rikkahub.ui.pages.assistant.detail
 
+import android.text.format.DateUtils
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Add01
-import me.rerere.hugeicons.stroke.Delete01
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -41,17 +34,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.Screen
+import me.rerere.rikkahub.data.ai.MemoryConsolidationStatus
 import me.rerere.rikkahub.data.model.Assistant
-import me.rerere.rikkahub.data.model.AssistantMemory
+import me.rerere.rikkahub.data.model.MemoryFile
+import me.rerere.rikkahub.data.model.groupByDirectory
+import me.rerere.rikkahub.data.model.memoryTitleOf
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ui.AppLoadingIndicator
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.switchItem
-import me.rerere.ui.components.RikkaConfirmDialog
-import me.rerere.rikkahub.ui.hooks.EditStateContent
-import me.rerere.rikkahub.ui.hooks.useEditState
+import me.rerere.rikkahub.ui.context.LocalNavController
+import me.rerere.rikkahub.ui.pages.memory.resultText
 import me.rerere.rikkahub.ui.theme.CustomColors
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun AssistantMemoryPage(id: String) {
@@ -62,6 +61,8 @@ fun AssistantMemoryPage(id: String) {
     )
     val assistant by vm.assistant.collectAsStateWithLifecycle()
     val memories by vm.memories.collectAsStateWithLifecycle()
+    val consolidation by vm.memoryConsolidation.collectAsStateWithLifecycle()
+    val navController = LocalNavController.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
@@ -84,10 +85,10 @@ fun AssistantMemoryPage(id: String) {
             innerPadding = innerPadding,
             assistant = assistant,
             memories = memories,
+            consolidation = consolidation,
+            onOrganizeMemory = { vm.organizeMemory() },
             onUpdateAssistant = { vm.update(it) },
-            onDeleteMemory = { vm.deleteMemory(it) },
-            onAddMemory = { vm.addMemory(it) },
-            onUpdateMemory = { vm.updateMemory(it) }
+            onOpenMemory = { path -> navController.navigate(Screen.MemoryFile(vm.memoryId, path)) },
         )
     }
 }
@@ -96,72 +97,14 @@ fun AssistantMemoryPage(id: String) {
 private fun AssistantMemoryContent(
     innerPadding: PaddingValues,
     assistant: Assistant,
-    memories: List<AssistantMemory>,
+    memories: List<MemoryFile>,
+    consolidation: MemoryConsolidationStatus,
+    onOrganizeMemory: () -> Unit,
     onUpdateAssistant: (Assistant) -> Unit,
-    onAddMemory: (AssistantMemory) -> Unit,
-    onUpdateMemory: (AssistantMemory) -> Unit,
-    onDeleteMemory: (AssistantMemory) -> Unit,
+    // path 为 null 时新建
+    onOpenMemory: (path: String?) -> Unit,
 ) {
-    val memoryDialogState = useEditState<AssistantMemory> {
-        if (it.id == 0) {
-            onAddMemory(it)
-        } else {
-            onUpdateMemory(it)
-        }
-    }
-    var pendingDeleteMemory by remember { mutableStateOf<AssistantMemory?>(null) }
-
-    // 记忆对话框
-    memoryDialogState.EditStateContent { memory, update ->
-        AlertDialog(
-            containerColor = MaterialTheme.colorScheme.surface,
-            onDismissRequest = {
-                memoryDialogState.dismiss()
-            },
-            title = {
-                Text(
-                    stringResource(
-                        if (memory.id == 0) {
-                            R.string.assistant_memory_add_title
-                        } else {
-                            R.string.assistant_memory_edit_title
-                        }
-                    )
-                )
-            },
-            text = {
-                Column(
-                    modifier = Modifier.verticalScroll(rememberScrollState()),
-                ) {
-                    OutlinedTextField(
-                        value = memory.content,
-                        onValueChange = {
-                            update(memory.copy(content = it))
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        memoryDialogState.confirm()
-                    }
-                ) {
-                    Text(stringResource(R.string.common_save))
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        memoryDialogState.dismiss()
-                    }
-                ) {
-                    Text(stringResource(R.string.common_cancel))
-                }
-            }
-        )
-    }
+    val memoryGroups = remember(memories) { memories.groupByDirectory() }
 
     Column(
         modifier = Modifier
@@ -169,7 +112,6 @@ private fun AssistantMemoryContent(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp)
             .padding(innerPadding)
-            .padding(top = 8.dp)
             .padding(bottom = 16.dp)
             .imePadding(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -184,11 +126,7 @@ private fun AssistantMemoryContent(
                         )
                     )
                 },
-                supportingContent = {
-                    Text(
-                        text = stringResource(R.string.assistant_page_memory_desc),
-                    )
-                },
+                supportingContent = { Text(stringResource(R.string.assistant_page_memory_desc)) },
                 headlineContent = { Text(stringResource(R.string.assistant_page_memory)) },
             )
             switchItem(
@@ -201,11 +139,7 @@ private fun AssistantMemoryContent(
                     )
                 },
                 enabled = assistant.enableMemory,
-                supportingContent = {
-                    Text(
-                        text = stringResource(R.string.assistant_page_global_memory_desc),
-                    )
-                },
+                supportingContent = { Text(stringResource(R.string.assistant_page_global_memory_desc)) },
                 headlineContent = { Text(stringResource(R.string.assistant_page_global_memory)) },
             )
             switchItem(
@@ -217,130 +151,157 @@ private fun AssistantMemoryContent(
                         )
                     )
                 },
-                supportingContent = {
-                    Text(
-                        text = stringResource(R.string.assistant_page_recent_chats_desc),
-                    )
-                },
+                supportingContent = { Text(stringResource(R.string.assistant_page_recent_chats_desc)) },
                 headlineContent = { Text(stringResource(R.string.assistant_page_recent_chats)) },
             )
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.assistant_page_manage_memory_title),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier
-                    .padding(bottom = 8.dp)
-                    .align(Alignment.CenterStart)
+        if (assistant.enableMemory) {
+            MemoryConsolidationSection(
+                status = consolidation,
+                onOrganize = onOrganizeMemory,
             )
-
-            IconButton(
-                onClick = {
-                    memoryDialogState.open(AssistantMemory(0, ""))
-                },
-                modifier = Modifier.align(Alignment.CenterEnd)
-            ) {
-                Icon(
-                    imageVector = HugeIcons.Add01,
-                    contentDescription = null
-                )
-            }
         }
 
-        memories.fastForEach { memory ->
-            key(memory.id) {
-                MemoryItem(
-                    memory = memory,
-                    onEditMemory = {
-                        memoryDialogState.open(it)
-                    },
-                    onDeleteMemory = {
-                        pendingDeleteMemory = it
-                    }
-                )
+        SectionHeader(
+            title = stringResource(R.string.assistant_page_manage_memory_title),
+            action = {
+                IconButton(
+                    onClick = { onOpenMemory(null) },
+                ) {
+                    Icon(
+                        imageVector = HugeIcons.Add01,
+                        contentDescription = null,
+                    )
+                }
+            },
+        )
+
+        memoryGroups.fastForEach { (directory, files) ->
+            CardGroup(
+                title = { Text(memorySectionTitle(directory)) },
+            ) {
+                files.fastForEach { memory ->
+                    item(
+                        onClick = { onOpenMemory(memory.path) },
+                        headlineContent = {
+                            Text(
+                                text = memory.title,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        },
+                        supportingContent = {
+                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                if (memory.description.isNotEmpty()) {
+                                    Text(
+                                        text = memory.description,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                                Text(
+                                    text = stringResource(
+                                        R.string.assistant_page_memory_updated_at,
+                                        relativeTimeOf(memory.updatedAt),
+                                    ),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.outline,
+                                )
+                            }
+                        },
+                    )
+                }
             }
         }
     }
+}
 
-    RikkaConfirmDialog(
-        show = pendingDeleteMemory != null,
-        title = stringResource(R.string.assistant_memory_delete_title),
-        confirmText = stringResource(R.string.common_confirm_action),
-        dismissText = stringResource(R.string.common_cancel),
-        onConfirm = {
-            pendingDeleteMemory?.let(onDeleteMemory)
-            pendingDeleteMemory = null
-        },
-        onDismiss = { pendingDeleteMemory = null },
-        text = {
-            Column(
-                modifier = Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Text(
-                    stringResource(
-                        R.string.assistant_memory_delete_confirm,
-                        pendingDeleteMemory?.id ?: 0,
-                    )
-                )
-                OutlinedTextField(
-                    value = pendingDeleteMemory?.content.orEmpty(),
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text(stringResource(R.string.assistant_memory_content_label)) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-        }
-    )
+/** 后台整理的状态和手动入口 */
+@Composable
+private fun MemoryConsolidationSection(
+    status: MemoryConsolidationStatus,
+    onOrganize: () -> Unit,
+) {
+    val lastRun = status.lastRun
+    CardGroup {
+        item(
+            headlineContent = { Text(stringResource(R.string.memory_dream_title)) },
+            supportingContent = { Text(memoryConsolidationSummary(status)) },
+            trailingContent = {
+                if (status.running) {
+                    AppLoadingIndicator(modifier = Modifier.size(32.dp))
+                } else {
+                    FilledTonalButton(onClick = onOrganize) {
+                        Text(
+                            stringResource(
+                                if (lastRun?.error != null) {
+                                    R.string.assistant_page_memory_dream_retry
+                                } else {
+                                    R.string.assistant_page_memory_dream_now
+                                }
+                            )
+                        )
+                    }
+                }
+            },
+        )
+    }
 }
 
 @Composable
-private fun MemoryItem(
-    memory: AssistantMemory,
-    onEditMemory: (AssistantMemory) -> Unit,
-    onDeleteMemory: (AssistantMemory) -> Unit
-) {
-    Card(
-        onClick = { onEditMemory(memory) },
-        modifier = Modifier.fillMaxWidth(),
-        colors = CustomColors.cardColorsOnSurfaceContainer
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = "#${memory.id}",
-                    style = MaterialTheme.typography.titleMediumEmphasized,
-                )
-                Text(
-                    text = memory.content,
-                    maxLines = 5,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-            IconButton(
-                onClick = { onDeleteMemory(memory) }
-            ) {
-                Icon(
-                    HugeIcons.Delete01,
-                    stringResource(R.string.common_delete)
-                )
-            }
-        }
+private fun memoryConsolidationSummary(status: MemoryConsolidationStatus): String {
+    val lastRun = status.lastRun
+    return when {
+        status.running -> stringResource(R.string.memory_dreaming)
+        lastRun?.error != null -> lastRun.resultText()
+        else -> listOfNotNull(
+            status.pendingTurns.takeIf { it > 0 }?.let {
+                stringResource(R.string.assistant_page_memory_dream_pending, it)
+            },
+            lastRun?.let { "${relativeTimeOf(it.finishedAt)}: ${it.resultText()} (${durationTextOf(it.duration)})" },
+        ).joinToString("\n").ifEmpty { stringResource(R.string.assistant_page_memory_dream_hint) }
     }
 }
+
+// 按整秒显示成 "42s"、"1m 5s"
+private fun durationTextOf(duration: Duration): String = duration.inWholeSeconds.coerceAtLeast(1).seconds.toString()
+
+// 根目录下是 profile 和 preferences，都是关于用户本人的；记忆格式约定的几个目录有译名，其余的从目录名推
+@Composable
+private fun memorySectionTitle(directory: String): String = when (directory) {
+    "/" -> stringResource(R.string.assistant_page_memory_section_you)
+    "/topics" -> stringResource(R.string.assistant_page_memory_section_topics)
+    "/areas" -> stringResource(R.string.assistant_page_memory_section_areas)
+    "/people" -> stringResource(R.string.assistant_page_memory_section_people)
+    else -> memoryTitleOf(directory.removePrefix("/"))
+}
+
+@Composable
+private fun SectionHeader(
+    title: String,
+    action: @Composable () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier
+                .padding(bottom = 8.dp)
+                .align(Alignment.CenterStart)
+        )
+        Box(modifier = Modifier.align(Alignment.CenterEnd)) { action() }
+    }
+}
+
+// 一周内显示"41 分钟前"这样的相对时间，更早的显示日期
+private fun relativeTimeOf(time: Long): String = DateUtils.getRelativeTimeSpanString(
+    time,
+    System.currentTimeMillis(),
+    DateUtils.MINUTE_IN_MILLIS,
+    DateUtils.FORMAT_ABBREV_MONTH,
+).toString()

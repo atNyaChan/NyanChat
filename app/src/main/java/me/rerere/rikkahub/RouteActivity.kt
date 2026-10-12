@@ -95,6 +95,7 @@ import me.rerere.rikkahub.ui.pages.extensions.LorebookPage
 import me.rerere.rikkahub.ui.pages.extensions.ModeInjectionPage
 import me.rerere.rikkahub.ui.pages.extensions.QuickMessagesPage
 import me.rerere.rikkahub.ui.pages.extensions.skills.SkillDetailPage
+import me.rerere.rikkahub.ui.pages.memory.MemoryFilePage
 import me.rerere.rikkahub.ui.pages.extensions.skills.SkillsPage
 import me.rerere.rikkahub.ui.pages.extensions.workspace.WorkspacePage
 import me.rerere.rikkahub.ui.pages.extensions.workspace.WorkspaceDetailPage
@@ -291,45 +292,6 @@ class RouteActivity : AppCompatActivity() {
                 }
             }
         }
-        authorizationRequest?.let { request ->
-            AlertDialog(
-                containerColor = MaterialTheme.colorScheme.surface,
-                onDismissRequest = {
-                    if (!request.decision.isCompleted) request.decision.complete(false)
-                },
-                title = { Text(request.title) },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            if (!request.decision.isCompleted) request.decision.complete(true)
-                        }
-                    ) {
-                        Text(stringResource(R.string.common_confirm_action))
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = {
-                            if (!request.decision.isCompleted) request.decision.complete(false)
-                        }
-                    ) {
-                        Text(stringResource(R.string.common_cancel))
-                    }
-                },
-            )
-        }
-        interceptionRequest?.let { request ->
-            RequestInterceptionDialog(
-                request = request,
-                onCancel = {
-                    if (!request.decision.isCompleted) request.decision.complete(false)
-                },
-                onConfirm = {
-                    if (!request.decision.isCompleted) request.decision.complete(true)
-                },
-                enableCodeLigatures = settings.displaySetting.enableCodeLigatures,
-            )
-        }
         val startScreen = Screen.Chat(
             id = if (readBooleanPreference("create_new_conversation_on_start", true)) {
                 Uuid.random().toString()
@@ -360,6 +322,45 @@ class RouteActivity : AppCompatActivity() {
             ) {
                 TTSController()
                 SystemErrorDialog(toastState)
+                authorizationRequest?.let { request ->
+                    AlertDialog(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        onDismissRequest = {
+                            if (!request.decision.isCompleted) request.decision.complete(false)
+                        },
+                        title = { Text(request.title) },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    if (!request.decision.isCompleted) request.decision.complete(true)
+                                }
+                            ) {
+                                Text(stringResource(R.string.common_confirm_action))
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = {
+                                    if (!request.decision.isCompleted) request.decision.complete(false)
+                                }
+                            ) {
+                                Text(stringResource(R.string.common_cancel))
+                            }
+                        },
+                    )
+                }
+                interceptionRequest?.let { request ->
+                    RequestInterceptionDialog(
+                        request = request,
+                        onCancel = {
+                            if (!request.decision.isCompleted) request.decision.complete(false)
+                        },
+                        onConfirm = {
+                            if (!request.decision.isCompleted) request.decision.complete(true)
+                        },
+                        enableCodeLigatures = settings.displaySetting.enableCodeLigatures,
+                    )
+                }
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -442,6 +443,10 @@ class RouteActivity : AppCompatActivity() {
 
                             entry<Screen.AssistantMemory> { key ->
                                 AssistantMemoryPage(key.id)
+                            }
+
+                            entry<Screen.MemoryFile> { key ->
+                                MemoryFilePage(memoryId = key.memoryId, path = key.path)
                             }
 
                             entry<Screen.AssistantMcp> { key ->
@@ -661,6 +666,10 @@ sealed interface Screen : NavKey {
 
     @Serializable
     data class AssistantMemory(val id: String) : Screen
+
+    /** 记忆库 [memoryId] 里的一个文件，[path] 为 null 时新建 */
+    @Serializable
+    data class MemoryFile(val memoryId: String, val path: String? = null) : Screen
 
     @Serializable
     data class AssistantMcp(val id: String) : Screen

@@ -97,15 +97,12 @@
   <string name="assistant_page_local_tools_tts_title">テキスト読み上げ</string>
   <string name="assistant_page_manage_memory_title">記憶を管理</string>
   <string name="assistant_memory_add_title">記憶を追加</string>
-  <string name="assistant_memory_edit_title">記憶を編集</string>
-  <string name="assistant_memory_delete_title">記憶を削除</string>
-  <string name="assistant_memory_content_label">記憶の内容</string>
   <string name="assistant_memory_delete_confirm">記憶 #%1$d を削除しますか？この操作は元に戻せません。</string>
   <string name="assistant_page_max_tokens">最大トークン数</string>
   <string name="assistant_page_max_tokens_desc">生成されるトークンの最大数。空白にすると制限なし。</string>
   <string name="assistant_page_max_tokens_no_limit">制限なし</string>
   <string name="assistant_page_memory">記憶</string>
-  <string name="assistant_page_memory_desc">記憶を有効にすると、モデルは会話中にあなたの情報を積極的に記録し、後続の会話で使用しようとします。この機能が正常に動作するには、モデルがツール呼び出しをサポートしている必要があります</string>
+  <string name="assistant_page_memory_desc">メモリを有効にすると、アシスタントはあなたが伝えた内容を覚え、後の会話で使用します。会話が一時停止するとバックグラウンドでメモリを整理します。この機能が動作するには、モデルがツール呼び出しをサポートしている必要があります</string>
   <string name="assistant_page_message_template">チャットコンテンツテンプレート</string>
   <string name="assistant_page_message_template_desc">チャットメッセージがLLMに送信される前のコンテンツ形式を制御します。通常は変更する必要がありません</string>
   <string name="assistant_page_message_template_missing_message">テンプレートに{{ message }}が含まれていないため、ユーザーのメッセージは送信されません</string>
@@ -923,7 +920,6 @@
   <string name="setting_provider_page_model_display_name_placeholder">例：GPT-3.5、UI表示用</string>
   <string name="setting_provider_page_model_id">モデルID</string>
   <string name="setting_provider_page_model_id_placeholder">例：gpt-3.5-turbo</string>
-  <string name="setting_provider_page_model_id_not_recommended">変更しないことをお勧めします</string>
   <string name="setting_provider_page_model_name">モデル名</string>
   <string name="setting_provider_page_set_price">料金を設定</string>
   <string name="setting_provider_page_price_formula_without_cache">キャッシュ読み取りなし：入力価格 × 入力トークン + 出力価格 × 出力トークン</string>
@@ -1213,6 +1209,7 @@
   <string name="common_confirm_action">確認</string>
   <string name="common_no">いいえ</string>
   <string name="common_yes">はい</string>
+  <string name="common_not_recommended_to_modify">変更しないことをお勧めします</string>
   <string name="tool_ui_edit_file">編集: %s</string>
   <string name="tool_ui_edit_file_default">ファイル編集</string>
   <string name="tool_ui_read_file">読み取り: %s</string>
@@ -1225,7 +1222,6 @@
   <string name="tool_ui_shell_exit">exit %s</string>
   <string name="tool_ui_speaking">発話中: %s</string>
   <string name="tool_ui_replay">リプレイ</string>
-  <string name="tool_ui_delete_memory">メモリを削除</string>
   <string name="workspace_page_name_duplicate">名前は既に存在します</string>
   <string name="setting_mcp_page_name_invalid">名前は英数字のみ使用可能です。</string>
   <string name="chat_message_tool_recent_chats">最近のチャットを表示</string>
@@ -1617,5 +1613,33 @@
   <string name="chat_page_sort_conversations">チャットを並べ替え</string>
   <string name="chat_page_sort_by_update_time">最終更新順</string>
   <string name="chat_page_sort_by_create_time">作成日時順</string>
+  <string name="memory_dreaming">夢を見ています…</string>
+  <string name="memory_dream_title">夢を見る</string>
+  <string name="memory_dream_notification_text">会話をメモリに整理しています</string>
+  <string name="assistant_page_memory_dream_now">今すぐ夢を見る</string>
+  <string name="assistant_page_memory_dream_retry">再試行</string>
+  <string name="assistant_page_memory_dream_pending">整理待ちのターン：%d</string>
+  <string name="assistant_page_memory_dream_hint">会話が一時停止するとバックグラウンドでメモリに整理します</string>
+  <string name="assistant_page_memory_dream_failed">夢の整理に失敗しました：%s</string>
+  <string name="assistant_page_memory_dream_no_changes">新しく覚えることはありません</string>
+  <string name="assistant_page_memory_dream_updated">メモリを更新しました：%s</string>
+  <string name="assistant_page_memory_dream_removed">%s を削除しました</string>
+  <string name="assistant_page_memory_updated_at">%s に更新</string>
+  <string name="assistant_page_memory_section_you">あなたについて</string>
+  <string name="assistant_page_memory_section_topics">テーマ</string>
+  <string name="assistant_page_memory_section_areas">進行中</string>
+  <string name="assistant_page_memory_section_people">人物</string>
+  <string name="memory_file_page_path_conflict">このパスにはすでにメモリが存在します</string>
+  <string name="memory_file_page_new">新しいメモリ</string>
+  <string name="memory_file_page_missing">このメモリはもう存在しません</string>
+  <string name="memory_file_page_last_updated">最終更新</string>
+  <string name="memory_file_page_summary">要約</string>
+  <string name="memory_file_page_aliases">別名</string>
+  <string name="memory_file_page_details">本文</string>
+  <string name="memory_file_page_path">パス</string>
+  <string name="chat_message_tool_read_memory">メモリを読む</string>
+  <string name="chat_message_tool_list_memory">メモリの一覧</string>
+  <string name="memory_file_page_title">タイトル</string>
+  <string name="memory_file_page_edit_warning">メモリは手動で編集しないでください。代わりにチャットで AI に覚えてもらうか変更してもらいましょう</string>
 </resources>
 
