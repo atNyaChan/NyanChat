@@ -24,7 +24,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import me.rerere.rikkahub.R
-import me.rerere.rikkahub.ui.components.table.DataTable
+import me.rerere.ui.table.DataTable
 
 private class ChartTableColumn(
     val title: String,

@@ -195,9 +195,6 @@ dependencies {
     implementation(libs.koin.compose)
     implementation(libs.koin.androidx.workmanager)
 
-    // jetbrains markdown parser
-    implementation(libs.jetbrains.markdown)
-
     // okhttp
     implementation(libs.okhttp)
     implementation(libs.okhttp.sse)

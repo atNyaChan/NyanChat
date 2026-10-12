@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package me.rerere.rikkahub.ui.components.table
+package me.rerere.ui.table
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -14,7 +14,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,9 +26,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import me.rerere.rikkahub.data.datastore.Settings
-import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
-import me.rerere.rikkahub.ui.context.LocalSettings
 import kotlin.math.max
 
 /**
@@ -50,6 +46,10 @@ fun DataTable(
     columnMinWidths: List<Dp> = emptyList(),
     columnMaxWidths: List<Dp> = emptyList(),
     cellAlignment: Alignment = Alignment.CenterStart,
+    // 按列覆盖 cellAlignment，缺省的列沿用 cellAlignment
+    columnAlignments: List<Alignment> = emptyList(),
+    // 按单元格覆盖所在列的对齐方式，row 是 rows 的下标；返回 null 时沿用列的对齐方式
+    bodyCellAlignment: ((row: Int, column: Int) -> Alignment?)? = null,
     outerBorder: BorderStroke? = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     shape: Shape = MaterialTheme.shapes.small,
     stretchToFillWidth: Boolean = true,
@@ -89,7 +89,7 @@ fun DataTable(
                         padding = cellPadding,
                         border = cellBorder,
                         background = headerBackground,
-                        alignment = cellAlignment
+                        alignment = columnAlignments.getOrNull(c) ?: cellAlignment
                     ) {
                         headers.getOrNull(c)?.invoke()
                     }
@@ -107,7 +107,12 @@ fun DataTable(
             fun subcomposeBodyOnce(r: Int, c: Int): Placeable {
                 val bg = if (zebraStriping && r % 2 == 1) surfaceContainer else Color.Transparent
                 val measurables = subcompose("b1_${r}_$c") {
-                    CellBox(padding = cellPadding, border = cellBorder, background = bg, alignment = cellAlignment) {
+                    CellBox(
+                        padding = cellPadding,
+                        border = cellBorder,
+                        background = bg,
+                        alignment = bodyCellAlignment?.invoke(r, c) ?: columnAlignments.getOrNull(c) ?: cellAlignment
+                    ) {
                         rows[r].getOrNull(c)?.invoke()
                     }
                 }
@@ -172,7 +177,7 @@ fun DataTable(
                         padding = cellPadding,
                         border = cellBorder,
                         background = headerBackground,
-                        alignment = cellAlignment
+                        alignment = columnAlignments.getOrNull(c) ?: cellAlignment
                     ) {
                         headers.getOrNull(c)?.invoke()
                     }
@@ -186,7 +191,12 @@ fun DataTable(
                 val bg =
                     if (zebraStriping && r % 2 == 1) surfaceContainer else Color.Transparent
                 val measurables = subcompose("b2_${r}_$c") {
-                    CellBox(padding = cellPadding, border = cellBorder, background = bg, alignment = cellAlignment) {
+                    CellBox(
+                        padding = cellPadding,
+                        border = cellBorder,
+                        background = bg,
+                        alignment = bodyCellAlignment?.invoke(r, c) ?: columnAlignments.getOrNull(c) ?: cellAlignment
+                    ) {
                         rows[r].getOrNull(c)?.invoke()
                     }
                 }
@@ -243,39 +253,37 @@ private fun CellBox(
 @Preview(showBackground = true)
 @Composable
 private fun DataTablePreview() {
-    CompositionLocalProvider(LocalSettings provides Settings()) {
-        Surface {
-            val headers = listOf<@Composable () -> Unit>(
-                { Text("Semester", style = MaterialTheme.typography.labelLarge) },
-                { Text("Attendance", style = MaterialTheme.typography.labelLarge) },
-                { Text("Notes / Example", style = MaterialTheme.typography.labelLarge) },
-            )
+    Surface {
+        val headers = listOf<@Composable () -> Unit>(
+            { Text("Semester", style = MaterialTheme.typography.labelLarge) },
+            { Text("Attendance", style = MaterialTheme.typography.labelLarge) },
+            { Text("Notes / Example", style = MaterialTheme.typography.labelLarge) },
+        )
 
-            val rows = listOf<List<@Composable () -> Unit>>(
-                listOf<@Composable () -> Unit>(
-                    { Text("Fall 2024") },
-                    { Text("Excellent", style = MaterialTheme.typography.bodyMedium) },
-                    { Text("x² + y² = 1") },
-                ),
-                listOf(
-                    { Text("Fall 2024") },
-                    { Text("Good", style = MaterialTheme.typography.bodyMedium) },
-                    { Text("∑ k = n(n+1)/2", maxLines = 2, overflow = TextOverflow.Ellipsis) },
-                ),
-                listOf(
-                    { Text("Fall 2024") },
-                    { Text("Fair", style = MaterialTheme.typography.bodyMedium) },
-                    { MarkdownBlock("This row is taller and will align the whole row! This is a long text used to test line wrapping!  \n>haha") },
-                ),
-            )
+        val rows = listOf<List<@Composable () -> Unit>>(
+            listOf<@Composable () -> Unit>(
+                { Text("Fall 2024") },
+                { Text("Excellent", style = MaterialTheme.typography.bodyMedium) },
+                { Text("x² + y² = 1") },
+            ),
+            listOf(
+                { Text("Fall 2024") },
+                { Text("Good", style = MaterialTheme.typography.bodyMedium) },
+                { Text("∑ k = n(n+1)/2", maxLines = 2, overflow = TextOverflow.Ellipsis) },
+            ),
+            listOf(
+                { Text("Fall 2024") },
+                { Text("Fair", style = MaterialTheme.typography.bodyMedium) },
+                { Text("这行更高会把整行拉齐! 这是一个很长的文本用来测试换行功能!\nhaha") },
+            ),
+        )
 
-            DataTable(
-                headers = headers,
-                rows = rows,
-                columnMinWidths = listOf(60.dp, 100.dp, 80.dp),
-                columnMaxWidths = listOf(120.dp, 100.dp, 200.dp),
-                zebraStriping = false,
-            )
-        }
+        DataTable(
+            headers = headers,
+            rows = rows,
+            columnMinWidths = listOf(60.dp, 100.dp, 80.dp),
+            columnMaxWidths = listOf(120.dp, 100.dp, 200.dp),
+            zebraStriping = false,
+        )
     }
 }
