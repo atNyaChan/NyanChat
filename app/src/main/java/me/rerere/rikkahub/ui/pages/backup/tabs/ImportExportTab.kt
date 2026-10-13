@@ -8,15 +8,9 @@ import me.rerere.hugeicons.stroke.FileImport
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MultiChoiceSegmentedButtonRow
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,12 +28,14 @@ import kotlinx.coroutines.launch
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.WebDavConfig
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
 import me.rerere.ui.components.StickyHeader
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.pages.backup.BackupVM
 import me.rerere.rikkahub.ui.pages.backup.components.BackupDialog
 import me.rerere.rikkahub.ui.pages.backup.components.BackupItemsDescriptionText
 import me.rerere.rikkahub.ui.pages.backup.components.RestoreWarningDialog
+import me.rerere.rikkahub.ui.pages.backup.components.backupContentItem
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -216,47 +212,21 @@ fun ImportExportTab(
 
         item {
             CardGroup {
-                item(
-                    headlineContent = { Text(stringResource(R.string.backup_page_backup_items)) },
-                    supportingContent = {
-                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            MultiChoiceSegmentedButtonRow(
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                val selectableItems = listOf(
-                                    WebDavConfig.BackupItem.FILES,
-                                    WebDavConfig.BackupItem.WORKSPACE,
-                                )
-                                selectableItems.forEachIndexed { index, item ->
-                                    SegmentedButton(
-                                        shape = SegmentedButtonDefaults.itemShape(
-                                            index = index,
-                                            count = selectableItems.size
-                                        ),
-                                        onCheckedChange = { checked ->
-                                            val newItems = if (checked) {
-                                                selectedBackupItems + item
-                                            } else {
-                                                selectedBackupItems - item
-                                            }
-                                            vm.updateLocalBackupItems(newItems)
-                                        },
-                                        checked = item in selectedBackupItems
-                                    ) {
-                                        Text(
-                                            when (item) {
-                                                WebDavConfig.BackupItem.FILES -> stringResource(R.string.backup_page_files)
-                                                WebDavConfig.BackupItem.WORKSPACE -> stringResource(R.string.backup_page_workspace)
-                                                WebDavConfig.BackupItem.DATABASE -> stringResource(R.string.backup_page_chat_records)
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                            BackupItemsDescriptionText()
-                        }
-                    },
-                )
+                backupContentItem(
+                    options = listOf(
+                        WebDavConfig.BackupItem.FILES,
+                        WebDavConfig.BackupItem.WORKSPACE,
+                    ),
+                    selected = selectedBackupItems,
+                    onChange = { vm.updateLocalBackupItems(it) },
+                    description = { BackupItemsDescriptionText() },
+                ) { item ->
+                    when (item) {
+                        WebDavConfig.BackupItem.FILES -> stringResource(R.string.backup_page_files)
+                        WebDavConfig.BackupItem.WORKSPACE -> stringResource(R.string.backup_page_workspace)
+                        WebDavConfig.BackupItem.DATABASE -> stringResource(R.string.backup_page_chat_records)
+                    }
+                }
                 item(
                     onClick = if (!isExporting) {
                         {
@@ -277,7 +247,7 @@ fun ImportExportTab(
                         )
                     },
                     leadingContent = {
-                        Icon(HugeIcons.File01, null)
+                        CardGroupIcon(HugeIcons.File01)
                     },
                 )
 
@@ -301,7 +271,7 @@ fun ImportExportTab(
                         )
                     },
                     leadingContent = {
-                        Icon(HugeIcons.File01, null)
+                        CardGroupIcon(HugeIcons.File01)
                     },
                 )
 
@@ -322,7 +292,7 @@ fun ImportExportTab(
                         )
                     },
                     leadingContent = {
-                        Icon(HugeIcons.FileImport, null)
+                        CardGroupIcon(HugeIcons.FileImport)
                     },
                 )
             }
@@ -346,7 +316,7 @@ fun ImportExportTab(
                     headlineContent = { Text(stringResource(R.string.backup_page_import_from_chatbox)) },
                     supportingContent = { Text(stringResource(R.string.backup_page_import_chatbox_desc)) },
                     leadingContent = {
-                        Icon(HugeIcons.FileImport, null)
+                        CardGroupIcon(HugeIcons.FileImport)
                     },
                 )
 
@@ -360,7 +330,7 @@ fun ImportExportTab(
                     headlineContent = { Text(stringResource(R.string.backup_page_import_from_cherry_studio)) },
                     supportingContent = { Text(stringResource(R.string.backup_page_import_cherry_studio_desc)) },
                     leadingContent = {
-                        Icon(HugeIcons.FileImport, null)
+                        CardGroupIcon(HugeIcons.FileImport)
                     },
                 )
             }

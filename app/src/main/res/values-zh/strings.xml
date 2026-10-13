@@ -199,7 +199,7 @@
   <string name="backup_page_path">路径</string>
   <string name="backup_page_reminder">提醒</string>
   <string name="backup_page_reminder_dismiss">忽略</string>
-  <string name="backup_page_reminder_enable">备份提醒</string>
+  <string name="backup_page_reminder_interval">提醒间隔</string>
   <string name="backup_page_reminder_interval_days">%1$d 天</string>
   <string name="backup_page_reminder_last_days">上次备份于 %1$d 天前</string>
   <string name="backup_page_reminder_last_time">上次备份：%1$s</string>

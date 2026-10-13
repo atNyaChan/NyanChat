@@ -199,7 +199,7 @@
   <string name="backup_page_path">パス</string>
   <string name="backup_page_reminder">リマインダー</string>
   <string name="backup_page_reminder_dismiss">閉じる</string>
-  <string name="backup_page_reminder_enable">バックアップリマインダー</string>
+  <string name="backup_page_reminder_interval">リマインダー間隔</string>
   <string name="backup_page_reminder_interval_days">%1$d日</string>
   <string name="backup_page_reminder_last_days">最終バックアップは%1$d日前</string>
   <string name="backup_page_reminder_last_time">最終バックアップ: %1$s</string>

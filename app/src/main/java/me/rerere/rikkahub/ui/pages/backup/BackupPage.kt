@@ -26,10 +26,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.hugeicons.HugeIcons
-import me.rerere.hugeicons.stroke.Cloud
+import me.rerere.hugeicons.stroke.Bucket
 import me.rerere.hugeicons.stroke.CloudServer
-import me.rerere.hugeicons.stroke.HardDrive
-import me.rerere.hugeicons.stroke.Reminder
+import me.rerere.hugeicons.stroke.Notification01
+import me.rerere.hugeicons.stroke.SmartPhone01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.PagerTab
@@ -46,10 +46,10 @@ private enum class BackupTab(
     override val icon: ImageVector,
     @param:StringRes override val label: Int,
 ) : PagerTab {
-    LOCAL(HugeIcons.HardDrive, R.string.backup_page_import_export),
-    S3(HugeIcons.CloudServer, R.string.backup_page_s3_backup),
-    WEBDAV(HugeIcons.Cloud, R.string.backup_page_webdav_backup),
-    REMINDER(HugeIcons.Reminder, R.string.backup_page_reminder),
+    LOCAL(HugeIcons.SmartPhone01, R.string.backup_page_import_export),
+    S3(HugeIcons.Bucket, R.string.backup_page_s3_backup),
+    WEBDAV(HugeIcons.CloudServer, R.string.backup_page_webdav_backup),
+    REMINDER(HugeIcons.Notification01, R.string.backup_page_reminder),
 }
 
 @Composable

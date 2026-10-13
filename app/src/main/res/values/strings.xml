@@ -199,7 +199,7 @@
   <string name="backup_page_path">Path</string>
   <string name="backup_page_reminder">Reminder</string>
   <string name="backup_page_reminder_dismiss">Dismiss</string>
-  <string name="backup_page_reminder_enable">Backup Reminder</string>
+  <string name="backup_page_reminder_interval">Reminder Interval</string>
   <string name="backup_page_reminder_interval_days">%1$d days</string>
   <string name="backup_page_reminder_last_days">Last backup %1$d days ago</string>
   <string name="backup_page_reminder_last_time">Last backup: %1$s</string>

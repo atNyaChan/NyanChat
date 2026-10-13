@@ -199,7 +199,7 @@
   <string name="backup_page_path">Путь</string>
   <string name="backup_page_reminder">Напоминание</string>
   <string name="backup_page_reminder_dismiss">Отклонить</string>
-  <string name="backup_page_reminder_enable">Напоминание о резервном копировании</string>
+  <string name="backup_page_reminder_interval">Интервал напоминания</string>
   <string name="backup_page_reminder_interval_days">%1$d дн.</string>
   <string name="backup_page_reminder_last_days">Последняя резервная копия создана %1$d дн. назад</string>
   <string name="backup_page_reminder_last_time">Последнее резервное копирование: %1$s</string>

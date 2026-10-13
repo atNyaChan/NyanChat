@@ -2,11 +2,15 @@ package me.rerere.rikkahub.ui.pages.setting
 
 import android.content.Context
 import android.content.Intent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import me.rerere.hugeicons.HugeIcons
-import me.rerere.hugeicons.stroke.Image02
 import me.rerere.hugeicons.stroke.Clean
 import me.rerere.hugeicons.stroke.Delete01
+import me.rerere.hugeicons.stroke.File01
+import me.rerere.hugeicons.stroke.FileAudio
+import me.rerere.hugeicons.stroke.FileVideo
+import me.rerere.hugeicons.stroke.FolderOpen
 import me.rerere.hugeicons.stroke.Refresh01
 import me.rerere.hugeicons.stroke.Share04
 import me.rerere.hugeicons.stroke.Sorting01
@@ -15,33 +19,38 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
@@ -50,9 +59,12 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -62,9 +74,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
@@ -85,8 +102,10 @@ import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.rikkahub.ui.components.ai.CountBadge
+import me.rerere.rikkahub.ui.components.ai.ExtensionEmptyState
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.AppLoadingIndicator
+import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.ImagePreviewDialog
 import me.rerere.rikkahub.ui.components.ui.MessageSearchResultCard
 import me.rerere.rikkahub.ui.context.LocalNavController
@@ -383,18 +402,16 @@ fun SettingFilesPage(
                     onFolderSelected = { selectedFolder = it }
                 )
                 if (files.isEmpty()) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(stringResource(R.string.setting_files_page_no_files))
-                    }
+                    ExtensionEmptyState(
+                        message = stringResource(R.string.setting_files_page_no_files),
+                        icon = HugeIcons.FolderOpen,
+                    )
                 } else {
                     LazyVerticalStaggeredGrid(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(
                             start = 16.dp,
-                            top = 16.dp,
+                            top = 8.dp,
                             end = 16.dp,
                             bottom = innerPadding.calculateBottomPadding() + 16.dp,
                         ),
@@ -505,48 +522,63 @@ private fun CleanFilesSheet(
         modifier = Modifier
             .fillMaxWidth()
             .bottomSheetMaxHeight()
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = 16.dp)
             .padding(bottom = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text(
-            text = stringResource(R.string.setting_files_page_clean_title),
-            style = MaterialTheme.typography.headlineSmall,
-        )
-        Text(
-            text = stringResource(R.string.setting_files_page_clean_range_description),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 8.dp, bottom = 12.dp),
-        )
+        Column(
+            modifier = Modifier.padding(horizontal = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.setting_files_page_clean_title),
+                style = MaterialTheme.typography.headlineSmall,
+            )
+            Text(
+                text = stringResource(R.string.setting_files_page_clean_range_description),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
 
-        CleanRange.entries.forEach { range ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onRangeSelected(range) }
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                RadioButton(
-                    selected = selectedRange == range,
+        CardGroup(modifier = Modifier.selectableGroup()) {
+            CleanRange.entries.forEach { range ->
+                val selected = selectedRange == range
+                item(
                     onClick = { onRangeSelected(range) },
-                )
-                Text(
-                    text = range.days?.let {
-                        stringResource(R.string.setting_files_page_clean_older_than_days, it)
-                    } ?: stringResource(R.string.setting_files_page_clean_all),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(start = 8.dp),
+                    modifier = Modifier.semantics {
+                        role = Role.RadioButton
+                        this.selected = selected
+                    },
+                    headlineContent = {
+                        Text(
+                            range.days?.let {
+                                stringResource(R.string.setting_files_page_clean_older_than_days, it)
+                            } ?: stringResource(R.string.setting_files_page_clean_all)
+                        )
+                    },
+                    // 点整行选中，单选圈自己不接收点击
+                    leadingContent = { RadioButton(selected = selected, onClick = null) },
                 )
             }
         }
 
-        TextButton(
+        Button(
             onClick = onClean,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp),
+                .heightIn(min = 56.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.error,
+                contentColor = MaterialTheme.colorScheme.onError,
+            ),
         ) {
+            Icon(
+                imageVector = HugeIcons.Clean,
+                contentDescription = null,
+                modifier = Modifier.size(ButtonDefaults.IconSize),
+            )
+            Spacer(Modifier.width(ButtonDefaults.IconSpacing))
             Text(stringResource(R.string.setting_files_page_clean_action))
         }
     }
@@ -561,16 +593,27 @@ private fun FolderRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .horizontalScroll(rememberScrollState()),
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .selectableGroup(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         folders.forEach { folder ->
-            FilterChip(
-                selected = selectedFolder == folder,
-                onClick = { onFolderSelected(folder) },
-                label = { Text(folderDisplayName(folder)) }
-            )
+            val selected = selectedFolder == folder
+            ToggleButton(
+                checked = selected,
+                onCheckedChange = { if (!selected) onFolderSelected(folder) },
+                modifier = Modifier.semantics { role = Role.Tab },
+                colors = ToggleButtonDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                ),
+            ) {
+                Text(
+                    text = folderDisplayName(folder),
+                    maxLines = 1,
+                    softWrap = false,
+                )
+            }
         }
     }
 }
@@ -659,6 +702,9 @@ private fun UsedByMessagesDialog(
     )
 }
 
+private val FileItemCorner = 20.dp
+private val FileItemPreviewInset = 4.dp
+
 @Composable
 private fun FileItem(
     attachment: CasAttachment,
@@ -674,9 +720,10 @@ private fun FileItem(
             showImagePreview = false
         }
     }
-    Card(
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = CustomColors.listItemColors.containerColor),
+        shape = RoundedCornerShape(FileItemCorner),
+        color = CustomColors.listItemColors.containerColor,
         onClick = {
             if (attachment.mimeType.startsWith("image/")) {
                 if (fileOnDisk.isFile) showImagePreview = true
@@ -687,28 +734,41 @@ private fun FileItem(
     ) {
         Column {
             Box(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(4f / 3f)
+                    .padding(FileItemPreviewInset)
+                    // 预览图内缩一圈，圆角跟着减小，和卡片外沿保持同心
+                    .clip(RoundedCornerShape(FileItemCorner - FileItemPreviewInset))
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
             ) {
                 if (attachment.mimeType.startsWith("image/")) {
                     AsyncImage(
                         model = fileOnDisk,
                         contentDescription = attachment.displayName,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(4f / 3f),
+                        modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
                 } else {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(4f / 3f),
+                            .align(Alignment.Center)
+                            .size(64.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                shape = MaterialShapes.Cookie9Sided.toShape(),
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = HugeIcons.Image02,
+                            imageVector = when {
+                                attachment.mimeType.startsWith("video/") -> HugeIcons.FileVideo
+                                attachment.mimeType.startsWith("audio/") -> HugeIcons.FileAudio
+                                else -> HugeIcons.File01
+                            },
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            modifier = Modifier.size(28.dp),
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     }
                 }
@@ -718,7 +778,7 @@ private fun FileItem(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp)
+                    .padding(start = 12.dp, top = 12.dp, end = 12.dp, bottom = 6.dp)
             ) {
                 Text(
                     text = attachment.displayName,
