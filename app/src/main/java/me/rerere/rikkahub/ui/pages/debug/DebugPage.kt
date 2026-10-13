@@ -1,5 +1,6 @@
 package me.rerere.rikkahub.ui.pages.debug
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -24,8 +25,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SecondaryTabRow
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -40,14 +39,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dokar.sonner.ToastType
 import kotlinx.coroutines.launch
+import me.rerere.hugeicons.HugeIcons
+import me.rerere.hugeicons.stroke.DataRecovery
+import me.rerere.hugeicons.stroke.Home01
+import me.rerere.hugeicons.stroke.Palette
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.getCurrentAssistant
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ui.PagerTab
+import me.rerere.rikkahub.ui.components.ui.PagerTabs
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
@@ -61,9 +67,17 @@ import kotlin.random.Random
 import kotlin.random.nextInt
 import kotlin.uuid.Uuid
 
+private enum class DebugTab(
+    override val icon: ImageVector,
+    @param:StringRes override val label: Int,
+) : PagerTab {
+    MAIN(HugeIcons.Home01, R.string.debug_page_tab_main),
+    COLORS(HugeIcons.Palette, R.string.debug_page_tab_colors),
+    RECOVERY(HugeIcons.DataRecovery, R.string.debug_page_tab_recovery),
+}
+
 @Composable
 fun DebugPage(vm: DebugVM = koinViewModel()) {
-    val scope = rememberCoroutineScope()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -76,49 +90,17 @@ fun DebugPage(vm: DebugVM = koinViewModel()) {
             )
         }
     ) { contentPadding ->
-        val state = rememberPagerState { 3 }
+        val state = rememberPagerState { DebugTab.entries.size }
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
         ) {
-            SecondaryTabRow(
-                selectedTabIndex = state.currentPage,
-            ) {
-                Tab(
-                    selected = state.currentPage == 0,
-                    onClick = {
-                        scope.launch {
-                            state.animateScrollToPage(0)
-                        }
-                    },
-                    text = {
-                        Text("Main")
-                    }
-                )
-                Tab(
-                    selected = state.currentPage == 1,
-                    onClick = {
-                        scope.launch {
-                            state.animateScrollToPage(1)
-                        }
-                    },
-                    text = {
-                        Text("Colors")
-                    }
-                )
-                Tab(
-                    selected = state.currentPage == 2,
-                    onClick = {
-                        scope.launch {
-                            state.animateScrollToPage(2)
-                        }
-                    },
-                    text = {
-                        Text("Recovery")
-                    }
-                )
-            }
+            PagerTabs(
+                pagerState = state,
+                tabs = DebugTab.entries,
+                contentPadding = PaddingValues(horizontal = 16.dp),
+            )
             HorizontalPager(
                 state = state,
                 modifier = Modifier

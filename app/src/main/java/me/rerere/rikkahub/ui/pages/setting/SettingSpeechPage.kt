@@ -233,7 +233,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                         Text(stringResource(R.string.common_cancel))
                     }
 
-                    TextButton(
+                    Button(
                         onClick = {
                             val newProviders = settings.ttsProviders.map {
                                 if (it.id == provider.id) currentProvider else it
@@ -242,7 +242,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                             editingTTSProvider = null
                         }
                     ) {
-                        Text(stringResource(R.string.common_confirm_action))
+                        Text(stringResource(R.string.common_save))
                     }
                 }
             }
@@ -342,7 +342,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                         Text(stringResource(R.string.common_cancel))
                     }
 
-                    TextButton(
+                    Button(
                         onClick = {
                             val newProviders = settings.asrProviders.map {
                                 if (it.id == provider.id) currentProvider else it
@@ -351,7 +351,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                             editingASRProvider = null
                         }
                     ) {
-                        Text(stringResource(R.string.common_confirm_action))
+                        Text(stringResource(R.string.common_save))
                     }
                 }
             }
@@ -536,7 +536,7 @@ private fun AddTTSProviderButton(onAdd: (TTSProviderSetting) -> Unit) {
                         Text(stringResource(R.string.common_cancel))
                     }
 
-                    TextButton(
+                    Button(
                         onClick = {
                             onAdd(currentProvider)
                             showBottomSheet = false
@@ -607,7 +607,7 @@ private fun AddASRProviderButton(onAdd: (ASRProviderSetting) -> Unit) {
                         Text(stringResource(R.string.common_cancel))
                     }
 
-                    TextButton(
+                    Button(
                         onClick = {
                             onAdd(currentProvider)
                             showBottomSheet = false

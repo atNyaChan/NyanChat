@@ -33,7 +33,6 @@ import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -67,7 +66,6 @@ import me.rerere.rikkahub.ui.components.ui.TagType
 import me.rerere.rikkahub.ui.components.ui.decodeProviderSetting
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.hooks.useEditState
-import me.rerere.rikkahub.ui.pages.setting.components.ProviderConfigure
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.ImageUtils
 import me.rerere.rikkahub.utils.plus
@@ -96,6 +94,7 @@ fun SettingProviderPage(vm: SettingVM = koinViewModel()) {
         vm.updateSettings { it.copy(providers = newProviders) }
     }
     val detailEditState = useEditState<ProviderSetting> {}
+    var isNewProvider by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -114,12 +113,10 @@ fun SettingProviderPage(vm: SettingVM = koinViewModel()) {
                             )
                         }
                     }
-                    AddButton {
-                        vm.updateSettings { latest ->
-                            latest.copy(
-                                providers = listOf(it) + latest.providers
-                            )
-                        }
+                    AddButton { provider ->
+                        // 新增服务商：先不写入设置，仅在用户点击「添加」后保存，取消则不新增
+                        isNewProvider = true
+                        detailEditState.open(provider)
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -155,6 +152,7 @@ fun SettingProviderPage(vm: SettingVM = koinViewModel()) {
                                 .then(longPressReorder(isDragging)),
                             provider = provider,
                             onClick = {
+                                isNewProvider = false
                                 detailEditState.open(provider)
                             }
                         )
@@ -168,6 +166,8 @@ fun SettingProviderPage(vm: SettingVM = koinViewModel()) {
         detailEditState.currentState?.let { provider ->
             SettingProviderDetailSheet(
                 id = provider.id,
+                isNew = isNewProvider,
+                draftProvider = if (isNewProvider) provider else null,
                 onDismiss = { detailEditState.dismiss() },
             )
         }
@@ -377,53 +377,10 @@ private fun handleImageQRCode(
 
 @Composable
 private fun AddButton(onAdd: (ProviderSetting) -> Unit) {
-    val dialogState = useEditState<ProviderSetting> {
-        onAdd(it.copyProvider(name = it.name.trim()))
-    }
-
     IconButton(
-        onClick = {
-            dialogState.open(ProviderSetting.OpenAI())
-        }
+        onClick = { onAdd(ProviderSetting.OpenAI().copyProvider(Uuid.random())) }
     ) {
         Icon(HugeIcons.Add01, "Add")
-    }
-
-    if (dialogState.isEditing) {
-        AlertDialog(
-            containerColor = MaterialTheme.colorScheme.surface,
-            onDismissRequest = {
-                dialogState.dismiss()
-            },
-            title = {
-                Text(stringResource(R.string.setting_provider_page_add_provider))
-            },
-            text = {
-                dialogState.currentState?.let {
-                    ProviderConfigure(it) { newState ->
-                        dialogState.currentState = newState
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        dialogState.confirm()
-                    }
-                ) {
-                    Text(stringResource(R.string.common_add))
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        dialogState.dismiss()
-                    }
-                ) {
-                    Text(stringResource(R.string.common_cancel))
-                }
-            },
-        )
     }
 }
 

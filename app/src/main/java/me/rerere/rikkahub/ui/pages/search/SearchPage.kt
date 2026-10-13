@@ -31,6 +31,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -672,8 +673,8 @@ private fun SearchConditionsDialog(
                 TextButton(onClick = onDismiss) {
                     Text(stringResource(R.string.common_cancel))
                 }
-                TextButton(onClick = onConfirm) {
-                    Text(stringResource(R.string.common_confirm_action))
+                Button(onClick = onConfirm) {
+                    Text(stringResource(R.string.common_search))
                 }
             }
         }

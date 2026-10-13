@@ -252,6 +252,7 @@ private fun ManageButton(
 @Composable
 fun ExtensionEmptyState(
     message: String,
+    description: String? = null,
     buttonText: String? = null,
     onAction: (() -> Unit)? = null,
     icon: ImageVector = HugeIcons.Package,
@@ -279,12 +280,25 @@ fun ExtensionEmptyState(
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
             )
         }
-        Text(
-            text = message,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                text = message,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+            if (description != null) {
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
         if (buttonText != null && onAction != null) {
             FilledTonalButton(onClick = onAction) {
                 Icon(

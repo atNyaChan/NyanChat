@@ -93,6 +93,7 @@ interface CardGroupScope {
         modifier: Modifier = Modifier,
         label: @Composable () -> Unit,
         description: (@Composable () -> Unit)? = null,
+        leadingContent: (@Composable () -> Unit)? = null,
         tail: (@Composable () -> Unit)? = null,
         onClick: (() -> Unit)? = null,
         content: (@Composable ColumnScope.() -> Unit)? = null,
@@ -132,6 +133,7 @@ private class CardGroupScopeImpl : CardGroupScope {
         modifier: Modifier,
         label: @Composable () -> Unit,
         description: (@Composable () -> Unit)?,
+        leadingContent: (@Composable () -> Unit)?,
         tail: (@Composable () -> Unit)?,
         onClick: (() -> Unit)?,
         content: (@Composable ColumnScope.() -> Unit)?,
@@ -140,6 +142,7 @@ private class CardGroupScopeImpl : CardGroupScope {
             onClick = onClick,
             modifier = modifier,
             headlineContent = label,
+            leadingContent = leadingContent,
             supportingContent = if (description != null || content != null) {
                 {
                     Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {

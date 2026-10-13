@@ -15,11 +15,19 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.ArrowRight01
+import me.rerere.hugeicons.stroke.ArrowShrink
+import me.rerere.hugeicons.stroke.Heading
+import me.rerere.hugeicons.stroke.Idea01
+import me.rerere.hugeicons.stroke.ScanText
+import me.rerere.hugeicons.stroke.Translate
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.ai.prompts.DEFAULT_COMPRESS_PROMPT
 import me.rerere.rikkahub.data.ai.prompts.DEFAULT_OCR_PROMPT
@@ -27,13 +35,38 @@ import me.rerere.rikkahub.data.ai.prompts.DEFAULT_SUGGESTION_PROMPT
 import me.rerere.rikkahub.data.ai.prompts.DEFAULT_TITLE_PROMPT
 import me.rerere.rikkahub.data.ai.prompts.DEFAULT_TRANSLATION_PROMPT
 import me.rerere.rikkahub.data.datastore.Settings
+import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
 import me.rerere.rikkahub.ui.components.ui.CardGroupScope
 import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
-internal fun CardGroupScope.promptSettingItem(type: PromptType, onClick: () -> Unit) {
+private val Whitespace = Regex("\\s+")
+
+internal fun CardGroupScope.promptSettingItem(
+    type: PromptType,
+    prompt: String,
+    showIcon: Boolean = true,
+    onClick: () -> Unit,
+) {
     item(
         onClick = onClick,
+        leadingContent = if (showIcon) {
+            {
+                CardGroupIcon(
+                    icon = type.icon,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
+        } else null,
         headlineContent = { Text(stringResource(type.titleRes)) },
+        supportingContent = {
+            Text(
+                // 提示词里换行很多，压成一行才看得到实际内容
+                text = remember(prompt) { prompt.trim().replace(Whitespace, " ") },
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        },
         trailingContent = { PromptArrow() },
     )
 }
@@ -127,26 +160,32 @@ private fun PromptArrow() {
 }
 
 internal enum class PromptType(
+    val icon: ImageVector,
     val titleRes: Int,
     val descriptionRes: Int,
 ) {
     TRANSLATION(
+        HugeIcons.Translate,
         R.string.setting_model_page_prompt_translation,
         R.string.setting_model_page_translate_prompt_vars,
     ),
     TITLE(
+        HugeIcons.Heading,
         R.string.setting_model_page_prompt_title,
         R.string.setting_model_page_suggestion_prompt_vars,
     ),
     SUGGESTION(
+        HugeIcons.Idea01,
         R.string.setting_model_page_prompt_suggestion,
         R.string.setting_model_page_suggestion_prompt_vars,
     ),
     OCR(
+        HugeIcons.ScanText,
         R.string.setting_model_page_prompt_ocr,
         R.string.setting_model_page_ocr_prompt_vars,
     ),
     COMPRESS(
+        HugeIcons.ArrowShrink,
         R.string.setting_model_page_prompt_compress,
         R.string.setting_model_page_compress_prompt_vars,
     ),

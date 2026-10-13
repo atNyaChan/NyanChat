@@ -1,5 +1,6 @@
 package me.rerere.rikkahub.ui.pages.setting
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -42,12 +43,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -64,13 +63,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -89,6 +89,8 @@ import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.FileImport
 import me.rerere.hugeicons.stroke.McpServer
 import me.rerere.hugeicons.stroke.MessageBlocked
+import me.rerere.hugeicons.stroke.Settings03
+import me.rerere.hugeicons.stroke.Tools
 import me.rerere.hugeicons.stroke.View
 import me.rerere.hugeicons.stroke.ViewOff
 import me.rerere.rikkahub.R
@@ -100,6 +102,9 @@ import me.rerere.rikkahub.data.ai.mcp.McpTool
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
+import me.rerere.rikkahub.ui.components.ui.PagerTab
+import me.rerere.rikkahub.ui.components.ui.PagerTabs
+import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.ui.components.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.ui.components.Switch
@@ -243,7 +248,11 @@ fun SettingMcpPage(vm: SettingVM = koinViewModel()) {
             }
         }
     }
-    McpServerConfigModal(creationState)
+    McpServerConfigModal(
+        creationState,
+        confirmLabelRes = R.string.common_add,
+        titleRes = R.string.setting_mcp_page_add_title,
+    )
     McpServerConfigModal(
         state = editState,
         onDelete = { config ->
@@ -418,14 +427,23 @@ private fun McpServerItem(
     }
 }
 
+private enum class McpConfigTab(
+    override val icon: ImageVector,
+    @param:StringRes override val label: Int,
+) : PagerTab {
+    BASIC(HugeIcons.Settings03, R.string.setting_mcp_page_basic_settings),
+    TOOLS(HugeIcons.Tools, R.string.setting_mcp_page_tools),
+}
+
 @Composable
 private fun McpServerConfigModal(
     state: EditState<McpServerConfig>,
     onDelete: ((McpServerConfig) -> Unit)? = null,
+    confirmLabelRes: Int = R.string.common_save,
+    titleRes: Int = R.string.setting_mcp_page_edit_title,
 ) {
     state.EditStateContent { config, updateValue ->
-        val pagerState = rememberPagerState { 2 }
-        val scope = rememberCoroutineScope()
+        val pagerState = rememberPagerState { McpConfigTab.entries.size }
         var showDeleteConfirm by remember { mutableStateOf(false) }
         ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {
@@ -440,33 +458,21 @@ private fun McpServerConfigModal(
                     .padding(horizontal = 8.dp).padding(bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                SecondaryTabRow(
-                    selectedTabIndex = pagerState.currentPage,
-                    containerColor = Color.Transparent
-                ) {
-                    Tab(
-                        selected = pagerState.currentPage == 0,
-                        onClick = {
-                            scope.launch {
-                                pagerState.animateScrollToPage(0)
-                            }
-                        },
-                        text = {
-                            Text(stringResource(R.string.setting_mcp_page_basic_settings))
-                        }
-                    )
-                    Tab(
-                        selected = pagerState.currentPage == 1,
-                        onClick = {
-                            scope.launch {
-                                pagerState.animateScrollToPage(1)
-                            }
-                        },
-                        text = {
-                            Text(stringResource(R.string.setting_mcp_page_tools))
-                        }
-                    )
-                }
+                // 与编辑模型抽屉同款的居中标题（内容左右 8dp，再补 16dp 共 24dp）
+                Text(
+                    text = stringResource(titleRes),
+                    style = MaterialTheme.typography.titleLarge,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                )
+                PagerTabs(
+                    pagerState = pagerState,
+                    tabs = McpConfigTab.entries,
+                    // 抽屉内容左右只有 8dp，再补 8dp 让页签按钮离边缘共 16dp
+                    contentPadding = PaddingValues(horizontal = 8.dp),
+                )
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier
@@ -499,14 +505,14 @@ private fun McpServerConfigModal(
                     TextButton(onClick = state::dismiss) {
                         Text(stringResource(R.string.common_cancel))
                     }
-                    TextButton(
+                    Button(
                         onClick = {
                             if (config.commonOptions.name.isNotBlank() && isValidMcpName(config.commonOptions.name)) {
                                 state.confirm()
                             }
                         }
                     ) {
-                        Text(stringResource(R.string.common_confirm_action))
+                        Text(stringResource(confirmLabelRes))
                     }
                 }
             }
@@ -541,46 +547,30 @@ private fun McpCommonOptionsConfigure(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 8.dp, vertical = 16.dp)
+            // 顶部不留白，让页签与下方卡片组的间距与“编辑模型提供商”页一致（外层 8dp）
+            .padding(start = 8.dp, end = 8.dp, bottom = 16.dp)
             .verticalScroll(rememberScrollState())
             .imePadding(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         CardGroup {
-        FormItem(
-            onClick = {
+        switchItem(
+            checked = config.commonOptions.enable,
+            onCheckedChange = { enabled ->
                 update(
                     when (config) {
                         is McpServerConfig.SseTransportServer -> config.copy(
-                            commonOptions = config.commonOptions.copy(enable = !config.commonOptions.enable)
+                            commonOptions = config.commonOptions.copy(enable = enabled)
                         )
 
                         is McpServerConfig.StreamableHTTPServer -> config.copy(
-                            commonOptions = config.commonOptions.copy(enable = !config.commonOptions.enable)
+                            commonOptions = config.commonOptions.copy(enable = enabled)
                         )
                     }
                 )
             },
-            label = {
+            headlineContent = {
                 Text(stringResource(R.string.setting_mcp_page_enable))
-            },
-            tail = {
-                Switch(
-                    checked = config.commonOptions.enable,
-                    onCheckedChange = { enabled ->
-                        update(
-                            when (config) {
-                                is McpServerConfig.SseTransportServer -> config.copy(
-                                    commonOptions = config.commonOptions.copy(enable = enabled)
-                                )
-
-                                is McpServerConfig.StreamableHTTPServer -> config.copy(
-                                    commonOptions = config.commonOptions.copy(enable = enabled)
-                                )
-                            }
-                        )
-                    }
-                )
             },
         )
 
@@ -1107,7 +1097,7 @@ private fun McpImportModal(
                         }
                     }
                 ) {
-                    Text(stringResource(R.string.setting_mcp_page_import_confirm))
+                    Text(stringResource(R.string.common_import))
                 }
             }
         }

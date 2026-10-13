@@ -104,6 +104,7 @@ import me.rerere.rikkahub.ui.components.ui.SearchFieldShape
 import me.rerere.ui.components.Tooltip
 import me.rerere.rikkahub.ui.hooks.ImeLazyListAutoScroller
 import me.rerere.rikkahub.ui.theme.ChatFontProvider
+import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.plus
 import kotlin.math.roundToInt
 import kotlin.uuid.Uuid
@@ -486,6 +487,7 @@ private fun ChatListNormal(
             ) {
                 HorizontalFloatingToolbar(
                     expanded = true,
+                    colors = CustomColors.floatingToolbarColors,
                 ) {
                     Tooltip(
                         tooltip = {

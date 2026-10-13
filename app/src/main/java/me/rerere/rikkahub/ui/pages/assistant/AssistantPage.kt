@@ -318,11 +318,11 @@ private fun AssistantCreationSheet(
                         }) {
                         Text(stringResource(R.string.common_cancel))
                     }
-                    TextButton(
+                    Button(
                         onClick = {
                             state.confirm()
                         }) {
-                        Text(stringResource(R.string.common_confirm_action))
+                        Text(stringResource(R.string.common_add))
                     }
                 }
             }

@@ -544,7 +544,11 @@ private fun CustomThemeEditSheet(
                     onClick = { onSave(currentTheme) },
                     enabled = currentTheme.name.isNotBlank()
                 ) {
-                    Text(stringResource(R.string.common_confirm_action))
+                    Text(
+                        stringResource(
+                            if (theme == null) R.string.common_add else R.string.common_save
+                        )
+                    )
                 }
             }
         }

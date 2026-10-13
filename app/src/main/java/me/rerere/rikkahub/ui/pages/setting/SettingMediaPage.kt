@@ -145,7 +145,7 @@ fun SettingMediaPage(vm: SettingVM = koinViewModel()) {
         MediaProviderSheet(
             title = stringResource(R.string.setting_media_page_edit_provider),
             initial = provider,
-            confirmText = stringResource(R.string.common_confirm_action),
+            confirmText = stringResource(R.string.common_save),
             onConfirm = { edited ->
                 vm.updateSettings { latest ->
                     latest.copy(
@@ -365,7 +365,7 @@ private fun MediaProviderSheet(
                     Text(stringResource(R.string.common_cancel))
                 }
 
-                TextButton(
+                Button(
                     onClick = {
                         // 没填模型 ID 的行不保存
                         onConfirm(

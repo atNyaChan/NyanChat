@@ -64,6 +64,7 @@ fun AssistantMcpPage(id: String) {
             Box(modifier = Modifier.padding(innerPadding)) {
                 ExtensionEmptyState(
                     message = stringResource(R.string.setting_mcp_page_no_mcp_servers_found),
+                    description = stringResource(R.string.setting_mcp_page_empty_hint),
                     buttonText = stringResource(R.string.mcp_picker_title),
                     onAction = { navController.navigate(Screen.SettingMcp) },
                     icon = HugeIcons.McpServer,

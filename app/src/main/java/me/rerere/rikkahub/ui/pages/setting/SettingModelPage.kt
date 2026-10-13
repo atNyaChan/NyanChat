@@ -21,6 +21,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -32,6 +34,11 @@ import me.rerere.ai.provider.ModelType
 import me.rerere.ai.provider.ProviderSetting
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.ArrowRight01
+import me.rerere.hugeicons.stroke.ArrowShrink
+import me.rerere.hugeicons.stroke.BubbleChat
+import me.rerere.hugeicons.stroke.ScanText
+import me.rerere.hugeicons.stroke.Translate
+import me.rerere.hugeicons.stroke.Zap
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.ui.components.ai.ModelListSheet
@@ -39,6 +46,7 @@ import me.rerere.rikkahub.ui.components.ai.ReasoningButton
 import me.rerere.rikkahub.ui.components.ai.rememberModelListState
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
 import me.rerere.rikkahub.ui.components.ui.CardGroupScope
 import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.theme.CustomColors
@@ -84,6 +92,9 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
         item {
             ModelSettingItem(
                 title = stringResource(R.string.setting_model_page_chat_model),
+                icon = HugeIcons.BubbleChat,
+                iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                iconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 description = stringResource(R.string.setting_model_page_chat_model_desc),
                 modelId = settings.chatModelId,
                 providers = settings.providers,
@@ -93,6 +104,9 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
         item {
             ModelSettingItem(
                 title = stringResource(R.string.setting_model_page_fast_model),
+                icon = HugeIcons.Zap,
+                iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                iconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 description = stringResource(R.string.setting_model_page_fast_model_desc),
                 modelId = settings.fastModelId,
                 providers = settings.providers,
@@ -105,7 +119,7 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
         }
         item {
             CardGroup {
-                promptSettingItem(PromptType.TITLE) { editingPrompt = PromptType.TITLE }
+                promptSettingItem(PromptType.TITLE, settings.titlePrompt) { editingPrompt = PromptType.TITLE }
             }
         }
         item {
@@ -118,10 +132,14 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
         item {
             ModelSettingItem(
                 title = stringResource(R.string.setting_model_page_translate_model),
+                icon = HugeIcons.Translate,
+                iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                iconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 modelId = settings.translateModeId,
                 providers = settings.providers,
                 onSelect = { vm.updateSettings { latest -> latest.copy(translateModeId = it.id) } },
                 promptType = PromptType.TRANSLATION,
+                prompt = settings.translatePrompt,
                 onEditPrompt = { editingPrompt = it },
                 beforePrompt = {
                     item(
@@ -145,20 +163,28 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
         item {
             ModelSettingItem(
                 title = stringResource(R.string.setting_model_page_ocr_model),
+                icon = HugeIcons.ScanText,
+                iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                iconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 modelId = settings.ocrModelId,
                 providers = settings.providers,
                 onSelect = { vm.updateSettings { latest -> latest.copy(ocrModelId = it.id) } },
                 promptType = PromptType.OCR,
+                prompt = settings.ocrPrompt,
                 onEditPrompt = { editingPrompt = it },
             )
         }
         item {
             ModelSettingItem(
                 title = stringResource(R.string.setting_model_page_compress_model),
+                icon = HugeIcons.ArrowShrink,
+                iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                iconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 modelId = settings.compressModelId,
                 providers = settings.providers,
                 onSelect = { vm.updateSettings { latest -> latest.copy(compressModelId = it.id) } },
                 promptType = PromptType.COMPRESS,
+                prompt = settings.compressPrompt,
                 onEditPrompt = { editingPrompt = it },
             )
         }
@@ -188,13 +214,16 @@ private fun SuggestionSettingItem(
             },
             headlineContent = { Text(stringResource(R.string.setting_model_page_enable_suggestion)) },
         )
-        promptSettingItem(PromptType.SUGGESTION) { onEditPrompt(PromptType.SUGGESTION) }
+        promptSettingItem(PromptType.SUGGESTION, settings.suggestionPrompt) { onEditPrompt(PromptType.SUGGESTION) }
     }
 }
 
 @Composable
 private fun ModelSettingItem(
     title: String,
+    icon: ImageVector,
+    iconContainerColor: Color,
+    iconContentColor: Color,
     description: String? = null,
     modelId: Uuid?,
     providers: List<ProviderSetting>,
@@ -202,6 +231,7 @@ private fun ModelSettingItem(
     reasoningLevel: ReasoningLevel? = null,
     onUpdateReasoningLevel: ((ReasoningLevel) -> Unit)? = null,
     promptType: PromptType? = null,
+    prompt: String = "",
     onEditPrompt: (PromptType) -> Unit = {},
     beforePrompt: CardGroupScope.() -> Unit = {},
 ) {
@@ -216,6 +246,13 @@ private fun ModelSettingItem(
             item(
                 onClick = { state.open() },
                 headlineContent = { Text(title) },
+                leadingContent = {
+                    CardGroupIcon(
+                        icon = icon,
+                        containerColor = iconContainerColor,
+                        contentColor = iconContentColor,
+                    )
+                },
                 trailingContent = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -250,7 +287,7 @@ private fun ModelSettingItem(
             }
             beforePrompt()
             if (promptType != null) {
-                promptSettingItem(promptType) { onEditPrompt(promptType) }
+                promptSettingItem(promptType, prompt, showIcon = false) { onEditPrompt(promptType) }
             }
         }
         if (description != null) {

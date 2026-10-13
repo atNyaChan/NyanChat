@@ -103,6 +103,7 @@ fun ExtensionSelector(
                     } else {
                         ExtensionEmptyState(
                             message = stringResource(R.string.extension_selector_quick_messages_empty),
+                            description = stringResource(R.string.extension_selector_quick_messages_empty_desc),
                             buttonText = manageText,
                             onAction = onNavigateToQuickMessages,
                             icon = tab.icon,
@@ -129,6 +130,7 @@ fun ExtensionSelector(
                     } else {
                         ExtensionEmptyState(
                             message = stringResource(R.string.extension_selector_mode_injections_empty),
+                            description = stringResource(R.string.extension_selector_mode_injections_empty_desc),
                             buttonText = manageText,
                             onAction = onNavigateToModeInjections,
                             icon = tab.icon,
@@ -155,6 +157,7 @@ fun ExtensionSelector(
                     } else {
                         ExtensionEmptyState(
                             message = stringResource(R.string.extension_selector_lorebooks_empty),
+                            description = stringResource(R.string.extension_selector_lorebooks_empty_desc),
                             buttonText = manageText,
                             onAction = onNavigateToLorebooks,
                             icon = tab.icon,
@@ -181,6 +184,7 @@ fun ExtensionSelector(
                     } else {
                         ExtensionEmptyState(
                             message = stringResource(R.string.extension_selector_skills_empty),
+                            description = stringResource(R.string.extension_selector_skills_empty_desc),
                             buttonText = manageText,
                             onAction = onNavigateToSkills,
                             icon = tab.icon,

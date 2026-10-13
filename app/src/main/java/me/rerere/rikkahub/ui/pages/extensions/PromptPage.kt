@@ -6,6 +6,8 @@ import me.rerere.hugeicons.stroke.Add01
 import me.rerere.hugeicons.stroke.Share01
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.Cancel01
+import me.rerere.hugeicons.stroke.MagicWand01
+import me.rerere.hugeicons.stroke.Book01
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -61,6 +63,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -80,6 +83,9 @@ import me.rerere.rikkahub.data.model.Lorebook
 import me.rerere.rikkahub.data.model.PromptInjection
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceLabel
 import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.components.ui.ExportDialog
 import me.rerere.rikkahub.ui.components.ui.FormItem
@@ -243,6 +249,7 @@ private fun ModeInjectionTab(
 
         HorizontalFloatingToolbar(
             expanded = expanded,
+            colors = CustomColors.floatingToolbarColors,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .offset(y = -ScreenOffset),
@@ -306,6 +313,20 @@ private fun ModeInjectionCard(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // 停用的条目图标褪成中性色
+                CardGroupIcon(
+                    icon = HugeIcons.MagicWand01,
+                    containerColor = if (injection.enabled) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.surfaceContainerHighest
+                    },
+                    contentColor = if (injection.enabled) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
                 Column(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -508,8 +529,8 @@ private fun ModeInjectionEditSheet(
                 TextButton(onClick = onDismiss) {
                     Text(stringResource(R.string.common_cancel))
                 }
-                TextButton(onClick = onConfirm) {
-                    Text(stringResource(R.string.common_confirm_action))
+                Button(onClick = onConfirm) {
+                    Text(stringResource(R.string.common_save))
                 }
             }
         }
@@ -586,15 +607,17 @@ private fun getPositionLabel(position: InjectionPosition): String = when (positi
 @Composable
 private fun InjectionRoleSelector(
     role: MessageRole,
-    onSelect: (MessageRole) -> Unit
+    onSelect: (MessageRole) -> Unit,
+    containerColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
 ) {
-    Select(
+    ConnectedChoiceButtons(
         options = listOf(MessageRole.USER, MessageRole.ASSISTANT),
-        selectedOption = role,
-        onOptionSelected = onSelect,
-        optionToString = { getRoleLabel(it) },
-        modifier = Modifier.fillMaxWidth()
-    )
+        selected = role,
+        onSelect = onSelect,
+        containerColor = containerColor,
+    ) { option, selected ->
+        ConnectedChoiceLabel(text = getRoleLabel(option), selected = selected)
+    }
 }
 
 @Composable
@@ -692,6 +715,7 @@ private fun LorebookTab(
 
         HorizontalFloatingToolbar(
             expanded = expanded,
+            colors = CustomColors.floatingToolbarColors,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .offset(y = -ScreenOffset),
@@ -755,6 +779,20 @@ private fun LorebookCard(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // 停用的条目图标褪成中性色
+                CardGroupIcon(
+                    icon = HugeIcons.Book01,
+                    containerColor = if (book.enabled) {
+                        MaterialTheme.colorScheme.tertiaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.surfaceContainerHighest
+                    },
+                    contentColor = if (book.enabled) {
+                        MaterialTheme.colorScheme.onTertiaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
                 Column(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -939,8 +977,8 @@ private fun LorebookEditSheet(
                 TextButton(onClick = onDismiss) {
                     Text(stringResource(R.string.common_cancel))
                 }
-                TextButton(onClick = onConfirm) {
-                    Text(stringResource(R.string.common_confirm_action))
+                Button(onClick = onConfirm) {
+                    Text(stringResource(R.string.common_save))
                 }
             }
         }
@@ -1277,7 +1315,9 @@ private fun RegexInjectionEditDialog(
                                     )
                                     InjectionRoleSelector(
                                         role = entry.role,
-                                        onSelect = { onEdit(entry.copy(role = it)) }
+                                        onSelect = { onEdit(entry.copy(role = it)) },
+                                        // 对话框底色和默认的按钮底色一样，换一个能分开的
+                                        containerColor = MaterialTheme.colorScheme.surfaceBright,
                                     )
                                 }
                             },
@@ -1330,11 +1370,11 @@ private fun RegexInjectionEditDialog(
                 TextButton(onClick = onDismiss) {
                     Text(stringResource(R.string.common_cancel))
                 }
-                TextButton(
+                Button(
                     onClick = onConfirm,
                     enabled = canSave,
                 ) {
-                    Text(stringResource(R.string.common_confirm_action))
+                    Text(stringResource(R.string.common_save))
                 }
             }
         }
