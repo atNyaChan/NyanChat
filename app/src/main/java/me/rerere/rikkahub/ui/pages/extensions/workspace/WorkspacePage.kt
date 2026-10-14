@@ -1,13 +1,13 @@
 package me.rerere.rikkahub.ui.pages.extensions.workspace
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -39,11 +39,13 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Add01
-import me.rerere.hugeicons.stroke.File02
+import me.rerere.hugeicons.stroke.FolderCode
 import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
 import androidx.compose.ui.res.stringResource
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.ui.components.ai.ExtensionEmptyState
+import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.rikkahub.ui.components.nav.BackButton
@@ -108,13 +110,19 @@ fun WorkspacePage(vm: WorkspaceVM = koinViewModel()) {
         ) {
             if (orderedWorkspaces.isEmpty()) {
                 item {
-                    EmptyWorkspaceState()
+                    Box(modifier = Modifier.fillParentMaxSize()) {
+                        ExtensionEmptyState(
+                            message = stringResource(R.string.workspace_page_empty),
+                            description = stringResource(R.string.workspace_page_empty_desc),
+                            icon = HugeIcons.FolderCode,
+                        )
+                    }
                 }
             }
 
             items(orderedWorkspaces, key = { it.id }) { workspace ->
                 ReorderableItem(reorderableState, key = workspace.id) { isDragging ->
-                    WorkspaceCard(
+                    WorkspaceItem(
                         workspace = workspace,
                         onOpen = { navController.navigate(Screen.WorkspaceDetail(workspace.id)) },
                         modifier = longPressReorder(isDragging),
@@ -140,35 +148,7 @@ fun WorkspacePage(vm: WorkspaceVM = koinViewModel()) {
 }
 
 @Composable
-private fun EmptyWorkspaceState() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Icon(
-            imageVector = HugeIcons.File02,
-            contentDescription = null,
-            modifier = Modifier.size(48.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            text = stringResource(R.string.workspace_page_empty),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            text = stringResource(R.string.workspace_page_empty_desc),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-@Composable
-private fun WorkspaceCard(
+private fun WorkspaceItem(
     workspace: WorkspaceEntity,
     onOpen: () -> Unit,
     modifier: Modifier = Modifier,
@@ -177,41 +157,32 @@ private fun WorkspaceCard(
         modifier = modifier,
         onClick = onOpen,
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, top = 8.dp, bottom = 8.dp, end = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
+            CardGroupIcon(HugeIcons.FolderCode)
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, top = 8.dp, bottom = 8.dp, end = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                    .weight(1f)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
-                Icon(
-                    imageVector = HugeIcons.File02,
-                    contentDescription = null,
-                    modifier = Modifier.size(22.dp),
-                    tint = MaterialTheme.colorScheme.primary,
+                Text(
+                    text = workspace.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Text(
-                        text = workspace.name,
-                        style = MaterialTheme.typography.titleSmallEmphasized,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Text(
-                        text = workspace.shellStatus.toShellStatusLabel(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
+                Text(
+                    text = workspace.shellStatus.toShellStatusLabel(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
         }
     }

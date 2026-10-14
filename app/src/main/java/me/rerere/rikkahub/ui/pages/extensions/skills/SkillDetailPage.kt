@@ -1,11 +1,11 @@
 package me.rerere.rikkahub.ui.pages.extensions.skills
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -26,9 +26,6 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -43,29 +40,33 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import me.rerere.rikkahub.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Add01
-import me.rerere.hugeicons.stroke.ChevronDown
-import me.rerere.hugeicons.stroke.ChevronRight
+import me.rerere.hugeicons.stroke.ArrowDown01
 import me.rerere.hugeicons.stroke.Delete01
-import me.rerere.hugeicons.stroke.FileText
+import me.rerere.hugeicons.stroke.File02
 import me.rerere.hugeicons.stroke.Folder01
 import me.rerere.hugeicons.stroke.FolderOpen
 import com.dokar.sonner.ToastType
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
+import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.ui.components.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
+import me.rerere.rikkahub.utils.fileSizeToString
 import me.rerere.rikkahub.utils.plus
 import org.koin.androidx.compose.koinViewModel
 
@@ -249,48 +250,44 @@ private fun FileItem(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    Card(
+    val deletable = !readOnly && skillFile.relativePath != "SKILL.md"
+    OutlinedItemCard(
+        modifier = Modifier.padding(vertical = 4.dp),
         onClick = onEdit,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 3.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        ),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = (16 + depth * 20).dp, end = 8.dp, top = 10.dp, bottom = 10.dp),
+                .padding(start = (16 + depth * 20).dp, end = if (deletable) 4.dp else 16.dp, top = 8.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(
-                imageVector = HugeIcons.FileText,
-                contentDescription = null,
-                modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.primary,
-            )
-            Text(
-                text = skillFile.name,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
-                ),
-                fontFamily = FontFamily.Monospace,
+            CardGroupIcon(HugeIcons.File02)
+            Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 8.dp),
-            )
-            Text(
-                text = "${skillFile.size} B",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            if (!readOnly && skillFile.relativePath != "SKILL.md") {
-                IconButton(onClick = onDelete, modifier = Modifier.size(36.dp)) {
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    text = skillFile.name,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+                    ),
+                    fontFamily = FontFamily.Monospace,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = skillFile.size.fileSizeToString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (deletable) {
+                IconButton(onClick = onDelete) {
                     Icon(
                         imageVector = HugeIcons.Delete01,
                         contentDescription = stringResource(R.string.common_delete),
-                        modifier = Modifier.size(16.dp),
                         tint = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -308,52 +305,58 @@ private fun DirItem(
     onDelete: (SkillFile) -> Unit,
 ) {
     var expanded by rememberSaveable(node.relativePath) { mutableStateOf(false) }
+    val arrowRotation by animateFloatAsState(
+        targetValue = if (expanded) 180f else 0f,
+        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+    )
 
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-    ) {
-        Column {
+    Column {
+        OutlinedItemCard(
+            modifier = Modifier.padding(vertical = 4.dp),
+            onClick = { expanded = !expanded },
+        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { expanded = !expanded }
-                    .padding(start = (16 + depth * 20).dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
+                    .padding(start = (16 + depth * 20).dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Icon(
-                    imageVector = if (expanded) HugeIcons.ChevronDown else HugeIcons.ChevronRight,
-                    contentDescription = null,
-                    modifier = Modifier.size(14.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Icon(
-                    imageVector = if (expanded) HugeIcons.FolderOpen else HugeIcons.Folder01,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.tertiary,
+                CardGroupIcon(
+                    icon = if (expanded) HugeIcons.FolderOpen else HugeIcons.Folder01,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
                 Text(
                     text = node.name,
-                    style = MaterialTheme.typography.bodyMedium.copy(
+                    style = MaterialTheme.typography.bodyLarge.copy(
                         fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
                     ),
                     fontFamily = FontFamily.Monospace,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 16.dp),
+                )
+                Icon(
+                    imageVector = HugeIcons.ArrowDown01,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(20.dp)
+                        .rotate(arrowRotation),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            AnimatedVisibility(visible = expanded) {
-                Column {
-                    FileTree(
-                        nodes = node.children,
-                        depth = depth + 1,
-                        readOnly = readOnly,
-                        onEdit = onEdit,
-                        onDelete = onDelete,
-                    )
-                }
+        }
+        AnimatedVisibility(visible = expanded) {
+            Column {
+                FileTree(
+                    nodes = node.children,
+                    depth = depth + 1,
+                    readOnly = readOnly,
+                    onEdit = onEdit,
+                    onDelete = onDelete,
+                )
             }
         }
     }

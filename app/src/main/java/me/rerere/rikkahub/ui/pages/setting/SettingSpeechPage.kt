@@ -471,7 +471,7 @@ private fun TTSProviderItem(
         targetValue = if (isSelected) {
             MaterialTheme.colorScheme.primaryContainer
         } else {
-            MaterialTheme.colorScheme.surface
+            MaterialTheme.colorScheme.surfaceContainer
         },
         animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
     )
@@ -563,7 +563,7 @@ private fun ASRProviderItem(
         targetValue = if (isSelected) {
             MaterialTheme.colorScheme.primaryContainer
         } else {
-            MaterialTheme.colorScheme.surface
+            MaterialTheme.colorScheme.surfaceContainer
         },
         animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
     )

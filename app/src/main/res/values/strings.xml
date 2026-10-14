@@ -1146,8 +1146,7 @@
   <string name="workspace_detail_install_success">Rootfs installed for workspace %1$s</string>
   <string name="workspace_detail_reinstall_rootfs">Reinstall Rootfs</string>
   <string name="workspace_detail_install_rootfs">Install Rootfs</string>
-  <string name="workspace_detail_rootfs">Rootfs</string>
-  <string name="workspace_detail_reinstall_rootfs_desc">Reinstalling Rootfs will reset this workspace\'s environment</string>
+  <string name="workspace_detail_enable_shell">Enable Shell</string>
   <string name="workspace_detail_enable_shell_desc">Allow this workspace to run a terminal environment using local Rootfs</string>
   <string name="workspace_detail_tool_approval">Tool Approval</string>
   <string name="workspace_detail_tool_approval_desc">When enabled, user confirmation is required before AI calls this tool</string>

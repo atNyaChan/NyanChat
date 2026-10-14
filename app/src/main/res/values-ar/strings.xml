@@ -1146,8 +1146,7 @@
   <string name="workspace_detail_install_success">تم تثبيت Rootfs لمساحة العمل %1$s</string>
   <string name="workspace_detail_reinstall_rootfs">إعادة تثبيت Rootfs</string>
   <string name="workspace_detail_install_rootfs">تثبيت Rootfs</string>
-  <string name="workspace_detail_rootfs">Rootfs</string>
-  <string name="workspace_detail_reinstall_rootfs_desc">ستؤدي إعادة تثبيت Rootfs إلى إعادة تعيين بيئة مساحة العمل هذه</string>
+  <string name="workspace_detail_enable_shell">تفعيل Shell</string>
   <string name="workspace_detail_enable_shell_desc">السماح لمساحة العمل هذه بتشغيل بيئة طرفية باستخدام Rootfs المحلي</string>
   <string name="workspace_detail_tool_approval">الموافقة على الأداة</string>
   <string name="workspace_detail_tool_approval_desc">عند التفعيل، يلزم تأكيد المستخدم قبل أن يستدعي الذكاء الاصطناعي هذه الأداة</string>

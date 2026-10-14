@@ -1146,8 +1146,7 @@
   <string name="workspace_detail_install_success">ワークスペース %1$s に Rootfs をインストールしました</string>
   <string name="workspace_detail_reinstall_rootfs">Rootfs 再インストール</string>
   <string name="workspace_detail_install_rootfs">Rootfs をインストール</string>
-  <string name="workspace_detail_rootfs">Rootfs</string>
-  <string name="workspace_detail_reinstall_rootfs_desc">Rootfs を再インストールすると、このワークスペースの環境はリセットされます</string>
+  <string name="workspace_detail_enable_shell">シェルを有効にする</string>
   <string name="workspace_detail_enable_shell_desc">このワークスペースでローカルのRootfsを使用したターミナル環境の実行を許可します</string>
   <string name="workspace_detail_tool_approval">ツール承認</string>
   <string name="workspace_detail_tool_approval_desc">有効にすると、AIがこのツールを呼び出す前にユーザーの確認が必要です</string>

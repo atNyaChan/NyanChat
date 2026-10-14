@@ -208,7 +208,7 @@ private fun AssistantPickerSheet(
                         modifier = Modifier
                             .animateItem(),
                         colors = CardDefaults.cardColors(
-                            containerColor = if (checked) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                            containerColor = if (checked) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainer,
                             contentColor = if (checked) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
                         ),
                     ) {

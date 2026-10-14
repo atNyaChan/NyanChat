@@ -1146,8 +1146,7 @@
   <string name="workspace_detail_install_success">已为工作区 %1$s 安装 Rootfs</string>
   <string name="workspace_detail_reinstall_rootfs">重新安装 Rootfs</string>
   <string name="workspace_detail_install_rootfs">安装 Rootfs</string>
-  <string name="workspace_detail_rootfs">Rootfs</string>
-  <string name="workspace_detail_reinstall_rootfs_desc">重新安装 Rootfs 将会重置此工作区的环境</string>
+  <string name="workspace_detail_enable_shell">启用 Shell</string>
   <string name="workspace_detail_enable_shell_desc">允许此工作区使用本地 Rootfs 运行终端环境</string>
   <string name="workspace_detail_tool_approval">工具审批</string>
   <string name="workspace_detail_tool_approval_desc">启用后，AI 调用此工具前需要用户确认</string>

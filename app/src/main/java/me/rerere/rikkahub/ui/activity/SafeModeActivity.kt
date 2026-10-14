@@ -252,7 +252,7 @@ private fun AssistantPickerSheet(
                         shape = MaterialTheme.shapes.large,
                         colors = CardDefaults.cardColors(
                             containerColor = if (checked) MaterialTheme.colorScheme.primaryContainer
-                            else MaterialTheme.colorScheme.surface,
+                            else MaterialTheme.colorScheme.surfaceContainer,
                             contentColor = if (checked) MaterialTheme.colorScheme.onPrimaryContainer
                             else MaterialTheme.colorScheme.onSurface,
                         ),

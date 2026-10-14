@@ -1146,8 +1146,7 @@
   <string name="workspace_detail_install_success">워크스페이스 %1$s에 Rootfs를 설치했습니다</string>
   <string name="workspace_detail_reinstall_rootfs">Rootfs 재설치</string>
   <string name="workspace_detail_install_rootfs">Rootfs 설치</string>
-  <string name="workspace_detail_rootfs">Rootfs</string>
-  <string name="workspace_detail_reinstall_rootfs_desc">Rootfs를 재설치하면 이 워크스페이스의 환경이 초기화됩니다</string>
+  <string name="workspace_detail_enable_shell">셸 활성화</string>
   <string name="workspace_detail_enable_shell_desc">이 워크스페이스에서 로컬 Rootfs를 사용하여 터미널 환경을 실행할 수 있도록 허용합니다.</string>
   <string name="workspace_detail_tool_approval">도구 승인</string>
   <string name="workspace_detail_tool_approval_desc">활성화되면 AI가 이 도구를 호출하기 전에 사용자 확인이 필요합니다.</string>

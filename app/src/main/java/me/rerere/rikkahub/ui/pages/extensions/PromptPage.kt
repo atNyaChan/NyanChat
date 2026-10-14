@@ -81,6 +81,7 @@ import me.rerere.rikkahub.data.export.rememberImporter
 import me.rerere.rikkahub.data.model.InjectionPosition
 import me.rerere.rikkahub.data.model.Lorebook
 import me.rerere.rikkahub.data.model.PromptInjection
+import me.rerere.rikkahub.ui.components.ai.ExtensionEmptyState
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
@@ -198,40 +199,25 @@ private fun ModeInjectionTab(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .floatingToolbarVerticalNestedScroll(
-                    expanded = expanded,
-                    onExpand = { expanded = true },
-                    onCollapse = { expanded = false }
-                ),
-            contentPadding = PaddingValues(8.dp) + PaddingValues(bottom = 128.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            state = lazyListState
-        ) {
-            if (modeInjections.isEmpty()) {
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillParentMaxHeight(0.8f)
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = stringResource(R.string.prompt_page_mode_injection_empty),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = stringResource(R.string.prompt_page_empty_hint),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                        )
-                    }
-                }
-            } else {
+        if (modeInjections.isEmpty()) {
+            ExtensionEmptyState(
+                message = stringResource(R.string.prompt_page_mode_injection_empty),
+                description = stringResource(R.string.prompt_page_empty_hint),
+                icon = HugeIcons.MagicWand01,
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .floatingToolbarVerticalNestedScroll(
+                        expanded = expanded,
+                        onExpand = { expanded = true },
+                        onCollapse = { expanded = false }
+                    ),
+                contentPadding = PaddingValues(8.dp) + PaddingValues(bottom = 128.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                state = lazyListState
+            ) {
                 items(modeInjections, key = { it.id }) { injection ->
                     ReorderableItem(
                         state = reorderableState,
@@ -664,40 +650,25 @@ private fun LorebookTab(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .floatingToolbarVerticalNestedScroll(
-                    expanded = expanded,
-                    onExpand = { expanded = true },
-                    onCollapse = { expanded = false }
-                ),
-            contentPadding = PaddingValues(8.dp) + PaddingValues(bottom = 128.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            state = lazyListState
-        ) {
-            if (lorebooks.isEmpty()) {
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillParentMaxHeight(0.8f)
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = stringResource(R.string.prompt_page_lorebook_empty),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = stringResource(R.string.prompt_page_empty_hint),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                        )
-                    }
-                }
-            } else {
+        if (lorebooks.isEmpty()) {
+            ExtensionEmptyState(
+                message = stringResource(R.string.prompt_page_lorebook_empty),
+                description = stringResource(R.string.prompt_page_empty_hint),
+                icon = HugeIcons.Book01,
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .floatingToolbarVerticalNestedScroll(
+                        expanded = expanded,
+                        onExpand = { expanded = true },
+                        onCollapse = { expanded = false }
+                    ),
+                contentPadding = PaddingValues(8.dp) + PaddingValues(bottom = 128.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                state = lazyListState
+            ) {
                 items(lorebooks, key = { it.id }) { book ->
                     ReorderableItem(
                         state = reorderableState,

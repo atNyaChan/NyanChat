@@ -229,7 +229,7 @@ private fun SearchPickerOptionRow(
             )
         } else {
             CardDefaults.outlinedCardColors(
-                containerColor = MaterialTheme.colorScheme.surface,
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
             )
         },
     ) {

@@ -2,7 +2,6 @@ package me.rerere.rikkahub.ui.pages.extensions.skills
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,13 +15,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -30,6 +27,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
@@ -42,13 +41,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.Lifecycle
@@ -69,7 +69,11 @@ import me.rerere.hugeicons.stroke.Search01
 import me.rerere.rikkahub.data.files.SkillFrontmatterParser
 import me.rerere.rikkahub.data.files.SkillMetadata
 import me.rerere.rikkahub.Screen
+import me.rerere.rikkahub.ui.components.ai.ExtensionEmptyState
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
+import me.rerere.rikkahub.ui.components.ui.Tag
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
@@ -173,36 +177,17 @@ fun SkillsPage() {
         ) {
             if (skills.isEmpty()) {
                 item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 48.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        Icon(
-                            imageVector = HugeIcons.Puzzle,
-                            contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Text(
-                            text = stringResource(R.string.skills_page_empty_title),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Text(
-                            text = stringResource(R.string.skills_page_empty_hint),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                    ExtensionEmptyState(
+                        message = stringResource(R.string.skills_page_empty_title),
+                        description = stringResource(R.string.skills_page_empty_hint),
+                        icon = HugeIcons.Puzzle,
+                    )
                 }
             }
 
             if (skills.isNotEmpty()) {
                 item(key = "search") {
-                    OutlinedTextField(
+                    TextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
                         modifier = Modifier.fillMaxWidth(),
@@ -219,6 +204,12 @@ fun SkillsPage() {
                         },
                         singleLine = true,
                         shape = SearchFieldShape,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                        ),
                     )
                 }
             }
@@ -333,42 +324,42 @@ private fun SkillCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, top = 8.dp, bottom = 8.dp, end = if (skill.builtin) 16.dp else 4.dp),
+                .padding(start = 16.dp, top = 8.dp, bottom = 8.dp, end = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(
-                imageVector = HugeIcons.Puzzle,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.primary,
-            )
+            CardGroupIcon(HugeIcons.Puzzle)
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 12.dp),
+                    .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
-                Text(
-                    text = skill.name,
-                    style = MaterialTheme.typography.titleSmallEmphasized,
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        text = skill.name,
+                        modifier = Modifier.weight(1f, fill = false),
+                        style = MaterialTheme.typography.bodyLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    if (skill.builtin) {
+                        Tag { Text("Built-in") }
+                    }
+                }
                 Text(
                     text = skill.description,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
-                if (skill.builtin) {
-                    Text(
-                        text = "Built-in",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                    )
-                }
                 if (!skill.compatibility.isNullOrBlank()) {
                     Text(
                         text = skill.compatibility,
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.tertiary,
                     )
                 }
@@ -392,48 +383,33 @@ private fun SkillImportSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .bottomSheetMaxHeight()
-                .padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
                 text = stringResource(R.string.skills_page_add_title),
                 style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             )
-            SkillImportSheetItem(
-                icon = { Icon(HugeIcons.Add01, contentDescription = null) },
-                text = stringResource(R.string.skills_page_add_manually),
-                onClick = onAddManually,
-            )
-            SkillImportSheetItem(
-                icon = { Icon(HugeIcons.FileImport, contentDescription = null) },
-                text = stringResource(R.string.skills_page_import_from_file),
-                onClick = onImportFromFile,
-            )
-            SkillImportSheetItem(
-                icon = { Icon(HugeIcons.Download01, contentDescription = null) },
-                text = stringResource(R.string.skills_page_import_from_github),
-                onClick = onImportFromGitHub,
-            )
+            CardGroup {
+                item(
+                    onClick = onAddManually,
+                    headlineContent = { Text(stringResource(R.string.skills_page_add_manually)) },
+                    leadingContent = { CardGroupIcon(HugeIcons.Add01) },
+                )
+                item(
+                    onClick = onImportFromFile,
+                    headlineContent = { Text(stringResource(R.string.skills_page_import_from_file)) },
+                    leadingContent = { CardGroupIcon(HugeIcons.FileImport) },
+                )
+                item(
+                    onClick = onImportFromGitHub,
+                    headlineContent = { Text(stringResource(R.string.skills_page_import_from_github)) },
+                    leadingContent = { CardGroupIcon(HugeIcons.Download01) },
+                )
+            }
         }
     }
-}
-
-@Composable
-private fun SkillImportSheetItem(
-    icon: @Composable () -> Unit,
-    text: String,
-    onClick: () -> Unit,
-) {
-    ListItem(
-        leadingContent = icon,
-        colors = ListItemDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
-        modifier = Modifier
-            .clip(MaterialTheme.shapes.large)
-            .clickable(onClick = onClick),
-    ) { Text(text) }
 }
 
 @Composable
@@ -534,7 +510,7 @@ private fun ImportSkillDialog(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                        CircularWavyProgressIndicator(modifier = Modifier.size(16.dp))
                         Text(
                             stringResource(R.string.skills_page_downloading),
                             style = MaterialTheme.typography.bodySmall

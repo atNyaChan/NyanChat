@@ -394,7 +394,7 @@ private fun ProviderItem(
         modifier = modifier,
         colors = CardDefaults.cardColors(
             containerColor = if (provider.enabled) {
-                MaterialTheme.colorScheme.surface
+                MaterialTheme.colorScheme.surfaceContainer
             } else MaterialTheme.colorScheme.errorContainer,
         ),
         onClick = onClick,
