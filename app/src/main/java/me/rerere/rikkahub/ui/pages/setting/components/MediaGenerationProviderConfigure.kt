@@ -9,11 +9,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +31,9 @@ import me.rerere.mediagen.model.MediaKind
 import me.rerere.mediagen.provider.MediaGenerationProviderSetting
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceLabel
 import me.rerere.rikkahub.ui.components.ui.SelectTextField
 import kotlin.reflect.KClass
 
@@ -83,8 +82,16 @@ fun MediaGenerationProviderConfigure(
     onValueChange: (MediaGenerationProviderSetting) -> Unit,
     footer: (@Composable () -> Unit)? = null,
 ) {
+    val models = setting.models
+    // 按枚举顺序排列，保证按钮组的顺序稳定
+    val kinds = MediaKind.entries.filter { it in setting.supportedKinds }
+
+    fun updateModels(newModels: List<MediaGenerationModel>) {
+        onValueChange(setting.copyProvider(models = newModels))
+    }
+
     Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier.verticalScroll(rememberScrollState())
     ) {
         CardGroup(modifier = Modifier.fillMaxWidth()) {
@@ -160,79 +167,55 @@ fun MediaGenerationProviderConfigure(
                     )
                 }
             }
-
-            FormItem(
-                label = { Text(stringResource(R.string.setting_media_page_models)) },
-                description = { Text(stringResource(R.string.setting_media_page_models_desc)) }
-            ) {
-                MediaGenerationModelList(
-                    models = setting.models,
-                    supportedKinds = setting.supportedKinds,
-                    onValueChange = { onValueChange(setting.copyProvider(models = it)) }
-                )
-            }
         }
 
-        footer?.invoke()
-    }
-}
-
-@Composable
-private fun MediaGenerationModelList(
-    models: List<MediaGenerationModel>,
-    supportedKinds: Set<MediaKind>,
-    onValueChange: (List<MediaGenerationModel>) -> Unit
-) {
-    // 按枚举顺序排列，保证分段按钮的顺序稳定
-    val kinds = MediaKind.entries.filter { it in supportedKinds }
-
-    fun update(model: MediaGenerationModel) {
-        onValueChange(models.map { if (it.id == model.id) model else it })
-    }
-
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        models.forEach { model ->
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    OutlinedTextField(
-                        value = model.modelId,
-                        onValueChange = { update(model.copy(modelId = it.trim())) },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text(stringResource(R.string.setting_media_page_model_id)) }
-                    )
+        CardGroup(
+            title = { Text(stringResource(R.string.setting_media_page_models)) },
+        ) {
+            models.forEach { model ->
+                FormItem(label = {}) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        OutlinedTextField(
+                            value = model.modelId,
+                            onValueChange = { value ->
+                                updateModels(models.map { if (it.id == model.id) model.copy(modelId = value.trim()) else it })
+                            },
+                            modifier = Modifier.weight(1f),
+                            label = { Text(stringResource(R.string.setting_media_page_model_id)) },
+                            singleLine = true
+                        )
+                        IconButton(onClick = { updateModels(models.filter { it.id != model.id }) }) {
+                            Icon(HugeIcons.Delete01, stringResource(R.string.common_delete))
+                        }
+                    }
                     // 只支持一种类型的厂商不需要选择
                     if (kinds.size > 1) {
-                        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                            kinds.forEachIndexed { index, kind ->
-                                SegmentedButton(
-                                    shape = SegmentedButtonDefaults.itemShape(index = index, count = kinds.size),
-                                    selected = model.kind == kind,
-                                    onClick = { update(model.copy(kind = kind)) },
-                                ) {
-                                    Text(kind.label)
-                                }
-                            }
+                        ConnectedChoiceButtons(
+                            options = kinds,
+                            selected = model.kind,
+                            onSelect = { kind ->
+                                updateModels(models.map { if (it.id == model.id) model.copy(kind = kind) else it })
+                            },
+                        ) { kind, selected ->
+                            ConnectedChoiceLabel(text = kind.label, selected = selected)
                         }
                     }
                 }
-                IconButton(onClick = { onValueChange(models.filter { it.id != model.id }) }) {
-                    Icon(HugeIcons.Delete01, stringResource(R.string.common_delete))
-                }
             }
+
+            item(
+                onClick = if (kinds.isNotEmpty()) {
+                    { updateModels(models + MediaGenerationModel(modelId = "", kind = kinds.first())) }
+                } else null,
+                headlineContent = { Text(stringResource(R.string.setting_media_page_add_model)) },
+                supportingContent = { Text(stringResource(R.string.setting_media_page_models_desc)) },
+                leadingContent = { CardGroupIcon(HugeIcons.Add01) },
+            )
         }
 
-        TextButton(
-            onClick = { onValueChange(models + MediaGenerationModel(modelId = "", kind = kinds.first())) },
-            enabled = kinds.isNotEmpty()
-        ) {
-            Icon(HugeIcons.Add01, null)
-            Text(stringResource(R.string.setting_media_page_add_model))
-        }
+        footer?.invoke()
     }
 }

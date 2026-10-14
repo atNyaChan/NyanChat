@@ -1569,7 +1569,7 @@
   <string name="setting_media_page_edit_provider">プロバイダーを編集</string>
   <string name="setting_media_page_add_provider">プロバイダーを追加</string>
   <string name="setting_media_page_empty">メディア生成プロバイダーはまだありません。追加するには上部の + をタップしてください。</string>
-  <string name="setting_media_page_s3_desc">一部のAPIは公開URL上のアセットのみを受け付けます（動画生成用の参照画像や参照動画など）。これを設定すると、ローカルファイルはまずこのバケットにアップロードされ、その後、一時URLとしてAPIに渡されます。アップロードされたファイルは7日後に自動的に削除されます。この設定は、バックアップに使用するS3とは独立しています。</string>
+  <string name="setting_media_page_s3_desc">一部のAPIは、公開URL上のアセット（動画生成用の参照画像や参照動画など）しか受け付けません。ここでS3互換のオブジェクトストレージサービスを設定すると、ローカルファイルはまずそのバケットにアップロードされ、その後、一時URLとしてAPIに渡されます。アップロードされたファイルは7日後に自動的に削除されます。この設定は、バックアップに使用されるS3とは独立しています。</string>
   <string name="setting_media_page_provider_type">プロバイダーの種類</string>
   <string name="setting_media_page_provider_name">名前</string>
   <string name="setting_media_page_workspace_id">ワークスペースID</string>
@@ -1657,5 +1657,6 @@
   <string name="chat_message_tool_list_memory">メモリの一覧</string>
   <string name="memory_file_page_title">タイトル</string>
   <string name="memory_file_page_edit_warning">メモリは手動で編集しないでください。代わりにチャットで AI に覚えてもらうか変更してもらいましょう</string>
+  <string name="setting_media_page_asset_storage">アセットストレージ</string>
 </resources>
 

@@ -41,9 +41,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -73,7 +70,6 @@ import me.rerere.hugeicons.stroke.Menu03
 import me.rerere.hugeicons.stroke.MessageAdd01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
-import me.rerere.rikkahub.data.datastore.effectiveBackgroundEffectType
 import me.rerere.rikkahub.data.datastore.getSelectedASRProvider
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.ai.transformers.DocumentAsPromptTransformer
@@ -785,30 +781,11 @@ private fun TopBar(
         squareBottom = true,
     ).toRoundedCornerShape()
 
-    // 顶部渐变遮罩：消息在标题栏下面滚动，遮罩从状态栏一直淡出到标题栏下沿之外，保证标题可读。
-    // 开启模糊/玻璃效果时标题栏由 haze 提供底色，无需再叠遮罩。
+    // 标题栏保持透明，消息在标题栏下面滚动时由 ChatList 在顶部渐隐，背景图和动态渐变不会被盖住。
     val scrimColor = MaterialTheme.colorScheme.surface
-    val backgroundEffectType = settings.displaySetting.effectiveBackgroundEffectType()
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
         modifier = Modifier
-            .then(
-                if (backgroundEffectType == null) {
-                    Modifier.drawWithCache {
-                        val scrimHeight = size.height + 24.dp.toPx()
-                        val brush = Brush.verticalGradient(
-                            0f to scrimColor,
-                            0.6f to scrimColor.copy(alpha = 0.85f),
-                            1f to scrimColor.copy(alpha = 0f),
-                            startY = 0f,
-                            endY = scrimHeight,
-                        )
-                        onDrawBehind { drawRect(brush, size = Size(size.width, scrimHeight)) }
-                    }
-                } else {
-                    Modifier
-                }
-            )
             .chatInputHaze(
                 hazeState = hazeState,
                 displaySetting = settings.displaySetting,

@@ -1,11 +1,12 @@
 package me.rerere.rikkahub.ui.pages.setting
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -14,35 +15,29 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -52,6 +47,7 @@ import com.dokar.sonner.ToastType
 import kotlinx.coroutines.launch
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Add01
+import me.rerere.hugeicons.stroke.Connect
 import me.rerere.hugeicons.stroke.Database02
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.Image02
@@ -60,16 +56,21 @@ import me.rerere.mediagen.provider.MediaGenerationProviderSetting
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.files.RemoteFileStore
+import me.rerere.rikkahub.ui.components.ai.ExtensionEmptyState
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
+import me.rerere.rikkahub.ui.components.ui.PagerTab
+import me.rerere.rikkahub.ui.components.ui.PagerTabs
 import me.rerere.ui.components.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.components.ui.Tag
 import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.rikkahub.ui.components.ui.s3ConnectionItems
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.pages.setting.components.MediaGenerationProviderConfigure
+import me.rerere.rikkahub.ui.pages.setting.components.ProviderEditSheet
 import me.rerere.rikkahub.ui.pages.setting.components.label
 import me.rerere.rikkahub.ui.pages.setting.components.typeName
 import me.rerere.rikkahub.ui.theme.CustomColors
@@ -78,12 +79,20 @@ import org.koin.compose.koinInject
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
+private enum class MediaTab(
+    override val icon: ImageVector,
+    @param:StringRes override val label: Int,
+) : PagerTab {
+    PROVIDERS(HugeIcons.Image02, R.string.setting_media_page_providers),
+    STORAGE(HugeIcons.Database02, R.string.setting_media_page_asset_storage),
+}
+
 @Composable
 fun SettingMediaPage(vm: SettingVM = koinViewModel()) {
     val settings by vm.settings.collectAsStateWithLifecycle()
     var editingProvider by remember { mutableStateOf<MediaGenerationProviderSetting?>(null) }
     var addingProvider by remember { mutableStateOf<MediaGenerationProviderSetting?>(null) }
-    var selectedPage by remember { mutableIntStateOf(0) }
+    val pagerState = rememberPagerState { MediaTab.entries.size }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
@@ -96,7 +105,7 @@ fun SettingMediaPage(vm: SettingVM = koinViewModel()) {
                     BackButton()
                 },
                 actions = {
-                    if (selectedPage == 0) {
+                    if (MediaTab.entries[pagerState.targetPage] == MediaTab.PROVIDERS) {
                         IconButton(onClick = { addingProvider = MediaGenerationProviderSetting.OpenAI() }) {
                             Icon(HugeIcons.Add01, stringResource(R.string.setting_media_page_add_provider))
                         }
@@ -106,38 +115,41 @@ fun SettingMediaPage(vm: SettingVM = koinViewModel()) {
                 colors = CustomColors.topBarColors
             )
         },
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = selectedPage == 0,
-                    onClick = { selectedPage = 0 },
-                    icon = { Icon(HugeIcons.Image02, contentDescription = null) },
-                    label = { Text(stringResource(R.string.setting_media_page_providers)) }
-                )
-                NavigationBarItem(
-                    selected = selectedPage == 1,
-                    onClick = { selectedPage = 1 },
-                    icon = { Icon(HugeIcons.Database02, contentDescription = null) },
-                    label = { Text("S3") }
-                )
-            }
-        },
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = CustomColors.topBarColors.containerColor,
     ) { innerPadding ->
-        when (selectedPage) {
-            0 -> MediaProviderList(
-                settings = settings,
-                onUpdateSettings = vm::updateSettings,
-                onEdit = { editingProvider = it },
-                modifier = Modifier.padding(innerPadding)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding)
+        ) {
+            PagerTabs(
+                pagerState = pagerState,
+                tabs = MediaTab.entries,
+                modifier = Modifier.padding(bottom = 4.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp),
             )
 
-            1 -> MediaUploadS3Tab(
-                settings = settings,
-                onUpdateSettings = vm::updateSettings,
-                modifier = Modifier.padding(innerPadding)
-            )
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+            ) { page ->
+                when (MediaTab.entries[page]) {
+                    MediaTab.PROVIDERS -> MediaProviderList(
+                        settings = settings,
+                        onUpdateSettings = vm::updateSettings,
+                        onEdit = { editingProvider = it },
+                    )
+
+                    MediaTab.STORAGE -> MediaUploadS3Tab(
+                        settings = settings,
+                        onUpdateSettings = vm::updateSettings,
+                    )
+                }
+            }
         }
     }
 
@@ -198,23 +210,13 @@ private fun MediaProviderList(
     }
 
     if (settings.mediaGenerationProviders.isEmpty()) {
-        Box(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(32.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = stringResource(R.string.setting_media_page_empty),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+        ExtensionEmptyState(
+            message = stringResource(R.string.setting_media_page_empty),
+            icon = HugeIcons.Image02,
+        )
     } else {
         LazyColumn(
-            modifier = modifier
-                .fillMaxSize()
-                .imePadding(),
+            modifier = modifier.fillMaxSize(),
             contentPadding = PaddingValues(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             state = lazyListState
@@ -301,85 +303,43 @@ private fun MediaProviderSheet(
     onDismiss: () -> Unit,
     onDelete: (() -> Unit)? = null,
 ) {
-    val bottomSheetState = rememberBottomSheetState(
-        initialValue = SheetValue.Hidden,
-        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
-    )
-    var currentProvider by remember(initial) { mutableStateOf(initial) }
     var showDeleteConfirm by remember(initial) { mutableStateOf(false) }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surface,
-        sheetState = bottomSheetState,
-        dragHandle = {
-            BottomSheetDefaults.DragHandle()
-        }
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp).padding(bottom = 8.dp)
-                .bottomSheetMaxHeight(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.headlineSmall
-            )
-
-            MediaGenerationProviderConfigure(
-                setting = currentProvider,
-                onValueChange = { currentProvider = it },
-                modifier = Modifier.weight(1f, fill = false),
-                footer = if (onDelete != null) {
-                    {
-                        Button(
-                            onClick = { showDeleteConfirm = true },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error,
-                                contentColor = MaterialTheme.colorScheme.onError,
-                            ),
-                        ) {
-                            Icon(HugeIcons.Delete01, contentDescription = null)
-                            Text(
-                                stringResource(R.string.common_delete),
-                                modifier = Modifier.padding(start = 8.dp),
-                            )
-                        }
-                    }
-                } else {
-                    null
-                },
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                TextButton(
-                    onClick = onDismiss,
-                ) {
-                    Text(stringResource(R.string.common_cancel))
-                }
-
-                Button(
-                    onClick = {
-                        // 没填模型 ID 的行不保存
-                        onConfirm(
-                            currentProvider.copyProvider(
-                                models = currentProvider.models.filter { it.modelId.isNotBlank() }
-                            )
+    ProviderEditSheet(
+        title = title,
+        initial = initial,
+        confirmText = confirmText,
+        onConfirm = { provider ->
+            // 没填模型 ID 的行不保存
+            onConfirm(provider.copyProvider(models = provider.models.filter { it.modelId.isNotBlank() }))
+        },
+        onDismiss = onDismiss,
+    ) { provider, onValueChange, modifier ->
+        MediaGenerationProviderConfigure(
+            setting = provider,
+            onValueChange = onValueChange,
+            modifier = modifier,
+            footer = if (onDelete != null) {
+                {
+                    Button(
+                        onClick = { showDeleteConfirm = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError,
+                        ),
+                    ) {
+                        Icon(HugeIcons.Delete01, contentDescription = null)
+                        Text(
+                            stringResource(R.string.common_delete),
+                            modifier = Modifier.padding(start = 8.dp),
                         )
-                        onDismiss()
-                    },
-                ) {
-                    Text(confirmText)
+                    }
                 }
-            }
-        }
+            } else {
+                null
+            },
+        )
     }
 
     RikkaConfirmDialog(
@@ -422,62 +382,64 @@ private fun MediaUploadS3Tab(
         modifier = modifier
             .fillMaxSize()
             .imePadding()
+            .verticalScroll(rememberScrollState())
+            .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.setting_media_page_s3_desc),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+        Text(
+            text = stringResource(R.string.setting_media_page_s3_desc),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 4.dp)
+        )
 
-            CardGroup {
-                s3ConnectionItems(
-                    config = config,
-                    onUpdate = {
-                        config = it
-                        onUpdateSettings { latest -> latest.copy(uploadS3Config = it) }
-                    }
-                )
-            }
+        CardGroup {
+            s3ConnectionItems(
+                config = config,
+                onUpdate = {
+                    config = it
+                    onUpdateSettings { latest -> latest.copy(uploadS3Config = it) }
+                }
+            )
         }
 
-        HorizontalDivider()
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.End
-        ) {
-            OutlinedButton(
-                enabled = !testing,
-                onClick = {
-                    scope.launch {
-                        testing = true
-                        remoteFileStore.testConnection()
-                            .onSuccess {
-                                toaster.show(
-                                    context.getString(R.string.backup_page_connection_success),
-                                    type = ToastType.Success
-                                )
-                            }
-                            .onFailure {
-                                toaster.show(
-                                    context.getString(R.string.backup_page_connection_failed, it.message ?: ""),
-                                    type = ToastType.Error
-                                )
-                            }
-                        testing = false
+        CardGroup {
+            item(
+                onClick = if (!testing) {
+                    {
+                        scope.launch {
+                            testing = true
+                            remoteFileStore.testConnection()
+                                .onSuccess {
+                                    toaster.show(
+                                        context.getString(R.string.backup_page_connection_success),
+                                        type = ToastType.Success
+                                    )
+                                }
+                                .onFailure {
+                                    toaster.show(
+                                        context.getString(R.string.backup_page_connection_failed, it.message ?: ""),
+                                        type = ToastType.Error
+                                    )
+                                }
+                            testing = false
+                        }
                     }
-                }
-            ) {
-                Text(stringResource(R.string.backup_page_test_connection))
-            }
+                } else null,
+                headlineContent = { Text(stringResource(R.string.backup_page_test_connection)) },
+                leadingContent = {
+                    if (testing) {
+                        Box(
+                            modifier = Modifier.size(40.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularWavyProgressIndicator(modifier = Modifier.size(24.dp))
+                        }
+                    } else {
+                        CardGroupIcon(HugeIcons.Connect)
+                    }
+                },
+            )
         }
     }
 }

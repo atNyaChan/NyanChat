@@ -18,6 +18,16 @@ import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupScope
 import me.rerere.ui.components.OutlinedNumberInput
 import me.rerere.rikkahub.ui.components.ui.SelectTextField
+import me.rerere.rikkahub.ui.components.ui.switchItem
+
+val ASRProviderSetting.typeName: String
+    get() = when (this) {
+        is ASRProviderSetting.OpenAIRealtime -> "OpenAI Realtime"
+        is ASRProviderSetting.DashScope -> "DashScope"
+        is ASRProviderSetting.Volcengine -> "Volcengine"
+        is ASRProviderSetting.MiMo -> "MiMo"
+        is ASRProviderSetting.Step -> "Step"
+    }
 
 @Composable
 fun ASRProviderConfigure(
@@ -540,27 +550,19 @@ private fun CardGroupScope.StepASRConfiguration(
         )
     }
 
-    FormItem(
-        onClick = { onValueChange(setting.copy(enableItn = !setting.enableItn)) },
-        label = { Text(stringResource(R.string.setting_asr_configure_step_itn)) },
-        description = { Text(stringResource(R.string.setting_asr_configure_step_itn_desc)) }
-    ) {
-        androidx.compose.material3.Switch(
-            checked = setting.enableItn,
-            onCheckedChange = { onValueChange(setting.copy(enableItn = it)) }
-        )
-    }
+    switchItem(
+        checked = setting.enableItn,
+        onCheckedChange = { onValueChange(setting.copy(enableItn = it)) },
+        headlineContent = { Text(stringResource(R.string.setting_asr_configure_step_itn)) },
+        supportingContent = { Text(stringResource(R.string.setting_asr_configure_step_itn_desc)) },
+    )
 
-    FormItem(
-        onClick = { onValueChange(setting.copy(enableTimestamp = !setting.enableTimestamp)) },
-        label = { Text(stringResource(R.string.setting_asr_configure_step_timestamp)) },
-        description = { Text(stringResource(R.string.setting_asr_configure_step_timestamp_desc)) }
-    ) {
-        androidx.compose.material3.Switch(
-            checked = setting.enableTimestamp,
-            onCheckedChange = { onValueChange(setting.copy(enableTimestamp = it)) }
-        )
-    }
+    switchItem(
+        checked = setting.enableTimestamp,
+        onCheckedChange = { onValueChange(setting.copy(enableTimestamp = it)) },
+        headlineContent = { Text(stringResource(R.string.setting_asr_configure_step_timestamp)) },
+        supportingContent = { Text(stringResource(R.string.setting_asr_configure_step_timestamp_desc)) },
+    )
 
     FormItem(
         label = { Text(stringResource(R.string.setting_asr_configure_step_hotwords)) },
