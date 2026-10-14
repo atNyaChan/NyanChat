@@ -43,9 +43,8 @@ class AssistantVM(
         onRemoved: (fallbackChatId: Uuid?) -> Unit = {},
     ) {
         viewModelScope.launch {
-            cleanupAssistantFiles(assistant)
-
             var fallbackAssistantId: Uuid? = null
+            // 先落设置：设置类使用记录清理后再删文件，同一内容被别处引用的才不会被误删
             settingsStore.update { settings ->
                 val remainingAssistants = settings.assistants.filter { it.id != assistant.id }
                 if (settings.assistantId == assistant.id) {
@@ -56,6 +55,7 @@ class AssistantVM(
                     assistantId = fallbackAssistantId ?: settings.assistantId,
                 )
             }
+            cleanupAssistantFiles(assistant)
             memoryRepository.deleteFilesOfAssistant(assistant.id.toString())
             conversationRepo.deleteConversationOfAssistant(assistant.id)
             val fallbackChatId = fallbackAssistantId?.let { Uuid.random() }

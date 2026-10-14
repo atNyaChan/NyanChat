@@ -715,6 +715,10 @@
   <string name="setting_files_page_rebuild_index">Пересоздать индекс вложений чата</string>
   <string name="setting_files_page_open_reference">Перейти к сообщению со вложением</string>
   <string name="setting_files_page_used_by_messages">Сообщения с этим файлом</string>
+  <string name="setting_files_page_used_by_assistant_avatar">Аватар ассистента %1$s</string>
+  <string name="setting_files_page_used_by_assistant_background">Фон ассистента %1$s</string>
+  <string name="setting_files_page_used_by_user_avatar">Аватар пользователя</string>
+  <string name="setting_files_page_unknown_assistant">Неизвестный ассистент</string>
   <string name="setting_files_page_sort">Сортировка</string>
   <string name="setting_files_page_sort_latest_reference">Сначала новые ссылки</string>
   <string name="setting_files_page_sort_oldest_reference">Сначала старые ссылки</string>

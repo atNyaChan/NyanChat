@@ -715,6 +715,10 @@
   <string name="setting_files_page_rebuild_index">重建聊天附件索引</string>
   <string name="setting_files_page_open_reference">跳转到引用消息</string>
   <string name="setting_files_page_used_by_messages">使用了该文件的消息</string>
+  <string name="setting_files_page_used_by_assistant_avatar">助手 “%1$s” 的头像</string>
+  <string name="setting_files_page_used_by_assistant_background">助手 “%1$s” 的背景</string>
+  <string name="setting_files_page_used_by_user_avatar">用户头像</string>
+  <string name="setting_files_page_unknown_assistant">未知助手</string>
   <string name="setting_files_page_sort">排序</string>
   <string name="setting_files_page_sort_latest_reference">按最新的引用排序</string>
   <string name="setting_files_page_sort_oldest_reference">按最旧的引用排序</string>

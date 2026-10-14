@@ -715,6 +715,10 @@
   <string name="setting_files_page_rebuild_index">Rebuild Chat Attachment Index</string>
   <string name="setting_files_page_open_reference">Go to referenced message</string>
   <string name="setting_files_page_used_by_messages">Messages using this file</string>
+  <string name="setting_files_page_used_by_assistant_avatar">Assistant %1$s\'s avatar</string>
+  <string name="setting_files_page_used_by_assistant_background">Assistant %1$s\'s background</string>
+  <string name="setting_files_page_used_by_user_avatar">User avatar</string>
+  <string name="setting_files_page_unknown_assistant">Unknown assistant</string>
   <string name="setting_files_page_sort">Sort</string>
   <string name="setting_files_page_sort_latest_reference">Latest reference first</string>
   <string name="setting_files_page_sort_oldest_reference">Oldest reference first</string>

@@ -715,6 +715,10 @@
   <string name="setting_files_page_rebuild_index">チャット添付ファイルインデックスを再構築</string>
   <string name="setting_files_page_open_reference">参照元のメッセージへ移動</string>
   <string name="setting_files_page_used_by_messages">このファイルを使用するメッセージ</string>
+  <string name="setting_files_page_used_by_assistant_avatar">アシスタント %1$s のアバター</string>
+  <string name="setting_files_page_used_by_assistant_background">アシスタント %1$s の背景</string>
+  <string name="setting_files_page_used_by_user_avatar">ユーザーアバター</string>
+  <string name="setting_files_page_unknown_assistant">不明なアシスタント</string>
   <string name="setting_files_page_sort">並べ替え</string>
   <string name="setting_files_page_sort_latest_reference">最新の参照順</string>
   <string name="setting_files_page_sort_oldest_reference">最古の参照順</string>

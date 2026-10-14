@@ -93,13 +93,17 @@ import androidx.core.net.toUri
 import com.dokar.sonner.ToastType
 import kotlinx.coroutines.launch
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.db.entity.FileUsage
+import me.rerere.rikkahub.data.db.entity.FileUsageType
 import me.rerere.rikkahub.data.db.fts.MessagePreviewKey
 import me.rerere.rikkahub.data.db.fts.MessageSearchResult
 import me.rerere.rikkahub.data.files.CasAttachment
 import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.files.FilesManager
+import me.rerere.rikkahub.data.files.attachmentShaFromUrl
+import me.rerere.rikkahub.data.model.Avatar
 import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.rikkahub.ui.components.ai.CountBadge
 import me.rerere.rikkahub.ui.components.ai.ExtensionEmptyState
@@ -108,6 +112,7 @@ import me.rerere.rikkahub.ui.components.ui.AppLoadingIndicator
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.ImagePreviewDialog
 import me.rerere.rikkahub.ui.components.ui.MessageSearchResultCard
+import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.CustomColors
@@ -179,8 +184,8 @@ fun SettingFilesPage(
     }
     val files = loadedFiles.orEmpty()
         .filter {
-            // 设置类使用只写库不展示：只被头像/背景引用的内容两边都不出现
-            if (selectedFolder == UNUSED_ATTACHMENTS) it.isUnused else it.references.isNotEmpty()
+            // 消息与设置类（头像/背景、用户头像）使用都算引用；“未使用”只放完全没有引用的
+            if (selectedFolder == UNUSED_ATTACHMENTS) it.isUnused else it.hasReferences
         }
         .sortedWith(
             when (sortOrder) {
@@ -263,6 +268,8 @@ fun SettingFilesPage(
                 TextButton(
                     onClick = {
                         scope.launch {
+                            // 该内容可能被助手头像/背景、用户头像引用：先清掉这些引用，避免删文件后设置悬空
+                            clearSettingsAttachmentReferences(settingsStore, setOf(target.sha256))
                             val ok = filesManager.deleteCasAttachments(listOf(target.sha256))
                             if (ok) {
                                 toaster.show(deletedToast)
@@ -301,6 +308,10 @@ fun SettingFilesPage(
                     nodeId = Uuid.parse(key.nodeId),
                 )
             },
+            onOpenAssistantSettings = { assistantId ->
+                referenceAttachment = null
+                navController.navigate(Screen.AssistantBasic(assistantId))
+            },
         )
     }
 
@@ -322,14 +333,18 @@ fun SettingFilesPage(
                         val cutoff = selectedCleanRange.days?.let { days ->
                             System.currentTimeMillis() - TimeUnit.DAYS.toMillis(days.toLong())
                         }
-                        val ok = if (cutoff == null && selectedFolder != UNUSED_ATTACHMENTS) {
+                        // 全量清理时被删的是当前列表里的全部内容，否则是时间范围内那份
+                        val targets = if (cutoff == null && selectedFolder != UNUSED_ATTACHMENTS) {
+                            null
+                        } else {
+                            files.filter { attachment -> cutoff == null || attachment.latestManagedAt < cutoff }
+                        }
+                        // 清理掉被助手头像/背景、用户头像引用的内容前先清掉设置里的引用
+                        clearSettingsAttachmentReferences(settingsStore, (targets ?: files).map { it.sha256 }.toSet())
+                        val ok = if (targets == null) {
                             filesManager.deleteAllCasAttachments()
                         } else {
-                            filesManager.deleteCasAttachments(
-                                files
-                                    .filter { attachment -> cutoff == null || attachment.latestManagedAt < cutoff }
-                                    .map { it.sha256 }
-                            )
+                            filesManager.deleteCasAttachments(targets.map { it.sha256 })
                         }
                         loadedFiles = filesManager.listCasAttachments()
                         toaster.show(
@@ -424,11 +439,12 @@ fun SettingFilesPage(
                             FileItem(
                                 attachment = item,
                                 fileOnDisk = item.file,
-                                showReference = selectedFolder != UNUSED_ATTACHMENTS,
+                                showReference = item.hasReferences,
                                 onReference = {
-                                    // 只有一条引用时直接跳到消息, 多条引用才弹窗选择
+                                    // 被头像/背景引用的附件永远先弹出使用列表;
+                                    // 只有一条消息引用且没有设置类使用时才直接跳到消息
                                     val single = item.references.singleOrNull()?.messagePreviewKey()
-                                    if (single != null) {
+                                    if (single != null && item.settingsUsages.isEmpty()) {
                                         navigateToChatPage(
                                             navController,
                                             chatId = Uuid.parse(single.conversationId),
@@ -626,8 +642,9 @@ private fun folderDisplayName(folder: String): String = when (folder) {
 }
 
 /**
- * 展示某个附件被哪些消息使用: 每条引用先显示该次使用的展示名 (缺失时退回 `uuid.ext` 文件名),
- * 再显示与搜索结果一致的消息预览卡片, 点击卡片跳转到对应消息。
+ * 展示某个附件被哪些使用引用: 每条引用先显示该次使用的展示名 (缺失时退回 `uuid.ext` 文件名),
+ * 再显示与搜索结果一致的消息预览卡片, 点击卡片跳转到对应消息;
+ * 被助手头像/背景或用户头像引用的内容在文件名下方用描边卡片列出使用位置 (没有消息引用时也能弹窗)。
  */
 @Composable
 private fun UsedByMessagesDialog(
@@ -636,8 +653,10 @@ private fun UsedByMessagesDialog(
     loadPreviews: suspend (List<MessagePreviewKey>) -> Map<MessagePreviewKey, MessageSearchResult>,
     onDismiss: () -> Unit,
     onOpenMessage: (FileUsage) -> Unit,
+    onOpenAssistantSettings: (String) -> Unit,
 ) {
     val references = attachment.references
+    val settingsUsages = attachment.settingsUsages
     var previews by remember(attachment) {
         mutableStateOf<Map<MessagePreviewKey, MessageSearchResult>?>(null)
     }
@@ -669,8 +688,44 @@ private fun UsedByMessagesDialog(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    ordered.forEachIndexed { index, reference ->
+                    // 设置类使用项：在文件名下面用描边卡片给出被哪个助手/用户用作头像或背景
+                    settingsUsages.forEachIndexed { index, usage ->
                         if (index > 0) {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = 2.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant,
+                            )
+                        }
+                        Text(
+                            text = attachment.displayName,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        // 助手头像/背景可以直接跳到对应助手的设置页；用户头像没有独立设置页，不提供跳转
+                        val usageAssistantId = usage.details["assistantId"]
+                        val openAssistantSettings: (() -> Unit)? = if (
+                            usageAssistantId != null &&
+                            assistantNames.containsKey(usageAssistantId) &&
+                            (usage.type == FileUsageType.ASSISTANT_AVATAR ||
+                                usage.type == FileUsageType.ASSISTANT_BACKGROUND)
+                        ) {
+                            { onOpenAssistantSettings(usageAssistantId) }
+                        } else {
+                            null
+                        }
+                        OutlinedItemCard(onClick = openAssistantSettings) {
+                            Text(
+                                text = settingsUsageDescription(usage, assistantNames),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                            )
+                        }
+                    }
+                    ordered.forEachIndexed { index, reference ->
+                        if (settingsUsages.isNotEmpty() || index > 0) {
                             HorizontalDivider(
                                 modifier = Modifier.padding(vertical = 2.dp),
                                 color = MaterialTheme.colorScheme.outlineVariant,
@@ -700,6 +755,62 @@ private fun UsedByMessagesDialog(
             }
         },
     )
+}
+
+/** 设置类使用记录的说明文本：助手头像/背景带上助手名，取不到时退回“未知助手”。 */
+@Composable
+private fun settingsUsageDescription(usage: FileUsage, assistantNames: Map<String, String>): String =
+    when (usage.type) {
+        FileUsageType.ASSISTANT_AVATAR -> stringResource(
+            R.string.setting_files_page_used_by_assistant_avatar,
+            usage.details["assistantId"]?.let(assistantNames::get)
+                ?: stringResource(R.string.setting_files_page_unknown_assistant),
+        )
+
+        FileUsageType.ASSISTANT_BACKGROUND -> stringResource(
+            R.string.setting_files_page_used_by_assistant_background,
+            usage.details["assistantId"]?.let(assistantNames::get)
+                ?: stringResource(R.string.setting_files_page_unknown_assistant),
+        )
+
+        FileUsageType.USER_AVATAR -> stringResource(R.string.setting_files_page_used_by_user_avatar)
+        else -> usage.type
+    }
+
+/**
+ * 从设置里清掉指向这些 sha256 的助手头像/背景与用户头像。
+ * 存储管理删文件前先调用，避免设置仍指向已被删除的附件。
+ */
+private suspend fun clearSettingsAttachmentReferences(settingsStore: SettingsStore, shas: Set<String>) {
+    if (shas.isEmpty()) return
+    fun referencesSha(url: String): Boolean = attachmentShaFromUrl(url)?.let(shas::contains) == true
+    settingsStore.update { settings ->
+        val assistants = settings.assistants.map { assistant ->
+            val clearAvatar = assistant.avatar.let { it is Avatar.Image && referencesSha(it.url) }
+            val clearBackground = assistant.background?.let(::referencesSha) == true
+            if (clearAvatar || clearBackground) {
+                assistant.copy(
+                    avatar = if (clearAvatar) Avatar.Dummy else assistant.avatar,
+                    background = if (clearBackground) null else assistant.background,
+                )
+            } else {
+                assistant
+            }
+        }
+        val userAvatar = settings.displaySetting.userAvatar
+        val clearUserAvatar = userAvatar is Avatar.Image && referencesSha(userAvatar.url)
+        val displaySetting = if (clearUserAvatar) {
+            settings.displaySetting.copy(userAvatar = Avatar.Dummy)
+        } else {
+            settings.displaySetting
+        }
+        // 没有指向被删内容时保留原实例，避免一次无意义的设置写盘
+        if (assistants == settings.assistants && displaySetting == settings.displaySetting) {
+            settings
+        } else {
+            settings.copy(assistants = assistants, displaySetting = displaySetting)
+        }
+    }
 }
 
 private val FileItemCorner = 20.dp
@@ -812,7 +923,7 @@ private fun FileItem(
                             .height(38.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        if (showReference && attachment.references.isNotEmpty()) {
+                        if (showReference) {
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
@@ -829,9 +940,10 @@ private fun FileItem(
                                 )
                                 // 一个附件被不止一处引用时, 在跳转键右上角标注引用次数:
                                 // 点击后不会直接跳转, 而是先弹出引用列表供选择
-                                if (attachment.references.size > 1) {
+                                val usageCount = attachment.references.size + attachment.settingsUsages.size
+                                if (usageCount > 1) {
                                     CountBadge(
-                                        count = attachment.references.size,
+                                        count = usageCount,
                                         modifier = Modifier
                                             .align(Alignment.TopEnd)
                                             .padding(top = 2.dp, end = 4.dp),

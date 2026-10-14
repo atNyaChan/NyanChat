@@ -30,6 +30,7 @@ import me.rerere.rikkahub.data.db.entity.ManagedFileCasEntity
 import me.rerere.rikkahub.data.db.entity.decodeUsages
 import me.rerere.rikkahub.data.db.entity.isMessageUsage
 import me.rerere.rikkahub.data.db.entity.isPendingUsage
+import me.rerere.rikkahub.data.db.entity.isSettingsUsage
 import me.rerere.rikkahub.data.db.entity.latestDisplayName
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.db.entity.encodeUsages
@@ -59,11 +60,7 @@ class FilesManager(
         private const val TAG = "FilesManager"
 
         /** 设置类使用记录：这些类型在 [updateSettingsAttachmentUsages] 里整批重建。 */
-        private val SETTINGS_USAGE_TYPES = setOf(
-            FileUsageType.ASSISTANT_AVATAR,
-            FileUsageType.ASSISTANT_BACKGROUND,
-            FileUsageType.USER_AVATAR,
-        )
+        private val SETTINGS_USAGE_TYPES = FileUsageType.SETTINGS_TYPES
     }
 
     /** 登记表读写的互斥锁: 落盘文件后落登记、同步补登记都经过它。 */
@@ -200,8 +197,8 @@ class FilesManager(
                 val row = repository.getBySha(file.name) ?: return@forEach
                 val usages = row.decodeUsages()
                 val remaining = usages.filterNot { it.isPendingUsage() }
-                if (remaining.any { it.isMessageUsage() }) {
-                    // 仍被真实消息引用：只移除这次从输入框移除的临时占位记录
+                if (remaining.any { it.type != FileUsageType.NONE }) {
+                    // 仍被消息或设置（头像/背景、用户头像）引用：只移除这次从输入框移除的临时占位记录
                     if (remaining.size != usages.size) {
                         repository.update(row.encodeUsages(withNoneUsage(remaining) { fileTime(file.name) }))
                     }
@@ -734,11 +731,19 @@ data class CasAttachment(
     val sizeBytes: Long,
     val usages: List<FileUsage>,
 ) {
-    /** 真实消息使用记录；文件管理页只展示这部分，设置类与待发占位记录都不提供跳转。 */
+    /** 真实消息使用记录；文件管理页只把“消息”与设置类使用算作引用。 */
     val references: List<FileUsage>
         get() = usages.filter { it.isMessageUsage() }
 
-    /** 没有任何使用（只剩 `none` 记录）。设置类使用也算被使用，只是不在文件管理页展示。 */
+    /** 设置类使用记录：助手头像/聊天背景、用户头像。 */
+    val settingsUsages: List<FileUsage>
+        get() = usages.filter { it.isSettingsUsage() }
+
+    /** 是否被消息或设置（头像/背景、用户头像）引用；待发占位与 `none` 不算引用。 */
+    val hasReferences: Boolean
+        get() = references.isNotEmpty() || settingsUsages.isNotEmpty()
+
+    /** 没有任何使用（只剩 `none` 记录）。设置类使用也算被使用，但会出现在“上传”分类里。 */
     val isUnused: Boolean
         get() = usages.none { it.type != FileUsageType.NONE }
 

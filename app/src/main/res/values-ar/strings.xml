@@ -715,6 +715,10 @@
   <string name="setting_files_page_rebuild_index">إعادة بناء فهرس مرفقات الدردشة</string>
   <string name="setting_files_page_open_reference">الانتقال إلى الرسالة المرجعية</string>
   <string name="setting_files_page_used_by_messages">الرسائل التي تستخدم هذا الملف</string>
+  <string name="setting_files_page_used_by_assistant_avatar">صورة المساعد %1$s الرمزية</string>
+  <string name="setting_files_page_used_by_assistant_background">خلفية المساعد %1$s</string>
+  <string name="setting_files_page_used_by_user_avatar">صورة المستخدم الرمزية</string>
+  <string name="setting_files_page_unknown_assistant">مساعد غير معروف</string>
   <string name="setting_files_page_sort">ترتيب</string>
   <string name="setting_files_page_sort_latest_reference">الأحدث مرجعًا أولًا</string>
   <string name="setting_files_page_sort_oldest_reference">الأقدم مرجعًا أولًا</string>

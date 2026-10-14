@@ -64,6 +64,9 @@ object FileUsageType {
     const val ASSISTANT_AVATAR = "assistant_avatar"
     const val USER_AVATAR = "user_avatar"
 
+    /** 设置类使用类型：助手头像/聊天背景、用户头像。 */
+    val SETTINGS_TYPES = setOf(ASSISTANT_BACKGROUND, ASSISTANT_AVATAR, USER_AVATAR)
+
     /** 没有被任何使用引用的附件；每个 sha256 只有一条，用来记录落盘时间与展示名。 */
     const val NONE = "none"
 }
@@ -80,6 +83,9 @@ fun FileUsage.isMessageUsage(): Boolean =
         !details["conversationId"].isNullOrBlank() &&
         !details["nodeId"].isNullOrBlank() &&
         !details["messageId"].isNullOrBlank()
+
+/** 设置类使用记录：助手头像/聊天背景、用户头像。 */
+fun FileUsage.isSettingsUsage(): Boolean = type in FileUsageType.SETTINGS_TYPES
 
 /** 新增附件时写入的临时 `message` 占位记录：定位字段为空，发送成真实消息后由 [isMessageUsage] 的记录取代。 */
 fun FileUsage.isPendingUsage(): Boolean =
