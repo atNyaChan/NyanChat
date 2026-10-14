@@ -1,12 +1,14 @@
 package me.rerere.rikkahub.data.repository
 
-import me.rerere.rikkahub.data.db.dao.AttachmentReference
-import me.rerere.rikkahub.data.db.dao.ManagedFileDAO
-import me.rerere.rikkahub.data.db.entity.ManagedFileCasEntity
 import kotlinx.coroutines.flow.Flow
+import me.rerere.rikkahub.data.db.dao.ManagedFileDAO
+import me.rerere.rikkahub.data.db.dao.MessageNodeDAO
+import me.rerere.rikkahub.data.db.entity.ManagedFileCasEntity
+import me.rerere.rikkahub.data.db.entity.MessageNodeEntity
 
 class FilesRepository(
     private val dao: ManagedFileDAO,
+    private val messageNodeDao: MessageNodeDAO,
 ) {
     suspend fun insert(file: ManagedFileCasEntity): ManagedFileCasEntity {
         val id = dao.insert(file)
@@ -27,8 +29,9 @@ class FilesRepository(
 
     suspend fun listConversationIdsByLatest(): List<String> = dao.listConversationIdsByLatest()
 
-    suspend fun listAttachmentReferences(conversationId: String): List<AttachmentReference> =
-        dao.listAttachmentReferences(conversationId)
+    /** 附件索引重建时读取会话的消息节点（JSON 里是相对 filesDir 的落盘 url）。 */
+    suspend fun listMessageNodes(conversationId: String): List<MessageNodeEntity> =
+        messageNodeDao.getNodesOfConversation(conversationId)
 
     suspend fun deleteById(id: Long): Int = dao.deleteById(id)
 

@@ -270,7 +270,10 @@ private suspend fun importAssistantFromUri(
                     val result = ImageUtils.getTavernCharacterMeta(context, uri)
                     result.map { base64Data ->
                         val json = String(Base64.decode(base64Data, Base64.DEFAULT))
-                        val bg = filesManager.createChatFilesByContents(listOf(uri)).first().toString()
+                        val bg = filesManager.saveUploadFromUri(
+                            uri = uri,
+                            displayName = filesManager.getFileNameFromUri(uri),
+                        )?.toString()
                         json to bg
                     }.getOrElse { throw it }
                 }

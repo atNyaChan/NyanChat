@@ -79,14 +79,15 @@ fun Route.filesRoutes(
             )
         }
 
-        // DELETE /api/files/{id} - Delete uploaded file
+        // DELETE /api/files/{id} - Remove an uploaded file; shared content still referenced by
+        // messages/settings is kept, only unreferenced content is deleted from disk.
         delete("/{id}") {
             val idParam = call.pathParameters["id"]
                 ?: throw BadRequestException("Missing file id")
             val id = idParam.toLongOrNull()
                 ?: throw BadRequestException("Invalid file id")
 
-            val deleted = filesManager.delete(id, deleteFromDisk = true)
+            val deleted = filesManager.delete(id)
             if (!deleted) {
                 throw NotFoundException("File not found")
             }

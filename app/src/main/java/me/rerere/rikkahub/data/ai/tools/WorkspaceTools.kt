@@ -1,5 +1,6 @@
 package me.rerere.rikkahub.data.ai.tools
 
+import androidx.core.net.toUri
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.JsonObjectBuilder
@@ -299,9 +300,9 @@ private suspend fun WorkspaceRepository.readImageInRootfs(
     val bytes = readRootfsBuffer(workspaceId, path).toByteArray()
 
     val filesManager = getKoin().get<FilesManager>()
-    val uris = filesManager.createChatFilesByByteArrays(listOf(bytes))
+    val entity = filesManager.saveUploadFromBytes(bytes, mimeType = "image/png")
     return listOf(
-        UIMessagePart.Image(url = uris.first().toString()),
+        UIMessagePart.Image(url = filesManager.getFile(entity).toUri().toString()),
         UIMessagePart.Text(
             buildJsonObject {
                 put("path", path)

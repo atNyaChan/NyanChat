@@ -448,13 +448,12 @@
 #### 聊天附件
 - 消息里的附件 url 以相对 `filesDir` 的路径落盘（`upload/<sha256>`），不再写入带包名的绝对 `file://` 路径；内存中的 `UIMessage` 仍持有当前安装的绝对 url，由 `data/files/LocalFileUrls` 在 `ConversationRepository` 的读写边界统一折叠与展开。落盘值只可能是相对路径。
 - 聊天附件使用内容寻址存储：实体直接放在 `filesDir/upload` 下，以内容 sha256 命名，相同内容只落一份。
-- 新增附件时把内容流式写入 `upload` 下的临时文件（写入的同时计算 sha256，不再二次读盘），再按 sha256 原子重命名落盘；已存在则复用。
-- 所有附件放进输入框时按当前时间追加一条三个定位字段都为空的临时 `message` 占位记录，并把来源文件名（安卓从来源 URI 读、Web 用上传的 `fileName`）写到时间最晚的那条记录上；发送成消息后由 `updateAttachmentIndex` 换成真实消息记录。
-- 临时 `message` 占位记录只在输入框待发期间存在：发送后由真实消息记录取代，从输入框移除时随附件一起清理，进程重启时在 `syncManagedFiles` 里统一清掉。
-- 附件登记信息保存在数据库 `managed_files_cas` 表（一个 sha256 一行）：`id`、`sha256`、`mime_type`、`size_bytes`、`usages`（数据库版本由 29 提升到 100）。`usages` 是 JSON 列表，每项为 `{type, filename, display_name, created_at, details}`：`filename` / `display_name` 是该次使用在旧版（RikkaHub 兼容）布局里对应的 `uuid.ext` 文件名与展示名，`created_at` 是该次使用的时间（`message` 时取消息时间）；`type` 为 `message` 时 `details` 为 `{conversationId, nodeId, messageId}`，`assistant_background` / `assistant_avatar` 时为 `{assistantId}`，`user_avatar` 时为空，`type` 为 `none` 表示这份内容没有任何使用，`details` 为空、`created_at` 记录落盘时间。旧的 `managed_files` 表已被 `managed_files_cas` 取代。
-- 每次设置落盘时若助手头像/聊天背景、用户头像发生变化，就重建这些内容的 `assistant_avatar` / `assistant_background` / `user_avatar` 使用记录；恢复备份后启动时也重建一次。
+- 输入框/消息队列里的附件先放在 `cacheDir/upload_tmp` 临时目录（进程内有效、不写登记表、不参与 CAS）；展示名与来源 MIME 只保存在进程内的内存表里。从输入框/队列移除或启动应用时直接删除临时文件，提交时若临时文件已消失则丢弃该附件。
+- 只有会话真正落库时才把临时附件提交成 CAS：按内容流式重命名到 `upload/<sha256>`（相同内容复用已有实体），来源展示名/MIME 记在进程内，紧接着由 `updateAttachmentIndex` 一条 insert 直接写成最终的 `message` 使用记录，再用提交后的 url 替换消息。
+- 附件登记信息保存在数据库 `managed_files_cas` 表（一个 sha256 一行）：`id`、`sha256`、`mime_type`、`size_bytes`、`usages`（数据库版本由 29 提升到 100）。`usages` 是 JSON 列表，每项为 `{type, filename, display_name, created_at, details}`：`filename` / `display_name` 是该次使用在旧版（RikkaHub 兼容）布局里对应的 `uuid.ext` 文件名与展示名，`created_at` 是该次使用的时间（`message` 时取消息时间）；`type` 为 `message` 时 `details` 为 `{conversationId, nodeId, messageId}`，`assistant_background` / `assistant_avatar` 时为 `{assistantId}`，`user_avatar` 时为空，`type` 为 `none` 表示这份内容没有任何使用，`details` 为空、`created_at` 记录落盘时间、`display_name` 记录最近一次带入的展示名。旧的 `managed_files` 表已被 `managed_files_cas` 取代。
+- 每次设置落盘时若助手头像/聊天背景、用户头像发生变化，就重建这些内容的 `assistant_avatar` / `assistant_background` / `user_avatar` 使用记录；恢复备份后启动时也重建一次（平日启动不重建，设置变化已由落盘路径增量维护）。
 - 一份内容只要还有真实 `message` / 设置类使用就不会保留 `none` 记录；反之只剩一条 `none` 记录。
-- 真实消息记录指三个定位字段都非空；三个都为空的是输入框待发的临时占位记录，它们不计入引用数、不在“使用了该文件的消息”弹窗里展示，也不参与兼容 ZIP 导出。
+- 所有读写 `managed_files_cas.usages` 的删除与清理都与索引更新共用同一互斥锁，避免并发下互相覆盖。
 - “存储管理”的设置主页描述固定显示为“{n} 个文件（{n} 个引用），{size} MiB”：文件数按 `upload` 下文件数计，引用数按 `usages` 里真实 `message` 条目数计，大小按 `byte / 1048576` 换算。
 
 #### 新导出格式
@@ -465,7 +464,7 @@
 	- 导出普通文件时仍按内容去重：`upload`、`skills`、`fonts`、`media_creation` 中逐字节相同的文件只在 tar 内保留一份数据，其余条目写成指向首份数据的 TAR 硬链接，缩小备份体积。先用文件大小筛选，只有大小相同的文件才计算 SHA-256，大小唯一的文件不做哈希。其中 `upload`、`fonts` 只打包顶层文件，`skills`、`media_creation` 才递归包含子目录。
 	- 备份包内的普通文件条目不保留源文件的 POSIX 权限与属主信息，统一按条目名以普通文件（0644）写入；恢复解包时本来也不回写目标权限。恢复时直接流式解析 TAR。由于 Android 环境不保证支持硬链接，打包时写入的 TAR 硬链接条目会在目标条目落盘后于暂存目录展开成独立副本（复制内容），不再创建硬链接。
 	- 恢复时若存档包含非空 `upload`，会在应用阶段把原 `filesDir/upload` 整体移到 `pending/originals-upload` 备份，再用存档里的 `upload` 整体替换；恢复失败回滚时删掉新目录并把备份放回。存档没有 `upload`（或为空）时不动本地目录。
-	- 导入时统一把 `upload` 里 `uuid.ext` 形式的文件按内容重命名成 `upload/<sha256>`（相同内容去重），并把消息与设置里的旧文件名改写为 sha256；新格式 tar 里已经是 sha256 文件名，无需转换。
+	- 导入时先读存档数据库声明的 schema 版本（`PRAGMA user_version`）：旧库（< 100，上游 RikkaHub 为 29）把 `upload` 里的每个文件都按内容重新算 sha256 并重命名为 `upload/<sha256>`（相同内容去重），把消息与设置里的旧文件名改写为 sha256，再把旧 `managed_files` 表转成 `managed_files_cas`；已是 CAS schema（100）的存档完全不对 `upload` 做迁移，文件名与登记表保持原样。
 	- 本地、WebDAV 和 S3 使用相同的新格式。
 
 #### 其它
@@ -481,7 +480,7 @@
 - “备份提醒”的间隔按钮组最前面加入用于关闭提醒的“关”，不再单独显示备份提醒开关；无论是否关闭都显示上次备份时间。
 - 导出备份前先写入最新备份时间，使归档内的设置也包含该时间；导出或上传失败时恢复导出前的时间。
 - 导入完整备份后扫描消息数据库，把图片、文档、视频和音频记录里的附件 url 统一改写成相对 `filesDir` 的落盘路径（`upload/<sha256>`）。设置里的助手头像、聊天背景与用户头像在写入 DataStore 时同样折叠成相对路径。
-- 导入时把旧的 `managed_files` 表转换成 `managed_files_cas`（一份 sha256 一行，使用记录写入 `usages` 并逐条保存旧文件名与展示名），并把消息/设置里 `upload/<uuid.ext>` 的名字按内容 sha256 改写；消息库里记录了真实文件名（目前文档附件才有）时优先用它作为该次使用的展示名。导入后删除旧 `managed_files` 表（带数据的转换始终在恢复阶段完成；App 自身由 29 升到 100 只走 `Migration_29_100` 做表结构替换，不原地转换磁盘/展示名）。
+- 导入时按存档数据库版本处理附件：仅当版本低于 100（上游 RikkaHub 为 29）时，把旧的 `managed_files` 表转换成 `managed_files_cas`（一份 sha256 一行，使用记录写入 `usages` 并逐条保存旧文件名与展示名），并把消息/设置里 `upload/<uuid.ext>` 的名字按内容 sha256 改写；消息库里记录了真实文件名（目前文档附件才有）时优先用它作为该次使用的展示名。版本已是 100 的存档直接用恢复后的 `managed_files_cas`，不迁移 `upload`。导入后删除旧 `managed_files` 表（带数据的转换始终在恢复阶段完成；App 自身禁止原地升级：运行路径不注册 29→100 迁移，启动读到 29 的旧库会直接报错，`Migration_29_100` 只在恢复存档的暂存库上执行）。
 - 导入根据文件后缀识别新 `.tar` 与旧 `.zip`，旧 ZIP 备份仍可还原；还原时只读取单个 `rikka_hub.db`，不再合并旧 zip 的 `-wal`/`-shm` 旁路文件。
 - 本地导出额外提供旧 ZIP 兼容格式（移除 Fork 新增的模型价格、排序、显示、上下文缓存、回传思考、本地工具授权、中途思考、自定义字体字重与内置搜索字段；`chatFontFamily` 的 `outfit` 回落为 `serif`；`webDavConfig`/`s3Config`/`uploadS3Config` 的备份项去除 `WORKSPACE`；过滤官方版本无法反序列化的电池和定位本地工具；并标注“兼容 RikkaHub 2.5.1+”）。
 - 兼容 ZIP 中 `rikka_hub.db` 与 `settings.json` 使用 deflate 5 级压缩，其余附件条目只储存（STORED）不压缩。
@@ -509,11 +508,11 @@
 - 右上角在清理按钮右侧新增排序按钮，可选“按最新的引用排序”（默认）与“按最旧的引用排序”，两者都把引用时间较新的卡片排在页面上方，区别仅在于把每个附件的“时间”取为它最新引用的消息时间还是最旧引用的消息时间。排序在整个应用启动期间有效，不做持久化，进程重启后回到默认值，切换排序后滚动到列表顶部。
 - “存储管理”右上角刷新键触发按消息库重建 `managed_files_cas.usages`，确认说明复用搜索索引的全量扫描提示；重建时清空分类与文件列表，仅保留标题栏及右上角按钮，并在内容区域中央显示圆形加载指示器。
 - 新建、保存或删除会话后仅在附件使用记录真的变化时才写回 `managed_files_cas`。
-- 删除消息、会话或附件时按 `usages` 判断内容是否仍被引用（消息或助手头像/背景、用户头像）：删除会话时先移除它在 `usages` 里的消息引用，删除助手时先落设置重建使用记录，再删除已无引用的文件。从存储管理删除或清理文件前先清掉设置里指向它的助手头像/背景与用户头像，避免设置仍指向已删除的附件。
+- 删除消息、会话或附件时按 `usages` 判断内容是否仍被引用（消息、设置）：删除会话时先移除它在 `usages` 里的消息引用；删除助手时先落设置重建使用记录。CAS 附件的删除排在会话使用记录落库之后。从存储管理删除或清理文件前先清掉设置里指向它的助手头像/背景与用户头像，避免设置仍指向已删除的附件。
 - ChatBox 导入等就地改库时，按当前数据重建 `managed_files_cas.usages`；本地文件、WebDAV、S3 的完整恢复直接使用恢复后的 `managed_files_cas`。
-- “未使用的附件”分类仅在实际存在未引用实体时显示，仅保留删除操作并支持一键清理；删除最后一个未使用实体后自动返回上传附件分类。删除确认按图片或文件分别显示“删除聊天…”标题及不可恢复说明。
+- “未使用的附件”分类仅在实际存在未使用（只有 `none` 记录）实体时显示，仅保留删除操作并支持一键清理；删除最后一个未使用实体后自动返回上传附件分类。删除确认按图片或文件分别显示“删除聊天…”标题及不可恢复说明。
 - 聊天文件页的清理默认选中删除 30 天前的文件，删除文件时一并删除登记与使用记录；是否有文件过期按该内容 `usages` 里最晚的使用时间判断。
-- 输入框的附件从登记表里时间最晚的那条记录读取展示名，缺失时文档退回 `part.fileName`，图片/视频/音频退回类型文字“image”/“video”/“audio”；聊天消息列表里的附件不查登记表，图片显示缩略图、视频/音频显示媒体按钮（都不带文字），只有文档显示 `UIMessagePart` 自带的 `fileName`。
+- 输入框的附件展示名先从进程内临时附件表读取（添加时的来源文件名），CAS 附件再从登记表里时间最晚的那条记录读取，缺失时文档退回 `part.fileName`，图片/视频/音频退回类型文字“image”/“video”/“audio”；聊天消息列表里的附件不查登记表，图片显示缩略图、视频/音频显示媒体按钮（都不带文字），只有文档显示 `UIMessagePart` 自带的 `fileName`。
 
 ### 请求日志
 - 永久启用记录请求日志，并更名为“网络请求日志”。

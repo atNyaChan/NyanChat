@@ -8,8 +8,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * （逐 sha256 一行，时间与展示名写进 usages）。
  *
  * 磁盘上 `upload/<uuid.ext>` 到 `upload/<sha256>` 的转换需要读文件算哈希，不是 SQL 能做的，
- * 由导入流程（`ManagedFilesArchive.convertLegacyDatabase`）和启动时的
- * `FilesManager.syncManagedFiles` 完成；本迁移只保证表结构可用且可重复执行。
+ * 只在导入旧存档时由 `ManagedFilesArchive.convertLegacyDatabase` 完成。App 自身禁止原地升级：
+ * `AppDatabaseFactory` 在 App 运行路径下不注册本迁移，读到 29 的旧库会直接由 Room 报错；
+ * 本迁移只在备份校验/恢复时注册（`allowLegacyMigration = true`），保证表结构可用且可重复执行。
  */
 val Migration_29_100 = object : Migration(29, 100) {
     override fun migrate(db: SupportSQLiteDatabase) {

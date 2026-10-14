@@ -51,6 +51,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toFile
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dokar.sonner.ToastType
 import dev.chrisbanes.haze.HazeState
@@ -260,19 +261,23 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
     // 初始化输入状态（处理传入的 files 和 text 参数）
     LaunchedEffect(files, text) {
         if (files.isNotEmpty()) {
-            val localFiles = filesManager.createChatFilesByContents(files)
-            val contentTypes = files.mapNotNull { file ->
-                filesManager.getFileMimeType(file)
-            }
+            // 每个来源文件各自查 MIME 并复制到输入框临时目录，两个列表一一对应，避免下标错位
             val parts = buildList {
-                localFiles.forEachIndexed { index, file ->
-                    val type = contentTypes.getOrNull(index)
-                    if (type?.startsWith("image/") == true) {
-                        add(UIMessagePart.Image(url = file.toString()))
-                    } else if (type?.startsWith("video/") == true) {
-                        add(UIMessagePart.Video(url = file.toString()))
-                    } else if (type?.startsWith("audio/") == true) {
-                        add(UIMessagePart.Audio(url = file.toString()))
+                files.forEach { source ->
+                    val localUri = filesManager.createChatFilesByContents(listOf(source)).firstOrNull()
+                        ?: return@forEach
+                    val localFile = runCatching { localUri.toFile() }.getOrNull()
+                    val type = filesManager.getFileMimeType(source)
+                        ?: localFile?.let(filesManager::guessLocalFileMimeType)
+                    when {
+                        type?.startsWith("image/") == true ->
+                            add(UIMessagePart.Image(url = localUri.toString()))
+
+                        type?.startsWith("video/") == true ->
+                            add(UIMessagePart.Video(url = localUri.toString()))
+
+                        type?.startsWith("audio/") == true ->
+                            add(UIMessagePart.Audio(url = localUri.toString()))
                     }
                 }
             }

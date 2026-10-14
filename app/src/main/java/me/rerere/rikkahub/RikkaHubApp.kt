@@ -209,6 +209,8 @@ class RikkaHubApp : Application() {
         get<AppScope>().launch(Dispatchers.IO) {
             runCatching {
                 AttachmentCas.deleteStaleTemporaryFiles(File(filesDir, FileFolders.UPLOAD))
+                // 输入框临时附件（cacheDir 下）不跨进程存活，启动时整体丢弃
+                File(cacheDir, FileFolders.UPLOAD_TEMP).deleteRecursively()
             }.onFailure {
                 Log.e(TAG, "cleanupAttachmentTemps failed", it)
             }

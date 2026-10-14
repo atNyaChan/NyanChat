@@ -41,7 +41,7 @@ val repositoryModule = module {
     }
 
     single {
-        FilesRepository(get())
+        FilesRepository(get(), get())
     }
 
     single {
@@ -86,7 +86,7 @@ val repositoryModule = module {
     }
 
     single {
-        FilesManager(get(), get(), get())
+        FilesManager(get(), get())
     }
 
     single {

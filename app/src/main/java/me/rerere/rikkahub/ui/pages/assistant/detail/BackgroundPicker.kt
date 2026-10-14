@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import kotlinx.coroutines.launch
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Image02
 import me.rerere.rikkahub.R
@@ -41,6 +43,7 @@ fun BackgroundPickerContent(
     onUpdate: (String?) -> Unit
 ) {
     val filesManager: FilesManager = koinInject()
+    val scope = rememberCoroutineScope()
     var showPickOption by remember { mutableStateOf(false) }
     var showUrlInput by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
@@ -50,9 +53,12 @@ fun BackgroundPickerContent(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            val localUris = filesManager.createChatFilesByContents(listOf(it))
-            localUris.firstOrNull()?.let { localUri ->
-                onUpdate(localUri.toString())
+            scope.launch {
+                val localUri = filesManager.saveUploadFromUri(
+                    uri = it,
+                    displayName = filesManager.getFileNameFromUri(it),
+                )
+                localUri?.let { local -> onUpdate(local.toString()) }
             }
         }
     }

@@ -1,12 +1,14 @@
 package me.rerere.rikkahub.data.repository
 
 import android.database.sqlite.SQLiteBlobTooBigException
+import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.map
 import androidx.room.withTransaction
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -44,8 +46,20 @@ class ConversationRepository(
     private val messageFtsManager: MessageFtsManager,
 ) {
     companion object {
+        private const val TAG = "ConversationRepository"
         private const val PAGE_SIZE = 20
         private const val INITIAL_LOAD_SIZE = 40
+    }
+
+    /** FTS 索引失败不能阻断附件索引等后续步骤；取消仍要正常向外传播。 */
+    private suspend fun indexConversationFtsSafely(action: String, block: suspend () -> Unit) {
+        try {
+            block()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to $action in FTS", e)
+        }
     }
 
     /** 落盘形式消息 JSON 的唯一编码口：附件 url 一律折叠成相对 filesDir 的路径。 */
@@ -325,31 +339,38 @@ class ConversationRepository(
     }
 
     suspend fun insertConversation(conversation: Conversation) {
+        // 兜底：调用方都应在保存前提交输入框临时附件；这里用复制方式保证落库的绝不带临时路径
+        val target = filesManager.commitConversationFiles(conversation, move = false)
         database.withTransaction {
             conversationDAO.insert(
-                conversationToConversationEntity(conversation)
+                conversationToConversationEntity(target)
             )
-            saveMessageNodes(conversation.id.toString(), conversation.messageNodes)
+            saveMessageNodes(target.id.toString(), target.messageNodes)
         }
-        messageFtsManager.indexConversation(conversation)
-        runCatching { filesManager.updateAttachmentIndex(conversation) }
+        indexConversationFtsSafely("index conversation") {
+            messageFtsManager.indexConversation(target)
+        }
+        runCatching { filesManager.updateAttachmentIndex(target) }
+            .onFailure { Log.w(TAG, "Failed to update attachment index on insert", it) }
     }
 
     suspend fun updateConversation(conversation: Conversation) {
+        // 兜底：调用方都应在保存前提交输入框临时附件；这里用复制方式保证落库的绝不带临时路径
+        val target = filesManager.commitConversationFiles(conversation, move = false)
         database.withTransaction {
             conversationDAO.update(
-                conversationToConversationEntity(conversation)
+                conversationToConversationEntity(target)
             )
-            val conversationId = conversation.id.toString()
+            val conversationId = target.id.toString()
             val existing = messageNodeDAO.getNodeEntities(conversationId).associateBy { it.id }
-            val newIds = conversation.messageNodes.map { it.id.toString() }.toSet()
+            val newIds = target.messageNodes.map { it.id.toString() }.toSet()
 
             // 删除已移除的节点
             (existing.keys - newIds).forEach { id -> messageNodeDAO.deleteById(id) }
 
             // 只 upsert 真正有变更的节点，跳过未修改节点以减少数据库写入
             val changed = mutableListOf<MessageNodeEntity>()
-            conversation.messageNodes.forEachIndexed { index, node ->
+            target.messageNodes.forEachIndexed { index, node ->
                 val entity = MessageNodeEntity(
                     id = node.id.toString(),
                     conversationId = conversationId,
@@ -371,8 +392,11 @@ class ConversationRepository(
                 messageNodeDAO.insertAll(changed)
             }
         }
-        messageFtsManager.indexConversation(conversation)
-        runCatching { filesManager.updateAttachmentIndex(conversation) }
+        indexConversationFtsSafely("index conversation") {
+            messageFtsManager.indexConversation(target)
+        }
+        runCatching { filesManager.updateAttachmentIndex(target) }
+            .onFailure { Log.w(TAG, "Failed to update attachment index on update", it) }
     }
 
     suspend fun deleteConversation(conversation: Conversation) {
@@ -382,7 +406,9 @@ class ConversationRepository(
         } else {
             conversation
         }
-        messageFtsManager.deleteConversation(conversation.id.toString())
+        indexConversationFtsSafely("delete conversation") {
+            messageFtsManager.deleteConversation(conversation.id.toString())
+        }
         database.withTransaction {
             // message_node 会通过 CASCADE 自动删除
             conversationDAO.delete(
@@ -390,6 +416,7 @@ class ConversationRepository(
             )
         }
         runCatching { filesManager.removeConversationFromAttachmentIndex(conversation.id) }
+            .onFailure { Log.w(TAG, "Failed to remove conversation from attachment index", it) }
         filesManager.deleteChatFiles(fullConversation.files)
     }
 

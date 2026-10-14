@@ -34,15 +34,30 @@ internal object ManagedFilesArchive {
     private const val LEGACY_TABLE = "managed_files"
     private const val CAS_TABLE = "managed_files_cas"
     private val ATTACHMENT_TYPES = setOf("image", "document", "video", "audio")
-    private val SHA256_PATTERN = Regex("[0-9a-f]{64}")
 
     /** 兼容 ZIP 里数据库声明的 schema 版本：上游 RikkaHub 当前版本。 */
     private const val LEGACY_SCHEMA_VERSION = 29
 
+    /** 本分支的 CAS schema 版本；数据库达到该版本时 `upload` 已是内容寻址，不能再做迁移。 */
+    const val CAS_SCHEMA_VERSION = 100
+
+    /** 读取数据库声明的 schema 版本（`PRAGMA user_version`）；文件不可读时返回 null。 */
+    fun readSchemaVersion(databaseFile: File): Int? {
+        if (!databaseFile.isFile) return null
+        return runCatching {
+            SQLiteDatabase.openDatabase(databaseFile.absolutePath, null, SQLiteDatabase.OPEN_READONLY)
+                .use { database -> database.version }
+        }.getOrNull()
+    }
+
+    /** 数据库结构是内容寻址的（由本分支写出）时为 true，此时不得迁移 `upload` 目录。 */
+    fun isCasSchema(version: Int?): Boolean = version != null && version >= CAS_SCHEMA_VERSION
+
     /**
-     * 把 [filesRoot]/upload 里的普通文件统一成以 sha256 命名的实体。
-     * 新格式的 tar 里已经是 sha256 文件名，这里只处理 `uuid.ext` 形式（兼容 zip 导出与旧 tar）。
-     * 返回旧文件名（uuid.ext）到 sha256 的映射，供改写消息/设置里的 url 使用。
+     * 把 [filesRoot]/upload 里的普通文件统一成以内容 sha256 命名的实体，相同内容只保留一份。
+     * 只在导入旧库（版本 < [CAS_SCHEMA_VERSION]，上游 RikkaHub 为 29）时调用：旧库里可能仍有
+     * 名字已经是 sha256 的文件，这里也按内容重新命名/校验，并返回每个旧文件名到 sha256 的映射
+     * 供改写消息/设置里的 url 使用。
      */
     fun normalizeUploadDir(filesRoot: File): Map<String, String> {
         val upload = File(filesRoot, FileFolders.UPLOAD)
@@ -51,13 +66,14 @@ internal object ManagedFilesArchive {
         upload.listFiles().orEmpty().forEach { file ->
             if (!file.isFile || AttachmentCas.isTemporary(file)) return@forEach
             val name = file.name
-            if (SHA256_PATTERN.matches(name)) return@forEach
             val sha256 = AttachmentCas.sha256(file)
-            val target = File(upload, sha256)
-            if (!target.exists() && !file.renameTo(target)) {
-                file.copyTo(target, overwrite = true)
+            if (name != sha256) {
+                val target = File(upload, sha256)
+                if (!target.exists() && !file.renameTo(target)) {
+                    file.copyTo(target, overwrite = true)
+                }
+                file.delete()
             }
-            file.delete()
             renamed[name] = sha256
         }
         return renamed
@@ -359,6 +375,8 @@ internal object ManagedFilesArchive {
     }
 
     private fun mapAttachmentUrl(value: String, oldNameToSha: Map<String, String>): String {
+        // 只改写本地附件 url，避免把 http/content 里碰巧出现的 upload/ 路径段当成附件
+        if (value.contains("://") && !value.startsWith("file://")) return value
         val marker = "${FileFolders.UPLOAD}/"
         val index = value.lastIndexOf(marker)
         if (index < 0) return value

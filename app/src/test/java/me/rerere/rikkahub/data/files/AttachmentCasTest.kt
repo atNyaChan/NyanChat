@@ -4,6 +4,7 @@ import java.io.File
 import me.rerere.rikkahub.data.sync.ManagedFilesArchive
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -102,7 +103,7 @@ class AttachmentCasTest {
     }
 
     @Test
-    fun `normalizeUploadDir is a no-op for already sha256 named files`() {
+    fun `normalizeUploadDir keeps already sha256 named files and reports identity mapping`() {
         setUpRoots()
 
         val upload = uploadDir()
@@ -110,8 +111,44 @@ class AttachmentCasTest {
 
         val renamed = ManagedFilesArchive.normalizeUploadDir(filesRoot)
 
-        assertTrue(renamed.isEmpty())
+        assertEquals(mapOf(sha256 to sha256), renamed)
         assertTrue(upload.resolve(sha256).isFile)
+    }
+
+    @Test
+    fun `normalizeUploadDir rehashes sha looking files whose content does not match`() {
+        setUpRoots()
+
+        val upload = uploadDir()
+        val wrongName = "a".repeat(64)
+        File(upload, wrongName).writeText("actual content")
+
+        val renamed = ManagedFilesArchive.normalizeUploadDir(filesRoot)
+
+        val expectedSha = renamed.getValue(wrongName)
+        assertTrue(expectedSha != wrongName)
+        assertTrue(upload.resolve(expectedSha).isFile)
+        assertFalse(upload.resolve(wrongName).exists())
+        assertEquals("actual content", upload.resolve(expectedSha).readText())
+    }
+
+    @Test
+    fun `attachment sha is only read from local urls`() {
+        val sha = "a".repeat(64)
+        assertEquals(sha, attachmentShaFromUrl("upload/$sha"))
+        assertEquals(sha, attachmentShaFromUrl("file:///data/user/0/app/files/upload/$sha"))
+        assertNull(attachmentShaFromUrl("https://example.com/upload/$sha"))
+        assertNull(attachmentShaFromUrl("content://media/upload/$sha"))
+        assertNull(attachmentShaFromUrl(""))
+    }
+
+    @Test
+    fun `temp file name is only read from local temp urls`() {
+        assertEquals("x.jpg", tempAttachmentNameFromUrl("upload_tmp/x.jpg"))
+        assertEquals("x.jpg", tempAttachmentNameFromUrl("file:///data/user/0/app/files/upload_tmp/x.jpg"))
+        assertNull(tempAttachmentNameFromUrl("https://example.com/upload_tmp/x.jpg"))
+        assertNull(tempAttachmentNameFromUrl("upload/abc"))
+        assertNull(tempAttachmentNameFromUrl("file:///data/files/upload/x.jpg"))
     }
 
     @Test

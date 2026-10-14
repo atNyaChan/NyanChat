@@ -44,7 +44,6 @@ import me.rerere.hugeicons.stroke.Files02
 import me.rerere.hugeicons.stroke.MusicNote03
 import me.rerere.hugeicons.stroke.Video01
 import me.rerere.rikkahub.data.files.FilesManager
-import me.rerere.rikkahub.data.files.attachmentShaFromUrl
 import me.rerere.rikkahub.ui.hooks.ChatInputState
 import me.rerere.rikkahub.utils.formatNumber
 import me.rerere.ui.sketch.SketchDialog
@@ -56,12 +55,12 @@ internal fun MediaFileInputRow(
     documentWordCounts: Map<String, Int?>,
 ) {
     val filesManager: FilesManager = koinInject()
-    // 输入框附件显示登记表里时间最晚那条记录的展示名，缺失时退回类型/自带文件名
+    // 输入框附件显示添加时的来源文件名（CAS 附件取自登记表里时间最晚的那条记录），缺失时退回类型/自带文件名
     val latestDisplayNamesFlow = remember(filesManager) { filesManager.latestDisplayNames() }
     val latestDisplayNames by latestDisplayNamesFlow.collectAsState(initial = emptyMap())
 
     fun inputDisplayName(url: String, fallback: String): String =
-        attachmentShaFromUrl(url)?.let { latestDisplayNames[it] }?.takeIf { it.isNotBlank() } ?: fallback
+        latestDisplayNames[url]?.takeIf { it.isNotBlank() } ?: fallback
 
     val scope = rememberCoroutineScope()
 

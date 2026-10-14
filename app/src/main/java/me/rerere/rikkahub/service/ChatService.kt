@@ -1,6 +1,7 @@
 package me.rerere.rikkahub.service
 
 import android.app.Application
+import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
@@ -76,6 +77,7 @@ import me.rerere.rikkahub.data.datastore.findProvider
 import me.rerere.rikkahub.data.datastore.getAssistantById
 import me.rerere.rikkahub.data.datastore.getCurrentAssistant
 import me.rerere.rikkahub.data.files.FilesManager
+import me.rerere.rikkahub.data.files.attachmentShaFromUrl
 import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.AssistantAffectScope
@@ -239,6 +241,12 @@ class ChatService(
     )
     private val persistenceMutexes = ConcurrentHashMap<Uuid, Mutex>()
     private val translationJobs = ConcurrentHashMap<Pair<Uuid, Uuid>, Job>()
+
+    /**
+     * 已从会话中移除、待使用记录落库后再删除的 CAS 附件。
+     * 见 [enqueueRemovedAttachments] 与 [drainPendingAttachmentDeletions]。
+     */
+    private val pendingAttachmentDeletions = ConcurrentHashMap<Uuid, MutableList<Uri>>()
     private val _translatingMessages = MutableStateFlow<Set<Pair<Uuid, Uuid>>>(emptySet())
     val translatingMessages: StateFlow<Set<Pair<Uuid, Uuid>>> = _translatingMessages.asStateFlow()
 
@@ -306,6 +314,8 @@ class ChatService(
     suspend fun deleteConversation(conversation: Conversation) {
         val mutex = persistenceMutexes.computeIfAbsent(conversation.id) { Mutex() }
         mutex.withLock {
+            // 会话删除自带文件清理，不再单独处理排队中的删除
+            pendingAttachmentDeletions.remove(conversation.id)
             conversationRepo.deleteConversation(conversation)
             sessionManager.remove(conversation.id)
         }
@@ -1438,7 +1448,7 @@ class ChatService(
     ) {
         if (conversation.id != conversationId) return
         val session = sessionManager.getOrCreate(conversationId)
-        checkFilesDelete(conversation, session.state.value)
+        enqueueRemovedAttachments(conversation, session.state.value)
         session.updateConversation(conversation)
         if (persistWhenIdle && !session.isGenerating) {
             persistConversationAsync(conversationId)
@@ -1527,27 +1537,49 @@ class ChatService(
         folderRepository.deleteFolder(folderId)
     }
 
-    private fun checkFilesDelete(newConversation: Conversation, oldConversation: Conversation) {
+    /**
+     * 对比新旧会话，登记被移除的附件。
+     *
+     * 输入框临时附件立即删除；CAS 附件要等使用记录随会话落库后再删：索引还没更新时
+     * [FilesManager.deleteChatFiles] 查到的仍是旧引用，会删不掉，之后又变成遗留的“未使用”文件。
+     */
+    private fun enqueueRemovedAttachments(newConversation: Conversation, oldConversation: Conversation) {
         val session = sessionManager.get(newConversation.id)
         val queuedFiles = (session?.messageQueue?.state?.value?.messages.orEmpty() +
                 listOfNotNull(session?.submittingMessage))
             .flatMap { it.parts }.localFileUrls().map { it.toUri() }
         val newFiles = newConversation.files + queuedFiles
-        val oldFiles = oldConversation.files
-        val deletedFiles = oldFiles.filter { file ->
+        val deletedFiles = oldConversation.files.filter { file ->
             newFiles.none { it == file }
         }
-        if (deletedFiles.isNotEmpty()) {
-            appScope.launch { filesManager.deleteChatFiles(deletedFiles) }
-            Log.w(TAG, "checkFilesDelete: $deletedFiles")
+        if (deletedFiles.isEmpty()) return
+        val (tempFiles, casFiles) = deletedFiles.partition { attachmentShaFromUrl(it.toString()) == null }
+        if (tempFiles.isNotEmpty()) {
+            appScope.launch { filesManager.deleteChatFiles(tempFiles) }
         }
+        if (casFiles.isNotEmpty()) {
+            Log.w(TAG, "enqueueRemovedAttachments: $casFiles")
+            val pending = pendingAttachmentDeletions.computeIfAbsent(newConversation.id) { mutableListOf() }
+            synchronized(pending) { pending.addAll(casFiles) }
+        }
+    }
+
+    /** 会话使用记录落库后删除登记的 CAS 附件（仍被其它消息/设置引用时保留）。 */
+    private suspend fun drainPendingAttachmentDeletions(conversationId: Uuid) {
+        val pending = pendingAttachmentDeletions.remove(conversationId) ?: return
+        val files = synchronized(pending) { pending.toList().also { pending.clear() } }
+        if (files.isEmpty()) return
+        runCatching { filesManager.deleteChatFiles(files) }
+            .onFailure { Log.w(TAG, "Failed to delete removed attachments", it) }
     }
 
     suspend fun saveConversation(conversationId: Uuid, conversation: Conversation) {
         // 会话落库即视为开始，此时把助手的配置固定到会话上。
         // 保存即代表产生了真实内容，清掉“新建占位”标记，之后才允许落库。
         val settings = settingsStore.awaitLoaded()
-        val bound = conversation.copy(newConversation = false)
+        // 输入框临时附件在这一步提交成 CAS；内存与会话都要用替换后的 url
+        val committed = filesManager.commitConversationFiles(conversation)
+        val bound = committed.copy(newConversation = false)
             .bindConfig(settings)
             .fillModelSnapshots(settings)
         updateConversation(conversationId, bound, persistWhenIdle = false)
@@ -1573,18 +1605,23 @@ class ChatService(
     private suspend fun persistCurrentConversation(conversationId: Uuid) {
         val mutex = persistenceMutexes.computeIfAbsent(conversationId) { Mutex() }
         mutex.withLock {
-            val conversation = sessionManager.get(conversationId)?.state?.value ?: return@withLock
-            val exists = conversationRepo.existsConversationById(conversation.id)
-            // 只按是否产生过内容判断是否落库：新建对话会预置默认标题、预设消息，
-            // 但用户尚未发送任何内容，不能算产生了内容（预设消息同理），
-            // 避免空的"新聊天"或仅含预设消息的占位对话出现在会话列表里。
-            if (!exists && (conversation.newConversation || conversation.messageNodes.isEmpty())) {
-                return@withLock
-            }
-            if (!exists) {
-                conversationRepo.insertConversation(conversation)
-            } else {
-                conversationRepo.updateConversation(conversation)
+            try {
+                val conversation = sessionManager.get(conversationId)?.state?.value ?: return@withLock
+                val exists = conversationRepo.existsConversationById(conversation.id)
+                // 只按是否产生过内容判断是否落库：新建对话会预置默认标题、预设消息，
+                // 但用户尚未发送任何内容，不能算产生了内容（预设消息同理），
+                // 避免空的"新聊天"或仅含预设消息的占位对话出现在会话列表里。
+                if (!exists && (conversation.newConversation || conversation.messageNodes.isEmpty())) {
+                    return@withLock
+                }
+                if (!exists) {
+                    conversationRepo.insertConversation(conversation)
+                } else {
+                    conversationRepo.updateConversation(conversation)
+                }
+            } finally {
+                // 使用记录已随上面的落库更新，此时才能安全删除被移除的 CAS 附件
+                drainPendingAttachmentDeletions(conversationId)
             }
         }
     }
@@ -1748,13 +1785,8 @@ class ChatService(
             .map { node ->
                 node.copy(
                     id = Uuid.random(),
-                    messages = node.messages.map { message ->
-                        message.copy(
-                            parts = message.parts.map { part ->
-                                part.copyWithForkedFileUrl()
-                            }
-                        )
-                    }
+                    // 附件是内容寻址的，分支直接复用同一实体，使用记录会随新会话一起写入
+                    messages = node.messages,
                 )
             }
 
@@ -1855,22 +1887,6 @@ class ChatService(
         }
 
         return conversation.copy(messageNodes = updatedNodes)
-    }
-
-    private fun UIMessagePart.copyWithForkedFileUrl(): UIMessagePart {
-        fun copyLocalFileIfNeeded(url: String): String {
-            if (!url.startsWith("file://")) return url
-            val copied = filesManager.createChatFilesByContents(listOf(url.toUri())).firstOrNull()
-            return copied?.toString() ?: url
-        }
-
-        return when (this) {
-            is UIMessagePart.Image -> copy(url = copyLocalFileIfNeeded(url))
-            is UIMessagePart.Document -> copy(url = copyLocalFileIfNeeded(url))
-            is UIMessagePart.Video -> copy(url = copyLocalFileIfNeeded(url))
-            is UIMessagePart.Audio -> copy(url = copyLocalFileIfNeeded(url))
-            else -> this
-        }
     }
 
     fun clearTranslationField(conversationId: Uuid, messageId: Uuid) {
