@@ -63,7 +63,7 @@ internal object RestoredWorkspaceStatusResetter {
     }
 
     private fun hasLocalRootfs(workspacesDir: File, root: String): Boolean {
-        if (root == "." || root == ".." || !root.matches(ROOT_PATTERN)) return false
+        if (!WorkspaceManager.isValidWorkspaceRoot(root)) return false
         return WorkspaceManager.isUsableRootfs(File(File(workspacesDir, root), "linux"))
     }
 
@@ -74,5 +74,4 @@ internal object RestoredWorkspaceStatusResetter {
     )
 
     private const val WORKSPACES_DIR = "workspaces"
-    private val ROOT_PATTERN = Regex("[A-Za-z0-9._-]+")
 }

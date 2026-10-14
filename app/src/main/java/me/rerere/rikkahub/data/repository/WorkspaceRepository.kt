@@ -40,25 +40,43 @@ class WorkspaceRepository(
     suspend fun checkIntegrity() = withContext(Dispatchers.IO) {
         val workspaces = dao.getAll()
         for (workspace in workspaces) {
-            val dir = manager.workspaceDir(workspace.root)
-            val directoryExists = dir.isDirectory
-            val hasContent = directoryExists && manager.hasWorkspaceContent(workspace.root)
-            val hasShell = directoryExists && manager.hasRootfs(workspace.root)
-            val normalizedStatus = when {
-                workspace.shellStatus == WorkspaceShellStatus.BROKEN.name -> WorkspaceShellStatus.BROKEN
-                workspace.shellStatus == WorkspaceShellStatus.READY.name &&
-                    (!directoryExists || !hasContent || !hasShell) -> WorkspaceShellStatus.BROKEN
-                workspace.shellStatus == WorkspaceShellStatus.READY.name -> WorkspaceShellStatus.READY
-                workspace.shellStatus == WorkspaceShellStatus.DISABLED.name && hasContent ->
-                    WorkspaceShellStatus.BROKEN
-                workspace.shellStatus == WorkspaceShellStatus.DISABLED.name -> WorkspaceShellStatus.DISABLED
-                hasContent && !hasShell -> WorkspaceShellStatus.BROKEN
-                else -> WorkspaceShellStatus.DISABLED
+            // 单条记录异常 (例如 root 非法) 不应中断整轮检查
+            runCatching { normalizeShellStatus(workspace) }
+                .onFailure {
+                    Log.e(TAG, "checkIntegrity failed: id=${workspace.id}, root=${workspace.root}", it)
+                }
+        }
+    }
+
+    private suspend fun normalizeShellStatus(workspace: WorkspaceEntity) {
+        // root 非法时无法定位目录, 直接标记损坏, 避免用越界路径继续访问文件系统
+        if (!WorkspaceManager.isValidWorkspaceRoot(workspace.root)) {
+            Log.w(TAG, "Invalid workspace root, marking as broken: id=${workspace.id}, root=${workspace.root}")
+            if (workspace.shellStatus != WorkspaceShellStatus.BROKEN.name) {
+                updateShellState(workspace.id, WorkspaceShellStatus.BROKEN.name)
             }
-            if (workspace.shellStatus != normalizedStatus.name) {
-                Log.w(TAG, "Normalizing shell status: id=${workspace.id}, status=${workspace.shellStatus}")
-                updateShellState(workspace.id, normalizedStatus.name)
-            }
+            return
+        }
+        val dir = manager.workspaceDir(workspace.root)
+        val directoryExists = dir.isDirectory
+        val hasContent = directoryExists && manager.hasWorkspaceContent(workspace.root)
+        val hasShell = directoryExists && manager.hasRootfs(workspace.root)
+        val normalizedStatus = when {
+            // 目录缺失说明工作区数据已不在, 无论之前是什么状态都保留记录并标记损坏
+            !directoryExists -> WorkspaceShellStatus.BROKEN
+            workspace.shellStatus == WorkspaceShellStatus.BROKEN.name -> WorkspaceShellStatus.BROKEN
+            workspace.shellStatus == WorkspaceShellStatus.READY.name &&
+                (!hasContent || !hasShell) -> WorkspaceShellStatus.BROKEN
+            workspace.shellStatus == WorkspaceShellStatus.READY.name -> WorkspaceShellStatus.READY
+            workspace.shellStatus == WorkspaceShellStatus.DISABLED.name && hasContent ->
+                WorkspaceShellStatus.BROKEN
+            workspace.shellStatus == WorkspaceShellStatus.DISABLED.name -> WorkspaceShellStatus.DISABLED
+            hasContent && !hasShell -> WorkspaceShellStatus.BROKEN
+            else -> WorkspaceShellStatus.DISABLED
+        }
+        if (workspace.shellStatus != normalizedStatus.name) {
+            Log.w(TAG, "Normalizing shell status: id=${workspace.id}, status=${workspace.shellStatus}")
+            updateShellState(workspace.id, normalizedStatus.name)
         }
     }
 
@@ -66,6 +84,7 @@ class WorkspaceRepository(
 
     suspend fun workspaceHasContent(id: String): Boolean = withContext(Dispatchers.IO) {
         val workspace = dao.getById(id) ?: return@withContext false
+        if (!WorkspaceManager.isValidWorkspaceRoot(workspace.root)) return@withContext false
         manager.hasWorkspaceContent(workspace.root)
     }
 
@@ -132,27 +151,38 @@ class WorkspaceRepository(
         onProgress: (RootfsInstallProgress) -> Unit = {},
     ): Boolean {
         val workspace = dao.getById(id) ?: return false
-        updateShellState(workspace, WorkspaceShellStatus.DISABLED.name)
+        // 下载/解压阶段不改变现有状态, 只有开始删除原 Rootfs 时才标记 BROKEN
+        var replacingRootfs = false
         try {
             // runInterruptible 让协程取消转成线程中断, 打断 install 内阻塞的下载/解压循环
             runInterruptible(Dispatchers.IO) {
-                rootfsInstaller.install(workspace.root, url, onProgress)
+                rootfsInstaller.install(workspace.root, url, onProgress) {
+                    replacingRootfs = true
+                    // 回调在 IO 线程上执行, 用同步写入保证 BROKEN 在删除原 Rootfs 前落库
+                    dao.updateShellStatusBlocking(
+                        id = workspace.id,
+                        shellStatus = WorkspaceShellStatus.BROKEN.name,
+                        updatedAt = System.currentTimeMillis(),
+                    )
+                }
             }
             updateShellState(workspace, WorkspaceShellStatus.READY.name)
             return true
         } catch (e: CancellationException) {
             withContext(NonCancellable) {
-                restoreShellState(workspace)
+                settleFailedRootfsInstall(workspace, replacingRootfs)
             }
             throw e
         } catch (e: InterruptedException) {
             withContext(NonCancellable) {
-                restoreShellState(workspace)
+                settleFailedRootfsInstall(workspace, replacingRootfs)
             }
             throw CancellationException("Rootfs install cancelled").also { it.initCause(e) }
         } catch (e: Throwable) {
             Log.e(TAG, "installRootfs failed: workspace=${workspace.id}, root=${workspace.root}, url=$url", e)
-            updateShellState(workspace, WorkspaceShellStatus.BROKEN.name)
+            withContext(NonCancellable) {
+                settleFailedRootfsInstall(workspace, replacingRootfs)
+            }
             throw e
         }
     }
@@ -164,21 +194,30 @@ class WorkspaceRepository(
         onProgress: (RootfsInstallProgress) -> Unit = {},
     ): Boolean {
         val workspace = dao.getById(id) ?: return false
-        updateShellState(workspace, WorkspaceShellStatus.DISABLED.name)
+        // 下载/解压阶段不改变现有状态, 只有开始删除原 Rootfs 时才标记 BROKEN
+        var replacingRootfs = false
         try {
             runInterruptible(Dispatchers.IO) {
-                rootfsInstaller.install(workspace.root, input, fileName, onProgress)
+                rootfsInstaller.install(workspace.root, input, fileName, onProgress) {
+                    replacingRootfs = true
+                    // 回调在 IO 线程上执行, 用同步写入保证 BROKEN 在删除原 Rootfs 前落库
+                    dao.updateShellStatusBlocking(
+                        id = workspace.id,
+                        shellStatus = WorkspaceShellStatus.BROKEN.name,
+                        updatedAt = System.currentTimeMillis(),
+                    )
+                }
             }
             updateShellState(workspace, WorkspaceShellStatus.READY.name)
             return true
         } catch (e: CancellationException) {
             withContext(NonCancellable) {
-                restoreShellState(workspace)
+                settleFailedRootfsInstall(workspace, replacingRootfs)
             }
             throw e
         } catch (e: InterruptedException) {
             withContext(NonCancellable) {
-                restoreShellState(workspace)
+                settleFailedRootfsInstall(workspace, replacingRootfs)
             }
             throw CancellationException("Rootfs install cancelled").also { it.initCause(e) }
         } catch (e: Throwable) {
@@ -187,7 +226,9 @@ class WorkspaceRepository(
                 "installRootfs failed: workspace=${workspace.id}, root=${workspace.root}, file=$fileName",
                 e,
             )
-            updateShellState(workspace, WorkspaceShellStatus.BROKEN.name)
+            withContext(NonCancellable) {
+                settleFailedRootfsInstall(workspace, replacingRootfs)
+            }
             throw e
         }
     }
@@ -414,6 +455,19 @@ class WorkspaceRepository(
             else -> WorkspaceShellStatus.DISABLED
         }
         updateShellState(workspace.id, restoredStatus.name)
+    }
+
+    /**
+     * 安装失败/取消后的状态处理:
+     * - 未进入替换阶段: 原 Rootfs 未被删除, 恢复安装前的状态
+     * - 已进入替换阶段: 原 Rootfs 已被删除或替换, 保持 BROKEN
+     */
+    private suspend fun settleFailedRootfsInstall(workspace: WorkspaceEntity, replacingRootfs: Boolean) {
+        if (replacingRootfs) {
+            updateShellState(workspace, WorkspaceShellStatus.BROKEN.name)
+        } else {
+            restoreShellState(workspace)
+        }
     }
 
     private suspend fun updateShellState(

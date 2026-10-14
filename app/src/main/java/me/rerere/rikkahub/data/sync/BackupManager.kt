@@ -36,6 +36,7 @@ import me.rerere.rikkahub.data.model.Avatar
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.rikkahub.utils.fileSizeToString
 import me.rerere.workspace.RootfsInstaller
+import me.rerere.workspace.WorkspaceManager
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream
@@ -664,10 +665,9 @@ class BackupManager(
         }
 
         private const val WORKSPACES_ENTRY = "workspaces/"
-        private val WORKSPACE_ROOT_PATTERN = Regex("[A-Za-z0-9._-]+")
 
         private fun String.isValidWorkspaceRoot(): Boolean =
-            this != "." && this != ".." && matches(WORKSPACE_ROOT_PATTERN)
+            WorkspaceManager.isValidWorkspaceRoot(this)
     }
 }
 

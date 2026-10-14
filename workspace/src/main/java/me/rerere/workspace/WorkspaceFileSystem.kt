@@ -62,8 +62,8 @@ class WorkspaceFileSystem(
     }
 
     fun createDirectory(root: File, path: String): WorkspaceFileEntry {
-        val directory = resolvePath(root, path)
-        require(!directory.exists()) { "Path already exists: $path" }
+        val directory = resolvePathNoFollow(root, path)
+        require(!directory.exists() && !Files.isSymbolicLink(directory.toPath())) { "Path already exists: $path" }
         require(directory.mkdir()) { "Failed to create directory: $path" }
         return directory.toEntry(root)
     }
@@ -79,9 +79,11 @@ class WorkspaceFileSystem(
 
     fun delete(root: File, path: String, recursive: Boolean = false): Boolean {
         require(path.isNotBlank() && path != ".") { "Refusing to delete workspace root" }
-        val file = resolvePath(root, path)
-        if (!file.exists()) return false
-        return if (file.isDirectory) {
+        // 不跟随最后一段软链接: 删除应作用于条目本身,而不是它指向的目标
+        val file = resolvePathNoFollow(root, path)
+        val isSymlink = Files.isSymbolicLink(file.toPath())
+        if (!file.exists() && !isSymlink) return false
+        return if (!isSymlink && file.isDirectory) {
             require(recursive) { "Directory delete requires recursive = true" }
             file.deleteRecursively()
         } else {
@@ -91,12 +93,15 @@ class WorkspaceFileSystem(
 
     fun move(root: File, source: String, target: String, overwrite: Boolean = false): WorkspaceFileEntry {
         require(source.isNotBlank() && source != ".") { "Refusing to move workspace root" }
-        val sourceFile = resolvePath(root, source)
-        val targetFile = resolvePath(root, target)
-        require(sourceFile.exists()) { "Source does not exist: $source" }
-        if (targetFile.exists()) {
+        // 软链接本身也是可移动/可覆盖的条目,同样不能跟随
+        val sourceFile = resolvePathNoFollow(root, source)
+        val targetFile = resolvePathNoFollow(root, target)
+        require(sourceFile.exists() || Files.isSymbolicLink(sourceFile.toPath())) {
+            "Source does not exist: $source"
+        }
+        if (targetFile.exists() || Files.isSymbolicLink(targetFile.toPath())) {
             require(overwrite) { "Target already exists: $target" }
-            if (targetFile.isDirectory) {
+            if (!Files.isSymbolicLink(targetFile.toPath()) && targetFile.isDirectory) {
                 targetFile.deleteRecursively()
             } else {
                 targetFile.delete()
@@ -178,7 +183,12 @@ class WorkspaceFileSystem(
             block(stream.iterator().asSequence())
         }
 
-    private fun resolvePath(root: File, path: String): File {
+    private fun resolvePath(root: File, path: String): File = resolvePath(root, path, followFinalSymlink = true)
+
+    /** 解析路径但不跟随最后一段的软链接，用于删除/移动/新建目录等应作用于条目本身的操作 */
+    private fun resolvePathNoFollow(root: File, path: String): File = resolvePath(root, path, followFinalSymlink = false)
+
+    private fun resolvePath(root: File, path: String, followFinalSymlink: Boolean): File {
         root.mkdirs()
         val normalized = path
             .replace('\\', '/')
@@ -188,13 +198,28 @@ class WorkspaceFileSystem(
         require(!normalized.contains('\u0000')) { "Path contains invalid character" }
 
         val rootFile = root.canonicalFile
-        val target = if (normalized == ".") rootFile else File(rootFile, normalized).canonicalFile
+        if (normalized == ".") return rootFile
+
+        // 先规范化父目录: 这样既能防止 `..`/目录软链接越出工作区, 又能保留最后一段条目本身
+        val parentPath = normalized.substringBeforeLast('/', missingDelimiterValue = "")
+        val name = normalized.substringAfterLast('/')
+        require(name.isNotEmpty() && name != "." && name != "..") { "Invalid path: $path" }
+        val parent = if (parentPath.isBlank()) rootFile else File(rootFile, parentPath).canonicalFile
         val rootPath = rootFile.path
-        val targetPath = target.path
+        val parentTargetPath = parent.path
+        require(parentTargetPath == rootPath || parentTargetPath.startsWith(rootPath + File.separator)) {
+            "Path escapes workspace root: $path"
+        }
+
+        val target = File(parent, name)
+        if (!followFinalSymlink) return target
+
+        val canonicalTarget = target.canonicalFile
+        val targetPath = canonicalTarget.path
         require(targetPath == rootPath || targetPath.startsWith(rootPath + File.separator)) {
             "Path escapes workspace root: $path"
         }
-        return target
+        return canonicalTarget
     }
 
     fun resolve(root: File, path: String): File = resolvePath(root, path)

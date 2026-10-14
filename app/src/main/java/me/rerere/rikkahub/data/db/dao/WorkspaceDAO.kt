@@ -24,6 +24,13 @@ interface WorkspaceDAO {
     @Query("UPDATE workspaces SET shell_status = :shellStatus, updated_at = :updatedAt WHERE id = :id")
     suspend fun updateShellStatus(id: String, shellStatus: String, updatedAt: Long): Int
 
+    /**
+     * 同步版本, 供 [me.rerere.workspace.RootfsInstaller] 的非协程回调在 IO 线程上直接写入状态。
+     * 仅可在后台线程调用。
+     */
+    @Query("UPDATE workspaces SET shell_status = :shellStatus, updated_at = :updatedAt WHERE id = :id")
+    fun updateShellStatusBlocking(id: String, shellStatus: String, updatedAt: Long): Int
+
     @Query("UPDATE workspaces SET shell_compatibility_mode = :enabled, updated_at = :updatedAt WHERE id = :id")
     suspend fun setShellCompatibilityMode(id: String, enabled: Boolean, updatedAt: Long): Int
 

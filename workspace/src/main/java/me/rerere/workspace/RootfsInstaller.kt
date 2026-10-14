@@ -20,6 +20,7 @@ class RootfsInstaller(
         root: String,
         url: String,
         onProgress: (RootfsInstallProgress) -> Unit = {},
+        onReplacingRootfs: () -> Unit = {},
     ) {
         require(url.isNotBlank()) { "Rootfs download url is required" }
         manager.ensureWorkspace(root)
@@ -33,7 +34,7 @@ class RootfsInstaller(
             stagingDir.deleteRecursively()
             stagingDir.mkdirs()
             download(url, archive, onProgress)
-            installArchive(archive, stagingDir, linuxDir, format, onProgress)
+            installArchive(archive, stagingDir, linuxDir, format, onProgress, onReplacingRootfs)
         } finally {
             archive.delete()
             stagingDir.deleteRecursively()
@@ -45,6 +46,7 @@ class RootfsInstaller(
         input: InputStream,
         fileName: String,
         onProgress: (RootfsInstallProgress) -> Unit = {},
+        onReplacingRootfs: () -> Unit = {},
     ) {
         val format = ArchiveFormat.fromLocalFileName(fileName)
             ?: error("Unsupported Rootfs archive: $fileName")
@@ -68,7 +70,7 @@ class RootfsInstaller(
                     }
                 }
             }
-            installArchive(archive, stagingDir, linuxDir, format, onProgress)
+            installArchive(archive, stagingDir, linuxDir, format, onProgress, onReplacingRootfs)
         } finally {
             archive.delete()
             stagingDir.deleteRecursively()
@@ -128,8 +130,11 @@ class RootfsInstaller(
         linuxDir: File,
         format: ArchiveFormat,
         onProgress: (RootfsInstallProgress) -> Unit,
+        onReplacingRootfs: () -> Unit,
     ) {
         extractTar(archive, stagingDir, format, onProgress)
+        // 新 Rootfs 已解压完成, 接下来会删除原 Rootfs; 调用方从这一刻起才应把它标记为损坏
+        onReplacingRootfs()
         linuxDir.deleteRecursively()
         require(stagingDir.renameTo(linuxDir)) {
             "Failed to move rootfs into workspace"

@@ -283,7 +283,7 @@ class WorkspaceManager(
     }
 
     private fun requireValidRoot(root: String) {
-        require(root.matches(ROOT_NAME_REGEX)) {
+        require(isValidWorkspaceRoot(root)) {
             "Invalid workspace root name: $root"
         }
     }
@@ -328,6 +328,13 @@ class WorkspaceManager(
 
         private val ROOT_NAME_REGEX = Regex("[A-Za-z0-9._-]+")
 
+        /**
+         * root 是否是安全的单级目录名。排除 [ROOT_NAME_REGEX] 恰好也匹配的 `.` / `..`,
+         * 避免 workspaceDir() 越出工作区根目录。
+         */
+        fun isValidWorkspaceRoot(root: String): Boolean =
+            root != "." && root != ".." && root.matches(ROOT_NAME_REGEX)
+
         /** Rootfs 是否可用, 以 /bin/sh 存在为准 */
         fun isUsableRootfs(linuxDir: File): Boolean =
             linuxDir.isDirectory && linuxDir.hasRootfsEntry("bin/sh")
@@ -337,11 +344,26 @@ class WorkspaceManager(
             if (linuxDir.hasRootfsEntry("bin/bash")) "/bin/bash" else "/bin/sh"
 
         // Alpine 等发行版的 /bin/sh 是指向 /bin/busybox 的绝对路径软链, 在宿主机上解析不到目标,
-        // 只有 proot 内才能正确解析, 所以软链本身存在即视为存在
+        // 只有 proot 内才能正确解析, 所以绝对路径软链存在即视为存在;
+        // 相对路径软链则在 rootfs 内逐级解析, 目标不存在 (悬空) 时视为不可用。
         private fun File.hasRootfsEntry(path: String): Boolean {
-            val entry = File(this, path)
-            return entry.isFile || Files.isSymbolicLink(entry.toPath())
+            val rootPath = canonicalFile.toPath()
+            var entry = File(this, path)
+            repeat(MAX_SYMLINK_DEPTH) {
+                if (entry.isFile) return true
+                if (!Files.isSymbolicLink(entry.toPath())) return false
+                val linkTarget = runCatching { Files.readSymbolicLink(entry.toPath()) }.getOrNull()
+                    ?: return false
+                if (linkTarget.isAbsolute) return true
+                val parent = entry.parentFile?.toPath() ?: return false
+                val resolved = parent.resolve(linkTarget).normalize()
+                if (!resolved.startsWith(rootPath)) return false
+                entry = resolved.toFile()
+            }
+            return false
         }
+
+        private const val MAX_SYMLINK_DEPTH = 16
     }
 }
 
