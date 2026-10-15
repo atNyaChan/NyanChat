@@ -79,7 +79,7 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import me.rerere.rikkahub.utils.writeClipboardText
 import coil3.compose.AsyncImage
-import com.dokar.sonner.ToastType
+import me.rerere.ui.toast.ToastType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

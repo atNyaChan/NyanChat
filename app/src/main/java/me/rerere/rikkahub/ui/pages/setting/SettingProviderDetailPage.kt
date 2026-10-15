@@ -84,7 +84,7 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastFilter
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.dokar.sonner.ToastType
+import me.rerere.ui.toast.ToastType
 import kotlinx.coroutines.launch
 import me.rerere.ai.provider.BalanceOption
 import me.rerere.ai.provider.BuiltInTools
@@ -642,10 +642,13 @@ private fun ModelsHeaderRow(
 // 提供商编辑抽屉的页签：配置页放除模型列表外的全部配置，模型页放模型操作行与模型列表
 private enum class ProviderSheetTab(
     override val icon: ImageVector,
-    @param:StringRes override val label: Int,
+    @param:StringRes private val labelRes: Int,
 ) : PagerTab {
     CONFIG(HugeIcons.Settings03, R.string.setting_provider_page_tab_config),
-    MODELS(HugeIcons.Package01, R.string.setting_provider_page_tab_models),
+    MODELS(HugeIcons.Package01, R.string.setting_provider_page_tab_models);
+
+    override val label: String
+        @Composable get() = stringResource(labelRes)
 }
 
 @Composable
@@ -1269,8 +1272,11 @@ private fun ModelPickerSheet(
 
 private data class ModelFormTab(
     override val icon: ImageVector,
-    @param:StringRes override val label: Int,
-) : PagerTab
+    @param:StringRes private val labelRes: Int,
+) : PagerTab {
+    override val label: String
+        @Composable get() = stringResource(labelRes)
+}
 
 @Composable
 private fun ModelSettingsForm(

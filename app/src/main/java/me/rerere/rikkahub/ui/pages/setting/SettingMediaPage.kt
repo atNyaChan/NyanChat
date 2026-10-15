@@ -43,7 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.dokar.sonner.ToastType
+import me.rerere.ui.toast.ToastType
 import kotlinx.coroutines.launch
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Add01
@@ -55,7 +55,7 @@ import me.rerere.mediagen.model.MediaKind
 import me.rerere.mediagen.provider.MediaGenerationProviderSetting
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
-import me.rerere.rikkahub.data.files.RemoteFileStore
+import me.rerere.rikkahub.data.remote.RemoteFileStore
 import me.rerere.rikkahub.ui.components.ai.ExtensionEmptyState
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
@@ -81,10 +81,13 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 
 private enum class MediaTab(
     override val icon: ImageVector,
-    @param:StringRes override val label: Int,
+    @param:StringRes private val labelRes: Int,
 ) : PagerTab {
     PROVIDERS(HugeIcons.Image02, R.string.setting_media_page_providers),
-    STORAGE(HugeIcons.Database02, R.string.setting_media_page_asset_storage),
+    STORAGE(HugeIcons.Database02, R.string.setting_media_page_asset_storage);
+
+    override val label: String
+        @Composable get() = stringResource(labelRes)
 }
 
 @Composable

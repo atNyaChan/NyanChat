@@ -21,7 +21,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import me.rerere.rikkahub.data.files.AttachmentCas
 import me.rerere.rikkahub.data.files.FileFolders
-import me.rerere.rikkahub.data.files.SkillManager
+import me.rerere.rikkahub.data.skills.SkillManager
 import me.rerere.rikkahub.data.ai.MemoryConsolidationScheduler
 import java.io.File
 import kotlinx.coroutines.SupervisorJob

@@ -58,7 +58,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.dokar.sonner.ToastType
+import me.rerere.ui.toast.ToastType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -81,7 +81,7 @@ import me.rerere.rikkahub.data.datastore.filterHeaderValueChars
 import me.rerere.rikkahub.data.datastore.ScreenCornerAdaptation
 import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.files.FileUtils
-import me.rerere.rikkahub.data.network.toProxyOrNull
+import me.rerere.rikkahub.data.remote.toProxyOrNull
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupValue

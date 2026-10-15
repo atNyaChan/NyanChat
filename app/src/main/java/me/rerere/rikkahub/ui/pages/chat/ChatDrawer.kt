@@ -90,7 +90,7 @@ import androidx.compose.ui.graphics.Color
 import dev.chrisbanes.haze.HazeState
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.context.Navigator
-import com.dokar.sonner.ToastType
+import me.rerere.ui.toast.ToastType
 import me.rerere.rikkahub.ui.hooks.EditStateContent
 import me.rerere.rikkahub.ui.hooks.readBooleanPreference
 import me.rerere.rikkahub.ui.hooks.useEditState

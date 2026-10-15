@@ -75,7 +75,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
-import com.dokar.sonner.ToastType
+import me.rerere.ui.toast.ToastType
 import kotlinx.coroutines.CancellationException
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Alert02
@@ -136,10 +136,13 @@ import java.io.File
 
 private enum class WorkspaceDetailTab(
     override val icon: ImageVector,
-    @param:StringRes override val label: Int,
+    @param:StringRes private val labelRes: Int,
 ) : PagerTab {
     BASIC(HugeIcons.Settings03, R.string.workspace_detail_tab_basic),
-    FILES(HugeIcons.File02, R.string.workspace_detail_tab_files),
+    FILES(HugeIcons.File02, R.string.workspace_detail_tab_files);
+
+    override val label: String
+        @Composable get() = stringResource(labelRes)
 }
 
 @Composable

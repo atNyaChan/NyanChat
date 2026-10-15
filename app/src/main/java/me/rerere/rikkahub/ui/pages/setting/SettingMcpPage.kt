@@ -136,11 +136,27 @@ fun SettingMcpPage(vm: SettingVM = koinViewModel()) {
     val editState = useEditState<McpServerConfig> { newConfig ->
         vm.updateSettings { latest ->
             latest.copy(
-                mcpServers = latest.mcpServers.map {
-                    if (it.id == newConfig.id) {
-                        newConfig
+                mcpServers = latest.mcpServers.map { server ->
+                    if (server.id != newConfig.id) {
+                        server
                     } else {
-                        it
+                        // 只合并本页可编辑的字段，避免用打开时的草稿覆盖掉期间后台同步
+                        // 写回的工具列表（按名称逐项合并）和 OAuth 状态
+                        newConfig.clone(
+                            commonOptions = server.commonOptions.copy(
+                                enable = newConfig.commonOptions.enable,
+                                name = newConfig.commonOptions.name,
+                                headers = newConfig.commonOptions.headers,
+                                tools = server.commonOptions.tools.map { storedTool ->
+                                    val edited = newConfig.commonOptions.tools.find { it.name == storedTool.name }
+                                    if (edited != null) {
+                                        storedTool.copy(enable = edited.enable, needsApproval = edited.needsApproval)
+                                    } else {
+                                        storedTool
+                                    }
+                                },
+                            )
+                        )
                     }
                 }
             )
@@ -429,10 +445,13 @@ private fun McpServerItem(
 
 private enum class McpConfigTab(
     override val icon: ImageVector,
-    @param:StringRes override val label: Int,
+    @param:StringRes private val labelRes: Int,
 ) : PagerTab {
     BASIC(HugeIcons.Settings03, R.string.setting_mcp_page_basic_settings),
-    TOOLS(HugeIcons.Tools, R.string.setting_mcp_page_tools),
+    TOOLS(HugeIcons.Tools, R.string.setting_mcp_page_tools);
+
+    override val label: String
+        @Composable get() = stringResource(labelRes)
 }
 
 @Composable

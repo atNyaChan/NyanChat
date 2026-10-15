@@ -30,7 +30,7 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import coil3.compose.rememberAsyncImagePainter
-import com.dokar.sonner.ToastType
+import me.rerere.ui.toast.ToastType
 import com.jvziyaoyao.scale.image.previewer.ImagePreviewer
 import com.jvziyaoyao.scale.zoomable.pager.PagerGestureScope
 import com.jvziyaoyao.scale.zoomable.previewer.rememberPreviewerState

@@ -9,10 +9,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.rerere.rikkahub.R
-import me.rerere.rikkahub.data.files.SkillFrontmatterParser
-import me.rerere.rikkahub.data.files.SkillManager
-import me.rerere.rikkahub.data.files.SkillMetadata
-import me.rerere.rikkahub.data.files.SkillPaths
+import me.rerere.rikkahub.data.skills.SkillFrontmatterParser
+import me.rerere.rikkahub.data.skills.SkillManager
+import me.rerere.rikkahub.data.skills.SkillMetadata
+import me.rerere.rikkahub.data.skills.SkillPaths
 
 data class SkillFile(
     val relativePath: String,

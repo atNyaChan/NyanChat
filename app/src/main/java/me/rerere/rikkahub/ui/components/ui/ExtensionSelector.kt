@@ -23,8 +23,8 @@ import me.rerere.hugeicons.stroke.Puzzle
 import me.rerere.hugeicons.stroke.Zap
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
-import me.rerere.rikkahub.data.files.SkillManager
-import me.rerere.rikkahub.data.files.SkillMetadata
+import me.rerere.rikkahub.data.skills.SkillManager
+import me.rerere.rikkahub.data.skills.SkillMetadata
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.ui.components.ai.ExtensionEmptyState
 import me.rerere.rikkahub.ui.components.ai.LorebooksContent
@@ -35,12 +35,15 @@ import org.koin.compose.koinInject
 
 private enum class ExtensionTab(
     override val icon: ImageVector,
-    @param:StringRes override val label: Int,
+    @param:StringRes private val labelRes: Int,
 ) : PagerTab {
     QUICK_MESSAGES(HugeIcons.Zap, R.string.quick_messages_page_title),
     MODE_INJECTIONS(HugeIcons.MagicWand01, R.string.mode_injection_page_title),
     LOREBOOKS(HugeIcons.Book01, R.string.lorebook_page_title),
-    SKILLS(HugeIcons.Puzzle, R.string.skills_page_title),
+    SKILLS(HugeIcons.Puzzle, R.string.skills_page_title);
+
+    override val label: String
+        @Composable get() = stringResource(labelRes)
 }
 
 
@@ -82,7 +85,7 @@ fun ExtensionSelector(
                 .weight(1f)
         ) { page ->
             val tab = ExtensionTab.entries[page]
-            val manageText = stringResource(R.string.extension_selector_manage, stringResource(tab.label))
+            val manageText = stringResource(R.string.extension_selector_manage, tab.label)
             when (tab) {
                 ExtensionTab.QUICK_MESSAGES -> {
                     if (settings.quickMessages.isNotEmpty()) {

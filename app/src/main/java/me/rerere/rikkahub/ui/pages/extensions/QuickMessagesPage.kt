@@ -47,7 +47,7 @@ import me.rerere.hugeicons.stroke.Share01
 import me.rerere.hugeicons.stroke.Zap
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.export.QuickMessageSerializer
-import me.rerere.rikkahub.data.export.rememberExporter
+import me.rerere.rikkahub.ui.hooks.rememberExporter
 import me.rerere.rikkahub.data.model.QuickMessage
 import me.rerere.rikkahub.ui.components.ai.ExtensionEmptyState
 import me.rerere.rikkahub.ui.components.nav.BackButton

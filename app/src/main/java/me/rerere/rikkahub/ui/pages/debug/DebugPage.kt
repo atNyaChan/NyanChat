@@ -43,12 +43,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.dokar.sonner.ToastType
+import me.rerere.ui.toast.ToastType
 import kotlinx.coroutines.launch
 import me.rerere.hugeicons.HugeIcons
-import me.rerere.hugeicons.stroke.DataRecovery
-import me.rerere.hugeicons.stroke.Home01
-import me.rerere.hugeicons.stroke.Palette
+import me.rerere.hugeicons.stroke.Bug01
+import me.rerere.hugeicons.stroke.PaintBoard
+import me.rerere.hugeicons.stroke.Wrench01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.getCurrentAssistant
 import me.rerere.rikkahub.ui.components.nav.BackButton
@@ -69,11 +69,14 @@ import kotlin.uuid.Uuid
 
 private enum class DebugTab(
     override val icon: ImageVector,
-    @param:StringRes override val label: Int,
+    @param:StringRes private val labelRes: Int,
 ) : PagerTab {
-    MAIN(HugeIcons.Home01, R.string.debug_page_tab_main),
-    COLORS(HugeIcons.Palette, R.string.debug_page_tab_colors),
-    RECOVERY(HugeIcons.DataRecovery, R.string.debug_page_tab_recovery),
+    MAIN(HugeIcons.Bug01, R.string.debug_page_tab_main),
+    COLORS(HugeIcons.PaintBoard, R.string.debug_page_tab_colors),
+    RECOVERY(HugeIcons.Wrench01, R.string.debug_page_tab_recovery);
+
+    override val label: String
+        @Composable get() = stringResource(labelRes)
 }
 
 @Composable
