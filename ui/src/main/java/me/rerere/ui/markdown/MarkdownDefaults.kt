@@ -45,6 +45,11 @@ data class MarkdownTheme(
     val headings: List<TextStyle>,
     val link: SpanStyle,
     val inlineCode: SpanStyle,
+    /**
+     * 等宽文本的字体特性（连字开关），会应用到 HTML/CSS 产生的 monospace 样式和公式源码上。
+     * 为 null 时交给系统默认。
+     */
+    val codeFontFeatureSettings: String? = null,
     /** 加粗文字的字体粗细，默认 [FontWeight.Bold] */
     val boldFontWeight: FontWeight = FontWeight.Bold,
     /** 块与块之间的间距 */
@@ -137,6 +142,7 @@ object MarkdownDefaults {
     /** 不带语法高亮的代码块 */
     @Composable
     fun CodeBlock(block: MarkdownBlock.CodeBlock, modifier: Modifier = Modifier) {
+        val fontFeatureSettings = LocalMarkdownContext.current.theme.codeFontFeatureSettings
         Surface(
             modifier = modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.medium,
@@ -156,7 +162,10 @@ object MarkdownDefaults {
                 Text(
                     text = block.code,
                     modifier = Modifier.horizontalScroll(rememberScrollState()),
-                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontFamily = FontFamily.Monospace,
+                        fontFeatureSettings = fontFeatureSettings,
+                    ),
                     softWrap = false,
                 )
             }
@@ -210,6 +219,7 @@ object MarkdownDefaults {
     /** 以等宽字体显示公式源码 */
     @Composable
     fun MathBlock(formula: String, modifier: Modifier = Modifier) {
+        val fontFeatureSettings = LocalMarkdownContext.current.theme.codeFontFeatureSettings
         Box(
             modifier = modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center,
@@ -218,6 +228,7 @@ object MarkdownDefaults {
                 text = formula,
                 modifier = Modifier.horizontalScroll(rememberScrollState()),
                 fontFamily = FontFamily.Monospace,
+                style = LocalTextStyle.current.copy(fontFeatureSettings = fontFeatureSettings),
             )
         }
     }

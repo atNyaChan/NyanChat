@@ -278,6 +278,7 @@ private fun CodeBlockWithLineNumbersWrapped(
                             fontSize = textStyle.fontSize,
                             lineHeight = textStyle.lineHeight,
                             fontFamily = JetbrainsMono,
+                            style = LocalTextStyle.current.copy(fontFeatureSettings = fontFeatureSettings),
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
                             softWrap = false,
                             modifier = Modifier.padding(end = 8.dp)
@@ -336,6 +337,7 @@ private fun CodeBlockDefault(
                         fontSize = textStyle.fontSize,
                         lineHeight = textStyle.lineHeight,
                         fontFamily = JetbrainsMono,
+                        style = LocalTextStyle.current.copy(fontFeatureSettings = fontFeatureSettings),
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
                         softWrap = false,
                     )

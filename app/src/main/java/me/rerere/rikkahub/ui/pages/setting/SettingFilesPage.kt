@@ -114,8 +114,11 @@ import me.rerere.rikkahub.ui.components.ui.ImagePreviewDialog
 import me.rerere.rikkahub.ui.components.ui.MessageSearchResultCard
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.context.LocalNavController
+import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.CustomColors
+import me.rerere.rikkahub.ui.theme.JetbrainsMono
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.utils.fileSizeToString
 import me.rerere.rikkahub.utils.navigateToChatPage
@@ -825,6 +828,8 @@ private fun FileItem(
     onDelete: () -> Unit,
 ) {
     val context = LocalContext.current
+    val codeFontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings
+    val displayNameIsSha256 = attachment.displayName == attachment.sha256Short
     var showImagePreview by remember { mutableStateOf(false) }
     if (showImagePreview) {
         ImagePreviewDialog(images = listOf(fileOnDisk.toUri().toString())) {
@@ -893,15 +898,25 @@ private fun FileItem(
             ) {
                 Text(
                     text = attachment.displayName,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = if (displayNameIsSha256) {
+                        MaterialTheme.typography.titleMedium.copy(
+                            fontFamily = JetbrainsMono,
+                            fontFeatureSettings = codeFontFeatureSettings,
+                        )
+                    } else {
+                        MaterialTheme.typography.titleMedium
+                    },
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
                 // 没有可用的展示名时标题已经退回 sha256 缩写, 这里仅在展示名不是 sha256 时补一行缩写
-                if (attachment.displayName != attachment.sha256Short) {
+                if (!displayNameIsSha256) {
                     Text(
                         text = attachment.sha256Short,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontFamily = JetbrainsMono,
+                            fontFeatureSettings = codeFontFeatureSettings,
+                        ),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }

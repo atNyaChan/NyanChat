@@ -18,6 +18,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ProvideTextStyle
@@ -73,6 +74,8 @@ import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.context.LocalTTSState
+import me.rerere.rikkahub.ui.theme.JetbrainsMono
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.utils.copyMessageToClipboard
 import me.rerere.rikkahub.utils.extractQuotedContentAsText
 import me.rerere.rikkahub.utils.removeBracketedContent
@@ -345,6 +348,7 @@ fun ChatMessageActionsSheet(
     val context = LocalContext.current
     val toaster = LocalToaster.current
     val navController = LocalNavController.current
+    val codeFontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings
     ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismissRequest,
         sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)),
@@ -504,19 +508,43 @@ fun ChatMessageActionsSheet(
             ) {
                 ProvideTextStyle(MaterialTheme.typography.labelSmall) {
                     Text(message.createdAt.toJavaLocalDateTime().toLocalString())
-                    // 模型快照被删除后 model 可能为 null，此时用消息上记录的 modelId
+                    // 模型快照被删除后 model 可能为 null，此时用消息上记录的 modelId。
+                    // snapshotModel() 在没有快照名时会把 displayName 直接填成 "($id)"，
+                    // 必须把这种回退文案识别成“没有名称”，才能只把 id 部分渲染成等宽字体。
                     val searchModelId = model?.id ?: message.modelId
+                    val fallbackIdLabel = searchModelId?.let { "($it)" }
+                    val modelDisplayName = model?.displayName
+                        ?.takeIf { it.isNotBlank() && it != fallbackIdLabel }
                     if (searchModelId != null) {
-                        Text(
-                            text = model?.displayName?.takeIf { it.isNotBlank() }
-                                ?: "($searchModelId)",
-                            color = MaterialTheme.colorScheme.primary,
-                            textDecoration = TextDecoration.Underline,
-                            modifier = Modifier.clickable {
-                                onDismissRequest()
-                                navController.navigate(Screen.MessageSearch(searchModelId.toString()))
-                            },
-                        )
+                        val linkColor = MaterialTheme.colorScheme.primary
+                        val onModelClick = {
+                            onDismissRequest()
+                            navController.navigate(Screen.MessageSearch(searchModelId.toString()))
+                        }
+                        if (modelDisplayName != null) {
+                            Text(
+                                text = modelDisplayName,
+                                color = linkColor,
+                                textDecoration = TextDecoration.Underline,
+                                modifier = Modifier.clickable(onClick = onModelClick),
+                            )
+                        } else {
+                            // 括号保持普通样式，只有回退显示的 modelId 是链接并使用等宽字体
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("(")
+                                Text(
+                                    text = searchModelId.toString(),
+                                    style = LocalTextStyle.current.copy(
+                                        fontFamily = JetbrainsMono,
+                                        fontFeatureSettings = codeFontFeatureSettings,
+                                    ),
+                                    color = linkColor,
+                                    textDecoration = TextDecoration.Underline,
+                                    modifier = Modifier.clickable(onClick = onModelClick),
+                                )
+                                Text(")")
+                            }
+                        }
                     }
                 }
             }

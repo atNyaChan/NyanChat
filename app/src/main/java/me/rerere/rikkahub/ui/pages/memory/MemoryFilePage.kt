@@ -58,9 +58,11 @@ import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.context.LocalNavController
+import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.utils.toLocalDateTime
 import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import org.koin.androidx.compose.koinViewModel
@@ -448,7 +450,11 @@ private fun MemoryFileEditor(
                     onValueChange = onBodyChange,
                     isError = !contentValid,
                     label = { Text(stringResource(R.string.memory_file_page_details)) },
-                    textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = JetbrainsMono),
+                    textStyle = MaterialTheme.typography.bodySmall.copy(
+                        fontFamily = JetbrainsMono,
+                        fontFeatureSettings = LocalSettings.current.displaySetting
+                            .enableCodeLigatures.codeFontFeatureSettings,
+                    ),
                     minLines = 3,
                     modifier = Modifier.fillMaxWidth(),
                 )

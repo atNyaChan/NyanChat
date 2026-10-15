@@ -49,6 +49,15 @@ of adding per-screen variants.
   (app/src/main/java/me/rerere/rikkahub/ui/theme/ScreenCornerShape.kt), falling back to 28dp (the
   "直角" mode uses 4dp); message bubbles, thinking blocks, shared outlined list cards and file item
   cards keep their own shape.
+- **Monospace text / code ligatures**: every piece of monospace text rendered as text (code
+  blocks, line numbers, paths, identifiers, logs, JSON, formula source, …) must control ligatures
+  from the settings switch `DisplaySetting.enableCodeLigatures` via
+  `Boolean.codeFontFeatureSettings`
+  (app/src/main/java/me/rerere/rikkahub/ui/theme/FontFeature.kt). Never leave a `FontFamily.Monospace`
+  / `JetbrainsMono` style without `fontFeatureSettings = LocalSettings.current.displaySetting
+  .enableCodeLigatures.codeFontFeatureSettings`; the `ui` markdown module receives it through
+  `MarkdownTheme.codeFontFeatureSettings` instead of reading settings itself. Character-cell
+  terminals and the user-chosen chat font are not code-ligature targets.
 - **Shared components**: loading uses `AppLoadingIndicator`; color picking uses the shared
   `ColorPicker` (ui/src/main/java/me/rerere/ui/common/ColorPicker.kt); custom request Header/Body
   editing uses `CustomRequestProperties`

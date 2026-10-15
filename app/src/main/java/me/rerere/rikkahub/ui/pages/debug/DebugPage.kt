@@ -319,8 +319,11 @@ private fun RecoveryPage(vm: DebugVM) {
         missing?.forEach { (id, count) ->
             Text(
                 "$id ($count chats)",
-                style = MaterialTheme.typography.bodySmall,
-                fontFamily = JetbrainsMono,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontFamily = JetbrainsMono,
+                    fontFeatureSettings = LocalSettings.current.displaySetting
+                        .enableCodeLigatures.codeFontFeatureSettings,
+                ),
             )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

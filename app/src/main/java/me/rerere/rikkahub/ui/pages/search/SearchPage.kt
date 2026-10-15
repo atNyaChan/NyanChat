@@ -39,6 +39,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -82,7 +83,10 @@ import me.rerere.rikkahub.ui.components.ui.MessageSearchResultCard
 import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 import me.rerere.rikkahub.ui.context.LocalNavController
+import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.CustomColors
+import me.rerere.rikkahub.ui.theme.JetbrainsMono
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.utils.navigateToChatPage
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
@@ -365,6 +369,8 @@ private fun SearchConditionsDialog(
     var modelMenuExpanded by remember { mutableStateOf(false) }
     var deletedModelsExpanded by remember { mutableStateOf(false) }
 
+    val codeFontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings
+    val selectedModelIsDeleted = conditions.selectedDeletedModelId != null
     val selectedModelLabel = when {
         conditions.selectedModel != null -> conditions.selectedModel.displayName
         conditions.selectedDeletedModelId != null -> conditions.selectedDeletedModelId.toString()
@@ -550,7 +556,14 @@ private fun SearchConditionsDialog(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = selectedModelLabel,
-                                style = MaterialTheme.typography.bodyMedium,
+                                style = if (selectedModelIsDeleted) {
+                                    MaterialTheme.typography.bodyMedium.copy(
+                                        fontFamily = JetbrainsMono,
+                                        fontFeatureSettings = codeFontFeatureSettings,
+                                    )
+                                } else {
+                                    MaterialTheme.typography.bodyMedium
+                                },
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
@@ -619,7 +632,15 @@ private fun SearchConditionsDialog(
                                     } else {
                                         deletedModelIds.forEach { modelId ->
                                             DropdownMenuItem(
-                                                text = { Text(modelId.toString()) },
+                                                text = {
+                                                    Text(
+                                                        modelId.toString(),
+                                                        fontFamily = JetbrainsMono,
+                                                        style = LocalTextStyle.current.copy(
+                                                            fontFeatureSettings = codeFontFeatureSettings,
+                                                        ),
+                                                    )
+                                                },
                                                 onClick = {
                                                     deletedModelsExpanded = false
                                                     onConditionsChange(

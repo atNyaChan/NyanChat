@@ -93,7 +93,7 @@ internal fun RequestInterceptionDialog(
                             title = "Request Headers",
                             onCopy = { context.writeClipboardText(headersText(request.headers)) },
                         ) {
-                            HighlightedHeaders(request.headers)
+                            HighlightedHeaders(request.headers, codeFontFeatureSettings)
                         }
                     }
 

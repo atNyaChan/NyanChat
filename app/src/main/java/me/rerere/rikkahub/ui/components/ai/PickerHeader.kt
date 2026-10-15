@@ -45,6 +45,8 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.RoundedPolygon
+import me.rerere.rikkahub.ui.context.LocalSettings
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 
 // sheet 的头部：左侧标题与说明，右侧放操作
 @Composable
@@ -213,6 +215,8 @@ private fun <T : Comparable<T>> PickerValueLabel(
             // 强度名称保持英语并使用加粗等宽字体
             style = MaterialTheme.typography.headlineSmallEmphasized.copy(
                 fontFamily = FontFamily.Monospace,
+                fontFeatureSettings = LocalSettings.current.displaySetting
+                    .enableCodeLigatures.codeFontFeatureSettings,
                 fontWeight = FontWeight.Bold,
                 lineHeight = 1.2.em,
                 lineBreak = LineBreak.Heading,

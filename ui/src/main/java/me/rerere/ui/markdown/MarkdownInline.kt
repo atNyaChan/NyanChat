@@ -59,14 +59,18 @@ private class RenderedInlineText(
     val hasMathWidget: Boolean,
 )
 
-private val MATH_SOURCE_STYLE = SpanStyle(fontFamily = FontFamily.Monospace)
-
 // 开引号 -> 闭引号。单引号常被当作撇号（don't、it’s）使用，不参与配对
 private val QUOTE_PAIRS = mapOf('"' to '"', '“' to '”', '「' to '」', '『' to '』')
 
 /** 加粗按主题设置的字体粗细渲染，其余样式原样保留 */
 private fun SpanStyle.resolveBold(weight: FontWeight): SpanStyle =
     if (fontWeight == FontWeight.Bold) copy(fontWeight = weight) else this
+
+/** 等宽文本套用主题里的连字开关（HTML/CSS 的 monospace 也走这里） */
+private fun SpanStyle.resolveCodeLigatures(theme: MarkdownTheme): SpanStyle =
+    if (fontFamily == FontFamily.Monospace && theme.codeFontFeatureSettings != null) {
+        copy(fontFeatureSettings = theme.codeFontFeatureSettings)
+    } else this
 
 private class InlineTextBuilder(
     private val context: MarkdownContext,
@@ -90,8 +94,14 @@ private class InlineTextBuilder(
     private fun append(node: MarkdownInline) {
         when (node) {
             is MarkdownInline.Text -> appendText(node.text)
-            is MarkdownInline.Styled -> builder.withStyle(node.style.resolveBold(context.theme.boldFontWeight)) { append(node.children) }
-            is MarkdownInline.Code -> builder.withStyle(context.theme.inlineCode) { append(node.code) }
+            is MarkdownInline.Styled -> builder.withStyle(
+                node.style
+                    .resolveBold(context.theme.boldFontWeight)
+                    .resolveCodeLigatures(context.theme),
+            ) { append(node.children) }
+            is MarkdownInline.Code -> builder.withStyle(
+                context.theme.inlineCode.resolveCodeLigatures(context.theme),
+            ) { append(node.code) }
             is MarkdownInline.Link -> appendLink(node)
             is MarkdownInline.Math -> appendMath(node)
             // 图片在分段时已经被拆出去单独渲染，走到这里只剩替代文本可用
@@ -135,7 +145,12 @@ private class InlineTextBuilder(
     private fun appendMath(math: MarkdownInline.Math) {
         val widgets = context.components.inlineMath?.invoke(scope, math.formula).orEmpty()
         if (widgets.isEmpty()) {
-            builder.withStyle(MATH_SOURCE_STYLE) { append(math.formula) }
+            builder.withStyle(
+                SpanStyle(
+                    fontFamily = FontFamily.Monospace,
+                    fontFeatureSettings = context.theme.codeFontFeatureSettings,
+                ),
+            ) { append(math.formula) }
             return
         }
         hasMathWidget = true

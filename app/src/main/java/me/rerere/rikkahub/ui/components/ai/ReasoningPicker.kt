@@ -45,6 +45,8 @@ import me.rerere.hugeicons.stroke.Idea
 import me.rerere.hugeicons.stroke.Idea01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.ui.RegisterItemClickAction
+import me.rerere.rikkahub.ui.context.LocalSettings
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.ui.components.ToggleSurface
 import me.rerere.ui.icons.ReasoningHigh
 import me.rerere.ui.icons.ReasoningLow
@@ -194,8 +196,11 @@ fun ReasoningPicker(
                     val selected = level == previewLevel
                     Text(
                         text = level.abbreviation(),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontFamily = FontFamily.Monospace,
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontFeatureSettings = LocalSettings.current.displaySetting
+                                .enableCodeLigatures.codeFontFeatureSettings,
+                        ),
                         fontWeight = if (selected) FontWeight.Black else FontWeight.Normal,
                         color = if (selected) {
                             MaterialTheme.colorScheme.primary

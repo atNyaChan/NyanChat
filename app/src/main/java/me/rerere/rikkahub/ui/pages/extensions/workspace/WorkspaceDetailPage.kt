@@ -119,9 +119,11 @@ import me.rerere.rikkahub.ui.components.ui.PagerTabs
 import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalNavController
+import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.pages.backup.components.BackupDialog
 import me.rerere.rikkahub.ui.theme.CustomColors
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.utils.fileSizeToString
 import me.rerere.rikkahub.utils.writeClipboardText
 import me.rerere.workspace.RootfsInstallProgress
@@ -1166,8 +1168,11 @@ private fun WorkspacePathBar(
             Text(
                 text = path.ifBlank { "/" },
                 modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.bodyMedium,
-                fontFamily = FontFamily.Monospace,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontFamily = FontFamily.Monospace,
+                    fontFeatureSettings = LocalSettings.current.displaySetting
+                        .enableCodeLigatures.codeFontFeatureSettings,
+                ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 // 路径太长时省略开头，当前所在的目录始终看得到

@@ -153,6 +153,7 @@ fun MarkdownBlock(
                 fontFamily = JetbrainsMono,
                 fontFeatureSettings = enableCodeLigatures.codeFontFeatureSettings,
             ),
+            codeFontFeatureSettings = enableCodeLigatures.codeFontFeatureSettings,
             boldFontWeight = boldFontWeight,
             // 段落间距跟随字号，调整字体大小时保持比例
             blockSpacing = if (fontSize.isSp) with(density) { fontSize.toDp() } else defaultTheme.blockSpacing,
