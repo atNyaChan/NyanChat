@@ -119,6 +119,13 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
         }
         item {
             CardGroup {
+                switchItem(
+                    checked = settings.enableAutoTitle,
+                    onCheckedChange = {
+                        vm.updateSettings { latest -> latest.copy(enableAutoTitle = it) }
+                    },
+                    headlineContent = { Text(stringResource(R.string.setting_model_page_enable_auto_title)) },
+                )
                 promptSettingItem(PromptType.TITLE, settings.titlePrompt) { editingPrompt = PromptType.TITLE }
             }
         }

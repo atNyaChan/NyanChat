@@ -774,6 +774,7 @@
   <string name="setting_model_page_ocr_prompt_vars">Variables: Image data: {images}</string>
   <string name="setting_model_page_reset_to_default">Reset to default</string>
   <string name="setting_model_page_enable_suggestion">Chat Suggestions</string>
+  <string name="setting_model_page_enable_auto_title">Auto-generate Conversation Titles</string>
   <string name="setting_model_page_suggestion_prompt_vars">Variables: Conversation content: {content}, Language: {locale}</string>
   <string name="setting_model_page_title">Default Models and Prompts</string>
   <string name="setting_model_page_translate_model">Translation Model</string>
@@ -1267,7 +1268,6 @@
   <string name="conversation_untitled">(Unnamed Chat)</string>
   <string name="translator_page_error">Translation failed</string>
   <string name="translator_page_paste">Paste text</string>
-  <string name="translator_page_copy_result">Copy translation</string>
   <string name="chat_page_auto_generate_title">Auto-generate title</string>
   <string name="chat_page_delete_conversation_confirm">Delete chat “%1$s”?</string>
   <string name="chat_page_delete_selected_confirm">Delete the %1$d selected chats?</string>
@@ -1662,5 +1662,17 @@
   <string name="memory_file_page_title">Title</string>
   <string name="memory_file_page_edit_warning">Try not to edit memories by hand. Ask the AI in chat to remember or change things for you instead.</string>
   <string name="setting_media_page_asset_storage">Asset Storage</string>
+  <string name="translator_page_model_missing">No translation model selected. Tap the top-right corner to choose one.</string>
+  <string name="translator_page_char_count">%1$d characters</string>
+  <string name="translator_page_clear_input">Clear input</string>
+  <string name="translator_page_use_as_input">Use as input</string>
+  <string name="translator_page_history">Translation history</string>
+  <string name="translator_page_clear_history">Clear</string>
+  <string name="translator_page_clear_history_title">Clear translation history</string>
+  <string name="translator_page_clear_history_message">All translation records will be deleted. This cannot be undone.</string>
+  <string name="setting_display_page_enable_quote_highlight_title">Highlight Quoted Text</string>
+  <string name="setting_display_page_enable_quote_highlight_desc">Color text inside quotation marks with the theme color to make character dialogue stand out</string>
+  <string name="workspace_detail_copy_path">Copy path</string>
+  <string name="workspace_detail_path_copied">Path copied</string>
 </resources>
 

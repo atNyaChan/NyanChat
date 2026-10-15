@@ -3,6 +3,7 @@ package me.rerere.rikkahub.ui.pages.extensions.workspace
 import android.content.Intent
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -83,6 +84,7 @@ import me.rerere.hugeicons.stroke.Bash
 import me.rerere.hugeicons.stroke.Cancel01
 import me.rerere.hugeicons.stroke.CheckList
 import me.rerere.hugeicons.stroke.ComputerTerminal01
+import me.rerere.hugeicons.stroke.Copy01
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.File02
 import me.rerere.hugeicons.stroke.FileEdit
@@ -121,9 +123,11 @@ import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.pages.backup.components.BackupDialog
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.fileSizeToString
+import me.rerere.rikkahub.utils.writeClipboardText
 import me.rerere.workspace.RootfsInstallProgress
 import me.rerere.workspace.RootfsInstallStage
 import me.rerere.workspace.WorkspaceFileEntry
+import me.rerere.workspace.WorkspaceManager
 import me.rerere.workspace.WorkspaceShellStatus
 import me.rerere.workspace.WorkspaceStorageArea
 import org.koin.androidx.compose.koinViewModel
@@ -1338,21 +1342,36 @@ private fun WorkspaceFileItem(
                 }
             } else {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    val context = LocalContext.current
+                    // 压紧图标按钮，多个操作才能在一行里放得下
+                    val actionButtonModifier = Modifier.size(40.dp)
+                    IconButton(
+                        onClick = {
+                            context.writeClipboardText(entry.rootfsPath(area))
+                            Toast.makeText(context, R.string.workspace_detail_path_copied, Toast.LENGTH_SHORT).show()
+                        },
+                        modifier = actionButtonModifier,
+                    ) {
+                        Icon(
+                            imageVector = HugeIcons.Copy01,
+                            contentDescription = stringResource(R.string.workspace_detail_copy_path),
+                        )
+                    }
                     if (!entry.isDirectory) {
-                        IconButton(onClick = onExport) {
+                        IconButton(onClick = onExport, modifier = actionButtonModifier) {
                             Icon(
                                 imageVector = HugeIcons.FileExport,
                                 contentDescription = stringResource(R.string.common_export),
                             )
                         }
-                        IconButton(onClick = onShare) {
+                        IconButton(onClick = onShare, modifier = actionButtonModifier) {
                             Icon(
                                 imageVector = HugeIcons.Share08,
                                 contentDescription = stringResource(R.string.common_share),
                             )
                         }
                     }
-                    IconButton(onClick = onDelete) {
+                    IconButton(onClick = onDelete, modifier = actionButtonModifier) {
                         Icon(
                             imageVector = HugeIcons.Delete01,
                             contentDescription = stringResource(R.string.common_delete),
@@ -1363,6 +1382,12 @@ private fun WorkspaceFileItem(
             }
         }
     }
+}
+
+// 复制出去的路径要能直接给 AI 工具和终端用，所以按 Rootfs 内的绝对路径给
+private fun WorkspaceFileEntry.rootfsPath(area: WorkspaceStorageArea): String = when (area) {
+    WorkspaceStorageArea.FILES -> "${WorkspaceManager.ROOTFS_WORKSPACE_DIR}/$path"
+    WorkspaceStorageArea.LINUX -> "/$path"
 }
 
 @Composable

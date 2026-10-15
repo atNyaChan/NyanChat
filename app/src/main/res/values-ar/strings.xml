@@ -774,6 +774,7 @@
   <string name="setting_model_page_ocr_prompt_vars">المتغيرات: بيانات الصورة: {images}</string>
   <string name="setting_model_page_reset_to_default">إعادة التعيين إلى الافتراضي</string>
   <string name="setting_model_page_enable_suggestion">اقتراحات الدردشة</string>
+  <string name="setting_model_page_enable_auto_title">إنشاء عناوين المحادثات تلقائيًا</string>
   <string name="setting_model_page_suggestion_prompt_vars">المتغيرات: محتوى المحادثة: {content}، اللغة: {locale}</string>
   <string name="setting_model_page_title">النماذج والمطالبات الافتراضية</string>
   <string name="setting_model_page_translate_model">نموذج الترجمة</string>
@@ -1267,7 +1268,6 @@
   <string name="conversation_untitled">(دردشة بلا اسم)</string>
   <string name="translator_page_error">فشلت الترجمة</string>
   <string name="translator_page_paste">لصق النص</string>
-  <string name="translator_page_copy_result">نسخ الترجمة</string>
   <string name="chat_page_auto_generate_title">توليد العنوان تلقائيًا</string>
   <string name="chat_page_delete_conversation_confirm">حذف المحادثة "%1$s"؟</string>
   <string name="chat_page_delete_selected_confirm">حذف المحادثات المحددة (%1$d)؟</string>
@@ -1662,5 +1662,17 @@
   <string name="memory_file_page_title">العنوان</string>
   <string name="memory_file_page_edit_warning">حاول ألا تعدّل الذاكرة يدويًا. بدلاً من ذلك اطلب من الذكاء الاصطناعي في الدردشة أن يتذكر أو يغيّر الأشياء عنك</string>
   <string name="setting_media_page_asset_storage">تخزين الأصول</string>
+  <string name="translator_page_model_missing">لم يتم اختيار نموذج ترجمة. اضغط على الزاوية العلوية اليمنى لاختيار واحد.</string>
+  <string name="translator_page_char_count">%1$d أحرف</string>
+  <string name="translator_page_clear_input">مسح الإدخال</string>
+  <string name="translator_page_use_as_input">استخدم كمدخل</string>
+  <string name="translator_page_history">سجل الترجمة</string>
+  <string name="translator_page_clear_history">مسح</string>
+  <string name="translator_page_clear_history_title">مسح سجل الترجمة</string>
+  <string name="translator_page_clear_history_message">سيتم حذف جميع سجلات الترجمة. لا يمكن التراجع عن هذا.</string>
+  <string name="setting_display_page_enable_quote_highlight_title">تمييز النص المقتبس</string>
+  <string name="setting_display_page_enable_quote_highlight_desc">تلوين النص داخل علامات الاقتباس بلون السمة لإبراز حوار الشخصيات</string>
+  <string name="workspace_detail_copy_path">نسخ المسار</string>
+  <string name="workspace_detail_path_copied">تم نسخ المسار</string>
 </resources>
 

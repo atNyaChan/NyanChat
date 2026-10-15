@@ -774,6 +774,7 @@
   <string name="setting_model_page_ocr_prompt_vars">Переменные: Данные изображения: {images}</string>
   <string name="setting_model_page_reset_to_default">Сбросить до значения по умолчанию</string>
   <string name="setting_model_page_enable_suggestion">Подсказки чата</string>
+  <string name="setting_model_page_enable_auto_title">Автоматически создавать заголовки чатов</string>
   <string name="setting_model_page_suggestion_prompt_vars">Переменные: Содержание разговора: {content}, Язык: {locale}</string>
   <string name="setting_model_page_title">Модели и промпты по умолчанию</string>
   <string name="setting_model_page_translate_model">Модель перевода</string>
@@ -1267,7 +1268,6 @@
   <string name="conversation_untitled">(Чат без названия)</string>
   <string name="translator_page_error">Ошибка перевода</string>
   <string name="translator_page_paste">Вставить текст</string>
-  <string name="translator_page_copy_result">Копировать перевод</string>
   <string name="chat_page_auto_generate_title">Создать заголовок автоматически</string>
   <string name="chat_page_delete_conversation_confirm">Удалить чат «%1$s»?</string>
   <string name="chat_page_delete_selected_confirm">Удалить выбранные чаты (%1$d)?</string>
@@ -1662,5 +1662,17 @@
   <string name="memory_file_page_title">Заголовок</string>
   <string name="memory_file_page_edit_warning">Старайтесь не редактировать воспоминания вручную. Вместо этого попросите ИИ в чате запомнить или изменить что-то за вас</string>
   <string name="setting_media_page_asset_storage">Хранилище ресурсов</string>
+  <string name="translator_page_model_missing">Модель перевода не выбрана. Нажмите в правом верхнем углу, чтобы выбрать её.</string>
+  <string name="translator_page_char_count">%1$d символов</string>
+  <string name="translator_page_clear_input">Очистить ввод</string>
+  <string name="translator_page_use_as_input">Использовать как ввод</string>
+  <string name="translator_page_history">История переводов</string>
+  <string name="translator_page_clear_history">Очистить</string>
+  <string name="translator_page_clear_history_title">Очистить историю переводов</string>
+  <string name="translator_page_clear_history_message">Все записи перевода будут удалены. Это действие нельзя отменить.</string>
+  <string name="setting_display_page_enable_quote_highlight_title">Подсветка цитируемого текста</string>
+  <string name="setting_display_page_enable_quote_highlight_desc">Окрашивать текст в кавычках в цвет темы, чтобы реплики персонажей выделялись</string>
+  <string name="workspace_detail_copy_path">Скопировать путь</string>
+  <string name="workspace_detail_path_copied">Путь скопирован</string>
 </resources>
 

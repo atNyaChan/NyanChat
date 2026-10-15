@@ -774,6 +774,7 @@
   <string name="setting_model_page_ocr_prompt_vars">変数: 画像データ: {images}</string>
   <string name="setting_model_page_reset_to_default">デフォルトにリセット</string>
   <string name="setting_model_page_enable_suggestion">チャット提案</string>
+  <string name="setting_model_page_enable_auto_title">会話タイトルを自動生成する</string>
   <string name="setting_model_page_suggestion_prompt_vars">変数: 会話内容: {content}, 言語: {locale}</string>
   <string name="setting_model_page_title">デフォルトモデルとプロンプト</string>
   <string name="setting_model_page_translate_model">翻訳モデル</string>
@@ -1267,7 +1268,6 @@
   <string name="conversation_untitled">（名前のないチャット）</string>
   <string name="translator_page_error">翻訳に失敗しました</string>
   <string name="translator_page_paste">テキストを貼り付け</string>
-  <string name="translator_page_copy_result">翻訳結果をコピー</string>
   <string name="chat_page_auto_generate_title">タイトルを自動生成</string>
   <string name="chat_page_delete_conversation_confirm">チャット「%1$s」を削除しますか？</string>
   <string name="chat_page_delete_selected_confirm">選択した%1$d件のチャットを削除しますか？</string>
@@ -1662,5 +1662,17 @@
   <string name="memory_file_page_title">タイトル</string>
   <string name="memory_file_page_edit_warning">メモリは手動で編集しないでください。代わりにチャットで AI に覚えてもらうか変更してもらいましょう</string>
   <string name="setting_media_page_asset_storage">アセットストレージ</string>
+  <string name="translator_page_model_missing">翻訳モデルが選択されていません。右上隅をタップして選択してください。</string>
+  <string name="translator_page_char_count">%1$d文字</string>
+  <string name="translator_page_clear_input">入力をクリア</string>
+  <string name="translator_page_use_as_input">入力として使用</string>
+  <string name="translator_page_history">翻訳履歴</string>
+  <string name="translator_page_clear_history">クリア</string>
+  <string name="translator_page_clear_history_title">翻訳履歴を消去</string>
+  <string name="translator_page_clear_history_message">すべての翻訳履歴が削除されます。この操作は元に戻せません。</string>
+  <string name="setting_display_page_enable_quote_highlight_title">引用テキストをハイライト</string>
+  <string name="setting_display_page_enable_quote_highlight_desc">引用符内のテキストをテーマカラーで着色し、キャラクターのセリフを目立たせます</string>
+  <string name="workspace_detail_copy_path">パスをコピー</string>
+  <string name="workspace_detail_path_copied">パスをコピーしました</string>
 </resources>
 

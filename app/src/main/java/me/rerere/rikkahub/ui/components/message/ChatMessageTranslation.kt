@@ -44,6 +44,8 @@ import me.rerere.hugeicons.stroke.Cancel01
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.LanguageCircle
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.ui.components.ai.TranslationLanguages
+import me.rerere.rikkahub.ui.components.ai.translationLanguageName
 import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
 import me.rerere.ui.components.RikkaConfirmDialog
 import java.util.Locale
@@ -54,37 +56,6 @@ fun LanguageSelectionDialog(
     onLanguageSelected: (Locale) -> Unit,
     onDismissRequest: () -> Unit
 ) {
-    // 支持的语言列表
-    val languages = remember {
-        listOf(
-            Locale.SIMPLIFIED_CHINESE,
-            Locale.ENGLISH,
-            Locale.TRADITIONAL_CHINESE,
-            Locale.JAPANESE,
-            Locale.KOREAN,
-            Locale.FRENCH,
-            Locale.GERMAN,
-            Locale.Builder().setLanguage("es").setRegion("ES").build(),
-            Locale.ITALIAN,
-        )
-    }
-
-    // 语言名称映射函数，原有的 locale.displayName 方法无法获取 emoji
-    fun getLanguageDisplayName(locale: Locale): String {
-        return when (locale) {
-            Locale.SIMPLIFIED_CHINESE -> "🇨🇳 简体中文"
-            Locale.ENGLISH -> "🇺🇸 English"
-            Locale.TRADITIONAL_CHINESE -> "🇨🇳 繁體中文"
-            Locale.JAPANESE -> "🇯🇵 日本語"
-            Locale.KOREAN -> "🇰🇷 한국어"
-            Locale.FRENCH -> "🇫🇷 Français"
-            Locale.GERMAN -> "🇩🇪 Deutsch"
-            Locale.ITALIAN -> "🇮🇹 Italiano"
-            Locale.Builder().setLanguage("es").setRegion("ES").build() -> "🇪🇸 Español"
-            else -> locale.getDisplayLanguage(Locale.getDefault())
-        }
-    }
-
     ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismissRequest,
         sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)),
@@ -109,7 +80,7 @@ fun LanguageSelectionDialog(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                items(languages) { language ->
+                items(TranslationLanguages) { language ->
                     Card(
                         onClick = {
                             onLanguageSelected(language)
@@ -132,7 +103,7 @@ fun LanguageSelectionDialog(
                                 modifier = Modifier.size(24.dp)
                             )
                             Text(
-                                text = getLanguageDisplayName(language),
+                                text = translationLanguageName(language),
                                 style = MaterialTheme.typography.titleMedium,
                             )
                         }

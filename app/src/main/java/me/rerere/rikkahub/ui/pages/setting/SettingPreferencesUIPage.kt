@@ -517,6 +517,14 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                         }
                     }
                     switchItem(
+                        checked = displaySetting.enableQuoteHighlight,
+                        onCheckedChange = {
+                            updateDisplaySetting(displaySetting.copy(enableQuoteHighlight = it))
+                        },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_enable_quote_highlight_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_enable_quote_highlight_title)) },
+                    )
+                    switchItem(
                         checked = displaySetting.showAssistantBubble,
                         onCheckedChange = {
                             updateDisplaySetting(displaySetting.copy(showAssistantBubble = it))

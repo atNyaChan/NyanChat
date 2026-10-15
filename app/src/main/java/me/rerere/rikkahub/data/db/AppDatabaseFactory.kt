@@ -7,13 +7,13 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import me.rerere.rikkahub.data.db.fts.rebuildMessageSearchCache
 import me.rerere.rikkahub.data.db.migrations.Migration_27_28
 import me.rerere.rikkahub.data.db.migrations.Migration_28_29
-import me.rerere.rikkahub.data.db.migrations.Migration_29_100
+import me.rerere.rikkahub.data.db.migrations.Migration_30_100
 
 /** Shared schema and extensions for the app and staged backup validation. */
 internal object AppDatabaseFactory {
     /**
-     * 构建数据库。[allowLegacyMigration] 为 false（App 自身）时不注册 29 -> 100 迁移：
-     * 读到 29 的旧库会直接由 Room 报错，禁止原地升级。只有恢复存档时先在暂存库里转换到
+     * 构建数据库。[allowLegacyMigration] 为 false（App 自身）时不注册 30 -> 100 迁移：
+     * 读到 30 的旧库会直接由 Room 报错，禁止原地升级。只有恢复存档时先在暂存库里转换到
      * 新 schema，才允许打开并迁移旧版本，因此备份校验传 true。
      */
     fun create(
@@ -25,7 +25,7 @@ internal object AppDatabaseFactory {
             .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
             .addMigrations(Migration_27_28, Migration_28_29)
             .apply {
-                if (allowLegacyMigration) addMigrations(Migration_29_100)
+                if (allowLegacyMigration) addMigrations(Migration_30_100)
             }
             .addCallback(object : RoomDatabase.Callback() {
                 override fun onOpen(db: SupportSQLiteDatabase) {

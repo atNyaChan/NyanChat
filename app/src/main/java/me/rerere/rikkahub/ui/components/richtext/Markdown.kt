@@ -47,6 +47,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -140,11 +141,13 @@ fun MarkdownBlock(
     val displaySetting = LocalSettings.current.displaySetting
     val enableLatexRendering = displaySetting.enableLatexRendering
     val enableCodeLigatures = displaySetting.enableCodeLigatures
+    val enableQuoteHighlight = displaySetting.enableQuoteHighlight
     val boldFontWeight = displaySetting.resolvedBoldFontWeight()
     val fontSize = LocalTextStyle.current.merge(style).fontSize
     val density = LocalDensity.current
+    val quoteColor = MaterialTheme.colorScheme.tertiary
     val defaultTheme = MarkdownDefaults.theme(style)
-    val theme = remember(defaultTheme, fontSize, density, enableCodeLigatures, boldFontWeight) {
+    val theme = remember(defaultTheme, fontSize, density, enableCodeLigatures, boldFontWeight, enableQuoteHighlight, quoteColor) {
         defaultTheme.copy(
             inlineCode = defaultTheme.inlineCode.copy(
                 fontFamily = JetbrainsMono,
@@ -153,6 +156,7 @@ fun MarkdownBlock(
             boldFontWeight = boldFontWeight,
             // 段落间距跟随字号，调整字体大小时保持比例
             blockSpacing = if (fontSize.isSp) with(density) { fontSize.toDp() } else defaultTheme.blockSpacing,
+            quotedText = SpanStyle(color = quoteColor).takeIf { enableQuoteHighlight },
         )
     }
 
@@ -282,7 +286,7 @@ private fun citationWidget(link: MarkdownInline.Link, onClick: (String) -> Unit)
                 .clickable { onClick(id.trim()) }
                 .fillMaxSize()
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.tertiaryContainer.copy(0.2f)),
+                .background(MaterialTheme.colorScheme.tertiaryContainer),
             contentAlignment = Alignment.Center,
         ) {
             Text(
@@ -295,7 +299,7 @@ private fun citationWidget(link: MarkdownInline.Link, onClick: (String) -> Unit)
                     fontFeatureSettings = LocalSettings.current.displaySetting
                         .enableCodeLigatures.codeFontFeatureSettings,
                     color = MaterialTheme.colorScheme.onTertiaryContainer,
-                    fontWeight = FontWeight.Thin,
+                    fontWeight = FontWeight.Medium,
                 ),
             )
         }

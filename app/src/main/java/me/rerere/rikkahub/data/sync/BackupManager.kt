@@ -452,7 +452,7 @@ class BackupManager(
             if (stagedDatabase.exists()) {
                 DatabaseBackup.normalize(context, stagedDatabase)
                 // 按存档数据库声明的 schema 版本决定是否迁移 upload：
-                // - 旧库（< 100，上游 RikkaHub 为 29）里附件是 `uuid.ext` 文件名、登记在 `managed_files`，
+                // - 旧库（< 100，上游 RikkaHub 为 30）里附件是 `uuid.ext` 文件名、登记在 `managed_files`，
                 //   先按内容统一命名成 `upload/<sha256>`（全部重新算哈希），再把旧表转成 `managed_files_cas`；
                 // - 已是 CAS schema（100）的库存的文件名与 `managed_files_cas` 一一对应，完全不动 `upload`。
                 val schemaVersion = ManagedFilesArchive.readSchemaVersion(stagedDatabase)
@@ -463,7 +463,7 @@ class BackupManager(
                     ManagedFilesArchive.convertLegacyDatabase(stagedDatabase, json, oldNameToSha, filesRoot)
                 }
                 // Reject unsupported schemas before publishing; run supported old migrations on the copy.
-                // 恢复存档时才允许 29 -> 100 的旧库迁移（App 自身读到 29 会直接报错）。
+                // 恢复存档时才允许 30 -> 100 的旧库迁移（App 自身读到 30 会直接报错）。
                 val room = AppDatabaseFactory.create(
                     context,
                     stagedDatabase.absolutePath,

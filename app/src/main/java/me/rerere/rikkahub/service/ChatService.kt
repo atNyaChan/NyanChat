@@ -1162,6 +1162,10 @@ class ChatService(
         }
         if (!shouldGenerate) return@withContext
 
+        val settings = settingsStore.awaitLoaded()
+        // 关掉自动生成后只跳过对话结束时的自动调用，手动重新生成照常执行
+        if (!force && !settings.enableAutoTitle) return@withContext
+
         runCatching {
             val title = generateTitleCandidate(conversation)
             val persistedConversation = conversationRepo.getConversationById(conversationId) ?: return@withContext

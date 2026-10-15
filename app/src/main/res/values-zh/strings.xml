@@ -774,6 +774,7 @@
   <string name="setting_model_page_ocr_prompt_vars">变量：图像数据：{images}</string>
   <string name="setting_model_page_reset_to_default">重置为默认</string>
   <string name="setting_model_page_enable_suggestion">聊天建议</string>
+  <string name="setting_model_page_enable_auto_title">自动生成对话标题</string>
   <string name="setting_model_page_suggestion_prompt_vars">变量: 对话内容: {content}, 语言: {locale}</string>
   <string name="setting_model_page_title">默认模型和提示词</string>
   <string name="setting_model_page_translate_model">翻译模型</string>
@@ -1267,7 +1268,6 @@
   <string name="conversation_untitled">（没有名字的聊天）</string>
   <string name="translator_page_error">翻译失败</string>
   <string name="translator_page_paste">粘贴文本</string>
-  <string name="translator_page_copy_result">复制翻译结果</string>
   <string name="chat_page_auto_generate_title">自动生成标题</string>
   <string name="chat_page_delete_conversation_confirm">确定删除聊天“%1$s”吗？</string>
   <string name="chat_page_delete_selected_confirm">确定删除选中的 %1$d 个聊天吗？</string>
@@ -1662,5 +1662,17 @@
   <string name="memory_file_page_title">标题</string>
   <string name="memory_file_page_edit_warning">尽量不要手动编辑记忆，而是在聊天中让模型帮你记住或修改</string>
   <string name="setting_media_page_asset_storage">素材存储</string>
+  <string name="translator_page_model_missing">未选择翻译模型。点击右上角进行选择。</string>
+  <string name="translator_page_char_count">%1$d 个字符</string>
+  <string name="translator_page_clear_input">清空输入</string>
+  <string name="translator_page_use_as_input">用作输入</string>
+  <string name="translator_page_history">翻译历史</string>
+  <string name="translator_page_clear_history">清除</string>
+  <string name="translator_page_clear_history_title">清除翻译历史记录</string>
+  <string name="translator_page_clear_history_message">所有翻译记录都将被删除，此操作无法撤销。</string>
+  <string name="setting_display_page_enable_quote_highlight_title">引号内文字高亮</string>
+  <string name="setting_display_page_enable_quote_highlight_desc">使用主题色为引号内的文本着色，让角色对话更加醒目</string>
+  <string name="workspace_detail_copy_path">复制路径</string>
+  <string name="workspace_detail_path_copied">路径已复制</string>
 </resources>
 
