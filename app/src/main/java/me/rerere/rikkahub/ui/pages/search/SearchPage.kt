@@ -78,6 +78,7 @@ import me.rerere.rikkahub.data.db.fts.MessageSearchSort
 import me.rerere.rikkahub.ui.components.ai.ModelListSheet
 import me.rerere.rikkahub.ui.components.ai.rememberModelListState
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.MessageSearchResultCard
 import me.rerere.rikkahub.ui.components.ui.Select
@@ -405,13 +406,9 @@ private fun SearchConditionsDialog(
                 .imePadding(),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(
+            BottomSheetTitle(
                 text = stringResource(R.string.search_page_conditions),
-                style = MaterialTheme.typography.titleLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
+                modifier = Modifier.padding(horizontal = 24.dp),
             )
 
             CardGroup(

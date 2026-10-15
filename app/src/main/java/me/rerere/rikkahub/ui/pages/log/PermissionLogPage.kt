@@ -45,6 +45,7 @@ import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.JsonTree
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.context.LocalSettings
@@ -204,25 +205,26 @@ internal fun PermissionToolDetailContent(
             .padding(horizontal = 16.dp).padding(bottom = 8.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
+        Box(modifier = Modifier.fillMaxWidth()) {
+            BottomSheetTitle(
                 text = title,
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.padding(horizontal = 24.dp),
             )
-            Text(
-                text = toolName,
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontFeatureSettings = codeFontFeatureSettings,
-                ),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontFamily = JetbrainsMono,
-            )
-            headerActions?.invoke()
+            Row(
+                modifier = Modifier.align(Alignment.CenterEnd),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = toolName,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontFeatureSettings = codeFontFeatureSettings,
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = JetbrainsMono,
+                )
+                headerActions?.invoke()
+            }
         }
         PermissionLogDataField(
             label = stringResource(R.string.permission_log_page_input),

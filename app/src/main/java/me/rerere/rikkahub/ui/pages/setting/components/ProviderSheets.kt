@@ -23,9 +23,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 
 // 新建 / 编辑服务商的面板：标题、表单、底部的取消和确认；确认之前改动只留在面板里
 @Composable
@@ -58,13 +58,9 @@ internal fun <T> ProviderEditSheet(
                 .imePadding(),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(
+            BottomSheetTitle(
                 text = title,
-                style = MaterialTheme.typography.titleLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
+                modifier = Modifier.padding(horizontal = 24.dp),
             )
 
             content(current, { current = it }, Modifier.weight(1f).padding(horizontal = 16.dp))

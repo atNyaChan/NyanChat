@@ -67,7 +67,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -83,6 +82,7 @@ import me.rerere.rikkahub.data.model.Lorebook
 import me.rerere.rikkahub.data.model.PromptInjection
 import me.rerere.rikkahub.ui.components.ai.ExtensionEmptyState
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
 import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
@@ -379,13 +379,9 @@ private fun ModeInjectionEditSheet(
                 .bottomSheetMaxHeight(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
+            BottomSheetTitle(
                 text = stringResource(R.string.prompt_page_edit_mode_injection),
-                style = MaterialTheme.typography.titleLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
+                modifier = Modifier.padding(horizontal = 24.dp),
             )
 
             Column(
@@ -825,13 +821,9 @@ private fun LorebookEditSheet(
                 .bottomSheetMaxHeight(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
+            BottomSheetTitle(
                 text = stringResource(R.string.prompt_page_edit_lorebook),
-                style = MaterialTheme.typography.titleLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
+                modifier = Modifier.padding(horizontal = 24.dp),
             )
 
             Column(
@@ -1055,13 +1047,9 @@ private fun RegexInjectionEditDialog(
                 .bottomSheetMaxHeight(),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(
+            BottomSheetTitle(
                 text = stringResource(R.string.prompt_page_edit_entry),
-                style = MaterialTheme.typography.titleLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
+                modifier = Modifier.padding(horizontal = 24.dp),
             )
 
             Column(

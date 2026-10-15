@@ -723,7 +723,7 @@ private fun AssetPickerSheet(
                     ImageRole.REFERENCE -> R.string.media_creation_page_add_reference_asset
                 }
             ),
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.headlineSmall,
         )
 
         // 一行两个，放不下的换到下一行
@@ -804,7 +804,7 @@ private fun ModelSheet(
     ComposerSheet(onDismiss = onDismiss) {
         Text(
             text = stringResource(R.string.media_creation_page_select_model),
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.headlineSmall,
         )
 
         if (groups.isEmpty()) {

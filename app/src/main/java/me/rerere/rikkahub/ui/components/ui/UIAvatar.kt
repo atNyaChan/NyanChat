@@ -325,18 +325,30 @@ fun UIAvatar(
             },
             sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
         ) {
-            EmojiPicker(
-                onEmojiSelected = { emoji ->
-                    onUpdate?.invoke(Avatar.Emoji(content = emoji.emoji))
-                    showEmojiPicker = false
-                },
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .bottomSheetMaxHeight()
                     .wrapContentHeight()
                     .padding(horizontal = 16.dp)
-                    .padding(bottom = 8.dp)
-            )
+                    .padding(bottom = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                // 内容左右 16dp，再补 8dp 共 24dp
+                BottomSheetTitle(
+                    text = stringResource(id = R.string.avatar_pick_emoji),
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                )
+                EmojiPicker(
+                    onEmojiSelected = { emoji ->
+                        onUpdate?.invoke(Avatar.Emoji(content = emoji.emoji))
+                        showEmojiPicker = false
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
+                )
+            }
         }
     }
 

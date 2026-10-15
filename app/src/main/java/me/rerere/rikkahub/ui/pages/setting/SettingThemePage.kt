@@ -76,6 +76,7 @@ import me.rerere.hugeicons.stroke.PlusSign
 import me.rerere.hugeicons.stroke.Tick01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
@@ -432,10 +433,9 @@ private fun CustomThemeEditSheet(
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 8.dp),
         ) {
-            Text(
+            BottomSheetTitle(
                 text = if (theme == null) stringResource(R.string.setting_theme_page_create_theme)
                 else stringResource(R.string.setting_theme_page_edit_theme),
-                style = MaterialTheme.typography.titleLarge,
             )
 
             Spacer(Modifier.height(16.dp))

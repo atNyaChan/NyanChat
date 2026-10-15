@@ -460,6 +460,7 @@
   <string name="assistant_page_context_message_limit_desc">모델로 전송되는 최근 메시지 수를 제한합니다.</string>
   <string name="assistant_page_context_message_limit_placeholder">제한 없음</string>
   <string name="assistant_page_context_message_limit_warning">컨텍스트가 정리될 때마다 프롬프트 캐시가 무효화됩니다. 제한 값이 클수록 정리 빈도가 줄어듭니다.</string>
+  <string name="assistant_page_copy_assistant">어시스턴트 복사</string>
   <string name="assistant_page_copy_existing">기존 어시스턴트 복사</string>
   <string name="assistant_page_copy_memories_confirm">이 어시스턴트의 기억도 함께 복사할까요?</string>
   <string name="assistant_page_copy_picker_tag_count">태그 %1$d개</string>
@@ -1535,6 +1536,7 @@
   <string name="log_page_model">모델: </string>
   <string name="log_page_preview_markdown">미리보기 Markdown</string>
   <string name="log_page_preview_string">문자열 미리 보기</string>
+  <string name="log_page_request_detail">요청 세부정보</string>
   <string name="log_page_stream_interrupted">스트림 응답이 중단됨</string>
   <string name="permission_log_page_always_allowed"> (항상 허용)</string>
   <string name="permission_log_page_clear_confirm">권한 요청 로그를 지울까요?</string>

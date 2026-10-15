@@ -85,7 +85,7 @@ fun WorkspaceCwdPickerSheet(
         ) {
             Text(
                 text = stringResource(R.string.workspace_cwd_select_directory),
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
             )
             Text(
                 text = stringResource(R.string.workspace_cwd_select_desc),

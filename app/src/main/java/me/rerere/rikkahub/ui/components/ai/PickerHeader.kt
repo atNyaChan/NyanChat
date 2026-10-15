@@ -242,7 +242,7 @@ internal fun SheetHeader(
         navigationIcon?.invoke()
         Text(
             text = title,
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier
                 .weight(1f)
                 .padding(start = if (navigationIcon == null) 8.dp else 4.dp),

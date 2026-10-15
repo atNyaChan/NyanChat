@@ -55,6 +55,7 @@ import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ai.AssistantListItemContent
+import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.FormItem
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.longPressReorder
@@ -269,10 +270,14 @@ private fun AssistantCreationSheet(
                     .padding(horizontal = 16.dp).padding(bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                // 内容左右 16dp，再补 8dp 共 24dp
+                BottomSheetTitle(
+                    text = stringResource(R.string.assistant_page_copy_assistant),
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                )
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     FormItem(
                         label = {

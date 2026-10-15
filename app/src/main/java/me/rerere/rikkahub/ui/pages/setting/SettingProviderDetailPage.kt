@@ -77,7 +77,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withLink
@@ -109,6 +108,7 @@ import me.rerere.rikkahub.ui.components.ai.ModelTypeTag
 import me.rerere.rikkahub.ui.components.ai.ProviderBalanceText
 import me.rerere.rikkahub.ui.components.ai.rememberModelListState
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
+import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupScope
@@ -286,16 +286,12 @@ fun SettingProviderDetailSheet(
                 .imePadding(),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(
+            BottomSheetTitle(
                 text = stringResource(
                     if (isNew) R.string.setting_provider_page_create_provider
                     else R.string.setting_provider_page_edit_provider
                 ),
-                style = MaterialTheme.typography.titleLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
+                modifier = Modifier.padding(horizontal = 24.dp),
             )
 
             PagerTabs(
@@ -503,13 +499,9 @@ fun SettingProviderDetailSheet(
                         .padding(bottom = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text(
+                    BottomSheetTitle(
                         text = stringResource(R.string.setting_provider_page_custom_model),
-                        style = MaterialTheme.typography.titleLarge,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp),
+                        modifier = Modifier.padding(horizontal = 24.dp),
                     )
                     Column(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -1103,14 +1095,10 @@ private fun ModelPickerSheet(
                 .imePadding(),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            // 与其他抽屉同款的居中标题（内容左右 8dp，再补 16dp 共 24dp）
-            Text(
+            // 内容左右 8dp，再补 16dp 共 24dp
+            BottomSheetTitle(
                 text = stringResource(R.string.model_list_select_model),
-                style = MaterialTheme.typography.titleLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                modifier = Modifier.padding(horizontal = 16.dp),
             )
 
             // 可选模型标题
@@ -2036,13 +2024,9 @@ private fun ModelCard(
                         .imePadding(),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text(
+                    BottomSheetTitle(
                         text = stringResource(R.string.setting_provider_page_edit_model),
-                        style = MaterialTheme.typography.titleLarge,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp),
+                        modifier = Modifier.padding(horizontal = 24.dp),
                     )
                     Column(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -2311,13 +2295,9 @@ private fun ProviderOverrideSettings(
                         .imePadding(),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text(
+                    BottomSheetTitle(
                         text = stringResource(R.string.setting_provider_page_configure_provider_override),
-                        style = MaterialTheme.typography.titleLarge,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp),
+                        modifier = Modifier.padding(horizontal = 24.dp),
                     )
 
                     Column(

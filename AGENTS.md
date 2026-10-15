@@ -36,7 +36,9 @@ of adding per-screen variants.
 - **Bottom sheets**: always use `BottomSheetDefaults.DragHandle()` with drag-to-dismiss, wrap the
   content height up to 95% of the available height, and use top padding 0dp / bottom 8dp (plus the
   navigation-bar inset). Fixed bottom button rows keep 8dp above and 8dp below, and use
-  "Cancel / Confirm" via `common_confirm_action`.
+  "Cancel / Confirm" via `common_confirm_action`. Titles are horizontally centered and use
+  `MaterialTheme.typography.headlineSmall`, through the shared `BottomSheetTitle`
+  (app/src/main/java/me/rerere/rikkahub/ui/components/ui/SheetContent.kt).
 - **Colors** (`CustomColors`, app/src/main/java/me/rerere/rikkahub/ui/theme/Color.kt): page
   backgrounds, the top bar and all drawers use `surface`; card/list fills use `surfaceContainerLow`
   (`CustomColors.cardColorsOnSurfaceContainer`, `CustomColors.listItemColors`). Every

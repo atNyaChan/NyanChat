@@ -595,7 +595,9 @@
 - 全部带有固定底部按钮行（取消/确认/保存/添加等）的底部抽屉统一为：按钮行与上方内容的间距 8dp、按钮行到屏幕底部 8dp。
 - 所有底部抽屉（`ModalBottomSheet`）底部右对齐的主操作键统一改为实心 `Button`（“取消”仍为 `TextButton`）；编辑类主操作键文案用“保存”，新增类用“添加”，搜索条件用“搜索”（新增通用键 `common_search`），MCP JSON 导入用“导入”。
 - 媒体生成提供商配置抽屉的按钮行由两个按钮各占一半宽度改为与其它底部抽屉一致：取消与保存（或添加）并排右对齐。
-- 全部底部抽屉顶部统一为横线拖拽把手（`BottomSheetDefaults.DragHandle()`）并启用下拉拖拽手势。
+- 全部底部抽屉顶部统一为横线拖拽把手（`BottomSheetDefaults.DragHandle()`）并启用下拉拖拽手势。标题水平居中，只有 ReasoningPicker、SearchPicker、WorkspaceCwdPicker、SettingFilesPage、MediaCreationComposer 以及 FilesPicker 扩展页面子标题保持左对齐。
+- 全部底部抽屉的标题字号统一为 `headlineSmall`。
+- 为原先没有标题的底部抽屉补上标题：ModelList 为“选择模型”、UIAvatar 为“选择表情”、AssistantPage 为“复制助手”、LogPage 为“请求详情”。
 - TTS 提供商列表每项右侧均提供试听和选择控件；ASR 提供商列表右侧仅保留选择圆点。
 - TTS 与 ASR 新增/编辑提供商面板的取消/添加按钮统一右对齐，全部公共及提供商专属配置项合并为一个连续的 Material 3 `CardGroup` 表单列表，删除按钮位于列表外。
 - ASR 点击加号直接打开新增面板，并在面板内使用与 TTS 相同的提供商类型下拉选择。

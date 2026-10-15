@@ -460,6 +460,7 @@
   <string name="assistant_page_context_message_limit_desc">限制发送给模型的最近消息数量</string>
   <string name="assistant_page_context_message_limit_placeholder">无限制</string>
   <string name="assistant_page_context_message_limit_warning">会在每次截断上下文时使提示词缓存失效，上限越大，截断越少。</string>
+  <string name="assistant_page_copy_assistant">复制助手</string>
   <string name="assistant_page_copy_existing">复制已有助手</string>
   <string name="assistant_page_copy_memories_confirm">是否同时复制该助手的记忆</string>
   <string name="assistant_page_copy_picker_tag_count">%1$d 个标签</string>
@@ -1535,6 +1536,7 @@
   <string name="log_page_model">模型：</string>
   <string name="log_page_preview_markdown">预览 Markdown</string>
   <string name="log_page_preview_string">预览字符串</string>
+  <string name="log_page_request_detail">请求详情</string>
   <string name="log_page_stream_interrupted">流式响应已中断</string>
   <string name="permission_log_page_always_allowed">（始终允许）</string>
   <string name="permission_log_page_clear_confirm">是否清空权限请求日志</string>

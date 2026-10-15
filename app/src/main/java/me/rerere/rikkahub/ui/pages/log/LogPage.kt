@@ -76,6 +76,7 @@ import me.rerere.rikkahub.data.ai.RequestInterceptMode
 import me.rerere.rikkahub.data.ai.isLlmRequest
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
+import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.JsonTree
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
@@ -297,7 +298,13 @@ private fun UnifiedLogList(
             onDismissRequest = { selectedLog = null },
             sheetState = sheetState
         ) {
-            RequestLogDetail(log)
+            Column(modifier = Modifier.fillMaxWidth()) {
+                BottomSheetTitle(
+                    text = stringResource(R.string.log_page_request_detail),
+                    modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 8.dp),
+                )
+                RequestLogDetail(log)
+            }
         }
     }
 }

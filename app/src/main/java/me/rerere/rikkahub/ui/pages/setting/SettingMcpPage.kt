@@ -70,7 +70,6 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -100,6 +99,7 @@ import me.rerere.rikkahub.data.ai.mcp.McpServerConfig
 import me.rerere.rikkahub.data.ai.mcp.McpStatus
 import me.rerere.rikkahub.data.ai.mcp.McpTool
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.PagerTab
@@ -477,14 +477,10 @@ private fun McpServerConfigModal(
                     .padding(horizontal = 8.dp).padding(bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // 与编辑模型抽屉同款的居中标题（内容左右 8dp，再补 16dp 共 24dp）
-                Text(
+                // 内容左右 8dp，再补 16dp 共 24dp
+                BottomSheetTitle(
                     text = stringResource(titleRes),
-                    style = MaterialTheme.typography.titleLarge,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp),
                 )
                 PagerTabs(
                     pagerState = pagerState,
@@ -1067,7 +1063,7 @@ private fun McpImportModal(
                 .imePadding(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(stringResource(R.string.setting_mcp_page_import_title), style = MaterialTheme.typography.titleLarge)
+            BottomSheetTitle(text = stringResource(R.string.setting_mcp_page_import_title))
             Text(
                 stringResource(R.string.setting_mcp_page_import_desc),
                 style = MaterialTheme.typography.bodySmall,

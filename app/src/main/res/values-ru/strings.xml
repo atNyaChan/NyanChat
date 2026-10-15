@@ -460,6 +460,7 @@
   <string name="assistant_page_context_message_limit_desc">Ограничивает количество последних сообщений, отправляемых модели.</string>
   <string name="assistant_page_context_message_limit_placeholder">Без ограничений</string>
   <string name="assistant_page_context_message_limit_warning">Кеш промпта аннулируется при каждом сокращении контекста. Чем больше лимит, тем реже сокращается контекст.</string>
+  <string name="assistant_page_copy_assistant">Копировать ассистента</string>
   <string name="assistant_page_copy_existing">Копировать существующего ассистента</string>
   <string name="assistant_page_copy_memories_confirm">Также скопировать память этого ассистента?</string>
   <string name="assistant_page_copy_picker_tag_count">Тегов: %1$d</string>
@@ -1535,6 +1536,7 @@
   <string name="log_page_model">Модель: </string>
   <string name="log_page_preview_markdown">Предпросмотр Markdown</string>
   <string name="log_page_preview_string">Предпросмотр строки</string>
+  <string name="log_page_request_detail">Детали запроса</string>
   <string name="log_page_stream_interrupted">Потоковый ответ прерван</string>
   <string name="permission_log_page_always_allowed"> (Всегда разрешено)</string>
   <string name="permission_log_page_clear_confirm">Очистить журнал запросов разрешений?</string>

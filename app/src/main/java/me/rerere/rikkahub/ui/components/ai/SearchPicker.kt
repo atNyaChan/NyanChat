@@ -140,7 +140,7 @@ private fun SearchPicker(
         ) {
             Text(
                 text = stringResource(R.string.search_picker_title),
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f)
             )

@@ -71,6 +71,7 @@ import me.rerere.rikkahub.data.skills.SkillMetadata
 import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.ui.components.ai.ExtensionEmptyState
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
 import me.rerere.rikkahub.ui.components.ui.Tag
@@ -387,10 +388,7 @@ private fun SkillImportSheet(
                 .padding(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(
-                text = stringResource(R.string.skills_page_add_title),
-                style = MaterialTheme.typography.titleLarge,
-            )
+            BottomSheetTitle(text = stringResource(R.string.skills_page_add_title))
             CardGroup {
                 item(
                     onClick = onAddManually,

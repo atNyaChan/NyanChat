@@ -460,6 +460,7 @@
   <string name="assistant_page_context_message_limit_desc">Limits the number of recent messages sent to the model</string>
   <string name="assistant_page_context_message_limit_placeholder">Unlimited</string>
   <string name="assistant_page_context_message_limit_warning">The prompt cache is invalidated each time the context is trimmed. A larger limit means less frequent trimming.</string>
+  <string name="assistant_page_copy_assistant">Copy Assistant</string>
   <string name="assistant_page_copy_existing">Copy existing assistant</string>
   <string name="assistant_page_copy_memories_confirm">Also copy this assistant\'s memories?</string>
   <string name="assistant_page_copy_picker_tag_count">%1$d tags</string>
@@ -1535,6 +1536,7 @@
   <string name="log_page_model">Model: </string>
   <string name="log_page_preview_markdown">Preview Markdown</string>
   <string name="log_page_preview_string">Preview String</string>
+  <string name="log_page_request_detail">Request Details</string>
   <string name="log_page_stream_interrupted">Stream response interrupted</string>
   <string name="permission_log_page_always_allowed"> (Always allowed)</string>
   <string name="permission_log_page_clear_confirm">Clear permission request logs?</string>

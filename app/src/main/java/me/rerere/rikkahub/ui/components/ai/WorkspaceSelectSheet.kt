@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.rerere.hugeicons.HugeIcons
@@ -32,6 +31,7 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.ui.pages.extensions.workspace.toShellStatusLabel
+import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 @Composable
@@ -55,13 +55,9 @@ internal fun WorkspaceSelectSheet(
                 .bottomSheetMaxHeight()
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(
-                text = stringResource(R.string.workspace_select),
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                modifier = Modifier.padding(vertical = 8.dp),
-            )
+            BottomSheetTitle(text = stringResource(R.string.workspace_select))
 
             Column(
                 modifier = Modifier
@@ -86,7 +82,7 @@ internal fun WorkspaceSelectSheet(
                 }
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            HorizontalDivider()
 
             // 管理工作区
             ListItem(

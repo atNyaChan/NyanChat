@@ -460,6 +460,7 @@
   <string name="assistant_page_context_message_limit_desc">يحدّ من عدد الرسائل الأخيرة المرسلة إلى النموذج</string>
   <string name="assistant_page_context_message_limit_placeholder">غير محدود</string>
   <string name="assistant_page_context_message_limit_warning">تُبطَل ذاكرة التخزين المؤقت للمطالبات في كل مرة يُقتطع فيها السياق. الحد الأكبر يعني اقتطاعًا أقل تكرارًا.</string>
+  <string name="assistant_page_copy_assistant">نسخ المساعد</string>
   <string name="assistant_page_copy_existing">نسخ مساعد موجود</string>
   <string name="assistant_page_copy_memories_confirm">هل تريد أيضًا نسخ ذكريات هذا المساعد؟</string>
   <string name="assistant_page_copy_picker_tag_count">%1$d وسم</string>
@@ -1535,6 +1536,7 @@
   <string name="log_page_model">النموذج: </string>
   <string name="log_page_preview_markdown">معاينة Markdown</string>
   <string name="log_page_preview_string">معاينة النص</string>
+  <string name="log_page_request_detail">تفاصيل الطلب</string>
   <string name="log_page_stream_interrupted">قوطعت استجابة البث</string>
   <string name="permission_log_page_always_allowed"> (مسموح دائمًا)</string>
   <string name="permission_log_page_clear_confirm">مسح سجلات طلبات الأذونات؟</string>

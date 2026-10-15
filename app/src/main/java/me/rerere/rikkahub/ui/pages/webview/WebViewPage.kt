@@ -44,6 +44,7 @@ import me.rerere.ui.webview.rememberWebViewState
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
+import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -167,10 +168,9 @@ fun WebViewPage(url: String, contentId: String) {
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 8.dp)
             ) {
-                Text(
+                BottomSheetTitle(
                     text = "Console Logs",
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = 16.dp),
                 )
 
                 SelectionContainer {

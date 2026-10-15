@@ -47,6 +47,7 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.ai.TranslationLanguages
 import me.rerere.rikkahub.ui.components.ai.translationLanguageName
 import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
+import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import java.util.Locale
 import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
@@ -69,11 +70,7 @@ fun LanguageSelectionDialog(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             // 标题
-            Text(
-                text = stringResource(R.string.translation_language_selection_title),
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.fillMaxWidth()
-            )
+            BottomSheetTitle(text = stringResource(R.string.translation_language_selection_title))
 
             // 语言列表
             LazyColumn(

@@ -92,6 +92,7 @@ import me.rerere.rikkahub.ui.components.message.groupMessageParts
 import me.rerere.rikkahub.ui.components.message.tools.memoryToolTitle
 import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
+import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.ui.components.BitmapComposer
 import me.rerere.rikkahub.ui.components.charts.ChartCard
 import me.rerere.rikkahub.ui.components.charts.ChartSpec
@@ -144,12 +145,8 @@ fun ChatExportSheet(
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(
-                    text = stringResource(id = R.string.chat_page_export_format),
-                    style = MaterialTheme.typography.titleLarge,
-                )
+                BottomSheetTitle(text = stringResource(id = R.string.chat_page_export_format))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),

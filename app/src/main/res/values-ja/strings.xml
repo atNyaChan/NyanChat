@@ -460,6 +460,7 @@
   <string name="assistant_page_context_message_limit_desc">モデルに送信する最近のメッセージ数を制限します。</string>
   <string name="assistant_page_context_message_limit_placeholder">無制限</string>
   <string name="assistant_page_context_message_limit_warning">コンテキストが切り詰められるたびにプロンプトキャッシュが無効になります。上限が大きいほど切り詰めの頻度は下がります。</string>
+  <string name="assistant_page_copy_assistant">アシスタントをコピー</string>
   <string name="assistant_page_copy_existing">既存のアシスタントをコピー</string>
   <string name="assistant_page_copy_memories_confirm">このアシスタントの記憶もコピーしますか？</string>
   <string name="assistant_page_copy_picker_tag_count">%1$d 個のタグ</string>
@@ -1535,6 +1536,7 @@
   <string name="log_page_model">モデル: </string>
   <string name="log_page_preview_markdown">プレビュー Markdown</string>
   <string name="log_page_preview_string">文字列をプレビュー</string>
+  <string name="log_page_request_detail">リクエスト詳細</string>
   <string name="log_page_stream_interrupted">ストリーム応答が中断されました</string>
   <string name="permission_log_page_always_allowed">（常に許可）</string>
   <string name="permission_log_page_clear_confirm">権限リクエストログを消去しますか？</string>

@@ -2,8 +2,8 @@ package me.rerere.rikkahub.ui.components.ui
 
 import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,7 +12,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Text
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
@@ -50,15 +49,14 @@ fun ShareSheet(
                     .bottomSheetMaxHeight()
                     .padding(horizontal = 16.dp).padding(bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    Text(
-                        stringResource(R.string.share_model_title),
-                        style = MaterialTheme.typography.titleLarge,
+                    BottomSheetTitle(
+                        text = stringResource(R.string.share_model_title),
+                        modifier = Modifier.padding(horizontal = 48.dp),
                     )
 
                     IconButton(
@@ -74,7 +72,8 @@ fun ShareSheet(
                             } catch (e: Exception) {
                                 e.printStackTrace()
                             }
-                        }
+                        },
+                        modifier = Modifier.align(Alignment.CenterEnd),
                     ) {
                         Icon(HugeIcons.Share01, null)
                     }

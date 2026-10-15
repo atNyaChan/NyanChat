@@ -77,6 +77,7 @@ import me.rerere.rikkahub.data.datastore.findModelById
 import me.rerere.rikkahub.data.datastore.findProvider
 import me.rerere.rikkahub.data.datastore.localizedDisplayName
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
+import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.rikkahub.ui.components.ui.SearchFieldShape
@@ -298,6 +299,11 @@ fun ModelListSheet(
                 .imePadding(),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
+            // 内容左右只有 8dp，再补 16dp 共 24dp
+            BottomSheetTitle(
+                text = stringResource(R.string.model_list_select_model),
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
             ModelList(
                 currentModel = state.modelId,
                 providers = state.filteredProviders,
