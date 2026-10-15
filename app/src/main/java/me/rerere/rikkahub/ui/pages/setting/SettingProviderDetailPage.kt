@@ -130,7 +130,6 @@ import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.hooks.useEditState
 import me.rerere.rikkahub.ui.pages.assistant.detail.CustomRequestProperties
-import me.rerere.rikkahub.ui.pages.setting.components.ProviderConfigure
 import me.rerere.rikkahub.ui.pages.setting.components.convertTo
 import me.rerere.rikkahub.ui.pages.setting.components.ProviderConnectionTester
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
@@ -800,6 +799,7 @@ private fun ProviderConfigTogglesCardGroup(
     balanceRefreshTick: Int,
     onRefreshBalance: () -> Unit,
     onEdit: (ProviderSetting) -> Unit,
+    showBalance: Boolean = true,
 ) {
     var balanceExpanded by remember { mutableStateOf(false) }
     CardGroup(modifier = Modifier.fillMaxWidth()) {
@@ -843,44 +843,46 @@ private fun ProviderConfigTogglesCardGroup(
                     headlineContent = { Text(stringResource(R.string.setting_provider_page_response_api)) },
                 )
 
-                BalanceFormItem(
-                    provider = provider,
-                    balanceRefreshTick = balanceRefreshTick,
-                    onRefreshBalance = onRefreshBalance,
-                    expand = balanceExpanded,
-                    onToggleExpand = { balanceExpanded = !balanceExpanded },
-                    onEdit = { option ->
-                        onEdit(provider.copy(balanceOption = option))
-                    },
-                )
-
-                // 默认收起，点击左侧展开/收起键才显示下面两项
-                if (balanceExpanded) {
-                    item(
-                        supportingContent = {
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                OutlinedTextField(
-                                    value = provider.balanceOption.apiPath,
-                                    onValueChange = { onEdit(provider.copy(balanceOption = provider.balanceOption.copy(apiPath = it))) },
-                                    label = { Text(stringResource(R.string.setting_provider_page_balance_api_path)) },
-                                    isError = !provider.balanceOption.apiPath.matches(ApiPathRegex),
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                                OutlinedTextField(
-                                    value = provider.balanceOption.resultPath,
-                                    onValueChange = { onEdit(provider.copy(balanceOption = provider.balanceOption.copy(resultPath = it))) },
-                                    label = { Text(stringResource(R.string.setting_provider_page_balance_json_key)) },
-                                    isError = !isJsonExprValid(provider.balanceOption.resultPath),
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textStyle = MaterialTheme.typography.bodySmall.copy(
-                                        fontFamily = JetbrainsMono,
-                                        fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
-                                    )
-                                )
-                            }
+                if (showBalance) {
+                    BalanceFormItem(
+                        provider = provider,
+                        balanceRefreshTick = balanceRefreshTick,
+                        onRefreshBalance = onRefreshBalance,
+                        expand = balanceExpanded,
+                        onToggleExpand = { balanceExpanded = !balanceExpanded },
+                        onEdit = { option ->
+                            onEdit(provider.copy(balanceOption = option))
                         },
-                        headlineContent = {},
                     )
+
+                    // 默认收起，点击左侧展开/收起键才显示下面两项
+                    if (balanceExpanded) {
+                        item(
+                            supportingContent = {
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    OutlinedTextField(
+                                        value = provider.balanceOption.apiPath,
+                                        onValueChange = { onEdit(provider.copy(balanceOption = provider.balanceOption.copy(apiPath = it))) },
+                                        label = { Text(stringResource(R.string.setting_provider_page_balance_api_path)) },
+                                        isError = !provider.balanceOption.apiPath.matches(ApiPathRegex),
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                    OutlinedTextField(
+                                        value = provider.balanceOption.resultPath,
+                                        onValueChange = { onEdit(provider.copy(balanceOption = provider.balanceOption.copy(resultPath = it))) },
+                                        label = { Text(stringResource(R.string.setting_provider_page_balance_json_key)) },
+                                        isError = !isJsonExprValid(provider.balanceOption.resultPath),
+                                        modifier = Modifier.fillMaxWidth(),
+                                        textStyle = MaterialTheme.typography.bodySmall.copy(
+                                            fontFamily = JetbrainsMono,
+                                            fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+                                        )
+                                    )
+                                }
+                            },
+                            headlineContent = {},
+                        )
+                    }
                 }
             }
 
@@ -2214,6 +2216,7 @@ private fun ProviderOverrideSettings(
 ) {
     var showProviderConfig by remember { mutableStateOf(false) }
     var editingProvider by remember { mutableStateOf<ProviderSetting?>(null) }
+    var isCreating by remember { mutableStateOf(false) }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -2223,6 +2226,7 @@ private fun ProviderOverrideSettings(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
                     editingProvider = providerOverride
+                    isCreating = false
                     showProviderConfig = true
                 },
                 colors = CardDefaults.outlinedCardColors(),
@@ -2265,6 +2269,7 @@ private fun ProviderOverrideSettings(
                         models = emptyList(), // 这里必须设置为空，不然会导致循环依赖JSON
                         description = {},
                     )
+                    isCreating = true
                     showProviderConfig = true
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -2291,38 +2296,65 @@ private fun ProviderOverrideSettings(
                 sheetState = rememberBottomSheetState(
                     initialValue = SheetValue.Hidden,
                     enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
-                )
+                ),
+                dragHandle = {
+                    BottomSheetDefaults.DragHandle()
+                },
             ) {
                 var internalProvider by remember(editingProvider) { mutableStateOf(editingProvider!!) }
 
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .bottomSheetMaxHeight()
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                        .fillMaxHeight(0.95f)
+                        .padding(bottom = 8.dp)
+                        .imePadding(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
                         text = stringResource(R.string.setting_provider_page_configure_provider_override),
                         style = MaterialTheme.typography.titleLarge,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp),
                     )
 
                     Column(
                         modifier = Modifier
-                            .weight(1f, fill = false)
-                            .verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        ProviderConfigure(
+                        if (!internalProvider.builtIn) {
+                            ProviderTypeSelectorCard(
+                                provider = internalProvider,
+                                onEdit = { internalProvider = it },
+                            )
+                        }
+
+                        ProviderConfigFieldsCardGroup(
                             provider = internalProvider,
-                            onEdit = { internalProvider = it }
+                            onEdit = { internalProvider = it },
+                        )
+
+                        ProviderConfigTogglesCardGroup(
+                            provider = internalProvider,
+                            balanceRefreshTick = 0,
+                            onRefreshBalance = {},
+                            onEdit = { internalProvider = it },
+                            showBalance = false,
                         )
                     }
 
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, end = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         TextButton(
                             onClick = {
@@ -2339,7 +2371,11 @@ private fun ProviderOverrideSettings(
                                 editingProvider = null
                             },
                         ) {
-                            Text(stringResource(R.string.common_save))
+                            Text(
+                                stringResource(
+                                    if (isCreating) R.string.common_add else R.string.common_save
+                                )
+                            )
                         }
                     }
                 }
