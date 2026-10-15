@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.datetime.toJavaLocalDateTime
+import kotlin.uuid.Uuid
 import me.rerere.ai.core.MessageRole
 import me.rerere.ai.provider.Model
 import me.rerere.ai.ui.UIMessage
@@ -82,7 +83,7 @@ import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 fun ColumnScope.ChatMessageActionButtons(
     message: UIMessage,
     node: MessageNode,
-    onUpdate: (MessageNode) -> Unit,
+    onUpdate: (Uuid, (MessageNode) -> MessageNode) -> Unit,
     onRegenerate: () -> Unit,
     onOpenActionSheet: () -> Unit,
     generating: Boolean = false,
@@ -333,7 +334,7 @@ fun ChatMessageActionsSheet(
     onEdit: () -> Unit,
     onShare: () -> Unit,
     onFork: () -> Unit,
-    onUpdate: (MessageNode) -> Unit,
+    onUpdate: (Uuid, (MessageNode) -> MessageNode) -> Unit,
     isFavorite: Boolean = false,
     onToggleFavorite: (() -> Unit)? = null,
     onTranslateRequest: (() -> Unit)? = null,
@@ -441,7 +442,7 @@ fun ChatMessageActionsSheet(
                     ) {
                         item(
                             onClick = if (canMoveForward) {
-                                { onUpdate(node.moveCurrentBy(-1)) }
+                                { onUpdate(node.id) { it.moveCurrentBy(-1) } }
                             } else null,
                             colors = if (canMoveForward) null else moveDisabledColors,
                             headlineContent = {
@@ -454,7 +455,7 @@ fun ChatMessageActionsSheet(
                         )
                         item(
                             onClick = if (canMoveBackward) {
-                                { onUpdate(node.moveCurrentBy(1)) }
+                                { onUpdate(node.id) { it.moveCurrentBy(1) } }
                             } else null,
                             colors = if (canMoveBackward) null else moveDisabledColors,
                             headlineContent = {

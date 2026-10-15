@@ -97,6 +97,7 @@ import me.rerere.rikkahub.utils.urlDecode
 import me.rerere.rikkahub.utils.wordCount
 import java.util.Locale
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.uuid.Uuid
 
 @Composable
 fun ChatMessage(
@@ -112,7 +113,7 @@ fun ChatMessage(
     onEdit: () -> Unit,
     onShare: () -> Unit,
     onDelete: () -> Unit,
-    onUpdate: (MessageNode) -> Unit,
+    onUpdate: (Uuid, (MessageNode) -> MessageNode) -> Unit,
     isFavorite: Boolean = false,
     onToggleFavorite: (() -> Unit)? = null,
     onTranslate: ((UIMessage, Locale) -> Unit)? = null,

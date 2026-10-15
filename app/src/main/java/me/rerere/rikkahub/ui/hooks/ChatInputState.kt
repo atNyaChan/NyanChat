@@ -157,6 +157,9 @@ class ChatInputState {
         return !isEditing() || url !in editingAttachmentUrls
     }
 
+    /** 输入框里当前附件（图片/视频/音频/文档）的 url，用于新增附件按内容去重。 */
+    fun attachmentUrls(): List<String> = messageContent.mapNotNull { it.attachmentUrlOrNull() }
+
     private fun UIMessagePart.attachmentUrlOrNull(): String? {
         return when (this) {
             is UIMessagePart.Image -> this.url

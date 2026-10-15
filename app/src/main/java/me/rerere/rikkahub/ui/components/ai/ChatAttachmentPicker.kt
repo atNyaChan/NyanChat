@@ -63,11 +63,26 @@ internal fun rememberChatAttachmentPickerActions(
     val cameraPermission = rememberPermissionState(PermissionCamera)
     PermissionManager(permissionState = cameraPermission)
 
+    // 新增附件前按内容 sha256 去重，避免同一个输入框里出现两个相同内容的附件
+    fun addUniqueAttachments(candidates: List<Uri>, add: (List<Uri>) -> Unit) {
+        if (candidates.isEmpty()) return
+        val selection = filesManager.dedupeTempAttachments(candidates, inputState.attachmentUrls())
+        if (selection.accepted.isNotEmpty()) add(selection.accepted)
+        if (selection.duplicates > 0) {
+            toaster.show(
+                context.getString(R.string.chat_input_attachment_already_added),
+                type = ToastType.Warning,
+            )
+        }
+    }
+
     var cameraOutputUri by remember { mutableStateOf<Uri?>(null) }
     var cameraOutputFile by remember { mutableStateOf<File?>(null) }
     val (_, launchCameraCrop) = useCropLauncher(
         onCroppedImageReady = { croppedUri ->
-            inputState.addImages(filesManager.createChatFilesByContents(listOf(croppedUri)))
+            addUniqueAttachments(filesManager.createChatFilesByContents(listOf(croppedUri))) {
+                inputState.addImages(it)
+            }
             onAttachmentAdded()
         },
         onCleanup = {
@@ -79,7 +94,9 @@ internal fun rememberChatAttachmentPickerActions(
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { captureSuccessful ->
         if (captureSuccessful && cameraOutputUri != null) {
             if (setting.displaySetting.skipCropImage) {
-                inputState.addImages(filesManager.createChatFilesByContents(listOf(cameraOutputUri!!)))
+                addUniqueAttachments(filesManager.createChatFilesByContents(listOf(cameraOutputUri!!))) {
+                    inputState.addImages(it)
+                }
                 cameraOutputFile?.delete()
                 cameraOutputFile = null
                 cameraOutputUri = null
@@ -108,7 +125,9 @@ internal fun rememberChatAttachmentPickerActions(
     var preCropTempFile by remember { mutableStateOf<File?>(null) }
     val (_, launchImageCrop) = useCropLauncher(
         onCroppedImageReady = { croppedUri ->
-            inputState.addImages(filesManager.createChatFilesByContents(listOf(croppedUri)))
+            addUniqueAttachments(filesManager.createChatFilesByContents(listOf(croppedUri))) {
+                inputState.addImages(it)
+            }
             onAttachmentAdded()
         },
         onCleanup = {
@@ -121,7 +140,9 @@ internal fun rememberChatAttachmentPickerActions(
             if (selectedUris.isNotEmpty()) {
                 Log.d("ImagePickButton", "Selected URIs: $selectedUris")
                 if (setting.displaySetting.skipCropImage) {
-                    inputState.addImages(filesManager.createChatFilesByContents(selectedUris))
+                    addUniqueAttachments(filesManager.createChatFilesByContents(selectedUris)) {
+                        inputState.addImages(it)
+                    }
                     onAttachmentAdded()
                 } else if (selectedUris.size == 1) {
                     val tempFile = File(context.appTempFolder, "pick_temp_${System.currentTimeMillis()}.jpg")
@@ -142,7 +163,9 @@ internal fun rememberChatAttachmentPickerActions(
                         launchImageCrop(selectedUris.first())
                     }
                 } else {
-                    inputState.addImages(filesManager.createChatFilesByContents(selectedUris))
+                    addUniqueAttachments(filesManager.createChatFilesByContents(selectedUris)) {
+                        inputState.addImages(it)
+                    }
                     onAttachmentAdded()
                 }
             } else {
@@ -153,7 +176,9 @@ internal fun rememberChatAttachmentPickerActions(
     val videoPickerLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { selectedUris ->
             if (selectedUris.isNotEmpty()) {
-                inputState.addVideos(filesManager.createChatFilesByContents(selectedUris))
+                addUniqueAttachments(filesManager.createChatFilesByContents(selectedUris)) {
+                    inputState.addVideos(it)
+                }
                 onAttachmentAdded()
             }
         }
@@ -161,7 +186,9 @@ internal fun rememberChatAttachmentPickerActions(
     val audioPickerLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { selectedUris ->
             if (selectedUris.isNotEmpty()) {
-                inputState.addAudios(filesManager.createChatFilesByContents(selectedUris))
+                addUniqueAttachments(filesManager.createChatFilesByContents(selectedUris)) {
+                    inputState.addAudios(it)
+                }
                 onAttachmentAdded()
             }
         }
@@ -191,7 +218,19 @@ internal fun rememberChatAttachmentPickerActions(
                     }
                 }
                 if (documents.isNotEmpty()) {
-                    inputState.addFiles(documents)
+                    val selection = filesManager.dedupeTempAttachments(
+                        candidates = documents.map { it.url.toUri() },
+                        existingUrls = inputState.attachmentUrls(),
+                    )
+                    val acceptedUrls = selection.accepted.mapTo(mutableSetOf()) { it.toString() }
+                    val uniqueDocuments = documents.filter { it.url in acceptedUrls }
+                    if (uniqueDocuments.isNotEmpty()) inputState.addFiles(uniqueDocuments)
+                    if (selection.duplicates > 0) {
+                        toaster.show(
+                            context.getString(R.string.chat_input_attachment_already_added),
+                            type = ToastType.Warning,
+                        )
+                    }
                     onAttachmentAdded()
                 }
             }
@@ -205,7 +244,9 @@ internal fun rememberChatAttachmentPickerActions(
             onConfirm = { result ->
                 showSketch = false
                 scope.launch {
-                    inputState.addImages(listOfNotNull(filesManager.createChatFileBySketch(result)))
+                    addUniqueAttachments(listOfNotNull(filesManager.createChatFileBySketch(result))) {
+                        inputState.addImages(it)
+                    }
                     onAttachmentAdded()
                 }
             },

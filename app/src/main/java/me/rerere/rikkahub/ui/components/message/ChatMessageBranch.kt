@@ -22,12 +22,13 @@ import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.ArrowLeft01
 import me.rerere.hugeicons.stroke.ArrowRight01
 import me.rerere.rikkahub.data.model.MessageNode
+import kotlin.uuid.Uuid
 
 @Composable
 fun ChatMessageBranchSelector(
     node: MessageNode,
     modifier: Modifier = Modifier,
-    onUpdate: (MessageNode) -> Unit,
+    onUpdate: (Uuid, (MessageNode) -> MessageNode) -> Unit,
 ) {
     Row(
         modifier = modifier,
@@ -48,11 +49,9 @@ fun ChatMessageBranchSelector(
                         indication = LocalIndication.current,
                         onClick = {
                             if (node.selectIndex > 0) {
-                                onUpdate(
-                                    node.copy(
-                                        selectIndex = node.selectIndex - 1
-                                    )
-                                )
+                                onUpdate(node.id) {
+                                    it.copy(selectIndex = (it.selectIndex - 1).coerceAtLeast(0))
+                                }
                             }
                         }
                     )
@@ -78,11 +77,9 @@ fun ChatMessageBranchSelector(
                         indication = LocalIndication.current,
                         onClick = {
                             if (node.selectIndex < node.messages.lastIndex) {
-                                onUpdate(
-                                    node.copy(
-                                        selectIndex = node.selectIndex + 1
-                                    )
-                                )
+                                onUpdate(node.id) {
+                                    it.copy(selectIndex = (it.selectIndex + 1).coerceAtMost(it.messages.lastIndex))
+                                }
                             }
                         }
                     )

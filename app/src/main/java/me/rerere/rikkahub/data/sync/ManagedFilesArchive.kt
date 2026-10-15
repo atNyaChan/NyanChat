@@ -97,72 +97,79 @@ internal object ManagedFilesArchive {
         SQLiteDatabase.openDatabase(databaseFile.absolutePath, null, SQLiteDatabase.OPEN_READWRITE)
             .use { database ->
                 if (!tableExists(database, LEGACY_TABLE)) return false
-                val rawDisplayByName = readLegacyDisplayNames(database)
-                val usages = mutableListOf<UsageRecord>()
-                val messageFileNames = mutableMapOf<String, String>()
-                rewriteMessageNodes(database, json) { element, conversationId, nodeId, messageId, messageAt ->
-                    val url = (element["url"] as? JsonPrimitive)?.contentOrNull ?: return@rewriteMessageNodes null
-                    val oldName = url.substringAfterLast('/')
-                    val sha256 = oldNameToSha[oldName] ?: return@rewriteMessageNodes null
-                    (element["fileName"] as? JsonPrimitive)?.contentOrNull
-                        ?.takeIf { it.isNotBlank() }
-                        ?.let { messageFileNames[oldName] = it }
-                    if (messageId != null) {
-                        usages += UsageRecord(
-                            sha256 = sha256,
-                            filename = oldName,
-                            displayName = "",
-                            createdAt = messageAt ?: 0L,
-                            conversationId = conversationId,
-                            nodeId = nodeId,
-                            messageId = messageId,
-                        )
-                    }
-                    "upload/$sha256"
-                }
-
-                // 旧布局的展示名是逐文件记录的：消息里的 fileName 优先，否则用旧表的值，再否则旧文件名
-                val nameDisplayNames = linkedMapOf<String, String>()
-                (oldNameToSha.keys + rawDisplayByName.keys).forEach { name ->
-                    val raw = rawDisplayByName[name]
-                    nameDisplayNames[name] = messageFileNames[name]?.takeIf { it.isNotBlank() }
-                        ?: raw?.takeIf { it.isNotBlank() && it != name && it != oldNameToSha[name] }
-                        ?: name
-                }
-                val namedUsages = usages.map { it.copy(displayName = nameDisplayNames[it.filename] ?: it.filename) }
-
-                val rowsBySha = readLegacyRows(database, oldNameToSha).toMutableMap()
-                // 磁盘上有内容但旧登记表缺行时, 用文件本身补一行, 避免丢失使用记录
-                val uploadDir = File(filesRoot, FileFolders.UPLOAD)
-                oldNameToSha.forEach { (_, sha256) ->
-                    if (rowsBySha.containsKey(sha256)) return@forEach
-                    val file = File(uploadDir, sha256)
-                    if (!file.isFile) return@forEach
-                    rowsBySha[sha256] = LegacyRow(
-                        mimeType = FileUtils.guessMimeType(file, sha256),
-                        sizeBytes = file.length(),
-                        createdAt = file.lastModified().takeIf { it > 0 } ?: System.currentTimeMillis(),
-                        displayName = null,
-                    )
-                }
-                createCasTable(database)
-                rowsBySha.forEach { (sha256, row) ->
-                    val rowUsages = namedUsages.filter { it.sha256 == sha256 }.map { it.toFileUsage() }
-                    val finalUsages = rowUsages.ifEmpty {
-                        listOf(
-                            FileUsage(
-                                type = FileUsageType.NONE,
-                                displayName = row.displayName.orEmpty(),
-                                createdAt = row.createdAt,
+                // 建表、改消息、删旧表必须原子完成，中途失败会留下半转换的库
+                database.beginTransaction()
+                try {
+                    val rawDisplayByName = readLegacyDisplayNames(database)
+                    val usages = mutableListOf<UsageRecord>()
+                    val messageFileNames = mutableMapOf<String, String>()
+                    rewriteMessageNodes(database, json) { element, conversationId, nodeId, messageId, messageAt ->
+                        val url = (element["url"] as? JsonPrimitive)?.contentOrNull ?: return@rewriteMessageNodes null
+                        val oldName = url.substringAfterLast('/')
+                        val sha256 = oldNameToSha[oldName] ?: return@rewriteMessageNodes null
+                        (element["fileName"] as? JsonPrimitive)?.contentOrNull
+                            ?.takeIf { it.isNotBlank() }
+                            ?.let { messageFileNames[oldName] = it }
+                        if (messageId != null) {
+                            usages += UsageRecord(
+                                sha256 = sha256,
+                                filename = oldName,
+                                displayName = "",
+                                createdAt = messageAt ?: 0L,
+                                conversationId = conversationId,
+                                nodeId = nodeId,
+                                messageId = messageId,
                             )
+                        }
+                        "upload/$sha256"
+                    }
+
+                    // 旧布局的展示名是逐文件记录的：消息里的 fileName 优先，否则用旧表的值，再否则旧文件名
+                    val nameDisplayNames = linkedMapOf<String, String>()
+                    (oldNameToSha.keys + rawDisplayByName.keys).forEach { name ->
+                        val raw = rawDisplayByName[name]
+                        nameDisplayNames[name] = messageFileNames[name]?.takeIf { it.isNotBlank() }
+                            ?: raw?.takeIf { it.isNotBlank() && it != name && it != oldNameToSha[name] }
+                            ?: name
+                    }
+                    val namedUsages = usages.map { it.copy(displayName = nameDisplayNames[it.filename] ?: it.filename) }
+
+                    val rowsBySha = readLegacyRows(database, oldNameToSha).toMutableMap()
+                    // 磁盘上有内容但旧登记表缺行时, 用文件本身补一行, 避免丢失使用记录
+                    val uploadDir = File(filesRoot, FileFolders.UPLOAD)
+                    oldNameToSha.forEach { (_, sha256) ->
+                        if (rowsBySha.containsKey(sha256)) return@forEach
+                        val file = File(uploadDir, sha256)
+                        if (!file.isFile) return@forEach
+                        rowsBySha[sha256] = LegacyRow(
+                            mimeType = FileUtils.guessMimeType(file, sha256),
+                            sizeBytes = file.length(),
+                            createdAt = file.lastModified().takeIf { it > 0 } ?: System.currentTimeMillis(),
+                            displayName = null,
                         )
                     }
-                    insertCasRow(database, sha256, row, finalUsages)
+                    createCasTable(database)
+                    rowsBySha.forEach { (sha256, row) ->
+                        val rowUsages = namedUsages.filter { it.sha256 == sha256 }.map { it.toFileUsage() }
+                        val finalUsages = rowUsages.ifEmpty {
+                            listOf(
+                                FileUsage(
+                                    type = FileUsageType.NONE,
+                                    displayName = row.displayName.orEmpty(),
+                                    createdAt = row.createdAt,
+                                )
+                            )
+                        }
+                        insertCasRow(database, sha256, row, finalUsages)
+                    }
+                    database.execSQL("DROP TABLE IF EXISTS `$LEGACY_TABLE`")
+                    // schema 已换，丢弃 Room 的 identity 记录，让 Room 按新 schema 重新校验
+                    database.execSQL("DROP TABLE IF EXISTS `room_master_table`")
+                    database.setTransactionSuccessful()
+                    return true
+                } finally {
+                    database.endTransaction()
                 }
-                database.execSQL("DROP TABLE IF EXISTS `$LEGACY_TABLE`")
-                // schema 已换，丢弃 Room 的 identity 记录，让 Room 按新 schema 重新校验
-                database.execSQL("DROP TABLE IF EXISTS `room_master_table`")
-                return true
             }
     }
 

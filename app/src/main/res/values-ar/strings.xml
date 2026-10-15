@@ -238,6 +238,7 @@
   <string name="chat_input_placeholder">الدردشة مع الذكاء الاصطناعي</string>
   <string name="chat_input_unsupported_file_type">نوع الملف غير مدعوم: %s</string>
   <string name="chat_input_file_read_failed">فشل قراءة الملف: %s</string>
+  <string name="chat_input_attachment_already_added">تمت إضافة هذا المرفق بالفعل</string>
   <string name="chat_message_add_favorite">إضافة إلى المفضلة</string>
   <string name="chat_message_remove_favorite">إزالة من المفضلة</string>
   <string name="chat_message_tool_approve">موافقة</string>

@@ -378,16 +378,32 @@ class ChatVM(
     }
 
     fun clearTranslationField(messageId: Uuid) {
-        chatService.clearTranslationField(_conversationId, messageId)
+        viewModelScope.launch {
+            chatService.clearTranslationField(_conversationId, messageId)
+        }
     }
 
     fun cancelTranslation(messageId: Uuid) {
-        chatService.cancelTranslation(_conversationId, messageId)
+        viewModelScope.launch {
+            chatService.cancelTranslation(_conversationId, messageId)
+        }
     }
 
-    fun updateConversation(newConversation: Conversation) {
-        chatService.updateConversationState(_conversationId) {
-            newConversation
+    fun updateConversation(update: (Conversation) -> Conversation) {
+        viewModelScope.launch {
+            chatService.updateConversationState(_conversationId, update)
+        }
+    }
+
+    fun updateConversationNode(nodeId: Uuid, update: (MessageNode) -> MessageNode) {
+        viewModelScope.launch {
+            chatService.updateConversationState(_conversationId) { conversation ->
+                conversation.copy(
+                    messageNodes = conversation.messageNodes.map { node ->
+                        if (node.id == nodeId) update(node) else node
+                    }
+                )
+            }
         }
     }
 

@@ -281,7 +281,26 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
                     }
                 }
             }
-            inputState.messageContent = parts
+            val dedupedUrls = filesManager.dedupeTempAttachments(
+                candidates = parts.mapNotNull { part ->
+                    when (part) {
+                        is UIMessagePart.Image -> part.url
+                        is UIMessagePart.Video -> part.url
+                        is UIMessagePart.Audio -> part.url
+                        else -> null
+                    }
+                }.map { Uri.parse(it) },
+                existingUrls = emptyList(),
+            ).accepted.mapTo(mutableSetOf()) { it.toString() }
+            inputState.messageContent = parts.filter { part ->
+                val url = when (part) {
+                    is UIMessagePart.Image -> part.url
+                    is UIMessagePart.Video -> part.url
+                    is UIMessagePart.Audio -> part.url
+                    else -> null
+                }
+                url != null && url in dedupedUrls
+            }
         }
         text?.base64Decode()?.let { decodedText ->
             if (decodedText.isNotEmpty()) {
@@ -613,17 +632,8 @@ private fun ChatPageContent(
                             vm.deleteMessage(it)
                         }
                     },
-                    onUpdateMessage = { newNode ->
-                        vm.updateConversation(
-                            conversation.copy(
-                                messageNodes = conversation.messageNodes.map { node ->
-                                    if (node.id == newNode.id) {
-                                        newNode
-                                    } else {
-                                        node
-                                    }
-                                }
-                            ))
+                    onUpdateMessage = { nodeId, update ->
+                        vm.updateConversationNode(nodeId, update)
                     },
                     onClickSuggestion = { suggestion ->
                         inputState.editingMessage = null
@@ -654,7 +664,7 @@ private fun ChatPageContent(
                         vm.toggleMessageFavorite(node)
                     },
                     onConversationSystemPromptChange = { newPrompt ->
-                        vm.updateConversation(conversation.copy(customSystemPrompt = newPrompt))
+                        vm.updateConversation { it.copy(customSystemPrompt = newPrompt) }
                     },
                 )
                 // 点击输入框以外的区域收起文件面板
@@ -733,8 +743,8 @@ private fun ChatFilesPanel(
             )
             onRequestStatsRefresh()
         },
-        onUpdateConversation = {
-            vm.updateConversation(it)
+        onUpdateConversation = { update ->
+            vm.updateConversation(update)
             onRequestStatsRefresh()
         },
         showCompressDialog = showCompressDialog,

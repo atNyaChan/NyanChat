@@ -21,7 +21,15 @@ object AttachmentCas {
 
     /** 启动时清理残留临时文件的年龄阈值, 避免删掉正在写入的临时文件。 */
     private const val STALE_TEMP_MAX_AGE_MILLIS = 60 * 60 * 1000L
+    private const val SHA256_HEX_LENGTH = 64
     private val HEX = "0123456789abcdef".toCharArray()
+
+    /** 文件名是否形如内容 sha256（64 位小写十六进制）。 */
+    fun isSha256Name(name: String): Boolean =
+        name.length == SHA256_HEX_LENGTH && name.all { it in '0'..'9' || it in 'a'..'f' }
+
+    /** 把摘要字节转成小写十六进制；供边写边算哈希的调用方复用。 */
+    fun hex(bytes: ByteArray): String = bytes.toHex()
 
     fun sha256(file: File): String {
         val digest = MessageDigest.getInstance("SHA-256")

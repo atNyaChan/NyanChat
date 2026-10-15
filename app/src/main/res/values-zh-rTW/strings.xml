@@ -238,6 +238,7 @@
   <string name="chat_input_placeholder">輸入訊息與 AI 聊天</string>
   <string name="chat_input_unsupported_file_type">不支援的檔案類型：%s</string>
   <string name="chat_input_file_read_failed">檔案讀取失敗：%s</string>
+  <string name="chat_input_attachment_already_added">此附件已新增</string>
   <string name="chat_message_add_favorite">加入最愛</string>
   <string name="chat_message_remove_favorite">移除最愛</string>
   <string name="chat_message_tool_approve">核准</string>

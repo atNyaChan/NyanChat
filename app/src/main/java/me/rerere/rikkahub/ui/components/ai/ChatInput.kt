@@ -1,5 +1,6 @@
 package me.rerere.rikkahub.ui.components.ai
 
+import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -698,6 +699,16 @@ private fun TextInputRow(
 ) {
     val settings = LocalSettings.current
     val filesManager: FilesManager = koinInject()
+    val toaster = LocalToaster.current
+    val duplicateAttachmentMessage = stringResource(R.string.chat_input_attachment_already_added)
+
+    // 粘贴进来的附件也按内容 sha256 去重，避免同一个输入框里出现两个相同内容的附件
+    fun addUniquePastedAttachments(candidates: List<Uri>, add: (List<Uri>) -> Unit) {
+        if (candidates.isEmpty()) return
+        val selection = filesManager.dedupeTempAttachments(candidates, state.attachmentUrls())
+        if (selection.accepted.isNotEmpty()) add(selection.accepted)
+        if (selection.duplicates > 0) toaster.show(duplicateAttachmentMessage, ToastType.Warning)
+    }
     val quickMessages = remember(settings.quickMessages, assistant.quickMessageIds) {
         settings.getQuickMessagesOfAssistant(assistant)
     }
@@ -719,11 +730,9 @@ private fun TextInputRow(
                         transferableContent.consume { item ->
                             val uri = item.uri
                             if (uri != null) {
-                                state.addImages(
-                                    filesManager.createChatFilesByContents(
-                                        listOf(uri)
-                                    )
-                                )
+                                addUniquePastedAttachments(filesManager.createChatFilesByContents(listOf(uri))) {
+                                    state.addImages(it)
+                                }
                             }
                             uri != null
                         }
@@ -734,7 +743,9 @@ private fun TextInputRow(
                             val text = item.text?.toString()
                             if (text != null && text.length > settings.displaySetting.pasteLongTextThreshold) {
                                 val document = filesManager.createChatTextFile(text)
-                                state.addFiles(listOf(document))
+                                addUniquePastedAttachments(listOf(Uri.parse(document.url))) {
+                                    state.addFiles(listOf(document))
+                                }
                                 true
                             } else {
                                 false

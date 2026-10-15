@@ -40,7 +40,8 @@ data class ManagedFileCasEntity(
  * - `message`：消息里的附件。`filename` / `displayName` 是该次使用在旧版（RikkaHub 兼容）布局里
  *   的 `uuid.ext` 文件名与展示名，`details` 记录 `{conversationId, nodeId, messageId}`，
  *   [createdAt] 是该消息的时间。输入框里的附件不写使用记录：它们在临时目录里，随消息落库时
- *   由 `updateAttachmentIndex` 直接写成本类型（来源展示名通过进程内信息传递，不再先写 `none`）。
+ *   由 `updateAttachmentIndex` 直接写成本类型（来源展示名由 `commitConversationFiles` 的返回值透传，
+ *   不再先写 `none`）。
  * - `assistant_background` / `assistant_avatar` / `user_avatar`：设置里的附件，`details` 记录
  *   `{assistantId}`（用户头像为空），[displayName] 保留附件来源文件名。
  * - `none`：没有被任何消息或设置引用的附件，`details` 为空，[createdAt] 记录该内容落盘的时间，
@@ -72,8 +73,11 @@ object FileUsageType {
     const val NONE = "none"
 }
 
-fun ManagedFileCasEntity.decodeUsages(): List<FileUsage> =
-    runCatching { JsonInstant.decodeFromString<List<FileUsage>>(usages) }.getOrDefault(emptyList())
+/** 使用记录 JSON 无法解析时返回 null，交由调用方按消息库重建索引。 */
+fun ManagedFileCasEntity.decodeUsagesOrNull(): List<FileUsage>? =
+    runCatching { JsonInstant.decodeFromString<List<FileUsage>>(usages) }.getOrNull()
+
+fun ManagedFileCasEntity.decodeUsages(): List<FileUsage> = decodeUsagesOrNull().orEmpty()
 
 fun ManagedFileCasEntity.encodeUsages(list: List<FileUsage>): ManagedFileCasEntity =
     copy(usages = JsonInstant.encodeToString(list))

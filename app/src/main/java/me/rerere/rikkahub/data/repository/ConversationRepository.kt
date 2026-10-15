@@ -27,6 +27,7 @@ import me.rerere.rikkahub.data.db.dao.FavoriteDAO
 import me.rerere.rikkahub.data.db.dao.MessageNodeDAO
 import me.rerere.rikkahub.data.db.entity.ConversationEntity
 import me.rerere.rikkahub.data.db.entity.MessageNodeEntity
+import me.rerere.rikkahub.data.files.CommitInfo
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.files.LocalFileUrls
 import me.rerere.rikkahub.data.files.withRuntimeLocalUrls
@@ -338,9 +339,12 @@ class ConversationRepository(
         }.toMap()
     }
 
-    suspend fun insertConversation(conversation: Conversation) {
-        // 兜底：调用方都应在保存前提交输入框临时附件；这里用复制方式保证落库的绝不带临时路径
-        val target = filesManager.commitConversationFiles(conversation, move = false)
+    suspend fun insertConversation(
+        conversation: Conversation,
+        commitInfos: Map<String, CommitInfo> = emptyMap(),
+    ) {
+        // 守卫：临时附件应在保存前由 commitConversationFiles 提交；漏到这里说明调用方有 bug，整段丢弃不落库
+        val target = filesManager.stripUncommittedTemporaryAttachments(conversation)
         database.withTransaction {
             conversationDAO.insert(
                 conversationToConversationEntity(target)
@@ -350,13 +354,16 @@ class ConversationRepository(
         indexConversationFtsSafely("index conversation") {
             messageFtsManager.indexConversation(target)
         }
-        runCatching { filesManager.updateAttachmentIndex(target) }
+        runCatching { filesManager.updateAttachmentIndex(target, commitInfos) }
             .onFailure { Log.w(TAG, "Failed to update attachment index on insert", it) }
     }
 
-    suspend fun updateConversation(conversation: Conversation) {
-        // 兜底：调用方都应在保存前提交输入框临时附件；这里用复制方式保证落库的绝不带临时路径
-        val target = filesManager.commitConversationFiles(conversation, move = false)
+    suspend fun updateConversation(
+        conversation: Conversation,
+        commitInfos: Map<String, CommitInfo> = emptyMap(),
+    ) {
+        // 守卫：临时附件应在保存前由 commitConversationFiles 提交；漏到这里说明调用方有 bug，整段丢弃不落库
+        val target = filesManager.stripUncommittedTemporaryAttachments(conversation)
         database.withTransaction {
             conversationDAO.update(
                 conversationToConversationEntity(target)
@@ -395,7 +402,7 @@ class ConversationRepository(
         indexConversationFtsSafely("index conversation") {
             messageFtsManager.indexConversation(target)
         }
-        runCatching { filesManager.updateAttachmentIndex(target) }
+        runCatching { filesManager.updateAttachmentIndex(target, commitInfos) }
             .onFailure { Log.w(TAG, "Failed to update attachment index on update", it) }
     }
 

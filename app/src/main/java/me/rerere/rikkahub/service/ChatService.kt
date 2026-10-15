@@ -1,7 +1,6 @@
 package me.rerere.rikkahub.service
 
 import android.app.Application
-import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
@@ -69,6 +68,8 @@ import me.rerere.rikkahub.data.ai.transformers.TemplateTransformer
 import me.rerere.rikkahub.data.ai.transformers.ThinkTagTransformer
 import me.rerere.rikkahub.data.ai.transformers.TimeReminderTransformer
 import me.rerere.rikkahub.data.ai.transformers.WorkspaceReminderTransformer
+import me.rerere.rikkahub.data.db.entity.FileUsage
+import me.rerere.rikkahub.data.db.entity.FileUsageType
 import me.rerere.rikkahub.data.event.AppEvent
 import me.rerere.rikkahub.data.event.AppEventBus
 import me.rerere.rikkahub.data.datastore.SettingsStore
@@ -76,6 +77,7 @@ import me.rerere.rikkahub.data.datastore.findModelById
 import me.rerere.rikkahub.data.datastore.findProvider
 import me.rerere.rikkahub.data.datastore.getAssistantById
 import me.rerere.rikkahub.data.datastore.getCurrentAssistant
+import me.rerere.rikkahub.data.files.CommitInfo
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.files.attachmentShaFromUrl
 import me.rerere.rikkahub.data.model.Conversation
@@ -242,11 +244,6 @@ class ChatService(
     private val persistenceMutexes = ConcurrentHashMap<Uuid, Mutex>()
     private val translationJobs = ConcurrentHashMap<Pair<Uuid, Uuid>, Job>()
 
-    /**
-     * 已从会话中移除、待使用记录落库后再删除的 CAS 附件。
-     * 见 [enqueueRemovedAttachments] 与 [drainPendingAttachmentDeletions]。
-     */
-    private val pendingAttachmentDeletions = ConcurrentHashMap<Uuid, MutableList<Uri>>()
     private val _translatingMessages = MutableStateFlow<Set<Pair<Uuid, Uuid>>>(emptySet())
     val translatingMessages: StateFlow<Set<Pair<Uuid, Uuid>>> = _translatingMessages.asStateFlow()
 
@@ -314,8 +311,6 @@ class ChatService(
     suspend fun deleteConversation(conversation: Conversation) {
         val mutex = persistenceMutexes.computeIfAbsent(conversation.id) { Mutex() }
         mutex.withLock {
-            // 会话删除自带文件清理，不再单独处理排队中的删除
-            pendingAttachmentDeletions.remove(conversation.id)
             conversationRepo.deleteConversation(conversation)
             sessionManager.remove(conversation.id)
         }
@@ -1069,7 +1064,7 @@ class ChatService(
 
     // ---- 检查无效消息 ----
 
-    private fun checkInvalidMessages(conversationId: Uuid) {
+    private suspend fun checkInvalidMessages(conversationId: Uuid) {
         val conversation = getConversationFlow(conversationId).value
         var messagesNodes = conversation.messageNodes
 
@@ -1339,13 +1334,13 @@ class ChatService(
         // 因此按节点定位插入到最新状态，而不是用调用时的快照整体覆盖。
         val newConversation = synchronized(session) {
             check(!session.isGenerating) { context.getString(R.string.chat_page_compress_blocked_generating) }
-            val updated = insertContextCheckpoint(
+            insertContextCheckpoint(
                 conversation = session.state.value,
                 afterNodeId = nodes[cutIndex - 1].id,
                 summary = compressedSummaries.joinToString("\n\n"),
             ) ?: throw IllegalStateException(context.getString(R.string.chat_page_compress_conversation_changed))
-            updated.copy(chatSuggestions = emptyList()).also { updateConversation(conversationId, it) }
-        }
+        }.copy(chatSuggestions = emptyList())
+        updateConversation(conversationId, newConversation)
 
         saveConversation(conversationId, newConversation)
     }
@@ -1441,21 +1436,21 @@ class ChatService(
 
     // ---- 对话状态更新 ----
 
-    private fun updateConversation(
+    private suspend fun updateConversation(
         conversationId: Uuid,
         conversation: Conversation,
         persistWhenIdle: Boolean = true,
     ) {
         if (conversation.id != conversationId) return
         val session = sessionManager.getOrCreate(conversationId)
-        enqueueRemovedAttachments(conversation, session.state.value)
+        deleteRemovedAttachments(conversation, session.state.value)
         session.updateConversation(conversation)
         if (persistWhenIdle && !session.isGenerating) {
             persistConversationAsync(conversationId)
         }
     }
 
-    fun updateConversationState(conversationId: Uuid, update: (Conversation) -> Conversation) {
+    suspend fun updateConversationState(conversationId: Uuid, update: (Conversation) -> Conversation) {
         val current = getConversationFlow(conversationId).value
         updateConversation(conversationId, update(current))
     }
@@ -1538,12 +1533,12 @@ class ChatService(
     }
 
     /**
-     * 对比新旧会话，登记被移除的附件。
+     * 对比新旧会话，立即删除被移除的附件。
      *
-     * 输入框临时附件立即删除；CAS 附件要等使用记录随会话落库后再删：索引还没更新时
-     * [FilesManager.deleteChatFiles] 查到的仍是旧引用，会删不掉，之后又变成遗留的“未使用”文件。
+     * 输入框临时附件直接删除；CAS 附件先按会话归属抹掉消息使用记录再删：这样不必等附件索引刷新，
+     * 删除时也不会误删仍被其它消息/会话/设置引用的内容。
      */
-    private fun enqueueRemovedAttachments(newConversation: Conversation, oldConversation: Conversation) {
+    private suspend fun deleteRemovedAttachments(newConversation: Conversation, oldConversation: Conversation) {
         val session = sessionManager.get(newConversation.id)
         val queuedFiles = (session?.messageQueue?.state?.value?.messages.orEmpty() +
                 listOfNotNull(session?.submittingMessage))
@@ -1555,22 +1550,17 @@ class ChatService(
         if (deletedFiles.isEmpty()) return
         val (tempFiles, casFiles) = deletedFiles.partition { attachmentShaFromUrl(it.toString()) == null }
         if (tempFiles.isNotEmpty()) {
-            appScope.launch { filesManager.deleteChatFiles(tempFiles) }
+            filesManager.deleteChatFiles(tempFiles)
         }
         if (casFiles.isNotEmpty()) {
-            Log.w(TAG, "enqueueRemovedAttachments: $casFiles")
-            val pending = pendingAttachmentDeletions.computeIfAbsent(newConversation.id) { mutableListOf() }
-            synchronized(pending) { pending.addAll(casFiles) }
+            Log.w(TAG, "deleteRemovedAttachments: $casFiles")
+            // 该内容已不在会话文件里，抹掉本会话全部消息使用；没有其它引用时才真正删除。
+            val removedUsage = FileUsage(
+                type = FileUsageType.MESSAGE,
+                details = mapOf("conversationId" to newConversation.id.toString()),
+            )
+            filesManager.deleteChatFiles(casFiles, removedUsage)
         }
-    }
-
-    /** 会话使用记录落库后删除登记的 CAS 附件（仍被其它消息/设置引用时保留）。 */
-    private suspend fun drainPendingAttachmentDeletions(conversationId: Uuid) {
-        val pending = pendingAttachmentDeletions.remove(conversationId) ?: return
-        val files = synchronized(pending) { pending.toList().also { pending.clear() } }
-        if (files.isEmpty()) return
-        runCatching { filesManager.deleteChatFiles(files) }
-            .onFailure { Log.w(TAG, "Failed to delete removed attachments", it) }
     }
 
     suspend fun saveConversation(conversationId: Uuid, conversation: Conversation) {
@@ -1578,12 +1568,12 @@ class ChatService(
         // 保存即代表产生了真实内容，清掉“新建占位”标记，之后才允许落库。
         val settings = settingsStore.awaitLoaded()
         // 输入框临时附件在这一步提交成 CAS；内存与会话都要用替换后的 url
-        val committed = filesManager.commitConversationFiles(conversation)
-        val bound = committed.copy(newConversation = false)
+        val commit = filesManager.commitConversationFiles(conversation)
+        val bound = commit.conversation.copy(newConversation = false)
             .bindConfig(settings)
             .fillModelSnapshots(settings)
         updateConversation(conversationId, bound, persistWhenIdle = false)
-        persistCurrentConversation(conversationId)
+        persistCurrentConversation(conversationId, commit.infos)
 
         // 删除消息或切换分支也可能解除工具审批阻塞，保存成功后重新检查队列。
         // 调度器仍会检查当前生成任务、待审批工具、暂停状态及编辑占位。
@@ -1602,26 +1592,24 @@ class ChatService(
             .forEach { persistConversationAsync(it.id) }
     }
 
-    private suspend fun persistCurrentConversation(conversationId: Uuid) {
+    private suspend fun persistCurrentConversation(
+        conversationId: Uuid,
+        commitInfos: Map<String, CommitInfo> = emptyMap(),
+    ) {
         val mutex = persistenceMutexes.computeIfAbsent(conversationId) { Mutex() }
         mutex.withLock {
-            try {
-                val conversation = sessionManager.get(conversationId)?.state?.value ?: return@withLock
-                val exists = conversationRepo.existsConversationById(conversation.id)
-                // 只按是否产生过内容判断是否落库：新建对话会预置默认标题、预设消息，
-                // 但用户尚未发送任何内容，不能算产生了内容（预设消息同理），
-                // 避免空的"新聊天"或仅含预设消息的占位对话出现在会话列表里。
-                if (!exists && (conversation.newConversation || conversation.messageNodes.isEmpty())) {
-                    return@withLock
-                }
-                if (!exists) {
-                    conversationRepo.insertConversation(conversation)
-                } else {
-                    conversationRepo.updateConversation(conversation)
-                }
-            } finally {
-                // 使用记录已随上面的落库更新，此时才能安全删除被移除的 CAS 附件
-                drainPendingAttachmentDeletions(conversationId)
+            val conversation = sessionManager.get(conversationId)?.state?.value ?: return@withLock
+            val exists = conversationRepo.existsConversationById(conversation.id)
+            // 只按是否产生过内容判断是否落库：新建对话会预置默认标题、预设消息，
+            // 但用户尚未发送任何内容，不能算产生了内容（预设消息同理），
+            // 避免空的"新聊天"或仅含预设消息的占位对话出现在会话列表里。
+            if (!exists && (conversation.newConversation || conversation.messageNodes.isEmpty())) {
+                return@withLock
+            }
+            if (!exists) {
+                conversationRepo.insertConversation(conversation, commitInfos)
+            } else {
+                conversationRepo.updateConversation(conversation, commitInfos)
             }
         }
     }
@@ -1676,7 +1664,7 @@ class ChatService(
         }
     }
 
-    fun cancelTranslation(conversationId: Uuid, messageId: Uuid) {
+    suspend fun cancelTranslation(conversationId: Uuid, messageId: Uuid) {
         val key = conversationId to messageId
         translationJobs.remove(key)?.cancel()
         _translatingMessages.update { it - key }
@@ -1690,6 +1678,10 @@ class ChatService(
         }
     }
 
+    /**
+     * 翻译流式更新只改 translation 字段、不增删附件，因此直接写回内存并触发落库，
+     * 不走 [updateConversation] 的同步附件删除（该回调不是挂起上下文，无法调用挂起函数）。
+     */
     private fun updateTranslationField(
         conversationId: Uuid,
         messageId: Uuid,
@@ -1711,7 +1703,12 @@ class ChatService(
             }
         }
 
-        updateConversation(conversationId, currentConversation.copy(messageNodes = updatedNodes))
+        val updated = currentConversation.copy(messageNodes = updatedNodes)
+        val session = sessionManager.getOrCreate(conversationId)
+        session.updateConversation(updated)
+        if (!session.isGenerating) {
+            persistConversationAsync(conversationId)
+        }
     }
 
     // ---- 消息操作 ----
@@ -1889,7 +1886,7 @@ class ChatService(
         return conversation.copy(messageNodes = updatedNodes)
     }
 
-    fun clearTranslationField(conversationId: Uuid, messageId: Uuid) {
+    suspend fun clearTranslationField(conversationId: Uuid, messageId: Uuid) {
         val currentConversation = getConversationFlow(conversationId).value
         val updatedNodes = currentConversation.messageNodes.map { node ->
             if (node.messages.any { it.id == messageId }) {
