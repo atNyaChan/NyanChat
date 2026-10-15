@@ -270,7 +270,28 @@ to port safely in one session, STOP and ask the user before starting.
   page-specific duplicates. `common_ok` only acknowledges known information, while
   `common_confirm_action` confirms performing an action.
 - Keep every `values-*/strings.xml` aligned to the English `values/strings.xml`: identical keys and the same
-  key order/line structure. When adding a key, add it at the same place in every locale.
+  key order/line structure. `values/strings.xml` is grouped into functional sections, each introduced by an
+  English XML comment (e.g. `<!-- App -->`, `<!-- Chat page -->`, `<!-- Assistant settings -->`); keys inside a
+  section are alphabetical, and a key must sit at the same position in every locale.
+- `scripts/strings_grouping.py` owns that layout and is the source of truth for it. After editing strings run
+  `python3 scripts/strings_grouping.py check`; run `python3 scripts/strings_grouping.py reorder` to re-sort and
+  re-align every locale. New keys must never be appended to the end of the file.
+- To add a key, add the English entry and every hand-translated locale entry, then run `reorder`: the script
+  places it in the section matching its feature/page and mirrors that position across all locales. If the key
+  belongs to a whole new feature/page that fits no section, add a new `("Section", [patterns])` entry to
+  `GROUPS` in the script at the logically correct position, then run `reorder` (do not hand-edit section
+  comments).
+- Always keep `scripts/strings_grouping.py` in sync with the resources in the same change: adding, renaming,
+  splitting or removing a section, or adding a key that no pattern matches, requires editing `GROUPS`
+  accordingly. Run `check` to confirm, and never leave the script stale relative to `strings.xml`.
+- Current sections, in order: App; Common actions; Media and attachments; Avatars, emoji and tags; Export and
+  formatting utilities; Thinking; Chat page; Chat history and favorites; Message search; Chat input and
+  attachments; Chat message; Chat message tools; Chat charts; Chat queue; Voice mode; Chat history compression;
+  Translation; Pickers; Assistant memory; Assistant settings; Prompt extensions; Skills; Workspace; Media
+  creation; Image generation; Settings home; Display settings; Theme settings; Model settings; Provider
+  settings; MCP settings; Search settings; TTS settings; ASR settings; File settings; Media settings;
+  Notification settings; Notifications; Backup; Request and permission logs; Permissions; Web server;
+  Statistics; Debug; Errors; Delete dialogs.
 - In Simplified and Traditional Chinese, separate adjacent CJK and Latin text with a space; do not add spaces
   around 「」『』“”‘’ quotes and their contents.
 - If the user does not explicitly request localization, prioritize implementing functionality without considering
@@ -278,8 +299,9 @@ to port safely in one session, STOP and ask the user before starting.
 
 ### Manual Localization Workflow
 
-- Confirm the target module (e.g. `app`), then add/update the English source entry in
-  `values/strings.xml`.
+- Confirm the target module (e.g. `app`), then add or update the English source entry in `values/strings.xml`
+  plus the hand-translated entry in every `values-*/strings.xml` (for `app`, run
+  `python3 scripts/strings_grouping.py reorder` afterwards to place and align them).
 - Hand-translate the entry into every existing `values-*/strings.xml` in the module; do not rely on
   fallback English.
 - Preserve placeholders, escapes, markup, and formatting exactly across locales.
