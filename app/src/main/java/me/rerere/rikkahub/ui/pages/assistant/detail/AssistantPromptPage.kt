@@ -92,7 +92,7 @@ import me.rerere.rikkahub.ui.components.ui.ExtensionSelector
 import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.components.ui.Tag
 import me.rerere.rikkahub.ui.components.ui.TextArea
-import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.ChatFontProvider
@@ -582,7 +582,7 @@ private fun AssistantPromptContent(
 
     DeleteItemDialog(
         show = pendingPresetDeleteIndex != null,
-        itemName = stringResource(R.string.assistant_page_preset_message_singular),
+        type = stringResource(R.string.delete_type_preset_message),
         onConfirm = {
             pendingPresetDeleteIndex?.let { index ->
                 onUpdate(
@@ -597,7 +597,7 @@ private fun AssistantPromptContent(
     )
     DeleteItemDialog(
         show = pendingRegexDeleteIndex != null,
-        itemName = stringResource(R.string.assistant_page_regex_singular),
+        type = stringResource(R.string.delete_type_regex),
         onConfirm = {
             pendingRegexDeleteIndex?.let { index ->
                 onUpdate(
@@ -615,20 +615,16 @@ private fun AssistantPromptContent(
 @Composable
 private fun DeleteItemDialog(
     show: Boolean,
-    itemName: String,
+    type: String,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    RikkaConfirmDialog(
+    DeleteConfirmDialog(
         show = show,
-        title = stringResource(R.string.assistant_page_delete_item_title, itemName),
-        confirmText = stringResource(R.string.common_delete),
-        dismissText = stringResource(R.string.common_cancel),
+        type = type,
         onConfirm = onConfirm,
         onDismiss = onDismiss,
-    ) {
-        Text(stringResource(R.string.assistant_page_delete_item_confirm, itemName))
-    }
+    )
 }
 
 @Composable

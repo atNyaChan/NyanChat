@@ -53,7 +53,7 @@ import me.rerere.rikkahub.ui.components.ai.ExtensionEmptyState
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
 import me.rerere.rikkahub.ui.components.ui.ExportDialog
-import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.rikkahub.ui.theme.CustomColors
@@ -156,26 +156,16 @@ fun QuickMessagesPage(vm: QuickMessagesVM = koinViewModel()) {
         )
     }
 
-    RikkaConfirmDialog(
+    DeleteConfirmDialog(
         show = deleteTarget != null,
-        title = stringResource(R.string.quick_messages_page_delete_title),
-        confirmText = stringResource(R.string.common_delete),
-        dismissText = stringResource(R.string.common_cancel),
+        type = stringResource(R.string.delete_type_quick_message),
+        name = deleteTarget?.title,
         onConfirm = {
             deleteTarget?.let { vm.deleteQuickMessage(it.id) }
             deleteTarget = null
         },
         onDismiss = { deleteTarget = null },
-    ) {
-        val targetTitle = deleteTarget?.title.orEmpty()
-        Text(
-            if (targetTitle.isBlank()) {
-                stringResource(R.string.quick_messages_page_delete_unnamed_message)
-            } else {
-                stringResource(R.string.quick_messages_page_delete_message, targetTitle)
-            }
-        )
-    }
+    )
 }
 
 @Composable

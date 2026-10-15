@@ -90,7 +90,7 @@ import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
 import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceLabel
 import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.components.ui.switchItem
-import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionManager
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionNotification
 import me.rerere.rikkahub.ui.components.ui.permission.rememberPermissionState
@@ -1208,11 +1208,9 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
         )
     }
 
-    RikkaConfirmDialog(
+    DeleteConfirmDialog(
         show = showDeleteFontConfirm,
-        title = stringResource(R.string.setting_display_page_delete_font_title),
-        confirmText = stringResource(R.string.common_delete),
-        dismissText = stringResource(R.string.common_cancel),
+        type = stringResource(R.string.delete_type_font),
         onConfirm = {
             deleteCustomChatFontInternal(context, displaySetting.chatCustomFontPath)
             updateDisplaySetting(
@@ -1225,9 +1223,7 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
             showDeleteFontConfirm = false
         },
         onDismiss = { showDeleteFontConfirm = false },
-    ) {
-        Text(stringResource(R.string.setting_display_page_delete_font_confirm))
-    }
+    )
 }
 
 private val CustomFontMimeTypesUI = arrayOf(

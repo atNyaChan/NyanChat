@@ -26,7 +26,7 @@ import me.rerere.rikkahub.ui.pages.backup.components.RemoteBackupLayout
 import me.rerere.rikkahub.ui.pages.backup.components.RemoteBackupStatus
 import me.rerere.rikkahub.ui.pages.backup.components.RestoreWarningDialog
 import me.rerere.rikkahub.ui.pages.backup.components.backupContentItem
-import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 
 @Composable
 fun S3Tab(
@@ -159,13 +159,11 @@ fun S3Tab(
         },
         onDismiss = { pendingRestoreItem = null },
     )
-    RikkaConfirmDialog(
+    DeleteConfirmDialog(
         show = pendingDeleteItem != null,
-        title = stringResource(R.string.backup_page_delete_remote_title, "S3"),
-        confirmText = stringResource(R.string.common_delete),
-        dismissText = stringResource(R.string.common_cancel),
+        type = stringResource(R.string.delete_type_backup_file),
         onConfirm = {
-            val item = pendingDeleteItem ?: return@RikkaConfirmDialog
+            val item = pendingDeleteItem ?: return@DeleteConfirmDialog
             pendingDeleteItem = null
             scope.launch {
                 runCatching {
@@ -181,5 +179,5 @@ fun S3Tab(
             }
         },
         onDismiss = { pendingDeleteItem = null },
-    ) { Text(stringResource(R.string.backup_page_delete_remote_desc)) }
+    )
 }

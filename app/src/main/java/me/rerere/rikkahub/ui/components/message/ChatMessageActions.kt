@@ -67,6 +67,7 @@ import me.rerere.rikkahub.data.model.MessageNode
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupItemSpacing
 import me.rerere.rikkahub.ui.components.ui.CardGroupRow
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.ui.components.RikkaConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalNavController
@@ -521,17 +522,14 @@ fun ChatMessageActionsSheet(
             }
         }
     }
-    RikkaConfirmDialog(
+    DeleteConfirmDialog(
         show = showDeleteConfirm,
-        title = stringResource(R.string.common_delete),
-        confirmText = stringResource(R.string.common_confirm_action),
-        dismissText = stringResource(R.string.common_cancel),
+        type = stringResource(R.string.delete_type_message),
         onConfirm = {
             showDeleteConfirm = false
             onDismissRequest()
             onDelete()
         },
         onDismiss = { showDeleteConfirm = false },
-        text = { Text(stringResource(R.string.chat_page_delete_message_confirm)) },
     )
 }

@@ -112,6 +112,7 @@ import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
 import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupScope
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
 import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceLabel
 import me.rerere.rikkahub.ui.components.ui.ConnectedMultiChoiceButtons
@@ -447,33 +448,15 @@ fun SettingProviderDetailSheet(
 
     ShareSheet(shareSheetState)
 
-    if (showDeleteDialog) {
-        AlertDialog(
-            containerColor = MaterialTheme.colorScheme.surface,
-            onDismissRequest = { showDeleteDialog = false },
-            title = {
-                Text(stringResource(R.string.confirm_delete))
-            },
-            text = {
-                Text(stringResource(R.string.setting_provider_page_delete_dialog_text))
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text(stringResource(R.string.common_cancel))
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showDeleteDialog = false
-                        onDelete()
-                    }
-                ) {
-                    Text(stringResource(R.string.common_delete))
-                }
-            }
-        )
-    }
+    DeleteConfirmDialog(
+        show = showDeleteDialog,
+        type = stringResource(R.string.delete_type_provider),
+        onConfirm = {
+            showDeleteDialog = false
+            onDelete()
+        },
+        onDismiss = { showDeleteDialog = false },
+    )
 
     if (showModelPicker) {
         ModelPickerSheet(
@@ -1755,7 +1738,6 @@ private fun ModelSettingsForm(
     }
 
     if (showDeleteDialog) {
-        val providerName = (model.providerOverwrite ?: parentProvider)?.name.orEmpty()
         val referencedMessagesLink = stringResource(
             R.string.setting_provider_page_delete_model_referenced_messages,
             referencedMessageCount,
@@ -1768,69 +1750,45 @@ private fun ModelSettingsForm(
                 textDecoration = TextDecoration.Underline,
             )
         )
-        AlertDialog(
-            containerColor = MaterialTheme.colorScheme.surface,
-            onDismissRequest = { showDeleteDialog = false },
-            title = {
-                Text(stringResource(R.string.setting_provider_page_delete_model))
+        DeleteConfirmDialog(
+            show = true,
+            type = stringResource(R.string.delete_type_model),
+            name = model.displayName,
+            onConfirm = {
+                showDeleteDialog = false
+                onDeleteModel?.invoke()
             },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            onDismiss = { showDeleteDialog = false },
+            extra = {
+                if (referencedMessageCount > 0) {
                     Text(
-                        stringResource(
-                            R.string.setting_provider_page_delete_model_confirm_named_desc,
-                            model.displayName,
-                            providerName,
-                        )
-                    )
-                    if (referencedMessageCount > 0) {
-                        Text(
-                            buildAnnotatedString {
-                                withLink(
-                                    LinkAnnotation.Clickable(
-                                        tag = "search_model_messages",
-                                        styles = linkStyle,
-                                        linkInteractionListener = {
-                                            showDeleteDialog = false
-                                            navController.navigate(Screen.MessageSearch(model.id.toString()))
-                                        },
-                                    )
-                                ) {
-                                    append(referencedMessagesLink)
-                                }
-                                append(warningSuffix)
-                                withLink(
-                                    LinkAnnotation.Clickable(
-                                        tag = "migrate_model_id",
-                                        styles = linkStyle,
-                                        linkInteractionListener = {
-                                            showDeleteDialog = false
-                                            migrationModelListState.open()
-                                        },
-                                    )
-                                ) {
-                                    append(migrateLink)
-                                }
+                        buildAnnotatedString {
+                            withLink(
+                                LinkAnnotation.Clickable(
+                                    tag = "search_model_messages",
+                                    styles = linkStyle,
+                                    linkInteractionListener = {
+                                        showDeleteDialog = false
+                                        navController.navigate(Screen.MessageSearch(model.id.toString()))
+                                    },
+                                )
+                            ) {
+                                append(referencedMessagesLink)
                             }
-                        )
-                    }
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text(stringResource(R.string.common_cancel))
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showDeleteDialog = false
-                        onDeleteModel?.invoke()
-                    }
-                ) {
-                    Text(
-                        text = stringResource(R.string.common_delete),
-                        color = MaterialTheme.colorScheme.error,
+                            append(warningSuffix)
+                            withLink(
+                                LinkAnnotation.Clickable(
+                                    tag = "migrate_model_id",
+                                    styles = linkStyle,
+                                    linkInteractionListener = {
+                                        showDeleteDialog = false
+                                        migrationModelListState.open()
+                                    },
+                                )
+                            ) {
+                                append(migrateLink)
+                            }
+                        }
                     )
                 }
             },

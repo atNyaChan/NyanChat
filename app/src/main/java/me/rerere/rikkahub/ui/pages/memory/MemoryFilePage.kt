@@ -62,7 +62,7 @@ import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.utils.toLocalDateTime
-import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 import java.time.Instant
@@ -261,19 +261,15 @@ fun MemoryFilePage(memoryId: String, path: String?) {
         }
     }
 
-    RikkaConfirmDialog(
+    DeleteConfirmDialog(
         show = showDeleteDialog,
-        title = stringResource(R.string.confirm_delete),
-        confirmText = stringResource(R.string.common_confirm_action),
-        dismissText = stringResource(R.string.common_cancel),
+        type = stringResource(R.string.delete_type_memory_file),
+        name = file?.path,
         onConfirm = {
             showDeleteDialog = false
             vm.delete { navController.popBackStack() }
         },
         onDismiss = { showDeleteDialog = false },
-        text = {
-            Text(text = file?.path.orEmpty())
-        }
     )
 }
 

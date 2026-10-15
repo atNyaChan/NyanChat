@@ -78,7 +78,7 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.switchItem
-import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.pages.setting.components.PresetThemeButtonGroup
 import me.rerere.rikkahub.ui.theme.CustomColors
@@ -309,11 +309,9 @@ fun SettingThemePage(vm: SettingVM = koinViewModel()) {
         )
     }
 
-    RikkaConfirmDialog(
+    DeleteConfirmDialog(
         show = deletingTheme != null,
-        title = stringResource(R.string.setting_theme_page_delete_theme_title),
-        confirmText = stringResource(android.R.string.ok),
-        dismissText = stringResource(android.R.string.cancel),
+        type = stringResource(R.string.delete_type_theme),
         onConfirm = {
             deletingTheme?.let { theme ->
                 val newThemes = settings.customThemes.filter { it.id != theme.id }
@@ -323,9 +321,6 @@ fun SettingThemePage(vm: SettingVM = koinViewModel()) {
             deletingTheme = null
         },
         onDismiss = { deletingTheme = null },
-        text = {
-            Text(stringResource(R.string.setting_theme_page_delete_theme_message))
-        }
     )
 }
 

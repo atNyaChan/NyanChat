@@ -106,6 +106,7 @@ import me.rerere.rikkahub.data.files.FileUtils
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.ui.components.ai.ModelSelector
 import me.rerere.rikkahub.ui.components.ui.AppLoadingIndicator
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.FormItem
 import me.rerere.rikkahub.ui.components.ui.ImagePreviewDialog
@@ -634,42 +635,36 @@ private fun ImageGalleryScreen(
         if (!isActive && !isDeleting) clearSelection()
     }
 
-    if (showDeleteDialog) {
-        AlertDialog(
-            containerColor = MaterialTheme.colorScheme.surface,
-            onDismissRequest = { showDeleteDialog = false },
-            title = { Text(stringResource(R.string.imggen_page_delete_images_title)) },
-            text = { Text(stringResource(R.string.imggen_page_delete_images_message, selectedImages.size)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    showDeleteDialog = false
-                    isDeleting = true
-                    val images = selectedImages.values.toList()
-                    scope.launch {
-                        try {
-                            val failed = vm.deleteImages(images)
-                            selectedImages = failed.associateBy { it.id }
-                            selectionMode = failed.isNotEmpty()
-                            toaster.show(
-                                message = if (failed.isEmpty()) context.getString(R.string.imggen_page_delete_images_success, images.size)
-                                else context.getString(
-                                    R.string.imggen_page_delete_images_failed,
-                                    images.size - failed.size,
-                                    failed.size
-                                ),
-                                type = if (failed.isEmpty()) ToastType.Success else ToastType.Error
-                            )
-                        } finally {
-                            isDeleting = false
-                        }
-                    }
-                }) { Text(stringResource(R.string.common_delete)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.common_cancel)) }
+    DeleteConfirmDialog(
+        show = showDeleteDialog,
+        type = stringResource(R.string.delete_type_image),
+        pluralType = stringResource(R.string.delete_type_image_plural),
+        count = selectedImages.size,
+        onConfirm = {
+            showDeleteDialog = false
+            isDeleting = true
+            val images = selectedImages.values.toList()
+            scope.launch {
+                try {
+                    val failed = vm.deleteImages(images)
+                    selectedImages = failed.associateBy { it.id }
+                    selectionMode = failed.isNotEmpty()
+                    toaster.show(
+                        message = if (failed.isEmpty()) context.getString(R.string.imggen_page_delete_images_success, images.size)
+                        else context.getString(
+                            R.string.imggen_page_delete_images_failed,
+                            images.size - failed.size,
+                            failed.size
+                        ),
+                        type = if (failed.isEmpty()) ToastType.Success else ToastType.Error
+                    )
+                } finally {
+                    isDeleting = false
+                }
             }
-        )
-    }
+        },
+        onDismiss = { showDeleteDialog = false },
+    )
 
     Column(modifier = Modifier.fillMaxSize()) {
         if (selectionMode) {
@@ -877,24 +872,14 @@ private fun ImageGalleryScreen(
     }
 
     pendingDeleteImage?.let { image ->
-        AlertDialog(
-            containerColor = MaterialTheme.colorScheme.surface,
-            onDismissRequest = { pendingDeleteImage = null },
-            title = { Text(stringResource(R.string.imggen_page_delete_image_title)) },
-            text = { Text(stringResource(R.string.imggen_page_delete_image_confirm)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        vm.deleteImage(image)
-                        pendingDeleteImage = null
-                    }
-                ) { Text(stringResource(R.string.common_delete)) }
+        DeleteConfirmDialog(
+            show = true,
+            type = stringResource(R.string.delete_type_image),
+            onConfirm = {
+                vm.deleteImage(image)
+                pendingDeleteImage = null
             },
-            dismissButton = {
-                TextButton(onClick = { pendingDeleteImage = null }) {
-                    Text(stringResource(R.string.common_cancel))
-                }
-            },
+            onDismiss = { pendingDeleteImage = null },
         )
     }
 }

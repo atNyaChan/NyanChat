@@ -117,7 +117,7 @@ import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.PagerTab
 import me.rerere.rikkahub.ui.components.ui.PagerTabs
 import me.rerere.rikkahub.ui.components.ui.switchItem
-import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.pages.backup.components.BackupDialog
@@ -522,19 +522,16 @@ fun WorkspaceDetailPage(id: String) {
     }
 
     deleteTarget?.let { entry ->
-        RikkaConfirmDialog(
+        DeleteConfirmDialog(
             show = true,
-            title = if (entry.isDirectory) stringResource(R.string.workspace_detail_delete_directory) else stringResource(R.string.workspace_detail_delete_file),
-            confirmText = stringResource(R.string.common_delete),
-            dismissText = stringResource(R.string.common_cancel),
+            type = if (entry.isDirectory) stringResource(R.string.delete_type_directory) else stringResource(R.string.delete_type_file),
+            name = entry.path,
             onConfirm = {
                 vm.delete(entry)
                 deleteTarget = null
             },
             onDismiss = { deleteTarget = null },
-        ) {
-            Text(stringResource(R.string.workspace_detail_will_delete, entry.path))
-        }
+        )
     }
 
     if (showRenameDialog) {
@@ -576,19 +573,16 @@ fun WorkspaceDetailPage(id: String) {
         BackupDialog(exporting = true)
     }
 
-    RikkaConfirmDialog(
+    DeleteConfirmDialog(
         show = showDeleteWorkspaceConfirm,
-        title = stringResource(R.string.workspace_page_delete),
-        confirmText = stringResource(R.string.common_delete),
-        dismissText = stringResource(R.string.common_cancel),
+        type = stringResource(R.string.delete_type_workspace),
         onConfirm = {
             showDeleteWorkspaceConfirm = false
             vm.deleteWorkspace { navController.popBackStack() }
         },
         onDismiss = { showDeleteWorkspaceConfirm = false },
-    ) {
-        Text(stringResource(R.string.workspace_page_delete_confirm))
-    }
+        extra = { Text(stringResource(R.string.workspace_page_delete_confirm)) },
+    )
 
     if (showCreateFolderDialog) {
         CreateWorkspaceFolderDialog(

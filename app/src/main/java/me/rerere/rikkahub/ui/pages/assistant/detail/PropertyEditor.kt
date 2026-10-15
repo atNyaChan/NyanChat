@@ -31,7 +31,7 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupScope
 import me.rerere.rikkahub.ui.components.ui.SelectTextField
-import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.rikkahub.ui.components.richtext.HighlightCodeVisualTransformation
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
@@ -133,14 +133,9 @@ fun CustomHeaders(
             )
         }
     }
-    RikkaConfirmDialog(
+    DeleteConfirmDialog(
         show = pendingDeleteIndex != null,
-        title = stringResource(
-            R.string.assistant_page_delete_custom_title,
-            stringResource(R.string.assistant_page_custom_header_singular),
-        ),
-        confirmText = stringResource(R.string.common_delete),
-        dismissText = stringResource(R.string.common_cancel),
+        type = stringResource(R.string.delete_type_header),
         onConfirm = {
             pendingDeleteIndex?.let { index ->
                 if (index in headers.indices) {
@@ -150,14 +145,7 @@ fun CustomHeaders(
             pendingDeleteIndex = null
         },
         onDismiss = { pendingDeleteIndex = null },
-    ) {
-        Text(
-            stringResource(
-                R.string.assistant_page_delete_custom_confirm,
-                stringResource(R.string.assistant_page_custom_header_singular),
-            )
-        )
-    }
+    )
 }
 
 @Composable
@@ -296,14 +284,9 @@ fun CustomBodies(
             )
         }
     }
-    RikkaConfirmDialog(
+    DeleteConfirmDialog(
         show = pendingDeleteIndex != null,
-        title = stringResource(
-            R.string.assistant_page_delete_custom_title,
-            stringResource(R.string.assistant_page_custom_body_singular),
-        ),
-        confirmText = stringResource(R.string.common_delete),
-        dismissText = stringResource(R.string.common_cancel),
+        type = stringResource(R.string.delete_type_body),
         onConfirm = {
             pendingDeleteIndex?.let { index ->
                 if (index in customBodies.indices) {
@@ -313,14 +296,7 @@ fun CustomBodies(
             pendingDeleteIndex = null
         },
         onDismiss = { pendingDeleteIndex = null },
-    ) {
-        Text(
-            stringResource(
-                R.string.assistant_page_delete_custom_confirm,
-                stringResource(R.string.assistant_page_custom_body_singular),
-            )
-        )
-    }
+    )
 }
 
 // 自定义请求头/请求体，模型、助手与提供商共用同一套标题与排版；不传 Body 时只显示 Headers

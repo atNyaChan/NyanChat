@@ -64,7 +64,7 @@ import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.PagerTab
 import me.rerere.rikkahub.ui.components.ui.PagerTabs
-import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.rikkahub.ui.components.ui.Tag
 import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.rikkahub.ui.components.ui.s3ConnectionItems
@@ -345,25 +345,16 @@ private fun MediaProviderSheet(
         )
     }
 
-    RikkaConfirmDialog(
+    DeleteConfirmDialog(
         show = showDeleteConfirm,
-        title = stringResource(R.string.setting_media_page_delete_provider),
-        confirmText = stringResource(R.string.common_delete),
-        dismissText = stringResource(R.string.common_cancel),
+        type = stringResource(R.string.delete_type_media_provider),
+        name = initial.name,
         onConfirm = {
             showDeleteConfirm = false
             onDelete?.invoke()
         },
         onDismiss = { showDeleteConfirm = false },
-    ) {
-        Text(
-            if (initial.name.isBlank()) {
-                stringResource(R.string.setting_media_page_delete_unnamed_provider_confirm)
-            } else {
-                stringResource(R.string.setting_media_page_delete_provider_confirm, initial.name)
-            }
-        )
-    }
+    )
 }
 
 @Composable

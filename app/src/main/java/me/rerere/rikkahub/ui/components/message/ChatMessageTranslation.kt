@@ -47,7 +47,7 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.ai.TranslationLanguages
 import me.rerere.rikkahub.ui.components.ai.translationLanguageName
 import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
-import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import java.util.Locale
 import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
@@ -231,11 +231,9 @@ fun CollapsibleTranslationText(
                 }
             }
         }
-        RikkaConfirmDialog(
+        DeleteConfirmDialog(
             show = showDeleteConfirm,
-            title = stringResource(R.string.translation_delete_result),
-            confirmText = stringResource(R.string.common_delete),
-            dismissText = stringResource(R.string.common_cancel),
+            type = stringResource(R.string.delete_type_translation),
             onConfirm = {
                 showDeleteConfirm = false
                 if (isTranslating) {
@@ -244,8 +242,6 @@ fun CollapsibleTranslationText(
                 onDeleteTranslation()
             },
             onDismiss = { showDeleteConfirm = false },
-        ) {
-            Text(stringResource(R.string.translation_delete_result_confirm))
-        }
+        )
     }
 }

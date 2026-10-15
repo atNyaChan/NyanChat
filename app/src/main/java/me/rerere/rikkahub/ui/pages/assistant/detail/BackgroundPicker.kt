@@ -33,7 +33,7 @@ import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Image02
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.files.FilesManager
-import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import org.koin.compose.koinInject
 
 @Composable
@@ -213,17 +213,13 @@ fun BackgroundPickerContent(
         )
     }
 
-    RikkaConfirmDialog(
+    DeleteConfirmDialog(
         show = showDeleteConfirm,
-        title = stringResource(R.string.assistant_page_delete_background_title),
-        confirmText = stringResource(R.string.common_delete),
-        dismissText = stringResource(R.string.common_cancel),
+        type = stringResource(R.string.delete_type_chat_background),
         onConfirm = {
             showDeleteConfirm = false
             onUpdate(null)
         },
         onDismiss = { showDeleteConfirm = false },
-    ) {
-        Text(stringResource(R.string.assistant_page_delete_background_confirm))
-    }
+    )
 }

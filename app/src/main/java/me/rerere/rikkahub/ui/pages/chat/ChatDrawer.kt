@@ -81,6 +81,7 @@ import me.rerere.ai.core.MessageRole
 import me.rerere.rikkahub.ui.components.ai.AssistantPicker
 import me.rerere.rikkahub.ui.components.ai.chatInputHaze
 import me.rerere.rikkahub.ui.components.ui.BackupReminderCard
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.rikkahub.ui.components.ui.AppLoadingIndicator
 import me.rerere.rikkahub.ui.components.ui.Greeting
 import me.rerere.ui.components.Tooltip
@@ -375,62 +376,42 @@ fun ChatDrawerContent(
             )
 
             conversationToDelete?.let { conversation ->
-                AlertDialog(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    onDismissRequest = { conversationToDelete = null },
-                    title = { Text(stringResource(R.string.common_delete)) },
-                    text = {
-                        Text(
-                            stringResource(
-                                R.string.chat_page_delete_conversation_confirm,
-                                conversation.title.ifBlank { stringResource(R.string.conversation_untitled) }
-                            )
-                        )
-                    },
-                    confirmButton = {
-                        TextButton(onClick = {
-                            conversationToDelete = null
-                            scope.launch {
-                                vm.deleteConversation(conversation).join()
-                                if (conversation.id == current.id) {
-                                    // 删除后新建的空会话归入侧栏当前选中的文件夹
-                                    navigateToChatPage(navController, folderId = selectedFolderId)
-                                }
+                DeleteConfirmDialog(
+                    show = true,
+                    type = stringResource(R.string.delete_type_chat),
+                    name = conversation.title,
+                    onConfirm = {
+                        conversationToDelete = null
+                        scope.launch {
+                            vm.deleteConversation(conversation).join()
+                            if (conversation.id == current.id) {
+                                // 删除后新建的空会话归入侧栏当前选中的文件夹
+                                navigateToChatPage(navController, folderId = selectedFolderId)
                             }
-                        }) { Text(stringResource(R.string.common_delete)) }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { conversationToDelete = null }) {
-                            Text(stringResource(R.string.common_cancel))
                         }
                     },
+                    onDismiss = { conversationToDelete = null },
                 )
             }
 
             if (conversationsToDelete.isNotEmpty()) {
-                AlertDialog(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    onDismissRequest = { conversationsToDelete = emptyList() },
-                    title = { Text(stringResource(R.string.common_delete)) },
-                    text = { Text(stringResource(R.string.chat_page_delete_selected_confirm, conversationsToDelete.size)) },
-                    confirmButton = {
-                        TextButton(onClick = {
-                            val targets = conversationsToDelete
-                            conversationsToDelete = emptyList()
-                            scope.launch {
-                                targets.map(vm::deleteConversation).forEach { it.join() }
-                                if (targets.any { it.id == current.id }) {
-                                    // 删除后新建的空会话归入侧栏当前选中的文件夹
-                                    navigateToChatPage(navController, folderId = selectedFolderId)
-                                }
+                DeleteConfirmDialog(
+                    show = true,
+                    type = stringResource(R.string.delete_type_chat),
+                    pluralType = stringResource(R.string.delete_type_chat_plural),
+                    count = conversationsToDelete.size,
+                    onConfirm = {
+                        val targets = conversationsToDelete
+                        conversationsToDelete = emptyList()
+                        scope.launch {
+                            targets.map(vm::deleteConversation).forEach { it.join() }
+                            if (targets.any { it.id == current.id }) {
+                                // 删除后新建的空会话归入侧栏当前选中的文件夹
+                                navigateToChatPage(navController, folderId = selectedFolderId)
                             }
-                        }) { Text(stringResource(R.string.common_delete)) }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { conversationsToDelete = emptyList() }) {
-                            Text(stringResource(R.string.common_cancel))
                         }
                     },
+                    onDismiss = { conversationsToDelete = emptyList() },
                 )
             }
 
@@ -671,27 +652,19 @@ fun ChatDrawerContent(
 
     // 删除文件夹确认
     folderToDelete?.let { folder ->
-        AlertDialog(
-            containerColor = MaterialTheme.colorScheme.surface,
-            onDismissRequest = { folderToDelete = null },
-            title = { Text(stringResource(R.string.chat_page_delete_folder)) },
-            text = { Text(stringResource(R.string.chat_page_delete_folder_confirm, folder.name)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        if (drawerVm.deleteFolder(folder.id)) {
-                            folderToDelete = null
-                        } else {
-                            toaster.show(context.getString(R.string.chat_page_delete_folder_generating), type = ToastType.Warning)
-                        }
-                    }
-                ) { Text(stringResource(R.string.common_delete)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { folderToDelete = null }) {
-                    Text(stringResource(R.string.common_cancel))
+        DeleteConfirmDialog(
+            show = true,
+            type = stringResource(R.string.delete_type_folder),
+            name = folder.name,
+            onConfirm = {
+                if (drawerVm.deleteFolder(folder.id)) {
+                    folderToDelete = null
+                } else {
+                    toaster.show(context.getString(R.string.chat_page_delete_folder_generating), type = ToastType.Warning)
                 }
-            }
+            },
+            onDismiss = { folderToDelete = null },
+            extra = { Text(stringResource(R.string.delete_dialog_folder_note)) },
         )
     }
 

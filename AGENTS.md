@@ -59,6 +59,14 @@ of adding per-screen variants.
 - **Feedback**: `LocalToaster` errors open a scrollable, selectable, copyable dialog; success,
   warning and short messages use the Android system Toast. Do not add the old custom colored in-app
   banner.
+- **Delete dialogs**: every delete confirmation goes through the shared `DeleteConfirmDialog`
+  (app/src/main/java/me/rerere/rikkahub/ui/components/ui/DeleteConfirmDialog.kt) — do not rebuild the
+  title or message at the call site. The title is always `delete_dialog_title` (“Delete {type}” /
+  “删除{类型}”), the buttons are always `common_cancel` / `common_delete`, and the body is one of
+  `delete_dialog_message_named` / `delete_dialog_message_unnamed` / `delete_dialog_message_batch`.
+  Pass a localized `delete_type_*` string as the type plus an optional `name` (`count` + `pluralType`
+  for batch); any extra paragraph goes through the `extra` slot. Simplified Chinese quotes use “”,
+  Traditional Chinese quotes use 「」; `media_creation_*` delete dialogs keep their own copy.
 - All scrollable pages (including the chat message list) use the platform stretch overscroll effect.
 
 ## Build, Test, and Development Commands

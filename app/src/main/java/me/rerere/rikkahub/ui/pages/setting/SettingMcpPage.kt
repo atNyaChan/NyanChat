@@ -105,7 +105,7 @@ import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.PagerTab
 import me.rerere.rikkahub.ui.components.ui.PagerTabs
 import me.rerere.rikkahub.ui.components.ui.switchItem
-import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.ui.components.Switch
 import me.rerere.ui.components.SwitchSize
@@ -536,24 +536,16 @@ private fun McpServerConfigModal(
                 }
             }
         }
-        RikkaConfirmDialog(
+        DeleteConfirmDialog(
             show = showDeleteConfirm,
-            title = stringResource(R.string.common_delete),
-            confirmText = stringResource(R.string.common_delete),
-            dismissText = stringResource(R.string.common_cancel),
+            type = stringResource(R.string.delete_type_mcp_server),
+            name = config.commonOptions.name,
             onConfirm = {
                 showDeleteConfirm = false
                 onDelete?.invoke(config)
             },
             onDismiss = { showDeleteConfirm = false },
-        ) {
-            Text(
-                stringResource(
-                    R.string.setting_mcp_page_delete_confirm,
-                    config.commonOptions.name,
-                )
-            )
-        }
+        )
     }
 }
 

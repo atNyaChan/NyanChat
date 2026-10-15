@@ -58,7 +58,7 @@ import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
 import me.rerere.rikkahub.ui.components.ui.UIAvatar
-import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.rikkahub.ui.pages.assistant.AssistantVM
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.hooks.heroAnimation
@@ -196,11 +196,10 @@ fun AssistantDetailPage(id: String) {
         }
     }
 
-    RikkaConfirmDialog(
+    DeleteConfirmDialog(
         show = showDeleteConfirm,
-        title = stringResource(R.string.assistant_page_delete_assistant),
-        confirmText = stringResource(R.string.common_delete),
-        dismissText = stringResource(R.string.common_cancel),
+        type = stringResource(R.string.delete_type_assistant),
+        name = assistant.name,
         onConfirm = {
             showDeleteConfirm = false
             assistantVm.removeAssistant(assistant) { fallbackChatId ->
@@ -212,9 +211,7 @@ fun AssistantDetailPage(id: String) {
             }
         },
         onDismiss = { showDeleteConfirm = false },
-    ) {
-        Text(stringResource(R.string.assistant_page_delete_dialog_text))
-    }
+    )
 }
 
 @Composable

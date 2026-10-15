@@ -61,7 +61,7 @@ import me.rerere.ui.toast.ToastType
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
-import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.theme.CustomColors
@@ -174,11 +174,10 @@ fun SkillDetailPage(skillName: String) {
         )
     }
 
-    RikkaConfirmDialog(
+    DeleteConfirmDialog(
         show = deleteTarget != null,
-        title = stringResource(R.string.skill_detail_page_delete_file),
-        confirmText = stringResource(R.string.common_delete),
-        dismissText = stringResource(R.string.common_cancel),
+        type = stringResource(R.string.delete_type_file),
+        name = deleteTarget?.relativePath,
         onConfirm = {
             deleteTarget?.let { skillFile ->
                 vm.deleteFile(skillFile) { success ->
@@ -188,15 +187,12 @@ fun SkillDetailPage(skillName: String) {
             deleteTarget = null
         },
         onDismiss = { deleteTarget = null },
-    ) {
-        Text(stringResource(R.string.skill_detail_page_delete_confirm, deleteTarget?.relativePath ?: ""))
-    }
+    )
 
-    RikkaConfirmDialog(
+    DeleteConfirmDialog(
         show = showDeleteSkillConfirm,
-        title = stringResource(R.string.skills_page_delete_title),
-        confirmText = stringResource(R.string.common_delete),
-        dismissText = stringResource(R.string.common_cancel),
+        type = stringResource(R.string.delete_type_skill),
+        name = skillName,
         onConfirm = {
             showDeleteSkillConfirm = false
             vm.deleteSkill { success ->
@@ -208,9 +204,7 @@ fun SkillDetailPage(skillName: String) {
             }
         },
         onDismiss = { showDeleteSkillConfirm = false },
-    ) {
-        Text(stringResource(R.string.skills_page_delete_message, skillName))
-    }
+    )
 }
 
 @Composable

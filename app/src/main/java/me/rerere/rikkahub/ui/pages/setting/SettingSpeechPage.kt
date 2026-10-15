@@ -56,7 +56,7 @@ import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.PagerTab
 import me.rerere.rikkahub.ui.components.ui.PagerTabs
-import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.rikkahub.ui.context.LocalTTSState
 import me.rerere.rikkahub.ui.pages.setting.components.ASRProviderConfigure
@@ -209,11 +209,10 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
             )
         }
 
-        RikkaConfirmDialog(
+        DeleteConfirmDialog(
             show = showDeleteConfirm,
-            title = stringResource(R.string.setting_tts_page_delete_provider),
-            confirmText = stringResource(R.string.common_delete),
-            dismissText = stringResource(R.string.common_cancel),
+            type = stringResource(R.string.delete_type_tts_provider),
+            name = provider.name,
             onConfirm = {
                 val newProviders = settings.ttsProviders - provider
                 val newSelectedId = if (settings.selectedTTSProviderId == provider.id) {
@@ -231,15 +230,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                 editingTTSProvider = null
             },
             onDismiss = { showDeleteConfirm = false },
-        ) {
-            Text(
-                if (provider.name.isBlank()) {
-                    stringResource(R.string.setting_tts_page_delete_unnamed_provider_confirm)
-                } else {
-                    stringResource(R.string.setting_tts_page_delete_provider_confirm, provider.name)
-                }
-            )
-        }
+        )
     }
 
     editingASRProvider?.let { provider ->
@@ -279,11 +270,10 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
             )
         }
 
-        RikkaConfirmDialog(
+        DeleteConfirmDialog(
             show = showDeleteConfirm,
-            title = stringResource(R.string.setting_asr_page_delete_provider),
-            confirmText = stringResource(R.string.common_delete),
-            dismissText = stringResource(R.string.common_cancel),
+            type = stringResource(R.string.delete_type_asr_provider),
+            name = provider.name,
             onConfirm = {
                 val newProviders = settings.asrProviders - provider
                 val newSelectedId = if (settings.selectedASRProviderId == provider.id) {
@@ -301,15 +291,7 @@ fun SettingSpeechPage(vm: SettingVM = koinViewModel()) {
                 editingASRProvider = null
             },
             onDismiss = { showDeleteConfirm = false },
-        ) {
-            Text(
-                if (provider.name.isBlank()) {
-                    stringResource(R.string.setting_asr_page_delete_unnamed_provider_confirm)
-                } else {
-                    stringResource(R.string.setting_asr_page_delete_provider_confirm, provider.name)
-                }
-            )
-        }
+        )
     }
 }
 

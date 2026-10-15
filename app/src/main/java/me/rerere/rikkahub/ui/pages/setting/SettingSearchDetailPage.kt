@@ -43,7 +43,7 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.richtext.HighlightCodeVisualTransformation
 import me.rerere.rikkahub.ui.components.ui.FormItem
-import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.CustomColors
@@ -152,11 +152,10 @@ fun SettingSearchDetailPage(
 
         }
     }
-    RikkaConfirmDialog(
+    DeleteConfirmDialog(
         show = showDeleteConfirm,
-        title = stringResource(R.string.common_delete),
-        confirmText = stringResource(R.string.common_delete),
-        dismissText = stringResource(R.string.common_cancel),
+        type = stringResource(R.string.delete_type_search_service),
+        name = options.displayName,
         onConfirm = {
             showDeleteConfirm = false
             val newServices = settings.searchServices.toMutableList()
@@ -165,9 +164,7 @@ fun SettingSearchDetailPage(
             nav.popBackStack()
         },
         onDismiss = { showDeleteConfirm = false },
-    ) {
-        Text(stringResource(R.string.setting_page_search_delete_confirm, options.displayName))
-    }
+    )
 }
 
 @Suppress("UNCHECKED_CAST")

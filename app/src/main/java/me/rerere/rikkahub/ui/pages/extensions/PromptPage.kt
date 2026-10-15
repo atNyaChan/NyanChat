@@ -87,6 +87,7 @@ import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
 import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
 import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceLabel
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.components.ui.ExportDialog
 import me.rerere.rikkahub.ui.components.ui.FormItem
@@ -524,38 +525,16 @@ private fun ModeInjectionEditSheet(
     if (showExportDialog) {
         ExportDialog(exporter = exporter, onDismiss = { showExportDialog = false })
     }
-    if (showDeleteConfirm) {
-        AlertDialog(
-            containerColor = MaterialTheme.colorScheme.surface,
-            onDismissRequest = { showDeleteConfirm = false },
-            title = { Text(stringResource(R.string.prompt_page_delete_mode_injection_title)) },
-            text = {
-                Text(
-                    if (injection.name.isBlank()) {
-                        stringResource(R.string.prompt_page_delete_unnamed_mode_injection_confirm)
-                    } else {
-                        stringResource(
-                            R.string.prompt_page_delete_mode_injection_confirm,
-                            injection.name,
-                        )
-                    }
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showDeleteConfirm = false
-                        onDelete?.invoke()
-                    }
-                ) { Text(stringResource(R.string.common_delete)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteConfirm = false }) {
-                    Text(stringResource(R.string.common_cancel))
-                }
-            },
-        )
-    }
+    DeleteConfirmDialog(
+        show = showDeleteConfirm,
+        type = stringResource(R.string.delete_type_mode_injection),
+        name = injection.name,
+        onConfirm = {
+            showDeleteConfirm = false
+            onDelete?.invoke()
+        },
+        onDismiss = { showDeleteConfirm = false },
+    )
 }
 
 @Composable
@@ -957,35 +936,16 @@ private fun LorebookEditSheet(
     if (showExportDialog) {
         ExportDialog(exporter = exporter, onDismiss = { showExportDialog = false })
     }
-    if (showDeleteConfirm) {
-        AlertDialog(
-            containerColor = MaterialTheme.colorScheme.surface,
-            onDismissRequest = { showDeleteConfirm = false },
-            title = { Text(stringResource(R.string.prompt_page_delete_lorebook_title)) },
-            text = {
-                Text(
-                    if (book.name.isBlank()) {
-                        stringResource(R.string.prompt_page_delete_unnamed_lorebook_confirm)
-                    } else {
-                        stringResource(R.string.prompt_page_delete_lorebook_confirm, book.name)
-                    }
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showDeleteConfirm = false
-                        onDelete?.invoke()
-                    }
-                ) { Text(stringResource(R.string.common_delete)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteConfirm = false }) {
-                    Text(stringResource(R.string.common_cancel))
-                }
-            },
-        )
-    }
+    DeleteConfirmDialog(
+        show = showDeleteConfirm,
+        type = stringResource(R.string.delete_type_lorebook),
+        name = book.name,
+        onConfirm = {
+            showDeleteConfirm = false
+            onDelete?.invoke()
+        },
+        onDismiss = { showDeleteConfirm = false },
+    )
 
     if (entryEditState.isEditing) {
         entryEditState.currentState?.let { state ->
@@ -1350,25 +1310,13 @@ private fun RegexInjectionEditDialog(
             }
         }
     }
-    if (showDeleteConfirm) {
-        AlertDialog(
-            containerColor = MaterialTheme.colorScheme.surface,
-            onDismissRequest = { showDeleteConfirm = false },
-            title = { Text(stringResource(R.string.prompt_page_delete_entry)) },
-            text = { Text(stringResource(R.string.prompt_page_delete_entry_confirm)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    showDeleteConfirm = false
-                    onDelete?.invoke()
-                }) {
-                    Text(stringResource(R.string.common_delete))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteConfirm = false }) {
-                    Text(stringResource(R.string.common_cancel))
-                }
-            },
-        )
-    }
+    DeleteConfirmDialog(
+        show = showDeleteConfirm,
+        type = stringResource(R.string.delete_type_lorebook_entry),
+        onConfirm = {
+            showDeleteConfirm = false
+            onDelete?.invoke()
+        },
+        onDismiss = { showDeleteConfirm = false },
+    )
 }
