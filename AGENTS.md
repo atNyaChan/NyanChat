@@ -69,6 +69,57 @@ of adding per-screen variants.
   Traditional Chinese quotes use 「」; `media_creation_*` delete dialogs keep their own copy.
 - All scrollable pages (including the chat message list) use the platform stretch overscroll effect.
 
+## Chat Attachments (Content-Addressed Storage, CAS)
+
+Chat attachments are stored content-addressed. **Any code that creates, reads, moves, lists, deletes,
+counts, or backs up attachment files must go through the CAS layer** — never treat `filesDir/upload`
+as an ordinary folder, and never invent a uuid/filename-keyed path for an attachment.
+
+- **Entities are content-addressed.** Bytes live at `filesDir/upload/<sha256>` (lowercase 64-hex),
+  identical content is stored once, and the on-disk name is always the content hash. The only place a
+  `uuid.ext` name still exists is the legacy RikkaHub-compatible ZIP export.
+- **Registration and references.** One Room row per sha256 (`ManagedFileCasEntity`, table
+  `managed_files_cas`) holds MIME/size and a `usages` JSON list of `FileUsage`
+  (`message` / `assistant_avatar` / `assistant_background` / `user_avatar` / `none`). Content is
+  referenced when any non-`none` usage exists; a lone `none` records on-disk time and the last display
+  name.
+- **Stored vs runtime form.** In-memory `UIMessage`/`Settings` always hold absolute `file://` urls; the
+  database and DataStore only store paths relative to `filesDir` (`upload/<sha256>`). The conversion is
+  `data/files/LocalFileUrls` (`withStoredLocalUrls` / `withRuntimeLocalUrls`), applied at
+  `ConversationRepository`'s read/write boundary. Never persist a package-qualified absolute path, and
+  never parse a sha out of a url by hand — use `attachmentShaFromUrl` / `tempAttachmentNameFromUrl`.
+- **Drafts are not CAS.** Composer/queue attachments live under `cacheDir/upload_tmp`
+  (`FileFolders.UPLOAD_TEMP`) with display name/MIME/sha only in an in-process map; they are neither
+  registered nor content-addressed. Before a conversation is persisted, call
+  `FilesManager.commitConversationFiles`: it streams each temp file to its `upload/<sha256>` entity
+  (reusing an existing one) and returns `ConversationCommitResult` — replace the in-memory conversation
+  with its `conversation` and pass its `infos` to `updateAttachmentIndex`.
+  `stripUncommittedTemporaryAttachments` is the guard: if a temp url would still be written, it drops
+  the attachment and logs a warning — never silently repair or store a temp path.
+- **Content-dedup on add.** New composer attachments go through `dedupeTempAttachments`, and
+  `commitTempAttachment` reuses an already-committed entity for the same content.
+- **Deletion is reference-counted.** Delete through `FilesManager.deleteChatFiles` (optionally with a
+  `removedUsage`) or `deleteUploadEntity`; after removing a usage the remaining usages are re-checked
+  and the entity + row are only deleted when nothing else references the content. Never delete
+  `upload/<sha256>` directly. Deleting a conversation/assistant must first drop its usages
+  (`removeConversationFromAttachmentIndex` / `updateSettingsAttachmentUsages`).
+- **Every attachment-bearing field counts.** `UIMessagePart.Image/Video/Audio/Document`, nested
+  tool-result parts, and assistant avatar/background + user avatar. When adding a new attachment field
+  or part type, extend `collectAttachmentRefs` / `mapLocalUrl` / `applyCommittedTempUrls`,
+  `Settings.attachmentUrls()` and the settings-usages rebuild together.
+- **Byte-level work goes through `AttachmentCas`.** Use `writeTemporary` / `commitTemporary` (hash
+  computed while writing), `sha256`, `isSha256Name`, and `isTemporary` / `deleteStaleTemporaryFiles`
+  for `upload-*.tmp` residue. Any listing, sizing, counting, startup sync
+  (`FilesManager.syncManagedFiles`) or backup must skip `AttachmentCas.isTemporary` files so a
+  half-written temp file never leaks into the UI, stats or an archive.
+- **Backup/restore is CAS-aware.** Archives declare a schema version; only pre-`CAS_SCHEMA_VERSION`
+  (100; upstream is 30) archives are migrated (`ManagedFilesArchive.normalizeUploadDir` renames
+  `upload` to sha256 and `convertLegacyDatabase` converts the old `managed_files` table). Never
+  re-normalize an archive that is already CAS, and never copy upstream files over our CAS layout.
+- **`FilesManager` is the single entry point** (`data/files/FilesManager.kt`). UI/service/repository
+  code must use its APIs rather than opening `upload` files directly, so registration, usages and
+  cleanup stay consistent.
+
 ## Build, Test, and Development Commands
 
 ```bash

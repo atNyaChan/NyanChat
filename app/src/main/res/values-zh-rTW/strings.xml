@@ -677,7 +677,7 @@
   <string name="setting_files_page_clean_content_description">清理檔案</string>
   <string name="setting_files_page_clean_failed_toast">部分檔案清理失敗</string>
   <string name="setting_files_page_clean_older_than_days">%1$d 天前</string>
-  <string name="setting_files_page_clean_range_description">選擇要永久刪除的檔案。此操作無法復原。</string>
+  <string name="setting_files_page_clean_range_description">選擇要永久刪除的檔案。</string>
   <string name="setting_files_page_clean_title">清理檔案？</string>
   <string name="setting_files_page_cleaned_toast">檔案已清理</string>
   <string name="setting_files_page_delete_failed_toast">刪除失敗</string>
@@ -855,11 +855,12 @@
   <string name="setting_provider_page_delete_model">刪除模型</string>
   <string name="setting_provider_page_delete_model_referenced_messages">%1$d 則訊息</string>
   <string name="setting_provider_page_delete_model_warning_suffix">中的回覆模型名稱將變為模型 ID 或生成該回覆時的模型名稱，請考慮</string>
+  <string name="setting_provider_page_delete_model_warning_end">。</string>
   <string name="setting_provider_page_delete_model_migrate_link">遷移模型 ID</string>
   <string name="setting_provider_page_migrate_id">遷移 ID</string>
   <string name="setting_provider_page_migrate_id_desc">將現有聊天記錄中此模型回覆所記錄的模型名稱改為其他模型</string>
   <string name="setting_provider_page_migrate_id_confirm_title">確認遷移模型 ID？</string>
-  <string name="setting_provider_page_migrate_id_confirm_desc">要將現有回覆中記錄的模型從「%1$s」（%2$s）改為「%3$s」（%4$s）嗎？此操作無法復原。</string>
+  <string name="setting_provider_page_migrate_id_confirm_desc">要將現有回覆中記錄的模型從「%1$s」（%2$s）改為「%3$s」（%4$s）嗎？替換後無法還原。</string>
   <string name="setting_provider_page_migrate_id_current_messages_prefix">此模型目前有</string>
   <string name="setting_provider_page_migrate_id_no_messages">聊天記錄中沒有此模型的訊息</string>
   <string name="setting_provider_page_migrate_id_success">已遷移 %1$d 則回覆</string>
@@ -876,7 +877,6 @@
   <string name="setting_provider_page_configure_provider_override">設定提供商覆寫</string>
   <string name="setting_provider_page_create_provider">新增模型提供商</string>
   <string name="setting_provider_page_custom_model">自定義模型</string>
-  <string name="setting_provider_page_deselect_models">取消全選</string>
   <string name="setting_provider_page_disabled">禁用</string>
   <string name="setting_provider_page_edit_model">編輯模型</string>
   <string name="setting_provider_page_edit_provider">編輯模型提供商</string>
@@ -923,7 +923,6 @@
   <string name="setting_provider_page_response_api">Response API</string>
   <string name="setting_provider_page_response_api_not_compatible">可能不相容</string>
   <string name="setting_provider_page_scan_qr_code">掃描二維碼</string>
-  <string name="setting_provider_page_select_all">全選 (%1$d)</string>
   <string name="setting_provider_page_select_from_gallery">從相簿選擇</string>
   <string name="setting_provider_page_service_account_email">服務帳戶郵箱</string>
   <string name="setting_provider_page_tab_config">配置</string>
@@ -1275,6 +1274,8 @@
   <string name="assistant_page_cancel_copy">取消複製助手</string>
   <string name="assistant_page_copy_picker_tag_count">%1$d 個標籤</string>
   <string name="assistant_page_delete_assistant">刪除助手</string>
+  <string name="assistant_delete_blocked_title">無法刪除助手</string>
+  <string name="assistant_delete_blocked_message">該助手仍然有對話，只能刪除沒有對話的助手。</string>
   <string name="assistant_page_context_message_limit">上下文訊息限制</string>
   <string name="assistant_page_context_message_limit_desc">限制傳送給模型的最近訊息數量</string>
   <string name="assistant_page_context_message_limit_placeholder">無限制</string>
@@ -1609,7 +1610,7 @@
   <string name="translator_page_history">翻譯歷史</string>
   <string name="translator_page_clear_history">清除</string>
   <string name="translator_page_clear_history_title">清除翻譯記錄</string>
-  <string name="translator_page_clear_history_message">所有翻譯記錄將被刪除。此操作無法復原。</string>
+  <string name="translator_page_clear_history_message">所有翻譯記錄將被刪除，刪除後無法復原。</string>
   <string name="setting_display_page_enable_quote_highlight_title">引號內文字醒目顯示</string>
   <string name="setting_display_page_enable_quote_highlight_desc">將引號內的文字以主題顏色標示，讓角色對話更突出</string>
   <string name="workspace_detail_copy_path">複製路徑</string>

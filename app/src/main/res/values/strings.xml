@@ -677,7 +677,7 @@
   <string name="setting_files_page_clean_content_description">Clean files</string>
   <string name="setting_files_page_clean_failed_toast">Some files could not be cleaned</string>
   <string name="setting_files_page_clean_older_than_days">Older than %1$d days</string>
-  <string name="setting_files_page_clean_range_description">Select files to permanently delete. This action cannot be undone.</string>
+  <string name="setting_files_page_clean_range_description">Select files to permanently delete.</string>
   <string name="setting_files_page_clean_title">Clean files?</string>
   <string name="setting_files_page_cleaned_toast">Files cleaned</string>
   <string name="setting_files_page_delete_failed_toast">Delete Failed</string>
@@ -855,11 +855,12 @@
   <string name="setting_provider_page_delete_model">Delete Model</string>
   <string name="setting_provider_page_delete_model_referenced_messages">%1$d messages</string>
   <string name="setting_provider_page_delete_model_warning_suffix">\u0020will have their reply model name replaced with the model ID or the model name from when the reply was generated. Consider\u0020</string>
+  <string name="setting_provider_page_delete_model_warning_end">.</string>
   <string name="setting_provider_page_delete_model_migrate_link">migrating the model ID</string>
   <string name="setting_provider_page_migrate_id">Migrate ID</string>
   <string name="setting_provider_page_migrate_id_desc">Change the model recorded for this model\'s existing chat replies to another model</string>
   <string name="setting_provider_page_migrate_id_confirm_title">Confirm model ID migration?</string>
-  <string name="setting_provider_page_migrate_id_confirm_desc">Change the model recorded in existing replies from “%1$s” (%2$s) to “%3$s” (%4$s)? This cannot be undone.</string>
+  <string name="setting_provider_page_migrate_id_confirm_desc">Change the model recorded in existing replies from “%1$s” (%2$s) to “%3$s” (%4$s)? It cannot be restored after replacement.</string>
   <string name="setting_provider_page_migrate_id_current_messages_prefix">This model currently has\u0020</string>
   <string name="setting_provider_page_migrate_id_no_messages">There are no messages from this model in chat history</string>
   <string name="setting_provider_page_migrate_id_success">Migrated %1$d replies</string>
@@ -876,7 +877,6 @@
   <string name="setting_provider_page_configure_provider_override">Configure Provider Override</string>
   <string name="setting_provider_page_create_provider">New Model Provider</string>
   <string name="setting_provider_page_custom_model">Custom Model</string>
-  <string name="setting_provider_page_deselect_models">Deselect All</string>
   <string name="setting_provider_page_disabled">Disabled</string>
   <string name="setting_provider_page_edit_model">Edit Model</string>
   <string name="setting_provider_page_edit_provider">Edit Model Provider</string>
@@ -923,7 +923,6 @@
   <string name="setting_provider_page_response_api">Response API</string>
   <string name="setting_provider_page_response_api_not_compatible">May be incompatible</string>
   <string name="setting_provider_page_scan_qr_code">Scan QR Code</string>
-  <string name="setting_provider_page_select_all">Select All (%1$d)</string>
   <string name="setting_provider_page_select_from_gallery">Select from Gallery</string>
   <string name="setting_provider_page_service_account_email">Service Account Email</string>
   <string name="setting_provider_page_tab_config">Configuration</string>
@@ -1275,6 +1274,8 @@
   <string name="assistant_page_cancel_copy">Cancel copying assistant</string>
   <string name="assistant_page_copy_picker_tag_count">%1$d tags</string>
   <string name="assistant_page_delete_assistant">Delete assistant</string>
+  <string name="assistant_delete_blocked_title">Cannot Delete Assistant</string>
+  <string name="assistant_delete_blocked_message">This assistant still has conversations. Only assistants without conversations can be deleted.</string>
   <string name="assistant_page_context_message_limit">Context Message Limit</string>
   <string name="assistant_page_context_message_limit_desc">Limits the number of recent messages sent to the model</string>
   <string name="assistant_page_context_message_limit_placeholder">Unlimited</string>
@@ -1609,7 +1610,7 @@
   <string name="translator_page_history">Translation history</string>
   <string name="translator_page_clear_history">Clear</string>
   <string name="translator_page_clear_history_title">Clear translation history</string>
-  <string name="translator_page_clear_history_message">All translation records will be deleted. This cannot be undone.</string>
+  <string name="translator_page_clear_history_message">All translation records will be deleted. They cannot be recovered after deletion.</string>
   <string name="setting_display_page_enable_quote_highlight_title">Highlight Quoted Text</string>
   <string name="setting_display_page_enable_quote_highlight_desc">Color text inside quotation marks with the theme color to make character dialogue stand out</string>
   <string name="workspace_detail_copy_path">Copy path</string>

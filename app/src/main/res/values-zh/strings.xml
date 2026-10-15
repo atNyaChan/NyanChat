@@ -677,7 +677,7 @@
   <string name="setting_files_page_clean_content_description">清理文件</string>
   <string name="setting_files_page_clean_failed_toast">部分文件清理失败</string>
   <string name="setting_files_page_clean_older_than_days">%1$d 天前</string>
-  <string name="setting_files_page_clean_range_description">选择要永久删除的文件。此操作无法撤销。</string>
+  <string name="setting_files_page_clean_range_description">选择要永久删除的文件。</string>
   <string name="setting_files_page_clean_title">清理文件？</string>
   <string name="setting_files_page_cleaned_toast">文件已清理</string>
   <string name="setting_files_page_delete_failed_toast">删除失败</string>
@@ -855,11 +855,12 @@
   <string name="setting_provider_page_delete_model">删除模型</string>
   <string name="setting_provider_page_delete_model_referenced_messages">%1$d 条消息</string>
   <string name="setting_provider_page_delete_model_warning_suffix">里的回复模型的名字将变为模型 ID 或生成该回复时的模型名字，请考虑</string>
+  <string name="setting_provider_page_delete_model_warning_end">。</string>
   <string name="setting_provider_page_delete_model_migrate_link">迁移模型 ID</string>
   <string name="setting_provider_page_migrate_id">迁移 ID</string>
   <string name="setting_provider_page_migrate_id_desc">把 已有的聊天记录里的此模型的回复里记录从模型名字 改成别的模型</string>
   <string name="setting_provider_page_migrate_id_confirm_title">确认迁移模型 ID？</string>
-  <string name="setting_provider_page_migrate_id_confirm_desc">要将已有回复中记录的模型从“%1$s”（%2$s）改为“%3$s”（%4$s）吗？此操作无法撤销。</string>
+  <string name="setting_provider_page_migrate_id_confirm_desc">要将已有回复中记录的模型从“%1$s”（%2$s）改为“%3$s”（%4$s）吗？替换后无法还原。</string>
   <string name="setting_provider_page_migrate_id_current_messages_prefix">此模型当前有</string>
   <string name="setting_provider_page_migrate_id_no_messages">聊天记录里没有此模型的消息</string>
   <string name="setting_provider_page_migrate_id_success">已迁移 %1$d 条回复</string>
@@ -876,7 +877,6 @@
   <string name="setting_provider_page_configure_provider_override">配置提供商重写</string>
   <string name="setting_provider_page_create_provider">新建模型提供商</string>
   <string name="setting_provider_page_custom_model">自定义模型</string>
-  <string name="setting_provider_page_deselect_models">取消全选</string>
   <string name="setting_provider_page_disabled">禁用</string>
   <string name="setting_provider_page_edit_model">编辑模型</string>
   <string name="setting_provider_page_edit_provider">编辑模型提供商</string>
@@ -923,7 +923,6 @@
   <string name="setting_provider_page_response_api">Response API</string>
   <string name="setting_provider_page_response_api_not_compatible">可能不兼容</string>
   <string name="setting_provider_page_scan_qr_code">扫描二维码</string>
-  <string name="setting_provider_page_select_all">全选（%1$d）</string>
   <string name="setting_provider_page_select_from_gallery">从相册选择</string>
   <string name="setting_provider_page_service_account_email">服务账户邮箱</string>
   <string name="setting_provider_page_tab_config">配置</string>
@@ -1275,6 +1274,8 @@
   <string name="assistant_page_cancel_copy">取消复制助手</string>
   <string name="assistant_page_copy_picker_tag_count">%1$d 个标签</string>
   <string name="assistant_page_delete_assistant">删除助手</string>
+  <string name="assistant_delete_blocked_title">无法删除助手</string>
+  <string name="assistant_delete_blocked_message">该助手仍然有对话，只能删除没有对话的助手。</string>
   <string name="assistant_page_context_message_limit">上下文消息限制</string>
   <string name="assistant_page_context_message_limit_desc">限制发送给模型的最近消息数量</string>
   <string name="assistant_page_context_message_limit_placeholder">无限制</string>
@@ -1609,7 +1610,7 @@
   <string name="translator_page_history">翻译历史</string>
   <string name="translator_page_clear_history">清除</string>
   <string name="translator_page_clear_history_title">清除翻译历史记录</string>
-  <string name="translator_page_clear_history_message">所有翻译记录都将被删除，此操作无法撤销。</string>
+  <string name="translator_page_clear_history_message">所有翻译记录都将被删除，删除后无法恢复。</string>
   <string name="setting_display_page_enable_quote_highlight_title">引号内文字高亮</string>
   <string name="setting_display_page_enable_quote_highlight_desc">使用主题色为引号内的文本着色，让角色对话更加醒目</string>
   <string name="workspace_detail_copy_path">复制路径</string>

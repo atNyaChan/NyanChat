@@ -84,4 +84,8 @@ class AssistantVM(
 
     suspend fun hasMemories(assistantId: String): Boolean =
         memoryRepository.getFiles(assistantId).isNotEmpty()
+
+    /** 助手是否仍有对话（含已归入文件夹的对话）。 */
+    suspend fun hasConversations(assistantId: Uuid): Boolean =
+        conversationRepo.countConversationsOfAssistant(assistantId) > 0
 }

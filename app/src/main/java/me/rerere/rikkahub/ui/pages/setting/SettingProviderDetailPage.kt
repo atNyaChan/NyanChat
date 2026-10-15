@@ -248,6 +248,28 @@ fun SettingProviderDetailSheet(
         onDismiss()
     }
 
+    val onMigrateModelId: (Model, Model) -> Unit = { sourceModel, targetModel ->
+        vm.migrateMessageModelId(sourceModel.id, targetModel.id) { result ->
+            result.onSuccess { count ->
+                toaster.show(
+                    context.getString(
+                        R.string.setting_provider_page_migrate_id_success,
+                        count,
+                    ),
+                    type = ToastType.Success,
+                )
+            }.onFailure { error ->
+                toaster.show(
+                    context.getString(
+                        R.string.setting_provider_page_migrate_id_failed,
+                        error.message.orEmpty(),
+                    ),
+                    type = ToastType.Error,
+                )
+            }
+        }
+    }
+
     ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = {
             onDismiss()
@@ -373,27 +395,7 @@ fun SettingProviderDetailSheet(
                                             internalProvider = internalProvider.editModel(editedModel)
                                         },
                                         parentProvider = internalProvider,
-                                        onMigrateModelId = { sourceModel, targetModel ->
-                                            vm.migrateMessageModelId(sourceModel.id, targetModel.id) { result ->
-                                                result.onSuccess { count ->
-                                                    toaster.show(
-                                                        context.getString(
-                                                            R.string.setting_provider_page_migrate_id_success,
-                                                            count,
-                                                        ),
-                                                        type = ToastType.Success,
-                                                    )
-                                                }.onFailure { error ->
-                                                    toaster.show(
-                                                        context.getString(
-                                                            R.string.setting_provider_page_migrate_id_failed,
-                                                            error.message.orEmpty(),
-                                                        ),
-                                                        type = ToastType.Error,
-                                                    )
-                                                }
-                                            }
-                                        },
+                                        onMigrateModelId = onMigrateModelId,
                                         modifier = longPressReorder(isDragging),
                                     )
                                 }
@@ -462,6 +464,7 @@ fun SettingProviderDetailSheet(
         ModelPickerSheet(
             models = modelList,
             selectedModels = internalProvider.models,
+            provider = internalProvider,
             onModelSelected = { model ->
                 internalProvider = internalProvider.addModel(
                     model.copy(
@@ -474,27 +477,8 @@ fun SettingProviderDetailSheet(
             onModelDeselected = { model ->
                 internalProvider = internalProvider.delModel(model)
             },
-            onAllModelSelected = { models ->
-                internalProvider = internalProvider.copyProvider(
-                    models = internalProvider.models + models.filter { model ->
-                        internalProvider.models.none { existing -> existing.modelId == model.modelId }
-                    }.map { model ->
-                        model.copy(
-                            inputModalities = ModelRegistry.MODEL_INPUT_MODALITIES.getData(model.modelId),
-                            outputModalities = ModelRegistry.MODEL_OUTPUT_MODALITIES.getData(model.modelId),
-                            abilities = ModelRegistry.MODEL_ABILITIES.getData(model.modelId),
-                        )
-                    }
-                )
-            },
-            onAllModelDeselected = { models ->
-                internalProvider = internalProvider.copyProvider(
-                    models = internalProvider.models.filter { model ->
-                        models.none { filtered -> filtered.modelId == model.modelId }
-                    }
-                )
-            },
             onDismiss = { showModelPicker = false },
+            onMigrateModelId = onMigrateModelId,
         )
     }
 
@@ -1081,11 +1065,11 @@ private fun GoogleServiceAccountFields(
 private fun ModelPickerSheet(
     models: List<Model>,
     selectedModels: List<Model>,
+    provider: ProviderSetting,
     onModelSelected: (Model) -> Unit,
     onModelDeselected: (Model) -> Unit,
-    onAllModelSelected: (List<Model>) -> Unit,
-    onAllModelDeselected: (List<Model>) -> Unit,
     onDismiss: () -> Unit,
+    onMigrateModelId: ((Model, Model) -> Unit)? = null,
 ) {
     ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
@@ -1095,6 +1079,8 @@ private fun ModelPickerSheet(
         ),
     ) {
         var filterText by remember { mutableStateOf("") }
+        var deleteTarget by remember { mutableStateOf<Model?>(null) }
+        var showDeleteDialog by remember { mutableStateOf(false) }
         val filterKeywords = filterText.split(" ").filter { it.isNotBlank() }
         val filteredModels = models.fastFilter {
             if (filterKeywords.isEmpty()) {
@@ -1125,40 +1111,14 @@ private fun ModelPickerSheet(
                     .padding(horizontal = 16.dp),
             )
 
-            // 标题栏和添加所有按钮
-            Row(
+            // 可选模型标题
+            Text(
+                text = stringResource(R.string.setting_provider_page_avaliable_models),
+                style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.setting_provider_page_avaliable_models),
-                    style = MaterialTheme.typography.titleMedium
-                )
-
-                val unselectedCount = filteredModels.count { model ->
-                    selectedModels.none { it.modelId == model.modelId }
-                }
-
-                TextButton(
-                    onClick = {
-                        if (unselectedCount > 0) {
-                            onAllModelSelected(filteredModels)
-                        } else {
-                            onAllModelDeselected(filteredModels)
-                        }
-                    },
-                ) {
-                    Text(
-                        if (unselectedCount > 0) stringResource(
-                            R.string.setting_provider_page_select_all,
-                            unselectedCount
-                        ) else stringResource(R.string.setting_provider_page_deselect_models)
-                    )
-                }
-            }
+            )
 
             LazyColumn(
                 modifier = Modifier
@@ -1219,10 +1179,9 @@ private fun ModelPickerSheet(
                                 onClick = {
                                     if (selectedModels.any { model -> model.modelId == it.modelId }) {
                                         // 从selectedModels中计算出要删除的model，因为删除需要id匹配，而不是ModelId
-                                        onModelDeselected(
-                                            selectedModels.firstOrNull { model -> model.modelId == it.modelId }
-                                                ?: it
-                                        )
+                                        deleteTarget = selectedModels.firstOrNull { model -> model.modelId == it.modelId }
+                                            ?: it
+                                        showDeleteDialog = true
                                     } else {
                                         onModelSelected(it)
                                     }
@@ -1248,6 +1207,21 @@ private fun ModelPickerSheet(
                 placeholder = {
                     Text(stringResource(R.string.setting_provider_page_filter_example))
                 },
+            )
+        }
+
+        // 与模型设置页删除模型一致的确认弹窗；保持挂载以便其中的迁移列表在关闭确认后仍可用
+        deleteTarget?.let { modelToDelete ->
+            ModelDeleteDialog(
+                show = showDeleteDialog,
+                model = modelToDelete,
+                parentProvider = provider,
+                onConfirm = {
+                    showDeleteDialog = false
+                    onModelDeselected(modelToDelete)
+                },
+                onDismiss = { showDeleteDialog = false },
+                onMigrateModelId = onMigrateModelId,
             )
         }
     }
@@ -1282,7 +1256,6 @@ private fun ModelSettingsForm(
         }
     }
     val pagerState = rememberPagerState { modelFormTabs.size }
-    val scope = rememberCoroutineScope()
     val settingsStore = koinInject<me.rerere.rikkahub.data.datastore.SettingsStore>()
     val settings by settingsStore.settingsFlow.collectAsStateWithLifecycle()
     val conversationRepository = koinInject<me.rerere.rikkahub.data.repository.ConversationRepository>()
@@ -1540,10 +1513,7 @@ private fun ModelSettingsForm(
                         if (isEdit && onDeleteModel != null) {
                             Button(
                                 onClick = {
-                                    scope.launch {
-                                        referencedMessageCount = conversationRepository.countMessagesByModel(model.id)
-                                        showDeleteDialog = true
-                                    }
+                                    showDeleteDialog = true
                                 },
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.buttonColors(
@@ -1703,97 +1673,182 @@ private fun ModelSettingsForm(
     }
 
     migrationTarget?.let { targetModel ->
-        AlertDialog(
-            containerColor = MaterialTheme.colorScheme.surface,
-            onDismissRequest = { migrationTarget = null },
-            title = { Text(stringResource(R.string.setting_provider_page_migrate_id_confirm_title)) },
-            text = {
-                Text(
-                    stringResource(
-                        R.string.setting_provider_page_migrate_id_confirm_desc,
-                        model.displayName,
-                        model.findProvider(settings.providers, checkOverwrite = false)?.name
-                            ?: parentProvider?.name.orEmpty(),
-                        targetModel.displayName,
-                        targetModel.findProvider(settings.providers, checkOverwrite = false)?.name.orEmpty(),
-                    )
-                )
-            },
-            dismissButton = {
-                TextButton(onClick = { migrationTarget = null }) {
-                    Text(stringResource(R.string.common_cancel))
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        migrationTarget = null
-                        onMigrateModelId?.invoke(model, targetModel)
-                    }
-                ) {
-                    Text(stringResource(R.string.common_confirm_action))
-                }
+        ModelMigrationConfirmDialog(
+            model = model,
+            targetModel = targetModel,
+            parentProvider = parentProvider,
+            providers = settings.providers,
+            onDismiss = { migrationTarget = null },
+            onConfirm = {
+                migrationTarget = null
+                onMigrateModelId?.invoke(model, targetModel)
             },
         )
     }
 
-    if (showDeleteDialog) {
-        val referencedMessagesLink = stringResource(
-            R.string.setting_provider_page_delete_model_referenced_messages,
-            referencedMessageCount,
-        )
-        val warningSuffix = stringResource(R.string.setting_provider_page_delete_model_warning_suffix)
-        val migrateLink = stringResource(R.string.setting_provider_page_delete_model_migrate_link)
-        val linkStyle = TextLinkStyles(
-            style = SpanStyle(
-                color = MaterialTheme.colorScheme.primary,
-                textDecoration = TextDecoration.Underline,
-            )
-        )
-        DeleteConfirmDialog(
-            show = true,
-            type = stringResource(R.string.delete_type_model),
-            name = model.displayName,
+    ModelDeleteDialog(
+        show = showDeleteDialog,
+        model = model,
+        parentProvider = parentProvider,
+        onConfirm = {
+            showDeleteDialog = false
+            onDeleteModel?.invoke()
+        },
+        onDismiss = { showDeleteDialog = false },
+        onMigrateModelId = onMigrateModelId,
+    )
+}
+
+/**
+ * 删除模型的确认弹窗，与「选择模型」抽屉共用。
+ *
+ * 内部处理被引用消息数量的统计，以及删除前的模型 ID 迁移入口。
+ */
+@Composable
+private fun ModelDeleteDialog(
+    show: Boolean,
+    model: Model,
+    parentProvider: ProviderSetting?,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    onMigrateModelId: ((Model, Model) -> Unit)? = null,
+) {
+    val settingsStore = koinInject<me.rerere.rikkahub.data.datastore.SettingsStore>()
+    val settings by settingsStore.settingsFlow.collectAsStateWithLifecycle()
+    val conversationRepository = koinInject<me.rerere.rikkahub.data.repository.ConversationRepository>()
+    val navController = LocalNavController.current
+
+    var referencedMessageCount by remember(model.id) { mutableStateOf(0) }
+    var migrationTarget by remember { mutableStateOf<Model?>(null) }
+    val migrationModelListState = rememberModelListState(
+        modelId = null,
+        providers = settings.providers,
+        type = model.type,
+    )
+
+    LaunchedEffect(show, model.id) {
+        if (show) {
+            referencedMessageCount = conversationRepository.countMessagesByModel(model.id)
+        }
+    }
+
+    ModelListSheet(
+        state = migrationModelListState,
+        onSelect = { targetModel ->
+            if (targetModel.id != model.id) {
+                migrationTarget = targetModel
+            }
+        },
+    )
+
+    migrationTarget?.let { targetModel ->
+        ModelMigrationConfirmDialog(
+            model = model,
+            targetModel = targetModel,
+            parentProvider = parentProvider,
+            providers = settings.providers,
+            onDismiss = { migrationTarget = null },
             onConfirm = {
-                showDeleteDialog = false
-                onDeleteModel?.invoke()
-            },
-            onDismiss = { showDeleteDialog = false },
-            extra = {
-                if (referencedMessageCount > 0) {
-                    Text(
-                        buildAnnotatedString {
-                            withLink(
-                                LinkAnnotation.Clickable(
-                                    tag = "search_model_messages",
-                                    styles = linkStyle,
-                                    linkInteractionListener = {
-                                        showDeleteDialog = false
-                                        navController.navigate(Screen.MessageSearch(model.id.toString()))
-                                    },
-                                )
-                            ) {
-                                append(referencedMessagesLink)
-                            }
-                            append(warningSuffix)
-                            withLink(
-                                LinkAnnotation.Clickable(
-                                    tag = "migrate_model_id",
-                                    styles = linkStyle,
-                                    linkInteractionListener = {
-                                        showDeleteDialog = false
-                                        migrationModelListState.open()
-                                    },
-                                )
-                            ) {
-                                append(migrateLink)
-                            }
-                        }
-                    )
-                }
+                migrationTarget = null
+                onMigrateModelId?.invoke(model, targetModel)
             },
         )
     }
+
+    val referencedMessagesLink = stringResource(
+        R.string.setting_provider_page_delete_model_referenced_messages,
+        referencedMessageCount,
+    )
+    val warningSuffix = stringResource(R.string.setting_provider_page_delete_model_warning_suffix)
+    val migrateLink = stringResource(R.string.setting_provider_page_delete_model_migrate_link)
+    val warningEnd = stringResource(R.string.setting_provider_page_delete_model_warning_end)
+    val linkStyle = TextLinkStyles(
+        style = SpanStyle(
+            color = MaterialTheme.colorScheme.primary,
+            textDecoration = TextDecoration.Underline,
+        )
+    )
+
+    DeleteConfirmDialog(
+        show = show,
+        type = stringResource(R.string.delete_type_model),
+        name = model.displayName,
+        onConfirm = onConfirm,
+        onDismiss = onDismiss,
+        extra = {
+            if (referencedMessageCount > 0) {
+                Text(
+                    buildAnnotatedString {
+                        withLink(
+                            LinkAnnotation.Clickable(
+                                tag = "search_model_messages",
+                                styles = linkStyle,
+                                linkInteractionListener = {
+                                    onDismiss()
+                                    navController.navigate(Screen.MessageSearch(model.id.toString()))
+                                },
+                            )
+                        ) {
+                            append(referencedMessagesLink)
+                        }
+                        append(warningSuffix)
+                        withLink(
+                            LinkAnnotation.Clickable(
+                                tag = "migrate_model_id",
+                                styles = linkStyle,
+                                linkInteractionListener = {
+                                    onDismiss()
+                                    migrationModelListState.open()
+                                },
+                            )
+                        ) {
+                            append(migrateLink)
+                        }
+                        append(warningEnd)
+                    }
+                )
+            }
+        },
+    )
+}
+
+/** 迁移模型 ID 前的确认弹窗。 */
+@Composable
+private fun ModelMigrationConfirmDialog(
+    model: Model,
+    targetModel: Model,
+    parentProvider: ProviderSetting?,
+    providers: List<ProviderSetting>,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    AlertDialog(
+        containerColor = MaterialTheme.colorScheme.surface,
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.setting_provider_page_migrate_id_confirm_title)) },
+        text = {
+            Text(
+                stringResource(
+                    R.string.setting_provider_page_migrate_id_confirm_desc,
+                    model.displayName,
+                    model.findProvider(providers, checkOverwrite = false)?.name
+                        ?: parentProvider?.name.orEmpty(),
+                    targetModel.displayName,
+                    targetModel.findProvider(providers, checkOverwrite = false)?.name.orEmpty(),
+                )
+            )
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.common_cancel))
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(stringResource(R.string.common_confirm_action))
+            }
+        },
+    )
 }
 
 @Composable

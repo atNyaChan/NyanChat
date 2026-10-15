@@ -117,6 +117,9 @@ interface ConversationDAO {
     @Query("SELECT assistant_id AS assistantId, COUNT(*) AS count FROM conversationentity GROUP BY assistant_id")
     suspend fun countByAssistant(): List<AssistantConversationCount>
 
+    @Query("SELECT COUNT(*) FROM conversationentity WHERE assistant_id = :assistantId")
+    suspend fun countOfAssistant(assistantId: String): Int
+
     @Query("SELECT COUNT(*) FROM conversationentity WHERE assistant_id = :assistantId AND folder_id = ''")
     fun countUnfiledOfAssistant(assistantId: String): Flow<Int>
 

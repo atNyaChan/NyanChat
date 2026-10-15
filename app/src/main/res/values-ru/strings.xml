@@ -677,7 +677,7 @@
   <string name="setting_files_page_clean_content_description">Очистить файлы</string>
   <string name="setting_files_page_clean_failed_toast">Не удалось удалить некоторые файлы</string>
   <string name="setting_files_page_clean_older_than_days">Старше %1$d дней</string>
-  <string name="setting_files_page_clean_range_description">Выберите файлы для окончательного удаления. Это действие нельзя отменить.</string>
+  <string name="setting_files_page_clean_range_description">Выберите файлы для окончательного удаления.</string>
   <string name="setting_files_page_clean_title">Очистить файлы?</string>
   <string name="setting_files_page_cleaned_toast">Файлы удалены</string>
   <string name="setting_files_page_delete_failed_toast">Не удалось удалить</string>
@@ -855,11 +855,12 @@
   <string name="setting_provider_page_delete_model">Удалить модель</string>
   <string name="setting_provider_page_delete_model_referenced_messages">%1$d сообщений</string>
   <string name="setting_provider_page_delete_model_warning_suffix">\u0020заменят записанное имя модели ответа на ID модели или имя модели на момент создания ответа. Рекомендуется\u0020</string>
+  <string name="setting_provider_page_delete_model_warning_end">.</string>
   <string name="setting_provider_page_delete_model_migrate_link">перенести ID модели</string>
   <string name="setting_provider_page_migrate_id">Перенести ID</string>
   <string name="setting_provider_page_migrate_id_desc">Изменить модель, записанную в существующих ответах этой модели, на другую модель</string>
   <string name="setting_provider_page_migrate_id_confirm_title">Перенести ID модели?</string>
-  <string name="setting_provider_page_migrate_id_confirm_desc">Изменить модель в существующих ответах с «%1$s» (%2$s) на «%3$s» (%4$s)? Это действие нельзя отменить.</string>
+  <string name="setting_provider_page_migrate_id_confirm_desc">Изменить модель в существующих ответах с «%1$s» (%2$s) на «%3$s» (%4$s)? После замены это нельзя отменить.</string>
   <string name="setting_provider_page_migrate_id_current_messages_prefix">Сейчас у этой модели сообщений:\u0020</string>
   <string name="setting_provider_page_migrate_id_no_messages">В истории чатов нет сообщений этой модели</string>
   <string name="setting_provider_page_migrate_id_success">Перенесено ответов: %1$d</string>
@@ -876,7 +877,6 @@
   <string name="setting_provider_page_configure_provider_override">Настроить переопределение поставщика</string>
   <string name="setting_provider_page_create_provider">Новый поставщик модели</string>
   <string name="setting_provider_page_custom_model">Пользовательская модель</string>
-  <string name="setting_provider_page_deselect_models">Снять выделение со всех</string>
   <string name="setting_provider_page_disabled">Отключено</string>
   <string name="setting_provider_page_edit_model">Редактировать модель</string>
   <string name="setting_provider_page_edit_provider">Редактировать поставщика</string>
@@ -923,7 +923,6 @@
   <string name="setting_provider_page_response_api">API ответов</string>
   <string name="setting_provider_page_response_api_not_compatible">Может быть несовместимо</string>
   <string name="setting_provider_page_scan_qr_code">Сканировать QR-код</string>
-  <string name="setting_provider_page_select_all">Выбрать все (%1$d)</string>
   <string name="setting_provider_page_select_from_gallery">Выбрать из галереи</string>
   <string name="setting_provider_page_service_account_email">Электронная почта служебной учётной записи</string>
   <string name="setting_provider_page_tab_config">Настройки</string>
@@ -1275,6 +1274,8 @@
   <string name="assistant_page_cancel_copy">Отменить копирование ассистента</string>
   <string name="assistant_page_copy_picker_tag_count">Тегов: %1$d</string>
   <string name="assistant_page_delete_assistant">Удалить ассистента</string>
+  <string name="assistant_delete_blocked_title">Не удалось удалить ассистента</string>
+  <string name="assistant_delete_blocked_message">У этого ассистента ещё есть беседы. Можно удалять только ассистентов без бесед.</string>
   <string name="assistant_page_context_message_limit">Лимит контекстных сообщений</string>
   <string name="assistant_page_context_message_limit_desc">Ограничивает количество последних сообщений, отправляемых модели.</string>
   <string name="assistant_page_context_message_limit_placeholder">Без ограничений</string>
@@ -1609,7 +1610,7 @@
   <string name="translator_page_history">История переводов</string>
   <string name="translator_page_clear_history">Очистить</string>
   <string name="translator_page_clear_history_title">Очистить историю переводов</string>
-  <string name="translator_page_clear_history_message">Все записи перевода будут удалены. Это действие нельзя отменить.</string>
+  <string name="translator_page_clear_history_message">Все записи перевода будут удалены. Удалённые записи нельзя восстановить.</string>
   <string name="setting_display_page_enable_quote_highlight_title">Подсветка цитируемого текста</string>
   <string name="setting_display_page_enable_quote_highlight_desc">Окрашивать текст в кавычках в цвет темы, чтобы реплики персонажей выделялись</string>
   <string name="workspace_detail_copy_path">Скопировать путь</string>

@@ -333,6 +333,10 @@ class ConversationRepository(
         return conversationDAO.countOfFolder(folderId.toString())
     }
 
+    suspend fun countConversationsOfAssistant(assistantId: Uuid): Int {
+        return conversationDAO.countOfAssistant(assistantId.toString())
+    }
+
     suspend fun countConversationsByAssistant(): Map<Uuid, Int> {
         return conversationDAO.countByAssistant().mapNotNull { row ->
             runCatching { Uuid.parse(row.assistantId) }.getOrNull()?.let { it to row.count }

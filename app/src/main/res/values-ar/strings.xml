@@ -677,7 +677,7 @@
   <string name="setting_files_page_clean_content_description">تنظيف الملفات</string>
   <string name="setting_files_page_clean_failed_toast">تعذر تنظيف بعض الملفات</string>
   <string name="setting_files_page_clean_older_than_days">أقدم من %1$d يومًا</string>
-  <string name="setting_files_page_clean_range_description">حدد الملفات لحذفها نهائيًا. لا يمكن التراجع عن هذا الإجراء.</string>
+  <string name="setting_files_page_clean_range_description">حدد الملفات لحذفها نهائيًا.</string>
   <string name="setting_files_page_clean_title">هل تريد تنظيف الملفات؟</string>
   <string name="setting_files_page_cleaned_toast">تم تنظيف الملفات</string>
   <string name="setting_files_page_delete_failed_toast">فشل الحذف</string>
@@ -855,11 +855,12 @@
   <string name="setting_provider_page_delete_model">حذف النموذج</string>
   <string name="setting_provider_page_delete_model_referenced_messages">%1$d رسالة</string>
   <string name="setting_provider_page_delete_model_warning_suffix">\u0020ستُستبدل أسماء نماذج الردود بمعرّف النموذج أو اسم النموذج عند إنشاء الرد. فكّر في\u0020</string>
+  <string name="setting_provider_page_delete_model_warning_end">.</string>
   <string name="setting_provider_page_delete_model_migrate_link">ترحيل معرّف النموذج</string>
   <string name="setting_provider_page_migrate_id">ترحيل المعرّف</string>
   <string name="setting_provider_page_migrate_id_desc">تغيير النموذج المسجّل لردود المحادثة الحالية لهذا النموذج إلى نموذج آخر</string>
   <string name="setting_provider_page_migrate_id_confirm_title">تأكيد ترحيل معرّف النموذج؟</string>
-  <string name="setting_provider_page_migrate_id_confirm_desc">تغيير النموذج المسجّل في الردود الحالية من "%1$s" (%2$s) إلى "%3$s" (%4$s)؟ لا يمكن التراجع عن هذا.</string>
+  <string name="setting_provider_page_migrate_id_confirm_desc">تغيير النموذج المسجّل في الردود الحالية من "%1$s" (%2$s) إلى "%3$s" (%4$s)؟ لا يمكن التراجع بعد الاستبدال.</string>
   <string name="setting_provider_page_migrate_id_current_messages_prefix">هذا النموذج لديه حاليًا\u0020</string>
   <string name="setting_provider_page_migrate_id_no_messages">لا توجد رسائل من هذا النموذج في سجل المحادثة</string>
   <string name="setting_provider_page_migrate_id_success">تم ترحيل %1$d ردًا</string>
@@ -876,7 +877,6 @@
   <string name="setting_provider_page_configure_provider_override">تكوين تجاوز للمزوّد</string>
   <string name="setting_provider_page_create_provider">مزوّد نموذج جديد</string>
   <string name="setting_provider_page_custom_model">نموذج مخصص</string>
-  <string name="setting_provider_page_deselect_models">إلغاء تحديد الكل</string>
   <string name="setting_provider_page_disabled">معطّل</string>
   <string name="setting_provider_page_edit_model">تعديل النموذج</string>
   <string name="setting_provider_page_edit_provider">تعديل مزوّد النموذج</string>
@@ -923,7 +923,6 @@
   <string name="setting_provider_page_response_api">Response API</string>
   <string name="setting_provider_page_response_api_not_compatible">قد تكون غير متوافقة</string>
   <string name="setting_provider_page_scan_qr_code">مسح رمز QR</string>
-  <string name="setting_provider_page_select_all">تحديد الكل (%1$d)</string>
   <string name="setting_provider_page_select_from_gallery">اختيار من المعرض</string>
   <string name="setting_provider_page_service_account_email">البريد الإلكتروني لحساب الخدمة</string>
   <string name="setting_provider_page_tab_config">الإعدادات</string>
@@ -1275,6 +1274,8 @@
   <string name="assistant_page_cancel_copy">إلغاء نسخ المساعد</string>
   <string name="assistant_page_copy_picker_tag_count">%1$d وسم</string>
   <string name="assistant_page_delete_assistant">حذف المساعد</string>
+  <string name="assistant_delete_blocked_title">تعذّر حذف المساعد</string>
+  <string name="assistant_delete_blocked_message">لا يزال لدى هذا المساعد محادثات. يمكن حذف المساعدين الذين ليس لديهم محادثات فقط.</string>
   <string name="assistant_page_context_message_limit">حد رسائل السياق</string>
   <string name="assistant_page_context_message_limit_desc">يحدّ من عدد الرسائل الأخيرة المرسلة إلى النموذج</string>
   <string name="assistant_page_context_message_limit_placeholder">غير محدود</string>
@@ -1609,7 +1610,7 @@
   <string name="translator_page_history">سجل الترجمة</string>
   <string name="translator_page_clear_history">مسح</string>
   <string name="translator_page_clear_history_title">مسح سجل الترجمة</string>
-  <string name="translator_page_clear_history_message">سيتم حذف جميع سجلات الترجمة. لا يمكن التراجع عن هذا.</string>
+  <string name="translator_page_clear_history_message">سيتم حذف جميع سجلات الترجمة. لا يمكن استعادتها بعد الحذف.</string>
   <string name="setting_display_page_enable_quote_highlight_title">تمييز النص المقتبس</string>
   <string name="setting_display_page_enable_quote_highlight_desc">تلوين النص داخل علامات الاقتباس بلون السمة لإبراز حوار الشخصيات</string>
   <string name="workspace_detail_copy_path">نسخ المسار</string>

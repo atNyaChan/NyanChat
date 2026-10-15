@@ -159,11 +159,12 @@ class MarkdownParserTest {
         assertNull(table.source)
 
         val (error, count) = table.rows[0]
+        val errorStyle = error.style!!
         assertEquals("异常", error.content.plainText())
-        assertEquals(Color.Red, error.style!!.color)
-        assertEquals(FontWeight.Bold, error.style!!.fontWeight)
+        assertEquals(Color.Red, errorStyle.color)
+        assertEquals(FontWeight.Bold, errorStyle.fontWeight)
         // 行上的对齐由单元格继承，单元格自己写了的以自己为准
-        assertEquals(TextAlign.End, error.style!!.textAlign)
+        assertEquals(TextAlign.End, errorStyle.textAlign)
         assertEquals(TextAlign.Start, count.style!!.textAlign)
         // 表格上的样式一直传到没有自己样式的单元格
         assertEquals(12f, table.rows[1][0].style!!.fontSize.value)
