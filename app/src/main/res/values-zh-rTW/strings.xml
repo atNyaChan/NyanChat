@@ -122,7 +122,6 @@
   <string name="chat_page_auto_generate_title">自動產生標題</string>
   <string name="chat_page_check_fast_model_settings">檢查快速模型設定</string>
   <string name="chat_page_clear_all_errors">清除全部</string>
-  <string name="chat_page_context_message_limit_current">目前上下文最多保留 %1$d 則訊息</string>
   <string name="chat_page_conversation_system_prompt">對話系統提示</string>
   <string name="chat_page_conversation_system_prompt_clear">清除</string>
   <string name="chat_page_conversation_system_prompt_hint">覆蓋此對話的助理系統提示</string>
@@ -222,8 +221,6 @@
   <string name="chat_input_file_read_failed">檔案讀取失敗：%s</string>
   <string name="chat_input_placeholder">輸入訊息與 AI 聊天</string>
   <string name="chat_input_unsupported_file_type">不支援的檔案類型：%s</string>
-  <string name="chat_size_dialog_content">目前訊息數：%1$d 。這可能導致應用程式崩潰或延遲，甚至遺失此對話資料。請盡快建立新對話以繼續聊天。</string>
-  <string name="chat_size_dialog_title">此對話資料過大</string>
   <string name="tools_warning">當前模型未開啟工具調用，請在設定內啟用模型的工具能力，再使用搜尋/MCP 等功能</string>
   <!-- Chat message -->
   <string name="chat_generation_network_disconnected">網路連線已中斷</string>
@@ -341,10 +338,9 @@
   <string name="chat_page_compress_context_desc">將對話壓縮成摘要以節省 token</string>
   <string name="chat_page_compress_context_title">壓縮對話紀錄</string>
   <string name="chat_page_compress_conversation_changed">對話在壓縮期間已變更。請再試一次。</string>
-  <string name="chat_page_compress_keep_recent">保留最近訊息</string>
-  <string name="chat_page_compress_not_enough_messages">訊息不足，無法壓縮。請減少要保留的訊息數量，或新增更多訊息。</string>
-  <string name="chat_page_compress_pending_tools">請先處理待處理的工具呼叫，或保留包含這些呼叫的近期訊息</string>
-  <string name="chat_page_compress_target_tokens">目標 Token 大小</string>
+  <string name="chat_page_compress_handle_pending_tools">壓縮前請先處理待處理的工具呼叫</string>
+  <string name="chat_page_compress_nothing_to_compress">自上次摘要以來沒有新訊息需要壓縮</string>
+  <string name="chat_page_compress_tool_call_response">模型試圖呼叫工具而不是撰寫摘要，請重試</string>
   <string name="chat_page_compressing">正在壓縮...</string>
   <string name="error_title_compress_conversation">對話壓縮失敗</string>
   <!-- Translation -->
@@ -1081,15 +1077,12 @@
   <!-- Model settings -->
   <string name="setting_model_page_chat_model">聊天模型</string>
   <string name="setting_model_page_chat_model_desc">全域預設聊天模型</string>
-  <string name="setting_model_page_compress_model">壓縮模型</string>
-  <string name="setting_model_page_compress_prompt_vars">變數：{content}、{target_tokens}、{additional_context}</string>
   <string name="setting_model_page_enable_auto_title">自動生成對話標題</string>
   <string name="setting_model_page_enable_suggestion">聊天建議</string>
   <string name="setting_model_page_fast_model">快速模型</string>
   <string name="setting_model_page_fast_model_desc">用於生成標題、聊天建議以及執行其他快速或背景任務</string>
   <string name="setting_model_page_ocr_model">OCR 模型</string>
   <string name="setting_model_page_ocr_prompt_vars">變數：圖片資料：{images}</string>
-  <string name="setting_model_page_prompt_compress">上下文壓縮提示詞</string>
   <string name="setting_model_page_prompt_ocr">OCR 提示詞</string>
   <string name="setting_model_page_prompt_suggestion">聊天建議提示詞</string>
   <string name="setting_model_page_prompt_title">標題生成提示詞</string>
@@ -1121,6 +1114,8 @@
   <string name="setting_provider_page_cache_write_price">快取寫入價格</string>
   <string name="setting_provider_page_chat_model">聊天</string>
   <string name="setting_provider_page_configure_provider_override">設定提供商覆寫</string>
+  <string name="setting_provider_page_context_length">上下文長度</string>
+  <string name="setting_provider_page_context_length_custom">自訂</string>
   <string name="setting_provider_page_create_provider">新增模型提供商</string>
   <string name="setting_provider_page_custom_model">自定義模型</string>
   <string name="setting_provider_page_delete_model">刪除模型</string>

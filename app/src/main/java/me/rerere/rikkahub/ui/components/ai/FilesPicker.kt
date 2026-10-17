@@ -7,7 +7,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,9 +15,11 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -64,6 +65,7 @@ import me.rerere.rikkahub.data.datastore.findProvider
 import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.Conversation
+import me.rerere.rikkahub.data.model.lastContextTokens
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.rikkahub.ui.components.ui.ExtensionSelector
 import me.rerere.rikkahub.ui.components.ui.CardGroup
@@ -73,6 +75,8 @@ import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.hooks.ChatInputState
+import me.rerere.rikkahub.utils.formatContextLength
+import me.rerere.rikkahub.utils.formatNumber
 import me.rerere.workspace.WorkspaceShellStatus
 import org.koin.compose.koinInject
 import kotlin.uuid.Uuid
@@ -91,7 +95,7 @@ internal fun FilesPicker(
     chatModel: Model?,
     state: ChatInputState,
     mcpManager: McpManager,
-    onCompressContext: (additionalPrompt: String, targetTokens: Int, keepRecentMessages: Int) -> Job,
+    onCompressContext: (additionalPrompt: String) -> Job,
     onUpdateAssistant: (Assistant) -> Unit,
     onUpdateFollowAssistant: (Boolean) -> Unit,
     onSelectSearch: (mode: SearchMode, serviceIndex: Int?) -> Unit,
@@ -283,52 +287,53 @@ internal fun FilesPicker(
             ) { Text(stringResource(R.string.assistant_page_tab_extensions)) }
 
             // Compress History Button
-            item(
-                leadingContent = {
-                    Icon(
-                        imageVector = HugeIcons.Package01,
-                        contentDescription = stringResource(R.string.chat_page_compress_context),
-                    )
-                },
-                trailingContent = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        if (conversation.messageNodes.isNotEmpty()) {
-                            Text(
-                                text = stringResource(R.string.chat_page_message_count, conversation.messageNodes.size),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            // 限制了上下文消息数就是滚动上下文，旧消息会自动移出，不需要压缩
+            if (assistant.contextMessageLimit <= 0) {
+                item(
+                    leadingContent = {
+                        Icon(
+                            imageVector = HugeIcons.Package01,
+                            contentDescription = stringResource(R.string.chat_page_compress_context),
+                        )
+                    },
+                    trailingContent = {
+                        val contextTokens = remember(conversation.messageNodes) {
+                            conversation.lastContextTokens()
+                        }
+                        val contextLength = chatModel?.contextLength?.takeIf { it > 0 }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            Column(horizontalAlignment = Alignment.End) {
+                                if (conversation.messageNodes.isNotEmpty()) {
+                                    Text(
+                                        text = stringResource(R.string.chat_page_message_count, conversation.messageNodes.size),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                if (contextTokens != null && contextLength != null) {
+                                    Text(
+                                        text = "${contextTokens.formatNumber()} / ${contextLength.formatContextLength()}",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                            if (contextTokens != null && contextLength != null) {
+                                ContextUsageRing(fraction = contextTokens.toFloat() / contextLength)
+                            }
+                            Icon(
+                                imageVector = HugeIcons.ArrowRight01,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
-                        Icon(
-                            imageVector = HugeIcons.ArrowRight01,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                },
-                onClick = { onShowCompressDialogChange(true) },
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    },
+                    onClick = { onShowCompressDialogChange(true) },
+                ) {
                     Text(stringResource(R.string.chat_page_compress_context))
-                    if (assistant.contextMessageLimit > 0) {
-                        Text(
-                            text = stringResource(R.string.chat_page_context_message_limit_current, assistant.contextMessageLimit),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.clickable {
-                                onDismiss()
-                                navController.navigate(
-                                    Screen.AssistantBasic(
-                                        id = assistant.id.toString(),
-                                        scrollToContextLimit = true,
-                                    )
-                                )
-                            },
-                        )
-                    }
                 }
             }
         }
@@ -402,11 +407,12 @@ internal fun FilesPicker(
 
     // Compress Context Dialog
     if (showCompressDialog) {
-        CompressContextDialog(onDismiss = {
-            onShowCompressDialogChange(false)
-        }, onConfirm = { additionalPrompt, targetTokens, keepRecentMessages ->
-            onCompressContext(additionalPrompt, targetTokens, keepRecentMessages)
-        })
+        CompressContextDialog(
+            onDismiss = {
+                onShowCompressDialogChange(false)
+            },
+            onConfirm = onCompressContext,
+        )
     }
 
     // 对话设置跟随助手说明
@@ -547,6 +553,23 @@ private fun ExtensionPickerPage(
 
         Spacer(modifier = Modifier.height(16.dp))
     }
+}
+
+// 上下文使用量进度环，接近上限时变色提醒压缩
+@Composable
+private fun ContextUsageRing(fraction: Float) {
+    val color = when {
+        fraction >= 0.9f -> MaterialTheme.colorScheme.error
+        fraction >= 0.7f -> MaterialTheme.colorScheme.tertiary
+        else -> MaterialTheme.colorScheme.primary
+    }
+    CircularProgressIndicator(
+        progress = { fraction.coerceIn(0f, 1f) },
+        modifier = Modifier.size(24.dp),
+        color = color,
+        strokeWidth = 3.dp,
+        trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+    )
 }
 
 // 列表项尾部的已启用数量

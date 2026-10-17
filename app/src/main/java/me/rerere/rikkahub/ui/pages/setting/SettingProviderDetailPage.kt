@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -134,6 +135,7 @@ import me.rerere.rikkahub.ui.pages.setting.components.convertTo
 import me.rerere.rikkahub.ui.pages.setting.components.ProviderConnectionTester
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
+import me.rerere.rikkahub.utils.formatContextLength
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
@@ -1419,6 +1421,20 @@ private fun ModelSettingsForm(
                                     },
                                     headlineContent = {},
                                 )
+
+                                item(
+                                    supportingContent = {
+                                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            ModelContextLengthSelector(
+                                                contextLength = model.contextLength,
+                                                onUpdateContextLength = {
+                                                    onModelChange(model.copy(contextLength = it))
+                                                }
+                                            )
+                                        }
+                                    },
+                                    headlineContent = {},
+                                )
                             }
                         }
 
@@ -1947,6 +1963,55 @@ private fun ModelOutputModalitySelector(
             ),
             selected = selected,
             icon = HugeIcons.Tick01,
+        )
+    }
+}
+
+// 常见的上下文窗口大小，其余的走自定义输入
+private val ContextLengthPresets = listOf(128_000, 200_000, 1_000_000)
+
+@Composable
+private fun ModelContextLengthSelector(
+    contextLength: Int,
+    onUpdateContextLength: (Int) -> Unit
+) {
+    var custom by remember { mutableStateOf(contextLength !in ContextLengthPresets) }
+    // 输入过程中允许为空，只有合法的正整数才写回模型
+    var customText by remember { mutableStateOf(contextLength.toString()) }
+
+    Text(
+        stringResource(R.string.setting_provider_page_context_length),
+        style = MaterialTheme.typography.titleSmall
+    )
+    // null 表示自定义
+    ConnectedChoiceButtons(
+        options = ContextLengthPresets + null,
+        selected = if (custom) null else contextLength,
+        onSelect = { preset ->
+            custom = preset == null
+            if (preset != null) {
+                customText = preset.toString()
+                onUpdateContextLength(preset)
+            }
+        },
+    ) { preset, selected ->
+        ConnectedChoiceLabel(
+            text = preset?.formatContextLength() ?: stringResource(R.string.setting_provider_page_context_length_custom),
+            selected = selected,
+        )
+    }
+    AnimatedVisibility(visible = custom) {
+        OutlinedTextField(
+            value = customText,
+            onValueChange = { value ->
+                customText = value.filter { it.isDigit() }
+                customText.toIntOrNull()?.takeIf { it > 0 }?.let(onUpdateContextLength)
+            },
+            modifier = Modifier.fillMaxWidth(),
+            suffix = { Text("tokens") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true,
+            isError = (customText.toIntOrNull() ?: 0) <= 0,
         )
     }
 }

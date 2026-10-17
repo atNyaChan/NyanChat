@@ -34,7 +34,6 @@ import me.rerere.ai.provider.ModelType
 import me.rerere.ai.provider.ProviderSetting
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.ArrowRight01
-import me.rerere.hugeicons.stroke.ArrowShrink
 import me.rerere.hugeicons.stroke.BubbleChat
 import me.rerere.hugeicons.stroke.ScanText
 import me.rerere.hugeicons.stroke.Translate
@@ -178,20 +177,6 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
                 onSelect = { vm.updateSettings { latest -> latest.copy(ocrModelId = it.id) } },
                 promptType = PromptType.OCR,
                 prompt = settings.ocrPrompt,
-                onEditPrompt = { editingPrompt = it },
-            )
-        }
-        item {
-            ModelSettingItem(
-                title = stringResource(R.string.setting_model_page_compress_model),
-                icon = HugeIcons.ArrowShrink,
-                iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                iconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                modelId = settings.compressModelId,
-                providers = settings.providers,
-                onSelect = { vm.updateSettings { latest -> latest.copy(compressModelId = it.id) } },
-                promptType = PromptType.COMPRESS,
-                prompt = settings.compressPrompt,
                 onEditPrompt = { editingPrompt = it },
             )
         }

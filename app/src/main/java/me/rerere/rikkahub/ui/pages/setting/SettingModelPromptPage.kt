@@ -23,13 +23,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.ArrowRight01
-import me.rerere.hugeicons.stroke.ArrowShrink
 import me.rerere.hugeicons.stroke.Heading
 import me.rerere.hugeicons.stroke.Idea01
 import me.rerere.hugeicons.stroke.ScanText
 import me.rerere.hugeicons.stroke.Translate
 import me.rerere.rikkahub.R
-import me.rerere.rikkahub.data.ai.prompts.DEFAULT_COMPRESS_PROMPT
 import me.rerere.rikkahub.data.ai.prompts.DEFAULT_OCR_PROMPT
 import me.rerere.rikkahub.data.ai.prompts.DEFAULT_SUGGESTION_PROMPT
 import me.rerere.rikkahub.data.ai.prompts.DEFAULT_TITLE_PROMPT
@@ -90,7 +88,6 @@ internal fun PromptEditor(
             PromptType.TITLE -> settings.titlePrompt
             PromptType.SUGGESTION -> settings.suggestionPrompt
             PromptType.OCR -> settings.ocrPrompt
-            PromptType.COMPRESS -> settings.compressPrompt
         }
         ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = onDismiss,
@@ -120,7 +117,6 @@ internal fun PromptEditor(
                                 PromptType.TITLE -> it.copy(titlePrompt = prompt)
                                 PromptType.SUGGESTION -> it.copy(suggestionPrompt = prompt)
                                 PromptType.OCR -> it.copy(ocrPrompt = prompt)
-                                PromptType.COMPRESS -> it.copy(compressPrompt = prompt)
                             }
                         }
                     },
@@ -137,7 +133,6 @@ internal fun PromptEditor(
                                 PromptType.SUGGESTION ->
                                     it.copy(suggestionPrompt = DEFAULT_SUGGESTION_PROMPT)
                                 PromptType.OCR -> it.copy(ocrPrompt = DEFAULT_OCR_PROMPT)
-                                PromptType.COMPRESS -> it.copy(compressPrompt = DEFAULT_COMPRESS_PROMPT)
                             }
                         }
                     }
@@ -181,10 +176,5 @@ internal enum class PromptType(
         HugeIcons.ScanText,
         R.string.setting_model_page_prompt_ocr,
         R.string.setting_model_page_ocr_prompt_vars,
-    ),
-    COMPRESS(
-        HugeIcons.ArrowShrink,
-        R.string.setting_model_page_prompt_compress,
-        R.string.setting_model_page_compress_prompt_vars,
     ),
 }

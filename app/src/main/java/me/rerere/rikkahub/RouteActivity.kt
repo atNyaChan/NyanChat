@@ -424,10 +424,7 @@ class RouteActivity : AppCompatActivity() {
                             }
 
                             entry<Screen.AssistantBasic> { key ->
-                                AssistantBasicPage(
-                                    id = key.id,
-                                    scrollToContextLimit = key.scrollToContextLimit,
-                                )
+                                AssistantBasicPage(id = key.id)
                             }
 
                             entry<Screen.AssistantRequest> { key ->
@@ -653,10 +650,7 @@ sealed interface Screen : NavKey {
     data class AssistantDetail(val id: String) : Screen
 
     @Serializable
-    data class AssistantBasic(
-        val id: String,
-        val scrollToContextLimit: Boolean = false,
-    ) : Screen
+    data class AssistantBasic(val id: String) : Screen
 
     @Serializable
     data class AssistantRequest(val id: String) : Screen

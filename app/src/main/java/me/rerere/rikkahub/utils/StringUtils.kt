@@ -78,6 +78,35 @@ fun Int.formatNumber(): String {
     }
 }
 
+/**
+ * 上下文长度的短标签（128K、200K、1M）。
+ * token 统计的 [formatNumber] 按本项目规则只使用 K，这里用于上限值，避免 1M 显示成 1000K。
+ */
+fun Int.formatContextLength(): String {
+    val absValue = kotlin.math.abs(this)
+    val sign = if (this < 0) "-" else ""
+    return when {
+        absValue < 1_000 -> this.toString()
+        absValue < 1_000_000 -> {
+            val value = absValue / 1000.0
+            if (value == value.toInt().toDouble()) {
+                "$sign${value.toInt()}K"
+            } else {
+                "$sign${value.toFixed(1)}K"
+            }
+        }
+
+        else -> {
+            val value = absValue / 1_000_000.0
+            if (value == value.toInt().toDouble()) {
+                "$sign${value.toInt()}M"
+            } else {
+                "$sign${value.toFixed(1)}M"
+            }
+        }
+    }
+}
+
 /** ASCII English letters form one word when adjacent; every other code point counts as one word. */
 fun String.wordCount(): Int {
     var count = 0

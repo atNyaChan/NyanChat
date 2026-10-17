@@ -59,8 +59,10 @@ fun ChatMessageNerdLine(
 ) {
     val settings = LocalSettings.current.displaySetting
     var expanded by remember(message.id) { mutableStateOf(false) }
-    // 多轮工具调用时 usage 只代表最后一次模型调用
+    // 多轮工具调用时 usage 与生成耗时是各次模型调用的累计
     val usage = message.usage
+    // 旧消息没有记录生成耗时，退回用创建到完成的总时长估算
+    val generationMillis = message.generationTimeMs
     val latestMessage by rememberUpdatedState(message)
     val wordCount by produceState(
         initialValue = message.wordCount(includeReasoning = true),
@@ -104,15 +106,17 @@ fun ChatMessageNerdLine(
                     .padding(horizontal = 4.dp, vertical = 2.dp)
             ) {
                 if (settings.showTokenUsage) {
-                    val seconds = elapsedMillis / 1000f
+                    val statsMillis = generationMillis ?: elapsedMillis
+                    val seconds = statsMillis / 1000f
                     val cost = if (!loading && usage != null) calculateCost(usage, model) else null
                     val manuallyEdited = !loading && message.modelId == null
                     val showGenerationStats = loading || message.modelId != null
-                    // 用过工具的消息会经历多次模型调用，此时 token 统计只代表最后一次调用，
-                    // 且整条消息的用时包含工具执行时间，word/s 会失真，因此不显示 word/s。
+                    // 用过工具的消息会经历多次模型调用：有生成耗时时以它为准，
+                    // 旧消息退回的创建到完成总时长包含工具执行与审批等待，word/s 会失真。
                     val usedTools = message.parts.any {
                         it is UIMessagePart.Tool || it is UIMessagePart.ServerTool
                     }
+                    val statsTimeValid = generationMillis != null || !usedTools
 
                     run {
                         FlowRow(
@@ -150,8 +154,8 @@ fun ChatMessageNerdLine(
                                     },
                                     content = { Text(text = "${seconds.toFixed(1)}s") },
                                 )
-                                if (!usedTools && elapsedMillis >= 150 && wordCount > 0) {
-                                    val wordsPerSecond = wordCount.toFloat() / elapsedMillis * 1000
+                                if (statsTimeValid && statsMillis >= 150 && wordCount > 0) {
+                                    val wordsPerSecond = wordCount.toFloat() / statsMillis * 1000
                                     StatsItem(
                                         icon = {
                                             Icon(
@@ -184,8 +188,10 @@ fun ChatMessageNerdLine(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             itemVerticalAlignment = Alignment.CenterVertically,
                         ) {
+                            // 调用过工具时向用户说明这行 token 的统计口径：旧消息只有最后一次调用的量，
+                            // 新消息（有 generationTimeMs）是各次调用的累计值
                             if (usedTools) {
-                                Text(text = "Last LLM Call:")
+                                Text(text = if (generationMillis == null) "Last LLM Call:" else "Total:")
                             }
                             StatsItem(
                                 icon = {
@@ -213,8 +219,8 @@ fun ChatMessageNerdLine(
                                 },
                                 content = { CountText(usage.completionTokens, expanded, " token") },
                             )
-                            if (!usedTools && elapsedMillis >= 150) {
-                                val tokensPerSecond = usage.completionTokens.toFloat() / elapsedMillis * 1000
+                            if (statsTimeValid && statsMillis >= 150) {
+                                val tokensPerSecond = usage.completionTokens.toFloat() / statsMillis * 1000
                                 StatsItem(
                                     icon = {
                                         Icon(

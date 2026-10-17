@@ -20,6 +20,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import me.rerere.ai.core.MessageRole
 import me.rerere.ai.core.Tool
+import me.rerere.ai.core.sum
 import me.rerere.ai.provider.Model
 import me.rerere.ai.provider.BuiltInTools
 import me.rerere.ai.provider.Provider
@@ -39,6 +40,7 @@ import me.rerere.rikkahub.data.ai.transformers.OutputMessageTransformer
 import me.rerere.rikkahub.data.files.FileFolders
 import java.io.File
 import me.rerere.rikkahub.data.ai.transformers.onGenerationFinish
+import me.rerere.rikkahub.data.ai.transformers.transformThinkTags
 import me.rerere.rikkahub.data.ai.transformers.transforms
 import me.rerere.rikkahub.data.ai.transformers.visualTransforms
 import me.rerere.rikkahub.data.ai.prompts.buildMemoryPrompt
@@ -53,6 +55,9 @@ import java.net.NoRouteToHostException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import kotlin.time.Clock
+import kotlin.time.Duration
+import kotlin.time.TimeMark
+import kotlin.time.TimeSource
 import kotlin.uuid.Uuid
 
 private const val TAG = "GenerationHandler"
@@ -71,6 +76,26 @@ sealed interface GenerationChunk {
     data class Messages(
         val messages: List<UIMessage>
     ) : GenerationChunk
+}
+
+/**
+ * 取出压缩请求回复里的摘要正文。
+ *
+ * 指令要求不调用工具，模型仍可能发起调用。这时附带的文本只是"我先看看文件"之类的说明，
+ * 当成摘要保存会让之后的请求丢掉全部历史，所以返回 null 交给调用方报错。
+ * 压缩请求不经过输出转换器，正文开头的 <think> 思考内容也要在这里剥掉，否则会存进摘要。
+ */
+internal fun UIMessage.compressionSummaryOrNull(parseMidThink: Boolean = false): String? {
+    if (getTools().isNotEmpty()) return null
+    return listOf(this)
+        .transformThinkTags(
+            now = Clock.System.now(),
+            generationFinished = true,
+            parseMidThink = parseMidThink,
+        )
+        .single()
+        .toText()
+        .trim()
 }
 
 class GenerationLoop(
@@ -164,10 +189,8 @@ class GenerationLoop(
 
             // Skip generation if we have approved/denied tool calls to handle
             if (pendingTools.isEmpty()) {
-                // 一轮助手回复可能包含多次模型调用（多轮工具调用）。每次调用都会返回一份
-                // usage，这里先清空上一轮 usage，让流处理只合并本次调用的用量，最终整条消息
-                // 只保留最后一次模型调用的用量。
-                messages = messages.clearLastAssistantUsage()
+                // 一轮助手回复可能包含多次模型调用（多轮工具调用）。每次调用的 usage 与
+                // 生成耗时由 generateInternal 在本次调用的统计基础上与之前的步骤累加。
                 generateInternal(
                     assistant = assistant,
                     settings = settings,
@@ -402,7 +425,207 @@ class GenerationLoop(
         conversationId: Uuid? = null,
         workspaceCwd: String? = null,
     ) {
-        val internalMessages = prepareRequestMessages(
+        val (internalMessages, params) = buildProviderRequest(
+            assistant = assistant,
+            settings = settings,
+            messages = messages,
+            transformers = transformers,
+            model = model,
+            tools = tools,
+            memories = memories,
+            processingStatus = processingStatus,
+            conversationSystemPrompt = conversationSystemPrompt,
+            conversationId = conversationId,
+            workspaceCwd = workspaceCwd,
+        )
+
+        var messages: List<UIMessage> = messages
+        try {
+            if (stream) {
+                // 每次重试都从本次模型调用开始前的消息快照重新合并，避免将重试响应
+                // 追加到已经展示的半截回复后面。预先创建助手消息可让所有尝试复用同一 ID，
+                // ChatService 因而会覆盖当前分支，而不是创建新的候选消息。
+                val responseBaseMessages =
+                    if (messages.lastOrNull()?.role == MessageRole.ASSISTANT) {
+                        messages
+                    } else {
+                        messages + UIMessage(
+                            role = MessageRole.ASSISTANT,
+                            parts = emptyList(),
+                            modelId = model.id,
+                        )
+                    }
+                var retryCount = 0
+
+                // 多轮工具调用共用同一条助手消息，消息上已有的 usage 和耗时来自之前的步骤。
+                // 本步从清空的统计开始（merge 只适合同一次请求内的快照），再与之前的步骤累加。
+                val stepBaseMessage = responseBaseMessages.last()
+                val stepStartMessages = responseBaseMessages.dropLast(1) +
+                    stepBaseMessage.copy(usage = null, generationTimeMs = null)
+
+                while (true) {
+                    val streamChunkHandler = StreamChunkHandler(model)
+                    var attemptMessages = stepStartMessages
+                    var firstChunkMark: TimeMark? = null
+                    try {
+                        providerImpl.streamText(
+                            providerSetting = provider,
+                            messages = internalMessages,
+                            params = params
+                        ).collect { chunk ->
+                            try {
+                                if (retryCount > 0) {
+                                    processingStatus.value = null
+                                }
+                                val stepMark = firstChunkMark
+                                    ?: TimeSource.Monotonic.markNow().also { firstChunkMark = it }
+                                attemptMessages = streamChunkHandler.handle(attemptMessages, chunk)
+                                onUpdateMessages(
+                                    attemptMessages.accumulateStepStats(stepBaseMessage, stepMark.elapsedNow())
+                                )
+                            } catch (error: CancellationException) {
+                                throw error
+                            } catch (error: Throwable) {
+                                // 下游消息转换或 UI 更新失败不属于网络故障，不能重放模型请求。
+                                throw StreamChunkHandlingException(error)
+                            }
+                        }
+                        messages = attemptMessages.accumulateStepStats(
+                            stepBaseMessage,
+                            firstChunkMark?.elapsedNow() ?: Duration.ZERO
+                        )
+                        break
+                    } catch (error: Throwable) {
+                        if (error is StreamChunkHandlingException) {
+                            throw error.cause ?: error
+                        }
+                        retryCount = awaitNetworkRetryOrThrow(
+                            error = error,
+                            retryCount = retryCount,
+                            processingStatus = processingStatus,
+                            enabled = settings.networkSetting.enableAutoRetry,
+                        )
+                    }
+                }
+            } else {
+                // 非流式拿不到首 token 时间，只能统计最后一次尝试的整个请求耗时
+                var requestMark = TimeSource.Monotonic.markNow()
+                val result = executeProviderRequestWithRetry(
+                    processingStatus = processingStatus,
+                    enabled = settings.networkSetting.enableAutoRetry,
+                ) {
+                    requestMark = TimeSource.Monotonic.markNow()
+                    providerImpl.generateText(
+                        providerSetting = provider,
+                        messages = internalMessages,
+                        params = params,
+                    )
+                }
+                val requestTime = requestMark.elapsedNow()
+                val stepBaseMessage = messages.lastOrNull()?.takeIf { it.role == MessageRole.ASSISTANT }
+                val stepStartMessages = if (stepBaseMessage != null) {
+                    messages.dropLast(1) + stepBaseMessage.copy(usage = null, generationTimeMs = null)
+                } else {
+                    messages
+                }
+                messages = stepStartMessages
+                    .handleTextGenerationResult(result = result, model = model)
+                    .accumulateStepStats(stepBaseMessage, requestTime)
+                onUpdateMessages(messages)
+            }
+        } finally {
+            processingStatus.value = null
+        }
+    }
+
+    // 把本步的 usage 和生成耗时累加到之前步骤的统计上
+    private fun List<UIMessage>.accumulateStepStats(
+        stepBaseMessage: UIMessage?,
+        stepTime: Duration,
+    ): List<UIMessage> {
+        val stepMessage = last()
+        return dropLast(1) + stepMessage.copy(
+            usage = stepBaseMessage?.usage.sum(stepMessage.usage),
+            generationTimeMs = (stepBaseMessage?.generationTimeMs ?: 0L) + stepTime.inWholeMilliseconds,
+            contextTokens = stepMessage.usage?.let { it.promptTokens + it.completionTokens }
+                ?: stepBaseMessage?.contextTokens,
+        )
+    }
+
+    /**
+     * 生成压缩摘要。
+     *
+     * 请求按正常对话组装（系统提示词、工具定义、参数和 sessionId 都相同），只在末尾追加压缩指令，
+     * 前缀与上一轮对话一致，可以命中提示词缓存，模型也能看到工具调用和结果。
+     * 工具定义必须保留：它属于请求前缀，去掉或改动 tool_choice 都会让缓存失效。
+     */
+    suspend fun generateCompressionSummary(
+        settings: Settings,
+        model: Model,
+        messages: List<UIMessage>,
+        inputTransformers: List<InputMessageTransformer>,
+        assistant: Assistant,
+        memories: List<MemoryFile>,
+        tools: List<Tool>,
+        compressPrompt: String,
+        conversationSystemPrompt: String?,
+        conversationId: Uuid,
+        workspaceCwd: String?,
+    ): String {
+        val provider = model.findProvider(settings.providers) ?: error("Provider not found")
+        val providerImpl = providerManager.getProviderByType(provider)
+        val processingStatus = MutableStateFlow<String?>(null)
+        val (requestMessages, params) = buildProviderRequest(
+            assistant = assistant,
+            settings = settings,
+            messages = messages,
+            transformers = inputTransformers,
+            model = model,
+            tools = tools,
+            memories = memories,
+            processingStatus = processingStatus,
+            conversationSystemPrompt = conversationSystemPrompt,
+            conversationId = conversationId,
+            workspaceCwd = workspaceCwd,
+        )
+        // 压缩指令不经过输入转换器，模板转换器会把其中的花括号当成模板语法
+        val result = executeProviderRequestWithRetry(
+            processingStatus = processingStatus,
+            enabled = settings.networkSetting.enableAutoRetry,
+        ) {
+            providerImpl.generateText(
+                providerSetting = provider,
+                messages = requestMessages + UIMessage.user(compressPrompt),
+                // 助手的输出上限是给聊天回复定的，结构化摘要写不完会被截断；max_tokens 不属于请求前缀，改了不影响缓存
+                params = params.copy(maxTokens = null),
+            )
+        }
+        val summary = result.message.compressionSummaryOrNull(
+            parseMidThink = settings.displaySetting.parseMidThink,
+        ) ?: error(context.getString(R.string.chat_page_compress_tool_call_response))
+        return summary.ifBlank { error("Failed to generate compressed summary") }
+    }
+
+    private data class ProviderRequest(
+        val messages: List<UIMessage>,
+        val params: TextGenerationParams,
+    )
+
+    // 正常对话和压缩共用，二者的请求前缀必须一致才能命中提示词缓存
+    private suspend fun buildProviderRequest(
+        assistant: Assistant,
+        settings: Settings,
+        messages: List<UIMessage>,
+        transformers: List<MessageTransformer>,
+        model: Model,
+        tools: List<Tool>,
+        memories: List<MemoryFile>,
+        processingStatus: MutableStateFlow<String?>,
+        conversationSystemPrompt: String?,
+        conversationId: Uuid?,
+        workspaceCwd: String?,
+    ): ProviderRequest {
+        val requestMessages = prepareRequestMessages(
             settings = settings,
             model = model,
             messages = messages,
@@ -414,8 +637,6 @@ class GenerationLoop(
             workspaceCwd = workspaceCwd,
             processingStatus = processingStatus,
         )
-
-        var messages: List<UIMessage> = messages
         // 未启用“模型内置搜索”时移除模型的内置搜索工具，避免请求仍携带内置搜索
         val requestModel = if (assistant.useBuiltInSearch) {
             model
@@ -448,76 +669,7 @@ class GenerationLoop(
             sessionId = (conversationId ?: Uuid.random()).toString(),
             includeHistoryReasoning = assistant.includeHistoryReasoning,
         )
-        try {
-            if (stream) {
-                // 每次重试都从本次模型调用开始前的消息快照重新合并，避免将重试响应
-                // 追加到已经展示的半截回复后面。预先创建助手消息可让所有尝试复用同一 ID，
-                // ChatService 因而会覆盖当前分支，而不是创建新的候选消息。
-                val responseBaseMessages =
-                    if (messages.lastOrNull()?.role == MessageRole.ASSISTANT) {
-                        messages
-                    } else {
-                        messages + UIMessage(
-                            role = MessageRole.ASSISTANT,
-                            parts = emptyList(),
-                            modelId = model.id,
-                        )
-                    }
-                var retryCount = 0
-
-                while (true) {
-                    val streamChunkHandler = StreamChunkHandler(model)
-                    var attemptMessages = responseBaseMessages
-                    try {
-                        providerImpl.streamText(
-                            providerSetting = provider,
-                            messages = internalMessages,
-                            params = params
-                        ).collect { chunk ->
-                            try {
-                                if (retryCount > 0) {
-                                    processingStatus.value = null
-                                }
-                                attemptMessages = streamChunkHandler.handle(attemptMessages, chunk)
-                                onUpdateMessages(attemptMessages)
-                            } catch (error: CancellationException) {
-                                throw error
-                            } catch (error: Throwable) {
-                                // 下游消息转换或 UI 更新失败不属于网络故障，不能重放模型请求。
-                                throw StreamChunkHandlingException(error)
-                            }
-                        }
-                        messages = attemptMessages
-                        break
-                    } catch (error: Throwable) {
-                        if (error is StreamChunkHandlingException) {
-                            throw error.cause ?: error
-                        }
-                        retryCount = awaitNetworkRetryOrThrow(
-                            error = error,
-                            retryCount = retryCount,
-                            processingStatus = processingStatus,
-                            enabled = settings.networkSetting.enableAutoRetry,
-                        )
-                    }
-                }
-            } else {
-                val result = executeProviderRequestWithRetry(
-                    processingStatus = processingStatus,
-                    enabled = settings.networkSetting.enableAutoRetry,
-                ) {
-                    providerImpl.generateText(
-                        providerSetting = provider,
-                        messages = internalMessages,
-                        params = params,
-                    )
-                }
-                messages = messages.handleTextGenerationResult(result = result, model = model)
-                onUpdateMessages(messages)
-            }
-        } finally {
-            processingStatus.value = null
-        }
+        return ProviderRequest(requestMessages, params)
     }
 
     private suspend fun <T> executeProviderRequestWithRetry(
@@ -618,19 +770,4 @@ class GenerationLoop(
         ) + nonTextParts
     }
 
-}
-
-/**
- * 清空末尾助手消息的 [UIMessage.usage]，让本次模型调用的流处理从空用量开始合并。
- * 末尾不是助手消息时原样返回。
- */
-private fun List<UIMessage>.clearLastAssistantUsage(): List<UIMessage> =
-    updateLastAssistant { it.copy(usage = null) }
-
-private inline fun List<UIMessage>.updateLastAssistant(
-    transform: (UIMessage) -> UIMessage,
-): List<UIMessage> {
-    val last = lastOrNull() ?: return this
-    if (last.role != MessageRole.ASSISTANT) return this
-    return dropLast(1) + transform(last)
 }
