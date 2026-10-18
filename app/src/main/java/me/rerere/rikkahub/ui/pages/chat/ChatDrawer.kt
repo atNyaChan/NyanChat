@@ -317,7 +317,7 @@ fun ChatDrawerContent(
                     onSelect = { folderId ->
                         drawerVm.selectFolder(folderId)
                         if (current.messageNodes.none { it.currentMessage.role == MessageRole.USER }) {
-                            vm.updateConversation { it.copy(folderId = folderId) }
+                            vm.moveConversationToFolder(folderId)
                         }
                     },
                     onCreate = { showCreateFolderDialog = true },

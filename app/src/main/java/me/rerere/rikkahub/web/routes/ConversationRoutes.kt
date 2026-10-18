@@ -146,7 +146,7 @@ fun Route.conversationRoutes(
         // GET /api/conversations/{id} - Get single conversation
         get("/{id}") {
             val uuid = call.parameters["id"].toUuid("conversation id")
-            val conversation = conversationRepo.getConversationById(uuid)
+            val conversation = chatService.getConversation(uuid)
                 ?: throw NotFoundException("Conversation not found")
 
             val isGenerating = chatService.getGenerationJobStateFlow(uuid).first() != null
@@ -156,10 +156,9 @@ fun Route.conversationRoutes(
         // DELETE /api/conversations/{id} - Delete conversation
         delete("/{id}") {
             val uuid = call.parameters["id"].toUuid("conversation id")
-            val conversation = conversationRepo.getConversationById(uuid)
-                ?: throw NotFoundException("Conversation not found")
+            conversationRepo.requireConversation(uuid)
 
-            chatService.deleteConversation(conversation)
+            chatService.deleteConversation(uuid)
             call.respond(HttpStatusCode.NoContent)
         }
 
@@ -173,10 +172,9 @@ fun Route.conversationRoutes(
         // POST /api/conversations/{id}/regenerate-title - Regenerate conversation title
         post("/{id}/regenerate-title") {
             val uuid = call.parameters["id"].toUuid("conversation id")
-            val conversation = conversationRepo.getConversationById(uuid)
-                ?: throw NotFoundException("Conversation not found")
+            conversationRepo.requireConversation(uuid)
 
-            chatService.generateTitle(uuid, conversation, force = true)
+            chatService.generateTitle(uuid, force = true)
             call.respond(HttpStatusCode.Accepted, mapOf("status" to "accepted"))
         }
 
@@ -190,10 +188,9 @@ fun Route.conversationRoutes(
                 throw BadRequestException("Title must not be blank")
             }
 
-            val conversation = conversationRepo.getConversationById(uuid)
-                ?: throw NotFoundException("Conversation not found")
+            conversationRepo.requireConversation(uuid)
 
-            chatService.saveConversation(uuid, conversation.copy(title = title))
+            chatService.updateTitle(uuid, title)
             call.respond(HttpStatusCode.OK, mapOf("status" to "updated"))
         }
 
@@ -361,12 +358,13 @@ fun Route.conversationRoutes(
             val request = call.receive<RegenerateRequest>()
             val messageId = request.messageId.toUuid("message id")
 
-            val conversation = chatService.getConversationFlow(uuid).first()
-            val node = conversation.getMessageNodeByMessageId(messageId)
-            val message = node?.messages?.find { it.id == messageId }
-                ?: throw NotFoundException("Message not found")
+            val conversation = chatService.getConversation(uuid)
+                ?: throw NotFoundException("Conversation not found")
+            if (conversation.getMessageNodeByMessageId(messageId) == null) {
+                throw NotFoundException("Message not found")
+            }
 
-            chatService.regenerateAtMessage(uuid, message)
+            chatService.regenerateAtMessage(uuid, messageId)
             call.respond(HttpStatusCode.Accepted, mapOf("status" to "accepted"))
         }
 
@@ -506,3 +504,6 @@ private fun validateConversationInjectionIds(
     )
 }
 
+private suspend fun ConversationRepository.requireConversation(id: Uuid) {
+    if (!existsConversationById(id)) throw NotFoundException("Conversation not found")
+}

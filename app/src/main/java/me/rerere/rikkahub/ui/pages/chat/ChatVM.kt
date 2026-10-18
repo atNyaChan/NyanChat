@@ -249,7 +249,6 @@ class ChatVM(
         return viewModelScope.launch {
             chatService.compressConversation(
                 _conversationId,
-                conversation.value,
                 additionalPrompt,
             ).onFailure {
                 chatService.addError(it, title = context.getString(R.string.error_title_compress_conversation))
@@ -275,11 +274,8 @@ class ChatVM(
         )
     }
 
-    fun regenerateAtMessage(
-        message: UIMessage,
-        regenerateAssistantMsg: Boolean = true
-    ) {
-        chatService.regenerateAtMessage(_conversationId, message, regenerateAssistantMsg)
+    fun regenerateAtMessage(message: UIMessage) {
+        chatService.regenerateAtMessage(_conversationId, message.id)
     }
 
     fun handleToolApproval(
@@ -305,20 +301,18 @@ class ChatVM(
 
     fun updateTitle(title: String) {
         viewModelScope.launch {
-            val updatedConversation = conversation.value.copy(title = title)
-            chatService.saveConversation(_conversationId, updatedConversation)
+            chatService.updateTitle(_conversationId, title)
         }
     }
 
     fun deleteConversation(conversation: Conversation): Job =
         viewModelScope.launch {
-            chatService.deleteConversation(conversation)
+            chatService.deleteConversation(conversation.id)
         }
 
     fun updateConversationTitle(conversation: Conversation, title: String) {
         viewModelScope.launch {
-            val full = conversationRepo.getConversationById(conversation.id) ?: return@launch
-            conversationRepo.updateConversation(full.copy(title = title))
+            chatService.updateTitle(conversation.id, title)
         }
     }
 
@@ -347,8 +341,7 @@ class ChatVM(
 
     fun generateTitle(conversation: Conversation, force: Boolean = false) {
         viewModelScope.launch {
-            val conversationFull = conversationRepo.getConversationById(conversation.id) ?: return@launch
-            chatService.generateTitle(_conversationId, conversationFull, force)
+            chatService.generateTitle(conversation.id, force)
         }
     }
 
@@ -369,12 +362,6 @@ class ChatVM(
         }
     }
 
-    fun generateSuggestion(conversation: Conversation) {
-        viewModelScope.launch {
-            chatService.generateSuggestion(_conversationId, conversation)
-        }
-    }
-
     fun clearTranslationField(messageId: Uuid) {
         viewModelScope.launch {
             chatService.clearTranslationField(_conversationId, messageId)
@@ -387,21 +374,28 @@ class ChatVM(
         }
     }
 
-    fun updateConversation(update: (Conversation) -> Conversation) {
+    fun updateConversationSystemPrompt(systemPrompt: String?) {
         viewModelScope.launch {
-            chatService.updateConversationState(_conversationId, update)
+            chatService.updateConversationSystemPrompt(_conversationId, systemPrompt)
         }
     }
 
+    fun moveConversationToFolder(folderId: Uuid?) {
+        viewModelScope.launch {
+            chatService.moveConversationToFolder(_conversationId, folderId)
+        }
+    }
+
+    fun updateWorkspaceCwd(workspaceCwd: String?) {
+        viewModelScope.launch {
+            chatService.updateWorkspaceCwd(_conversationId, workspaceCwd)
+        }
+    }
+
+    // fork：分支的排序/切换（ChatMessageBranch 的整条节点变换）
     fun updateConversationNode(nodeId: Uuid, update: (MessageNode) -> MessageNode) {
         viewModelScope.launch {
-            chatService.updateConversationState(_conversationId) { conversation ->
-                conversation.copy(
-                    messageNodes = conversation.messageNodes.map { node ->
-                        if (node.id == nodeId) update(node) else node
-                    }
-                )
-            }
+            chatService.updateMessageNode(_conversationId, nodeId, update)
         }
     }
 
@@ -421,17 +415,7 @@ class ChatVM(
                 )
             }
 
-            chatService.updateConversationState(_conversationId) { currentConversation ->
-                currentConversation.copy(
-                    messageNodes = currentConversation.messageNodes.map { existingNode ->
-                        if (existingNode.id == node.id) {
-                            existingNode.copy(isFavorite = !currentlyFavorited)
-                        } else {
-                            existingNode
-                        }
-                    }
-                )
-            }
+            chatService.setNodeFavorite(_conversationId, node.id, favorite = !currentlyFavorited)
         }
     }
 

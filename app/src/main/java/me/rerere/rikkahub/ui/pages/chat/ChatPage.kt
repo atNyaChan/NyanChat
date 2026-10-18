@@ -664,7 +664,7 @@ private fun ChatPageContent(
                         vm.toggleMessageFavorite(node)
                     },
                     onConversationSystemPromptChange = { newPrompt ->
-                        vm.updateConversation { it.copy(customSystemPrompt = newPrompt) }
+                        vm.updateConversationSystemPrompt(newPrompt)
                     },
                 )
                 // 点击输入框以外的区域收起文件面板
@@ -743,8 +743,8 @@ private fun ChatFilesPanel(
             )
             onRequestStatsRefresh()
         },
-        onUpdateConversation = { update ->
-            vm.updateConversation(update)
+        onUpdateWorkspaceCwd = { workspaceCwd ->
+            vm.updateWorkspaceCwd(workspaceCwd)
             onRequestStatsRefresh()
         },
         showCompressDialog = showCompressDialog,

@@ -15,12 +15,14 @@ import me.rerere.rikkahub.data.model.Avatar
 import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.rikkahub.data.repository.MemoryRepository
 import me.rerere.rikkahub.data.repository.memoryId
+import me.rerere.rikkahub.service.ChatService
 import kotlin.uuid.Uuid
 
 class AssistantVM(
     private val settingsStore: SettingsStore,
     private val memoryRepository: MemoryRepository,
     private val conversationRepo: ConversationRepository,
+    private val chatService: ChatService,
     private val filesManager: FilesManager,
 ) : ViewModel() {
     val settings: StateFlow<Settings> = settingsStore.settingsFlow
@@ -57,7 +59,7 @@ class AssistantVM(
             }
             cleanupAssistantFiles(assistant)
             memoryRepository.deleteFilesOfAssistant(assistant.id.toString())
-            conversationRepo.deleteConversationOfAssistant(assistant.id)
+            chatService.deleteConversationsOfAssistant(assistant.id)
             val fallbackChatId = fallbackAssistantId?.let { Uuid.random() }
             onRemoved(fallbackChatId)
         }

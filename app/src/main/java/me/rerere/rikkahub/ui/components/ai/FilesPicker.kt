@@ -99,7 +99,7 @@ internal fun FilesPicker(
     onUpdateAssistant: (Assistant) -> Unit,
     onUpdateFollowAssistant: (Boolean) -> Unit,
     onSelectSearch: (mode: SearchMode, serviceIndex: Int?) -> Unit,
-    onUpdateConversation: ((Conversation) -> Conversation) -> Unit,
+    onUpdateWorkspaceCwd: (String?) -> Unit,
     showCompressDialog: Boolean,
     onShowCompressDialogChange: (Boolean) -> Unit,
     onDismiss: () -> Unit,
@@ -399,7 +399,7 @@ internal fun FilesPicker(
             workspaceId = boundWorkspace.id,
             currentCwd = conversation.workspaceCwd,
             onSelectCwd = { newCwd ->
-                onUpdateConversation { it.copy(workspaceCwd = newCwd) }
+                onUpdateWorkspaceCwd(newCwd)
             },
             onDismiss = { showCwdSheet = false },
         )

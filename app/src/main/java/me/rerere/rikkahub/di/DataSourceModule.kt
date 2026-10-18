@@ -18,7 +18,6 @@ import me.rerere.rikkahub.data.ai.AIRequestInterceptor
 import me.rerere.rikkahub.data.ai.RequestInterceptionInterceptor
 import me.rerere.rikkahub.data.ai.RequestLoggingInterceptor
 import me.rerere.rikkahub.data.ai.transformers.AssistantTemplateLoader
-import me.rerere.rikkahub.data.ai.GenerationLoop
 import me.rerere.rikkahub.data.ai.MemoryConsolidationScheduler
 import me.rerere.rikkahub.data.ai.MemoryConsolidator
 import me.rerere.rikkahub.data.ai.TranslationHandler
@@ -129,16 +128,8 @@ val dataSourceModule = module {
     single { McpManager(settingsStore = get(), appScope = get(), filesManager = get(), context = get()) }
 
     single {
-        GenerationLoop(
-            context = get(),
-            providerManager = get(),
-            json = get(),
-        )
-    }
-
-    single {
         MemoryConsolidator(
-            generationLoop = get(),
+            providerManager = get(),
             memoryRepository = get(),
             conversationRepo = get(),
             consolidationDao = get(),
