@@ -21,7 +21,6 @@ import kotlinx.serialization.json.jsonPrimitive
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.datastore.sanitizeBuiltInTools
-import me.rerere.rikkahub.data.datastore.migration.SettingsJsonMigrator
 import me.rerere.rikkahub.data.db.AppDatabase
 import me.rerere.rikkahub.data.db.AppDatabaseFactory
 import me.rerere.rikkahub.data.db.SQLiteConfiguration
@@ -452,10 +451,18 @@ class BackupManager(
             if (stagedDatabase.exists()) {
                 DatabaseBackup.normalize(context, stagedDatabase)
                 // 按存档数据库声明的 schema 版本决定是否迁移 upload：
-                // - 旧库（< 100，上游 RikkaHub 为 30）里附件是 `uuid.ext` 文件名、登记在 `managed_files`，
+                // - 低于 30 的旧库不再支持，直接拒绝；
+                // - 旧库（30 ~ 99，上游 RikkaHub 为 30）里附件是 `uuid.ext` 文件名、登记在 `managed_files`，
                 //   先按内容统一命名成 `upload/<sha256>`（全部重新算哈希），再把旧表转成 `managed_files_cas`；
                 // - 已是 CAS schema（100）的库存的文件名与 `managed_files_cas` 一一对应，完全不动 `upload`。
                 val schemaVersion = ManagedFilesArchive.readSchemaVersion(stagedDatabase)
+                require(
+                    schemaVersion == null ||
+                        schemaVersion >= ManagedFilesArchive.MIN_SUPPORTED_SCHEMA_VERSION
+                ) {
+                    "Backup schema $schemaVersion is older than the supported minimum " +
+                        ManagedFilesArchive.MIN_SUPPORTED_SCHEMA_VERSION
+                }
                 if (!ManagedFilesArchive.isCasSchema(schemaVersion)) {
                     val filesRoot = File(payload, "files")
                     oldNameToSha = ManagedFilesArchive.normalizeUploadDir(filesRoot)
@@ -484,16 +491,16 @@ class BackupManager(
             val settingsFile = File(staging, "settings.json")
             if (settingsFile.exists()) {
                 // 旧附件目录已改成 upload/<sha256> 时，设置里旧的 upload/<uuid.ext> 同步改写
-                val migrated = ManagedFilesArchive.rewriteSettingsAttachments(
-                    SettingsJsonMigrator.migrate(settingsFile.readText()),
+                val settingsJson = ManagedFilesArchive.rewriteSettingsAttachments(
+                    settingsFile.readText(),
                     oldNameToSha,
                 )
-                val settings = json.decodeFromString<Settings>(migrated)
+                val settings = json.decodeFromString<Settings>(settingsJson)
                 require(!settings.init) { "Backup contains uninitialized settings" }
                 // 关闭备份里当前提供商类型不支持的内置工具
                 val sanitized = settings.sanitizeBuiltInTools()
-                // Persist the migrated value once, including generated IDs, for restart/retry consistency.
-                PendingRestore.writeDurably(settingsFile, json.encodeSettings(sanitized, json.launchCountOf(migrated)))
+                // Persist the rewritten value once, including generated IDs, for restart/retry consistency.
+                PendingRestore.writeDurably(settingsFile, json.encodeSettings(sanitized, json.launchCountOf(settingsJson)))
             }
             currentCoroutineContext().ensureActive()
             restore.publish(staging)

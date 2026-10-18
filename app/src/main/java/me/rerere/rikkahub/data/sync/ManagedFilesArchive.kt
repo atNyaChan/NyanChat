@@ -41,6 +41,9 @@ internal object ManagedFilesArchive {
     /** 本分支的 CAS schema 版本；数据库达到该版本时 `upload` 已是内容寻址，不能再做迁移。 */
     const val CAS_SCHEMA_VERSION = 100
 
+    /** 最低支持的 schema 版本；低于该版本的旧库不再提供迁移链，存档直接拒绝。 */
+    const val MIN_SUPPORTED_SCHEMA_VERSION = 30
+
     /** 读取数据库声明的 schema 版本（`PRAGMA user_version`）；文件不可读时返回 null。 */
     fun readSchemaVersion(databaseFile: File): Int? {
         if (!databaseFile.isFile) return null
@@ -85,7 +88,7 @@ internal object ManagedFilesArchive {
      * （强制 Room 按新 schema 重新校验并写入新的 identity hash）。已经是新格式时不做改动。
      *
      * 这里只把数据库改到 `managed_files_cas`，不写 `user_version`，让 Room 继续按原版本执行
-     * 迁移链（含 29 -> 30 -> 100）。
+     * 迁移链（30 -> 100）。
      */
     fun convertLegacyDatabase(
         databaseFile: File,

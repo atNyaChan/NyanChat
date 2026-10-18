@@ -46,11 +46,11 @@
 
 ## 🔄 与 RikkaHub 的兼容性
 
-- 支持从 RikkaHub 2.x 导入数据，也可以导出数据到 RikkaHub Latest（**聊天记录文字可以双向无损迁移！**）。
+- 支持从 RikkaHub 3.x 导入数据，也可以导出数据到 RikkaHub Latest（**聊天记录文字可以双向无损迁移！**）。
 - 注意：
   - 由于 RikkaHub 限制，部分数据（如工作区）无法从 RikkaHub 导入。
   - 导出到 RikkaHub 时，NyanChat 独有的设置和元数据（如模型价格）会丢失。
-  - NyanChat 仅支持导入 RikkaHub 2.x 的数据。如果要从 RikkaHub 1.x 导入数据，请先把 RikkaHub 更新至 2.x 并完成数据库迁移。迁移后的数据不能重新导入 RikkaHub 1.x。
+  - NyanChat 仅支持导入 RikkaHub 3.x 的数据。如果要从 RikkaHub 2.x 或更低版本导入数据，请先把 RikkaHub 更新至 3.x 并完成数据库迁移。迁移后的数据不能重新导入旧版 RikkaHub。
   - 旧版本 RikkaHub（如`2.5.x`）无法读取 NyanChat 存档，请先将 RikkaHub 更新至至少 `3.0.0`。
 - NyanChat **会跟随 RikkaHub 更新**，RikkaHub 未来的大部分新功能都将被合入 NyanChat，可以放心使用。
 

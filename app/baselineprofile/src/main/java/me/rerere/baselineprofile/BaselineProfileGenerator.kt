@@ -13,6 +13,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
+private const val REPLY_TIMEOUT_MS = 20_000L
+
 /**
  * This test class generates a basic startup baseline profile for the target package.
  *
@@ -105,16 +107,30 @@ class BaselineProfileGenerator {
                 "send button not found"
             }.click()
             sentCount++
-            checkNotNull(
-                device.wait(Until.findObject(By.textContains("${MockOpenAIServer.REPLY_MARKER} $sentCount")), 20_000)
-            ) {
-                "reply $sentCount not rendered, check that mock-provider.patch is applied"
-            }
+            awaitReply(device, sentCount)
             device.waitForIdle()
 
             // 在消息列表上来回滑动，覆盖长列表滚动
             scrollMessageList(device, Direction.UP)
             scrollMessageList(device, Direction.DOWN)
+        }
+    }
+
+    /**
+     * 等待第 [index] 轮回复渲染完。
+     *
+     * 回复比屏幕高时，聊天列表的自动跟随会在气泡底边离开视口后停止，结尾标记会停在屏幕外；
+     * 所以等待期间要持续把消息列表翻到底部，不能只依赖一次 [Until.findObject]。
+     */
+    private fun awaitReply(device: UiDevice, index: Int) {
+        val marker = "${MockOpenAIServer.REPLY_MARKER} $index"
+        val deadline = System.currentTimeMillis() + REPLY_TIMEOUT_MS
+        while (System.currentTimeMillis() < deadline) {
+            if (device.findObject(By.textContains(marker)) != null) return
+            scrollMessageList(device, Direction.UP)
+        }
+        checkNotNull(device.findObject(By.textContains(marker))) {
+            "reply $index not rendered, check that mock-provider.patch is applied"
         }
     }
 

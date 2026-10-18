@@ -1474,7 +1474,7 @@
   <string name="backup_page_files">ファイル</string>
   <string name="backup_page_import_chatbox_desc">ChatBoxプロバイダー設定と完全なチャット履歴をインポート</string>
   <string name="backup_page_import_cherry_studio_desc">Cherry Studioプロバイダー設定をインポート</string>
-  <string name="backup_page_import_desc">ローカルバックアップファイルをインポート（NyanChatおよびRikkaHub 2.xに対応）</string>
+  <string name="backup_page_import_desc">ローカルバックアップファイルをインポート（NyanChatおよびRikkaHub 3.xに対応）</string>
   <string name="backup_page_import_export">ローカル</string>
   <string name="backup_page_import_failed_detail">インポート失敗：%1$s</string>
   <string name="backup_page_import_from_chatbox">ChatBoxからインポート</string>

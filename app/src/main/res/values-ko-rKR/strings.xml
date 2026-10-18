@@ -1474,7 +1474,7 @@
   <string name="backup_page_files">파일</string>
   <string name="backup_page_import_chatbox_desc">ChatBox 공급자 구성과 전체 채팅 기록 가져오기</string>
   <string name="backup_page_import_cherry_studio_desc">Cherry Studio 공급자 설정 가져오기</string>
-  <string name="backup_page_import_desc">로컬 백업 파일 가져오기(NyanChat 및 RikkaHub 2.x 지원)</string>
+  <string name="backup_page_import_desc">로컬 백업 파일 가져오기(NyanChat 및 RikkaHub 3.x 지원)</string>
   <string name="backup_page_import_export">로컬</string>
   <string name="backup_page_import_failed_detail">가져오기 실패: %1$s</string>
   <string name="backup_page_import_from_chatbox">ChatBox에서 가져오기</string>

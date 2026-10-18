@@ -12,7 +12,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * `AppDatabaseFactory` 在 App 运行路径下不注册本迁移，读到 30 的旧库会直接由 Room 报错；
  * 本迁移只在备份校验/恢复时注册（`allowLegacyMigration = true`），保证表结构可用且可重复执行。
  *
- * 30 -> 100 之前的 `translation_history` 表由 `AutoMigration(29, 30)` 负责，30 的旧库已带有该表。
+ * 最低支持 schema 版本为 30，低于 30 的存档不再迁移；30 的旧库已带有 `translation_history` 表。
  */
 val Migration_30_100 = object : Migration(30, 100) {
     override fun migrate(db: SupportSQLiteDatabase) {

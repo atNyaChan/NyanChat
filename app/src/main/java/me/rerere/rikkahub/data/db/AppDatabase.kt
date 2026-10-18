@@ -1,6 +1,5 @@
 package me.rerere.rikkahub.data.db
 
-import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
@@ -30,10 +29,14 @@ import me.rerere.rikkahub.data.db.entity.MemoryFileEntity
 import me.rerere.rikkahub.data.db.entity.MessageNodeEntity
 import me.rerere.rikkahub.data.db.entity.TranslationHistoryEntity
 import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
-import me.rerere.rikkahub.data.db.migrations.Migration_16_17
-import me.rerere.rikkahub.data.db.migrations.Migration_22_23
 import me.rerere.rikkahub.utils.JsonInstant
 
+/**
+ * 应用数据库。
+ *
+ * 最低支持 schema 版本 30：低于 30 的旧库不再提供迁移链，Room 会直接报错；只有恢复备份时
+ * 才由 `AppDatabaseFactory` 注册 30 -> 100 的 [me.rerere.rikkahub.data.db.migrations.Migration_30_100]。
+ */
 @Database(
     entities = [
         ConversationEntity::class,
@@ -51,20 +54,6 @@ import me.rerere.rikkahub.utils.JsonInstant
         TranslationHistoryEntity::class,
     ],
     version = 100,
-    autoMigrations = [
-        AutoMigration(from = 16, to = 17, spec = Migration_16_17::class),
-        AutoMigration(from = 17, to = 18),
-        AutoMigration(from = 18, to = 19),
-        AutoMigration(from = 19, to = 20),
-        AutoMigration(from = 20, to = 21),
-        AutoMigration(from = 21, to = 22),
-        AutoMigration(from = 22, to = 23, spec = Migration_22_23::class),
-        AutoMigration(from = 23, to = 24),
-        AutoMigration(from = 24, to = 25),
-        AutoMigration(from = 25, to = 26),
-        AutoMigration(from = 26, to = 27),
-        AutoMigration(from = 29, to = 30),
-    ]
 )
 @TypeConverters(TokenUsageConverter::class)
 abstract class AppDatabase : RoomDatabase() {

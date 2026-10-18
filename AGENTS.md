@@ -124,8 +124,9 @@ as an ordinary folder, and never invent a uuid/filename-keyed path for an attach
   (`FilesManager.syncManagedFiles`) or backup must skip `AttachmentCas.isTemporary` files so a
   half-written temp file never leaks into the UI, stats or an archive.
 - **Backup/restore is CAS-aware.** Archives declare a schema version; only pre-`CAS_SCHEMA_VERSION`
-  (100; upstream is 30) archives are migrated (`ManagedFilesArchive.normalizeUploadDir` renames
-  `upload` to sha256 and `convertLegacyDatabase` converts the old `managed_files` table). Never
+  (100) archives at or above `MIN_SUPPORTED_SCHEMA_VERSION` (30, the upstream schema) are migrated
+  (`ManagedFilesArchive.normalizeUploadDir` renames `upload` to sha256 and `convertLegacyDatabase`
+  converts the old `managed_files` table); older archives are rejected. Never
   re-normalize an archive that is already CAS, and never copy upstream files over our CAS layout.
 - **`FilesManager` is the single entry point** (`data/files/FilesManager.kt`). UI/service/repository
   code must use its APIs rather than opening `upload` files directly, so registration, usages and

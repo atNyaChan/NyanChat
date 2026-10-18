@@ -455,7 +455,7 @@
 - 只有会话真正落库时才把临时附件提交成 CAS：按内容流式重命名到 `upload/<sha256>`（相同内容复用已有实体），展示名/MIME 随 `commitConversationFiles` 的返回值带出，透传给 `updateAttachmentIndex` 写成最终的 `message` 使用记录，再用提交后的 url 替换消息。
 - 仓储落库前只做守卫：若仍扫到临时目录 url，说明调用方漏了提交，整段丢弃这些附件并记 warning，绝不把临时路径写进数据库。
 - 同一份内容被再次带入时，若登记表里的 MIME 还是空值或 `application/octet-stream`，顺带用本次更具体的来源 MIME 补全。
-- 附件登记信息保存在数据库 `managed_files_cas` 表（一个 sha256 一行）：`id`、`sha256`、`mime_type`、`size_bytes`、`usages`（数据库版本由 29 提升到 100）。`usages` 是 JSON 列表，每项为 `{type, filename, display_name, created_at, details}`：`filename` / `display_name` 是该次使用在旧版（RikkaHub 兼容）布局里对应的 `uuid.ext` 文件名与展示名，`created_at` 是该次使用的时间（`message` 时取消息时间）；`type` 为 `message` 时 `details` 为 `{conversationId, nodeId, messageId}`，`assistant_background` / `assistant_avatar` 时为 `{assistantId}`，`user_avatar` 时为空，`type` 为 `none` 表示这份内容没有任何使用，`details` 为空、`created_at` 记录落盘时间、`display_name` 记录最近一次带入的展示名。旧的 `managed_files` 表已被 `managed_files_cas` 取代。
+- 附件登记信息保存在数据库 `managed_files_cas` 表（一个 sha256 一行）：`id`、`sha256`、`mime_type`、`size_bytes`、`usages`（数据库版本由 30 提升到 100）。`usages` 是 JSON 列表，每项为 `{type, filename, display_name, created_at, details}`：`filename` / `display_name` 是该次使用在旧版（RikkaHub 兼容）布局里对应的 `uuid.ext` 文件名与展示名，`created_at` 是该次使用的时间（`message` 时取消息时间）；`type` 为 `message` 时 `details` 为 `{conversationId, nodeId, messageId}`，`assistant_background` / `assistant_avatar` 时为 `{assistantId}`，`user_avatar` 时为空，`type` 为 `none` 表示这份内容没有任何使用，`details` 为空、`created_at` 记录落盘时间、`display_name` 记录最近一次带入的展示名。旧的 `managed_files` 表已被 `managed_files_cas` 取代。
 - 每次设置落盘时若助手头像/聊天背景、用户头像发生变化，就重建这些内容的 `assistant_avatar` / `assistant_background` / `user_avatar` 使用记录；恢复备份后启动时也重建一次（平日启动不重建，设置变化已由落盘路径增量维护）。
 - 启动时 `syncManagedFiles` 对齐磁盘与登记表：`upload` 下文件名不是 64 位小写十六进制 sha256 的（旧布局残留等）会按内容重新计算哈希并重命名为 `upload/<sha256>`（相同内容去重）后再补登记，文件名已是 sha256 的直接按名登记，避免把任意文件名当成内容哈希写进登记表。
 - 一份内容只要还有真实 `message` / 设置类使用就不会保留 `none` 记录；反之只剩一条 `none` 记录。
@@ -503,7 +503,7 @@
 - 本地导入与导出的失败提示分别显示为“导入失败”和“导出失败”。
 - 备份导入导出期间显示不可通过返回键关闭的横向直线进度条对话框，备份页导入项目不再显示加载动画。
 - 导入存档后“重启应用”弹窗的确认按钮自动重新启动应用，无需用户手动打开。
-- “导入本地备份文件”说明仅支持 NyanChat 和 RikkaHub 2.x。
+- “导入本地备份文件”说明仅支持 NyanChat 和 RikkaHub 3.x。
 - 备份打包逻辑统一收拢到 `data/sync/BackupManager`，`WebDavSync`/`S3Sync` 只负责传输与列表。
 
 ### 聊天文件
@@ -617,7 +617,7 @@
 - “关于”页第二个分组依次包含该 Fork GitHub 链接、该 Fork 的 License 文件链接、RikkaHub GitHub、RikkaHub 官网。
 - “关于”页版本卡片长按按压反馈裁剪在卡片范围内，长按按住时卡片连同反馈一起扩展为四角屏幕圆角（与其它卡片一致）。
 - 关于页底部增加英文修改来源、修改者与 AGPL-3.0 许可声明。
-- 移除仅用于从 RikkaHub 1.x 升级的数据库 1→16、偏好 V1/V2、旧备份 JSON 迁移实现及对应测试和数据库 schema；保留 RikkaHub 2.x（数据库 16 起）到当前版本的迁移链。
+- 只保留 RikkaHub 3.x 的升级路径：最低支持数据库 schema 版本 30，设置存储不再提供任何迁移。已移除仅用于更早版本升级的数据库 1→30 全部自动/手写迁移、低于 30 的数据库 schema、偏好 V1/V2/V3/V4 迁移、备份 `settings.json` 的迁移工具、旧备份 JSON 迁移，以及它们的测试；启动读到低于 30 的旧库或导入低于 30 的存档会直接报错。
 
 ## 其它 / 技术相关
 - 修复切换助手后，在空白聊天页发送的第一条消息偶尔被写入上一个助手的问题。
@@ -668,10 +668,11 @@
 - 统一 compileSdk/targetSdk 至 37，并在根构建脚本为所有 Android 模块显式固定 Build-Tools 为 37.0.0，避免 AGP 按需下载默认的 Build-Tools 36。
 - 所有 Android 模块统一使用 `compileSdk { version = release(37) { minorApiLevel = 2 } }`（即 Android SDK Platform 37.2）。
 - 各 library 模块的共享构建配置改由 `build-logic` 的 `rikkahub.android.library` / `rikkahub.android.library.compose` convention plugin 统一提供（compileSdk 37.2、minSdk 28、Java 21、Kotlin jvmTarget 21、Compose）；应用级 keep 规则集中在 `app/src/main/keepRules/rikkahub.keep`，其中保留 fork 特有的 zstd-jni `-keep` 规则。
+- `app/baselineprofile` 生成器在发送消息后不再只做一次 20 秒等待，而是在等待回复结尾标记期间持续把聊天消息列表翻到底部：长回复超过一屏后聊天列表的自动跟随会在气泡底边离开视口时停止，原实现会因结尾标记停在屏幕外而误报回复未渲染。
 - 在 `app` 的 `packaging` 中显式设置 `dex { useLegacyPackaging = true }`（与已有的 `jniLibs { useLegacyPackaging = true }` 一致），让 dex 继续以 deflate 压缩进 APK。因为 `minSdk` 提升到 28 后，AGP 的 `DexPackagingOptionsImpl` 默认 `useLegacyPackaging = (minSdk < 28)` 变为 false，会把 `classes*.dex` 以不压缩（STORED）方式存入 APK，使 release APK 由约 34MB 涨到约 47MB、debug APK 约翻倍；该默认与内容无关，只影响 zip 压缩方式和安装时的 dex2oat。
 - 清理 Firebase 移除后的残留引用：删除 `AGENTS.md` 中关于 `google-services.json` 的过时说明，删除 CI workflow 中写入 `google-services.json` 的步骤。
 - 清理各网络服务对新版 OkHttp 非空响应体的冗余安全调用、密封类型 `when` 的多余 `else`，并移除低于项目最低 API 28 的废弃 Locale 兼容分支；仍有实际用途的旧 TTS 回调与消息序列化迁移类型继续保留，并仅在对应兼容代码中抑制弃用警告。
-- V3 设置迁移不再于全新安装时写入空助手数组；首次安装、迁移异常或损坏设置产生空助手列表时也会自动补回默认助手，当前助手读取另有独立兜底，避免主界面与安全模式在启动阶段循环闪退。
+- 首次安装或设置文件损坏（重置为空）产生空助手列表时自动补回默认助手，当前助手读取另有独立兜底，避免主界面与安全模式在启动阶段循环闪退。
 - 移除未使用的 Google Sans Flex 字体。
 - 删除未使用的反编译工具二进制 `gradle/vineflower.jar`。
 - 删除 `app/src/main/assets/banner/banner-{1,2,3}.png` 三张死资源。

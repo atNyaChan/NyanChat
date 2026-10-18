@@ -1474,7 +1474,7 @@
   <string name="backup_page_files">Файлы</string>
   <string name="backup_page_import_chatbox_desc">Импортировать конфигурации поставщика ChatBox и полную историю чатов</string>
   <string name="backup_page_import_cherry_studio_desc">Импортировать конфигурации поставщика Cherry Studio</string>
-  <string name="backup_page_import_desc">Импортировать локальный файл резервной копии (поддерживаются NyanChat и RikkaHub 2.x)</string>
+  <string name="backup_page_import_desc">Импортировать локальный файл резервной копии (поддерживаются NyanChat и RikkaHub 3.x)</string>
   <string name="backup_page_import_export">Локальный</string>
   <string name="backup_page_import_failed_detail">Ошибка импорта: %1$s</string>
   <string name="backup_page_import_from_chatbox">Импорт из ChatBox</string>

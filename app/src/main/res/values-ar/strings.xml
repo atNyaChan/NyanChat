@@ -1474,7 +1474,7 @@
   <string name="backup_page_files">الملفات</string>
   <string name="backup_page_import_chatbox_desc">استيراد إعدادات مزوّدي ChatBox وسجل المحادثة الكامل</string>
   <string name="backup_page_import_cherry_studio_desc">استيراد إعدادات مزوّدي Cherry Studio</string>
-  <string name="backup_page_import_desc">استيراد ملف نسخ احتياطي محلي (يدعم NyanChat و RikkaHub 2.x)</string>
+  <string name="backup_page_import_desc">استيراد ملف نسخ احتياطي محلي (يدعم NyanChat و RikkaHub 3.x)</string>
   <string name="backup_page_import_export">محلي</string>
   <string name="backup_page_import_failed_detail">فشل الاستيراد: %1$s</string>
   <string name="backup_page_import_from_chatbox">استيراد من ChatBox</string>

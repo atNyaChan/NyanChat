@@ -1474,7 +1474,7 @@
   <string name="backup_page_files">文件</string>
   <string name="backup_page_import_chatbox_desc">导入 ChatBox 提供商配置和完整聊天记录</string>
   <string name="backup_page_import_cherry_studio_desc">导入 Cherry Studio 提供商配置</string>
-  <string name="backup_page_import_desc">导入本地备份文件（支持 NyanChat 和 RikkaHub 2.x）</string>
+  <string name="backup_page_import_desc">导入本地备份文件（支持 NyanChat 和 RikkaHub 3.x）</string>
   <string name="backup_page_import_export">本地</string>
   <string name="backup_page_import_failed_detail">导入失败：%1$s</string>
   <string name="backup_page_import_from_chatbox">从 ChatBox 导入</string>
