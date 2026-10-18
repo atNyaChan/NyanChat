@@ -61,7 +61,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import me.rerere.ai.core.MessageRole
 import me.rerere.ai.provider.Model
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.hugeicons.HugeIcons
@@ -105,10 +104,10 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.Uuid
 
 @Composable
-fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, folderId: Uuid? = null) {
+fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
     val vm: ChatVM = koinViewModel(
         parameters = {
-            parametersOf(id.toString(), folderId)
+            parametersOf(id.toString())
         }
     )
     val filesManager: FilesManager = koinInject()
@@ -123,6 +122,13 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null, fo
     val currentChatModel by vm.currentChatModel.collectAsStateWithLifecycle()
     val assistant by vm.assistant.collectAsStateWithLifecycle()
     val errors by vm.errors.collectAsStateWithLifecycle()
+
+    // 新会话发出第一条消息前，跟随抽屉当前选中的文件夹
+    val drawerVm: ChatDrawerVM = koinViewModel(viewModelStoreOwner = LocalContext.current as ComponentActivity)
+    val selectedFolderId by drawerVm.selectedFolderId.collectAsStateWithLifecycle()
+    LaunchedEffect(selectedFolderId) {
+        vm.updateDraftFolder(selectedFolderId)
+    }
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val softwareKeyboardController = LocalSoftwareKeyboardController.current
@@ -491,8 +497,7 @@ private fun ChatPageContent(
                     previewMode = previewMode,
                     hazeState = hazeState,
                     onNewChat = {
-                        // 新聊天归入侧栏当前选中的文件夹（未选中时 folderId 为 null，即未归类）
-                        navigateToChatPage(navController, folderId = drawerVm.selectedFolderId.value)
+                        navigateToChatPage(navController)
                     },
                     onClickMenu = {
                         previewMode = !previewMode
@@ -614,10 +619,7 @@ private fun ChatPageContent(
                     },
                     onEdit = {
                         inputState.editingMessage = it.id
-                        inputState.setContents(
-                            contents = it.parts,
-                            reasoningAsThinkTags = it.role == MessageRole.ASSISTANT,
-                        )
+                        inputState.setContents(it.parts)
                     },
                     onForkMessage = {
                         scope.launch {

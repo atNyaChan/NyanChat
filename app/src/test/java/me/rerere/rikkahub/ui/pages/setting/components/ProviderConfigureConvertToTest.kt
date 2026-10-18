@@ -1,6 +1,7 @@
 package me.rerere.rikkahub.ui.pages.setting.components
 
 import me.rerere.ai.provider.BalanceOption
+import me.rerere.ai.provider.BuiltInTools
 import me.rerere.ai.provider.CustomHeader
 import me.rerere.ai.provider.Model
 import me.rerere.ai.provider.ProviderSetting
@@ -98,6 +99,45 @@ class ProviderConfigureConvertToTest {
 
         val converted = original.convertTo(ProviderSetting.OpenAI::class)
         assertSame(original, converted)
+    }
+
+    @Test
+    fun `convertTo drops built-in tools the target provider does not support`() {
+        val model = Model(
+            id = Uuid.random(),
+            modelId = "gpt-custom",
+            displayName = "GPT Custom",
+            tools = setOf(BuiltInTools.Search, BuiltInTools.ImageGeneration),
+        )
+        val original = ProviderSetting.OpenAI(
+            name = "Responses Provider",
+            useResponseApi = true,
+            models = listOf(model),
+        )
+
+        val google = original.convertTo(ProviderSetting.Google::class) as ProviderSetting.Google
+        assertEquals(setOf(BuiltInTools.Search), google.models.single().tools)
+
+        val openai = google.convertTo(ProviderSetting.OpenAI::class) as ProviderSetting.OpenAI
+        assertEquals(emptySet<BuiltInTools>(), openai.models.single().tools)
+    }
+
+    @Test
+    fun `convertTo keeps tools supported by the model's provider override`() {
+        val model = Model(
+            id = Uuid.random(),
+            modelId = "gpt-custom",
+            displayName = "GPT Custom",
+            tools = setOf(BuiltInTools.Search, BuiltInTools.UrlContext),
+            providerOverwrite = ProviderSetting.Google(),
+        )
+        val original = ProviderSetting.OpenAI(name = "Responses Provider", models = listOf(model))
+
+        val claude = original.convertTo(ProviderSetting.Claude::class) as ProviderSetting.Claude
+        assertEquals(
+            setOf(BuiltInTools.Search, BuiltInTools.UrlContext),
+            claude.models.single().tools,
+        )
     }
 
     @Test

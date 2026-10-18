@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -235,113 +236,129 @@ fun ChatDrawerContent(
         },
         drawerShape = drawerShape,
     ) {
+        // 矮屏（如手表、横屏手机）上顶部固定会把会话列表挤没，改为跟随列表一起滚动
+        val windowHeight = LocalWindowInfo.current.containerDpSize.height
+        val scrollableHeader = windowHeight < 640.dp
+
+        // 抽屉顶部：备份提醒、用户信息、常用入口和文件夹栏
+        val drawerHeader: @Composable () -> Unit = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                BackupReminderCard(
+                    settings = settings,
+                    onClick = { navController.navigate(Screen.Backup) },
+                )
+
+                // 用户头像和昵称自定义区域
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    UIAvatar(
+                        name = settings.displaySetting.userNickname.ifBlank { stringResource(R.string.user_default_name) },
+                        value = settings.displaySetting.userAvatar,
+                        invertDefaultAvatarInDarkMode = true,
+                        onUpdate = { newAvatar ->
+                            vm.updateSettings {
+                                it.copy(
+                                    displaySetting = it.displaySetting.copy(
+                                        userAvatar = newAvatar
+                                    )
+                                )
+                            }
+                        },
+                        modifier = Modifier.size(50.dp),
+                    )
+
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            Text(
+                                text = settings.displaySetting.userNickname.ifBlank { stringResource(R.string.user_default_name) },
+                                style = MaterialTheme.typography.titleMedium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.clickable {
+                                    nicknameEditState.open(settings.displaySetting.userNickname)
+                                }
+                            )
+
+                            Icon(
+                                imageVector = HugeIcons.PencilEdit01,
+                                contentDescription = "Edit",
+                                modifier = Modifier
+                                    .onClick {
+                                        nicknameEditState.open(settings.displaySetting.userNickname)
+                                    }
+                                    .size(LocalTextStyle.current.fontSize.toDp())
+                            )
+                        }
+                        Greeting(
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    }
+                }
+
+                DrawerActions(navController = navController)
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    FolderBar(
+                        folders = folders,
+                        selectedFolderId = selectedFolderId,
+                        onSelect = { folderId ->
+                            drawerVm.selectFolder(folderId)
+                            if (current.messageNodes.none { it.currentMessage.role == MessageRole.USER }) {
+                                vm.moveConversationToFolder(folderId)
+                            }
+                        },
+                        onCreate = { showCreateFolderDialog = true },
+                        onRename = { folderToRename = it },
+                        onDelete = { folderToDelete = it },
+                        onMoveForward = { drawerVm.moveFolder(it.id, forward = true) },
+                        onMoveBackward = { drawerVm.moveFolder(it.id, forward = false) },
+                        modifier = Modifier.weight(1f),
+                    )
+
+                    ConversationSortButton(
+                        sortOrder = settings.displaySetting.conversationSortOrder,
+                        onSortOrderChange = { sortOrder ->
+                            vm.updateSettings {
+                                it.copy(
+                                    displaySetting = it.displaySetting.copy(
+                                        conversationSortOrder = sortOrder
+                                    )
+                                )
+                            }
+                            // 换排序后回到顶部，否则会停留在原来滚动到的位置
+                            scope.launch { conversationListState.scrollToItem(0) }
+                        },
+                    )
+                }
+            }
+        }
+
         Column(
             modifier = Modifier.padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            BackupReminderCard(
-                settings = settings,
-                onClick = { navController.navigate(Screen.Backup) },
-            )
-
-            // 用户头像和昵称自定义区域
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                UIAvatar(
-                    name = settings.displaySetting.userNickname.ifBlank { stringResource(R.string.user_default_name) },
-                    value = settings.displaySetting.userAvatar,
-                    invertDefaultAvatarInDarkMode = true,
-                    onUpdate = { newAvatar ->
-                        vm.updateSettings {
-                            it.copy(
-                                displaySetting = it.displaySetting.copy(
-                                    userAvatar = newAvatar
-                                )
-                            )
-                        }
-                    },
-                    modifier = Modifier.size(50.dp),
-                )
-
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        Text(
-                            text = settings.displaySetting.userNickname.ifBlank { stringResource(R.string.user_default_name) },
-                            style = MaterialTheme.typography.titleMedium,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.clickable {
-                                nicknameEditState.open(settings.displaySetting.userNickname)
-                            }
-                        )
-
-                        Icon(
-                            imageVector = HugeIcons.PencilEdit01,
-                            contentDescription = "Edit",
-                            modifier = Modifier
-                                .onClick {
-                                    nicknameEditState.open(settings.displaySetting.userNickname)
-                                }
-                                .size(LocalTextStyle.current.fontSize.toDp())
-                        )
-                    }
-                    Greeting(
-                        style = MaterialTheme.typography.labelMedium,
-                    )
-                }
-            }
-
-            DrawerActions(navController = navController)
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                FolderBar(
-                    folders = folders,
-                    selectedFolderId = selectedFolderId,
-                    onSelect = { folderId ->
-                        drawerVm.selectFolder(folderId)
-                        if (current.messageNodes.none { it.currentMessage.role == MessageRole.USER }) {
-                            vm.moveConversationToFolder(folderId)
-                        }
-                    },
-                    onCreate = { showCreateFolderDialog = true },
-                    onRename = { folderToRename = it },
-                    onDelete = { folderToDelete = it },
-                    onMoveForward = { drawerVm.moveFolder(it.id, forward = true) },
-                    onMoveBackward = { drawerVm.moveFolder(it.id, forward = false) },
-                    modifier = Modifier.weight(1f),
-                )
-
-                ConversationSortButton(
-                    sortOrder = settings.displaySetting.conversationSortOrder,
-                    onSortOrderChange = { sortOrder ->
-                        vm.updateSettings {
-                            it.copy(
-                                displaySetting = it.displaySetting.copy(
-                                    conversationSortOrder = sortOrder
-                                )
-                            )
-                        }
-                        // 换排序后回到顶部，否则会停留在原来滚动到的位置
-                        scope.launch { conversationListState.scrollToItem(0) }
-                    },
-                )
+            if (!scrollableHeader) {
+                drawerHeader()
             }
 
             ConversationList(
@@ -351,6 +368,7 @@ fun ChatDrawerContent(
                 listState = conversationListState,
                 totalConversations = conversationCount,
                 centerCurrent = drawerVisible,
+                header = if (scrollableHeader) drawerHeader else null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
@@ -385,8 +403,7 @@ fun ChatDrawerContent(
                         scope.launch {
                             vm.deleteConversation(conversation).join()
                             if (conversation.id == current.id) {
-                                // 删除后新建的空会话归入侧栏当前选中的文件夹
-                                navigateToChatPage(navController, folderId = selectedFolderId)
+                                navigateToChatPage(navController)
                             }
                         }
                     },
@@ -406,8 +423,7 @@ fun ChatDrawerContent(
                         scope.launch {
                             targets.map(vm::deleteConversation).forEach { it.join() }
                             if (targets.any { it.id == current.id }) {
-                                // 删除后新建的空会话归入侧栏当前选中的文件夹
-                                navigateToChatPage(navController, folderId = selectedFolderId)
+                                navigateToChatPage(navController)
                             }
                         }
                     },

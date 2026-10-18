@@ -218,8 +218,13 @@
   <string name="asr_button_content_description">Speech Recognition</string>
   <string name="asr_button_stop">Stop</string>
   <string name="chat_input_attachment_already_added">This attachment has already been added</string>
+  <string name="chat_input_edit_reasoning">Edit reasoning</string>
+  <string name="chat_input_edit_reasoning_encrypted_confirm">Edit anyway</string>
+  <string name="chat_input_edit_reasoning_encrypted_message">This reply contains an encrypted reasoning chain. Editing it will discard the encrypted reasoning content.</string>
+  <string name="chat_input_edit_thinking_process">Edit thinking process</string>
   <string name="chat_input_file_read_failed">Failed to read file: %s</string>
   <string name="chat_input_placeholder">Chat with AI</string>
+  <string name="chat_input_reasoning_placeholder">Reasoning content</string>
   <string name="chat_input_unsupported_file_type">Unsupported file type: %s</string>
   <string name="tools_warning">The current model does not have tool calling enabled. Please enable the model\'s tool capabilities in the settings to use features like search/MCP.</string>
   <!-- Chat message -->
@@ -1477,7 +1482,7 @@
   <string name="backup_page_import_from_other_app">Import from other app</string>
   <string name="backup_page_import_local">Import local file</string>
   <string name="backup_page_importing">Importing...</string>
-  <string name="backup_page_legacy_export">Export legacy format (RikkaHub 2.5.1+ compatible)</string>
+  <string name="backup_page_legacy_export">Export legacy format (RikkaHub 3.0.0+ compatible)</string>
   <string name="backup_page_legacy_export_desc">Remove incompatible settings added by this fork; workspace environments are not included</string>
   <string name="backup_page_loading_failed">Failed to load backup files: %s</string>
   <string name="backup_page_local_backup_export">Export to File</string>

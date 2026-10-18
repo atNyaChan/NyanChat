@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -43,6 +44,8 @@ import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.model.MediaCreationSession
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
+import me.rerere.rikkahub.ui.components.ui.OutlinedItemCornerRadius
+import me.rerere.rikkahub.ui.hooks.heroContainer
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.plus
@@ -150,6 +153,7 @@ private fun EmptySessionsState(modifier: Modifier = Modifier) {
 }
 
 private val SessionLeadingSize = 48.dp
+private val SessionItemShape = RoundedCornerShape(OutlinedItemCornerRadius)
 
 // 每个会话按 id 固定分到一个形状，列表看起来不那么整齐划一
 private val sessionShapes = listOf(
@@ -172,7 +176,8 @@ private fun SessionItem(
 ) {
     OutlinedItemCard(
         onClick = onOpen,
-        modifier = modifier,
+        // 点开时展开成创作页
+        modifier = modifier.heroContainer(mediaCreationHeroKey(session.id.toString()), SessionItemShape),
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),

@@ -48,13 +48,18 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -216,6 +221,9 @@ fun ChatInput(
     )
 
     var isExpanded by remember { mutableStateOf(false) }
+    // 编辑历史消息时单独弹窗编辑思考内容；带签名/加密内容的思考要先确认（编辑后会丢弃它）
+    var isEditingReasoning by remember { mutableStateOf(false) }
+    var showEncodedReasoningWarning by remember { mutableStateOf(false) }
     var collapsedHeightPx by remember { mutableStateOf(0f) }
     // The files panel is measured separately so that collapsing the expanded input only shrinks the
     // text area and keeps the files panel visible, rather than collapsing the whole container and
@@ -252,10 +260,12 @@ fun ChatInput(
     val animatedHeight = collapsedHeight + (fullHeight - collapsedHeight) * expandProgress
     val lockHeight = isExpanded || expandProgress > 0f
 
-    // 输入框处于编辑状态时若退出编辑, 自动收起展开的输入框
+    // 输入框处于编辑状态时若退出编辑, 自动收起展开的输入框与思考编辑弹窗
     LaunchedEffect(state.editingMessage) {
         if (state.editingMessage == null) {
             isExpanded = false
+            isEditingReasoning = false
+            showEncodedReasoningWarning = false
         }
     }
 
@@ -382,6 +392,25 @@ fun ChatInput(
                             ) {
                                 Text(text = stringResource(R.string.editing))
                                 Spacer(Modifier.weight(1f))
+                                if (state.editingReasoning != null) {
+                                    // 比左侧“编辑中”略小一档
+                                    Text(
+                                        text = stringResource(R.string.chat_input_edit_thinking_process),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .clickable {
+                                                if (state.editingReasoningEncoded) {
+                                                    showEncodedReasoningWarning = true
+                                                } else {
+                                                    isEditingReasoning = true
+                                                }
+                                            }
+                                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                }
                                 Icon(
                                     imageVector = HugeIcons.Cancel01,
                                     contentDescription = stringResource(R.string.cancel_edit),
@@ -593,6 +622,94 @@ fun ChatInput(
             }
         }
     }
+
+    val reasoningState = state.editingReasoning
+    if (isEditingReasoning && reasoningState != null) {
+        ReasoningEditorDialog(
+            state = reasoningState,
+            onDismiss = { isEditingReasoning = false },
+        )
+    }
+    if (showEncodedReasoningWarning) {
+        EncodedReasoningWarningDialog(
+            onDismiss = { showEncodedReasoningWarning = false },
+            onConfirm = {
+                state.dropEditingReasoningMetadata()
+                showEncodedReasoningWarning = false
+                isEditingReasoning = true
+            },
+        )
+    }
+}
+
+@Composable
+private fun ReasoningEditorDialog(
+    state: TextFieldState,
+    onDismiss: () -> Unit,
+) {
+    BasicAlertDialog(
+        onDismissRequest = onDismiss,
+    ) {
+        Surface(
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surface,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.chat_input_edit_reasoning),
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                OutlinedTextField(
+                    state = state,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 160.dp, max = 400.dp),
+                    placeholder = { Text(stringResource(R.string.chat_input_reasoning_placeholder)) },
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences,
+                    ),
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text(stringResource(R.string.common_save))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EncodedReasoningWarningDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surface,
+        title = { Text(stringResource(R.string.chat_input_edit_reasoning)) },
+        text = { Text(stringResource(R.string.chat_input_edit_reasoning_encrypted_message)) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(stringResource(R.string.chat_input_edit_reasoning_encrypted_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.common_cancel))
+            }
+        },
+    )
 }
 
 @Composable

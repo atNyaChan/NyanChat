@@ -218,8 +218,13 @@
   <string name="asr_button_content_description">语音识别</string>
   <string name="asr_button_stop">停止</string>
   <string name="chat_input_attachment_already_added">此附件已添加</string>
+  <string name="chat_input_edit_reasoning">编辑思维过程</string>
+  <string name="chat_input_edit_reasoning_encrypted_confirm">仍然编辑</string>
+  <string name="chat_input_edit_reasoning_encrypted_message">该回复含有加密思考链，编辑后将丢弃加密思考内容。</string>
+  <string name="chat_input_edit_thinking_process">编辑思考过程</string>
   <string name="chat_input_file_read_failed">文件读取失败：%s</string>
   <string name="chat_input_placeholder">输入消息与 AI 聊天</string>
+  <string name="chat_input_reasoning_placeholder">思维过程</string>
   <string name="chat_input_unsupported_file_type">不支持的文件类型：%s</string>
   <string name="tools_warning">当前模型未开启工具调用，请在设置内启用模型的工具能力，再使用搜索/MCP 等功能</string>
   <!-- Chat message -->
@@ -1477,7 +1482,7 @@
   <string name="backup_page_import_from_other_app">从其他 APP 导入</string>
   <string name="backup_page_import_local">导入本地文件</string>
   <string name="backup_page_importing">正在恢复...</string>
-  <string name="backup_page_legacy_export">导出旧版格式（兼容 RikkaHub 2.5.1+）</string>
+  <string name="backup_page_legacy_export">导出旧版格式（兼容 RikkaHub 3.0.0+）</string>
   <string name="backup_page_legacy_export_desc">移除本 Fork 新增的不兼容设置字段；不包含工作区环境</string>
   <string name="backup_page_loading_failed">加载备份文件失败: %s</string>
   <string name="backup_page_local_backup_export">导出为文件</string>

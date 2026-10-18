@@ -218,8 +218,13 @@
   <string name="asr_button_content_description">التعرف على الكلام</string>
   <string name="asr_button_stop">إيقاف</string>
   <string name="chat_input_attachment_already_added">تمت إضافة هذا المرفق بالفعل</string>
+  <string name="chat_input_edit_reasoning">تعديل الاستدلال</string>
+  <string name="chat_input_edit_reasoning_encrypted_confirm">التعديل رغم ذلك</string>
+  <string name="chat_input_edit_reasoning_encrypted_message">يحتوي هذا الرد على سلسلة استدلال مشفرة. سيؤدي التعديل إلى حذف محتوى الاستدلال المشفر.</string>
+  <string name="chat_input_edit_thinking_process">تعديل عملية التفكير</string>
   <string name="chat_input_file_read_failed">فشل قراءة الملف: %s</string>
   <string name="chat_input_placeholder">الدردشة مع الذكاء الاصطناعي</string>
+  <string name="chat_input_reasoning_placeholder">محتوى الاستدلال</string>
   <string name="chat_input_unsupported_file_type">نوع الملف غير مدعوم: %s</string>
   <string name="tools_warning">النموذج الحالي لا يتضمن تفعيل استدعاء الأدوات. يرجى تمكين قدرات الأدوات للنموذج في الإعدادات لاستخدام ميزات مثل البحث/MCP.</string>
   <!-- Chat message -->
@@ -1477,7 +1482,7 @@
   <string name="backup_page_import_from_other_app">استيراد من تطبيق آخر</string>
   <string name="backup_page_import_local">استيراد ملف محلي</string>
   <string name="backup_page_importing">جارٍ الاستيراد...</string>
-  <string name="backup_page_legacy_export">تصدير التنسيق القديم (متوافق مع RikkaHub 2.5.1+)</string>
+  <string name="backup_page_legacy_export">تصدير التنسيق القديم (متوافق مع RikkaHub 3.0.0+)</string>
   <string name="backup_page_legacy_export_desc">إزالة الإعدادات غير المتوافقة التي أضافها هذا التفرّع؛ لا تُضمّن بيئات مساحة العمل</string>
   <string name="backup_page_loading_failed">فشل تحميل ملفات النسخ الاحتياطي: %s</string>
   <string name="backup_page_local_backup_export">تصدير إلى ملف</string>

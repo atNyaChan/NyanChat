@@ -95,6 +95,7 @@ fun ColumnScope.ConversationList(
     listState: LazyListState,
     totalConversations: Int,
     modifier: Modifier = Modifier,
+    header: (@Composable () -> Unit)? = null,
     centerCurrent: Boolean = false,
     onClick: (Conversation) -> Unit = {},
     onDelete: (Conversation) -> Unit = {},
@@ -106,6 +107,8 @@ fun ColumnScope.ConversationList(
 ) {
     var selectedConversations by remember { mutableStateOf<Map<Uuid, Conversation>>(emptyMap()) }
     val scope = rememberCoroutineScope()
+    // 列表顶部若放了 header，会话项在 LazyColumn 中的位置要往后挪一位
+    val headerCount = if (header != null) 1 else 0
 
     // 多选状态下长按聊天时，弹出仅含「移动到…/删除」菜单的目标会话 id。
     // 状态放在父级而不是单个 item 的 remember 里，避免列表重组合时被重置。
@@ -127,15 +130,16 @@ fun ColumnScope.ConversationList(
         if (!centerCurrent) return@LaunchedEffect
         // 用户正在手动滚动时不打扰（例如浏览时触发的列表变化）
         if (listState.isScrollInProgress) return@LaunchedEffect
-        val currentIndex = conversations.indexOfFirst {
+        val itemIndex = conversations.indexOfFirst {
             (it as? ConversationListItem.Item)?.conversation?.id == current.id
         }
-        if (currentIndex < 0) {
+        if (itemIndex < 0) {
             if (listState.firstVisibleItemIndex != 0 || listState.firstVisibleItemScrollOffset != 0) {
                 listState.animateScrollToItem(0)
             }
             return@LaunchedEffect
         }
+        val currentIndex = itemIndex + headerCount
         // 当前会话已在可视区域内时不额外滚动
         if (listState.layoutInfo.visibleItemsInfo.any { it.index == currentIndex }) {
             return@LaunchedEffect
@@ -210,6 +214,12 @@ fun ColumnScope.ConversationList(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+        if (header != null) {
+            item(key = "header", contentType = "header") {
+                header()
+            }
+        }
+
         if (conversations.isEmpty()) {
             item {
                 Box(

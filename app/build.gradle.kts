@@ -28,7 +28,7 @@ android {
         minSdk = 28
         targetSdk = 37
         versionCode = 1
-        versionName = "${buildDate()}+2.5.6"
+        versionName = "${buildDate()}+3.0.0-2to3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -115,6 +115,14 @@ android {
         compilerOptions.optIn.add("kotlinx.coroutines.ExperimentalCoroutinesApi")
         compilerOptions.optIn.add("kotlinx.coroutines.FlowPreview")
         compilerOptions.optIn.add("coil3.annotation.ExperimentalCoilApi")
+    }
+}
+
+// baselineprofile 插件按 release 复制出 nonMinifiedRelease 时只关掉 isMinifyEnabled，关不掉 optimization，
+// 不手动关的话生成用的包会被 R8 内联、合并类，profile 里记下的是优化后的类和方法
+androidComponents {
+    finalizeDsl { extension ->
+        extension.buildTypes.findByName("nonMinifiedRelease")?.optimization?.enable = false
     }
 }
 

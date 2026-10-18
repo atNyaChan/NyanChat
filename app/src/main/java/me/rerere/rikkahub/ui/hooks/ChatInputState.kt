@@ -18,6 +18,15 @@ class ChatInputState {
             messageContentState.value = value
         }
     var editingMessage by mutableStateOf<Uuid?>(null)
+
+    /** 编辑中的消息允许改思考内容时不为 null，见 [setContents] */
+    var editingReasoning by mutableStateOf<TextFieldState?>(null)
+        private set
+
+    /** 编辑中的思考带有签名或加密内容（metadata），确认编辑后要丢弃它 */
+    var editingReasoningEncoded by mutableStateOf(false)
+        private set
+    private var dropReasoningMetadata by mutableStateOf(false)
     private var editingParts: List<UIMessagePart>? = null
     private var editingAttachmentUrls: Set<String> = emptySet()
 
@@ -25,6 +34,9 @@ class ChatInputState {
         textContent.setTextAndPlaceCursorAtEnd("")
         messageContent = emptyList()
         editingMessage = null
+        editingReasoning = null
+        editingReasoningEncoded = false
+        dropReasoningMetadata = false
         editingParts = null
         editingAttachmentUrls = emptySet()
     }
@@ -39,33 +51,29 @@ class ChatInputState {
         textContent.setTextAndPlaceCursorAtEnd(textContent.text.toString() + content)
     }
 
-    fun setContents(contents: List<UIMessagePart>, reasoningAsThinkTags: Boolean = false) {
-        val editableContents = if (reasoningAsThinkTags) {
-            val editableText = buildString {
-                contents.forEach { part ->
-                    when (part) {
-                        is UIMessagePart.Text -> append(part.text)
-                        is UIMessagePart.Reasoning -> append("<think>\n${part.reasoning}\n</think>")
-                        else -> Unit
-                    }
-                }
-            }
-            listOf(UIMessagePart.Text(editableText)) + contents.filter {
-                it !is UIMessagePart.Text && it !is UIMessagePart.Reasoning
-            }
-        } else {
-            contents
-        }
-        val lastTextIndex = editableContents.indexOfLast { it is UIMessagePart.Text }
+    fun setContents(contents: List<UIMessagePart>) {
+        val lastTextIndex = contents.indexOfLast { it is UIMessagePart.Text }
         val text = if (lastTextIndex >= 0) {
-            (editableContents[lastTextIndex] as UIMessagePart.Text).text
+            (contents[lastTextIndex] as UIMessagePart.Text).text
         } else {
             ""
         }
         textContent.setTextAndPlaceCursorAtEnd(text)
-        messageContent = editableContents.filter { it !is UIMessagePart.Text }
-        editingParts = editableContents
-        editingAttachmentUrls = editableContents.mapNotNull { it.attachmentUrlOrNull() }.toSet()
+        val reasoning = contents.editableReasoningOrNull()
+        editingReasoning = reasoning?.let { TextFieldState(it.reasoning) }
+        editingReasoningEncoded = reasoning != null && !reasoning.metadata.isNullOrEmpty()
+        dropReasoningMetadata = false
+        messageContent = contents.filter {
+            it !is UIMessagePart.Text && (reasoning == null || it !is UIMessagePart.Reasoning)
+        }
+        editingParts = contents
+        editingAttachmentUrls = contents.mapNotNull { it.attachmentUrlOrNull() }.toSet()
+    }
+
+    /** 确认编辑带签名或加密内容的思考：之后的编辑结果不再带原来的 metadata */
+    fun dropEditingReasoningMetadata() {
+        dropReasoningMetadata = true
+        editingReasoningEncoded = false
     }
 
     fun getContents(): List<UIMessagePart> {
@@ -88,6 +96,18 @@ class ChatInputState {
                         part is UIMessagePart.Text -> {
                             if (part.text.isNotEmpty()) {
                                 merged.add(part)
+                            }
+                        }
+
+                        part is UIMessagePart.Reasoning && editingReasoning != null -> {
+                            val reasoning = editingReasoning!!.text.toString()
+                            if (reasoning.isNotBlank()) {
+                                merged.add(
+                                    part.copy(
+                                        reasoning = reasoning,
+                                        metadata = if (dropReasoningMetadata) null else part.metadata,
+                                    )
+                                )
                             }
                         }
 
@@ -159,6 +179,16 @@ class ChatInputState {
 
     /** 输入框里当前附件（图片/视频/音频/文档）的 url，用于新增附件按内容去重。 */
     fun attachmentUrls(): List<String> = messageContent.mapNotNull { it.attachmentUrlOrNull() }
+
+    /**
+     * 只有一段思考加正文的消息才允许改思考内容。
+     * 带 metadata 的思考（Claude/Gemini 签名、OpenAI 加密内容等）回传时要和原文对得上，
+     * fork 允许确认后编辑，编辑结果会丢掉这些 metadata，见 [dropEditingReasoningMetadata]。
+     */
+    private fun List<UIMessagePart>.editableReasoningOrNull(): UIMessagePart.Reasoning? {
+        if (!all { it is UIMessagePart.Text || it is UIMessagePart.Reasoning }) return null
+        return filterIsInstance<UIMessagePart.Reasoning>().singleOrNull()
+    }
 
     private fun UIMessagePart.attachmentUrlOrNull(): String? {
         return when (this) {

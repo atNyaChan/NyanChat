@@ -399,8 +399,7 @@ class RouteActivity : AppCompatActivity() {
                                     id = Uuid.parse(key.id),
                                     text = key.text,
                                     files = key.files.map { it.toUri() },
-                                    nodeId = key.nodeId?.let { Uuid.parse(it) },
-                                    folderId = key.folderId?.let { Uuid.parse(it) }
+                                    nodeId = key.nodeId?.let { Uuid.parse(it) }
                                 )
                             }
 
@@ -474,7 +473,12 @@ class RouteActivity : AppCompatActivity() {
                                 MediaCreationSessionsPage()
                             }
 
-                            entry<Screen.MediaCreation> { key ->
+                            // 从会话列表展开（容器变换），页面本身只做淡入淡出，避免和平移打架
+                            entry<Screen.MediaCreation>(
+                                metadata = NavDisplay.transitionSpec { fadeIn() togetherWith fadeOut() }
+                                    + NavDisplay.popTransitionSpec { fadeIn() togetherWith fadeOut() }
+                                    + NavDisplay.predictivePopTransitionSpec { fadeIn() togetherWith fadeOut() }
+                            ) { key ->
                                 MediaCreationPage(key.id)
                             }
 
@@ -633,8 +637,7 @@ sealed interface Screen : NavKey {
         val id: String,
         val text: String? = null,
         val files: List<String> = emptyList(),
-        val nodeId: String? = null,
-        val folderId: String? = null
+        val nodeId: String? = null
     ) : Screen
 
     @Serializable

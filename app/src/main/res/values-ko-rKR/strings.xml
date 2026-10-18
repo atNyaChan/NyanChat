@@ -218,8 +218,13 @@
   <string name="asr_button_content_description">음성 인식</string>
   <string name="asr_button_stop">중지</string>
   <string name="chat_input_attachment_already_added">이 첨부 파일은 이미 추가되었습니다</string>
+  <string name="chat_input_edit_reasoning">추론 편집</string>
+  <string name="chat_input_edit_reasoning_encrypted_confirm">그래도 편집</string>
+  <string name="chat_input_edit_reasoning_encrypted_message">이 답변에는 암호화된 추론 체인이 포함되어 있습니다. 편집하면 암호화된 추론 내용이 삭제됩니다.</string>
+  <string name="chat_input_edit_thinking_process">사고 과정 편집</string>
   <string name="chat_input_file_read_failed">파일 읽기 실패: %s</string>
   <string name="chat_input_placeholder">AI와 채팅하기</string>
+  <string name="chat_input_reasoning_placeholder">추론 내용</string>
   <string name="chat_input_unsupported_file_type">지원되지 않는 파일 형식: %s</string>
   <string name="tools_warning">현재 모델에는 도구 호출 기능이 활성화되어 있지 않습니다. 검색/MCP 기능 사용을 위해 설정에서 모델의 도구 기능을 활성화하세요.</string>
   <!-- Chat message -->
@@ -1477,7 +1482,7 @@
   <string name="backup_page_import_from_other_app">다른 앱에서 가져오기</string>
   <string name="backup_page_import_local">로컬 파일 가져오기</string>
   <string name="backup_page_importing">가져오는 중...</string>
-  <string name="backup_page_legacy_export">레거시 형식 내보내기(RikkaHub 2.5.1+ 호환)</string>
+  <string name="backup_page_legacy_export">레거시 형식 내보내기(RikkaHub 3.0.0+ 호환)</string>
   <string name="backup_page_legacy_export_desc">이 Fork에서 추가한 비호환 설정 제거; 작업 공간 환경은 포함되지 않음</string>
   <string name="backup_page_loading_failed">백업 파일 로드 실패: %s</string>
   <string name="backup_page_local_backup_export">파일로 내보내기</string>

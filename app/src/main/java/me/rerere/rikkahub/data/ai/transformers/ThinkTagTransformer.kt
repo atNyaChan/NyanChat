@@ -16,39 +16,6 @@ private fun thinkingRegex(parseMidThink: Boolean): Regex =
 
 // 部分供应商不会返回reasoning parts, 所以需要这个transformer
 object ThinkTagTransformer : OutputMessageTransformer {
-    fun parseEditedParts(
-        parts: List<UIMessagePart>,
-        parseMidThink: Boolean = false,
-    ): List<UIMessagePart> {
-        val now = Clock.System.now()
-        val regex = thinkingRegex(parseMidThink)
-        return parts.flatMap { part ->
-            if (part !is UIMessagePart.Text || !regex.containsMatchIn(part.text)) {
-                return@flatMap listOf(part)
-            }
-
-            buildList {
-                var cursor = 0
-                regex.findAll(part.text).forEach { match ->
-                    if (match.range.first > cursor) {
-                        add(part.copy(text = part.text.substring(cursor, match.range.first)))
-                    }
-                    add(
-                        UIMessagePart.Reasoning(
-                            reasoning = match.groupValues.getOrNull(1)?.trim().orEmpty(),
-                            createdAt = now,
-                            finishedAt = now,
-                        )
-                    )
-                    cursor = match.range.last + 1
-                }
-                if (cursor < part.text.length) {
-                    add(part.copy(text = part.text.substring(cursor)))
-                }
-            }
-        }
-    }
-
     override suspend fun visualTransform(
         ctx: TransformerContext,
         messages: List<UIMessage>,

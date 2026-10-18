@@ -32,6 +32,7 @@ import me.rerere.ui.toast.ToastType
 import me.rerere.ai.provider.ProviderSetting
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.DEFAULT_PROVIDERS
+import me.rerere.rikkahub.data.datastore.sanitizeBuiltInTools
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.View
 import me.rerere.hugeicons.stroke.ViewOff
@@ -101,7 +102,7 @@ fun ProviderSetting.convertTo(type: KClass<out ProviderSetting>): ProviderSettin
     }
     val convertedBaseUrl = sourceBaseUrl.convertToTargetBaseUrl(targetDefaultBaseUrl)
 
-    return when (type) {
+    val converted = when (type) {
         ProviderSetting.OpenAI::class -> ProviderSetting.OpenAI(
             id = this.id, enabled = this.enabled, name = this.name, models = this.models,
             balanceOption = this.balanceOption, customHeaders = this.customHeaders, builtIn = this.builtIn,
@@ -122,6 +123,8 @@ fun ProviderSetting.convertTo(type: KClass<out ProviderSetting>): ProviderSettin
         )
         else -> error("Unsupported provider type: $type")
     }
+    // 换类型后新 API 不支持的内置工具直接关掉，避免留下开了却不会发送的开关
+    return converted.sanitizeBuiltInTools()
 }
 
 internal fun ProviderSetting.defaultBaseUrlForReset(): String {

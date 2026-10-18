@@ -222,22 +222,23 @@ data class BackupReminderConfig(
 )
 
 /**
- * 关闭每个模型上当前提供商类型不支持的内置工具。
+ * 关闭该提供商下每个模型上当前提供商类型不支持的内置工具。
  *
  * 模型自带的“提供商重写”优先于它所属的提供商；仅保留 [supportedBuiltInTools] 中列出的工具。
- * 用于导入备份后清理来自其他版本或旧配置中已失效的内置工具。
+ * 用于导入备份、切换提供商类型后清理已失效的内置工具。
  */
-fun Settings.sanitizeBuiltInTools(): Settings = copy(
-    providers = providers.map { provider ->
-        provider.copyProvider(
-            models = provider.models.map { model ->
-                val supported = (model.providerOverwrite ?: provider).supportedBuiltInTools()
-                if (model.tools.all { it in supported }) {
-                    model
-                } else {
-                    model.copy(tools = model.tools.intersect(supported))
-                }
-            }
-        )
+fun ProviderSetting.sanitizeBuiltInTools(): ProviderSetting = copyProvider(
+    models = models.map { model ->
+        val supported = (model.providerOverwrite ?: this).supportedBuiltInTools()
+        if (model.tools.all { it in supported }) {
+            model
+        } else {
+            model.copy(tools = model.tools.intersect(supported))
+        }
     }
+)
+
+/** 关闭全部提供商下当前 API 不支持的内置工具，见 [ProviderSetting.sanitizeBuiltInTools] */
+fun Settings.sanitizeBuiltInTools(): Settings = copy(
+    providers = providers.map { it.sanitizeBuiltInTools() }
 )

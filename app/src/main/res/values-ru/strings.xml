@@ -218,8 +218,13 @@
   <string name="asr_button_content_description">Распознавание речи</string>
   <string name="asr_button_stop">Стоп</string>
   <string name="chat_input_attachment_already_added">Это вложение уже добавлено</string>
+  <string name="chat_input_edit_reasoning">Изменить рассуждение</string>
+  <string name="chat_input_edit_reasoning_encrypted_confirm">Всё равно изменить</string>
+  <string name="chat_input_edit_reasoning_encrypted_message">Этот ответ содержит зашифрованную цепочку рассуждений. При редактировании зашифрованное содержимое рассуждений будет удалено.</string>
+  <string name="chat_input_edit_thinking_process">Изменить процесс мышления</string>
   <string name="chat_input_file_read_failed">Не удалось прочитать файл: %s</string>
   <string name="chat_input_placeholder">Общайтесь с ИИ</string>
+  <string name="chat_input_reasoning_placeholder">Содержимое рассуждения</string>
   <string name="chat_input_unsupported_file_type">Неподдерживаемый тип файла: %s</string>
   <string name="tools_warning">Текущая модель не поддерживает вызов инструментов. Чтобы использовать функции поиска/MCP, включите возможности инструментов модели в настройках.</string>
   <!-- Chat message -->
@@ -1477,7 +1482,7 @@
   <string name="backup_page_import_from_other_app">Импорт из другого приложения</string>
   <string name="backup_page_import_local">Импорт локального файла</string>
   <string name="backup_page_importing">Импорт…</string>
-  <string name="backup_page_legacy_export">Экспорт в старом формате (совместимо с RikkaHub 2.5.1+)</string>
+  <string name="backup_page_legacy_export">Экспорт в старом формате (совместимо с RikkaHub 3.0.0+)</string>
   <string name="backup_page_legacy_export_desc">Удалить несовместимые настройки, добавленные в этом форке; окружения рабочих пространств не включены</string>
   <string name="backup_page_loading_failed">Не удалось загрузить файлы резервной копии: %s</string>
   <string name="backup_page_local_backup_export">Экспорт в файл</string>

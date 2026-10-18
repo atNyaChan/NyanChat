@@ -57,7 +57,6 @@ class ChatVM(
     private val chatService: ChatService,
     private val filesManager: FilesManager,
     private val favoriteRepository: FavoriteRepository,
-    private val folderId: Uuid? = null,
 ) : ViewModel() {
     private val _conversationId: Uuid = Uuid.parse(id)
     val conversation: StateFlow<Conversation> = chatService.getConversationFlow(_conversationId)
@@ -105,7 +104,7 @@ class ChatVM(
 
         // 初始化对话
         viewModelScope.launch {
-            chatService.initializeConversation(_conversationId, folderId)
+            chatService.initializeConversation(_conversationId)
         }
 
         // 记住对话ID, 方便下次启动恢复
@@ -194,6 +193,11 @@ class ChatVM(
         viewModelScope.launch {
             chatService.updateChatAssistant(_conversationId) { assistant }
         }
+    }
+
+    // 新会话开始前归入抽屉里选中的文件夹
+    suspend fun updateDraftFolder(folderId: Uuid?) {
+        chatService.updateDraftConversationFolder(_conversationId, folderId)
     }
 
     // 设置聊天模型

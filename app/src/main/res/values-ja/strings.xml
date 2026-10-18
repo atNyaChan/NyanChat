@@ -218,8 +218,13 @@
   <string name="asr_button_content_description">音声認識</string>
   <string name="asr_button_stop">停止</string>
   <string name="chat_input_attachment_already_added">この添付ファイルはすでに追加されています</string>
+  <string name="chat_input_edit_reasoning">推論を編集</string>
+  <string name="chat_input_edit_reasoning_encrypted_confirm">それでも編集</string>
+  <string name="chat_input_edit_reasoning_encrypted_message">この返信には暗号化された推論チェーンが含まれています。編集すると暗号化された推論内容は破棄されます。</string>
+  <string name="chat_input_edit_thinking_process">思考プロセスを編集</string>
   <string name="chat_input_file_read_failed">ファイルの読み取りに失敗しました: %s</string>
   <string name="chat_input_placeholder">AIとチャットするメッセージを入力</string>
+  <string name="chat_input_reasoning_placeholder">推論内容</string>
   <string name="chat_input_unsupported_file_type">サポートされていないファイルタイプ: %s</string>
   <string name="tools_warning">現在のモデルではツール呼び出しが有効になっていません。設定でモデルのツール機能を有効にしてから、検索/MCPなどの機能を使用してください。</string>
   <!-- Chat message -->
@@ -1477,7 +1482,7 @@
   <string name="backup_page_import_from_other_app">他のアプリからインポート</string>
   <string name="backup_page_import_local">ローカルファイルをインポート</string>
   <string name="backup_page_importing">インポート中...</string>
-  <string name="backup_page_legacy_export">旧形式でエクスポート（RikkaHub 2.5.1+ 対応）</string>
+  <string name="backup_page_legacy_export">旧形式でエクスポート（RikkaHub 3.0.0+ 対応）</string>
   <string name="backup_page_legacy_export_desc">この Fork で追加された非互換設定を削除；ワークスペース環境は含まれません</string>
   <string name="backup_page_loading_failed">バックアップファイルの読み込み失敗: %s</string>
   <string name="backup_page_local_backup_export">ファイルにエクスポート</string>

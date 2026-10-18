@@ -323,6 +323,8 @@ fun SettingProviderDetailSheet(
                             ProviderTypeSelectorCard(
                                 provider = internalProvider,
                                 onEdit = { internalProvider = it },
+                                // 提供商创建后类型仍可切换，但换类型会丢掉不兼容的配置
+                                showWarning = !isNew,
                             )
                         }
 
@@ -615,17 +617,27 @@ private enum class ProviderSheetTab(
 private fun ProviderTypeSelectorCard(
     provider: ProviderSetting,
     onEdit: (ProviderSetting) -> Unit,
+    showWarning: Boolean = false,
 ) {
     CardGroup(modifier = Modifier.fillMaxWidth()) {
         item(
             headlineContent = {},
             supportingContent = {
-                ConnectedChoiceButtons(
-                    options = ProviderSetting.Types,
-                    selected = provider::class,
-                    onSelect = { onEdit(provider.convertTo(it)) },
-                ) { type, selected ->
-                    ConnectedChoiceLabel(text = type.simpleName ?: "", selected = selected)
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ConnectedChoiceButtons(
+                        options = ProviderSetting.Types,
+                        selected = provider::class,
+                        onSelect = { onEdit(provider.convertTo(it)) },
+                    ) { type, selected ->
+                        ConnectedChoiceLabel(text = type.simpleName ?: "", selected = selected)
+                    }
+                    if (showWarning) {
+                        Text(
+                            text = stringResource(R.string.common_not_recommended_to_modify),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             },
         )
