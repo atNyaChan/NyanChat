@@ -24,6 +24,7 @@ import me.rerere.ai.ui.ServerToolStatus
 import me.rerere.ai.ui.UIMessage
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.ai.ui.toMetadata
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -59,7 +60,8 @@ class ResponseApiRequestMessageTest {
         params: TextGenerationParams,
         stream: Boolean = false
     ): JsonObject {
-        return api.buildRequestBody(providerSetting, listOf(UIMessage.user("hello")), params, stream)
+        val capabilities = resolveResponseProviderCapabilities(providerSetting.baseUrl.toHttpUrl().host)
+        return api.buildRequestBody(capabilities, listOf(UIMessage.user("hello")), params, stream)
     }
 
     private fun createReasoningParams(reasoningLevel: ReasoningLevel = ReasoningLevel.OFF): TextGenerationParams {

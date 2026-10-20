@@ -84,6 +84,7 @@ fun ProviderSetting.supportedBuiltInTools(): Set<BuiltInTools> = when (this) {
 
     is ProviderSetting.Google -> setOf(BuiltInTools.Search, BuiltInTools.UrlContext)
     is ProviderSetting.Claude -> setOf(BuiltInTools.Search)
+    is ProviderSetting.Account -> setOf(BuiltInTools.Search)
 }
 
 /**

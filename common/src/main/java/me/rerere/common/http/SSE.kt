@@ -3,12 +3,12 @@ package me.rerere.common.http
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import me.rerere.common.http.sse.newEventSource
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.sse.EventSource
 import okhttp3.sse.EventSourceListener
-import okhttp3.sse.EventSources
 
 /**
  * 代表 SSE 连接中的各种事件
@@ -80,9 +80,7 @@ fun OkHttpClient.sseFlow(request: Request): Flow<SseEvent> {
         }
 
         // 2. 创建 EventSource
-        // 使用当前 OkHttpClient 创建 EventSource 工厂
-        val factory = EventSources.createFactory(this@sseFlow)
-        val eventSource = factory.newEventSource(request, listener)
+        val eventSource = this@sseFlow.newEventSource(request, listener)
 
         // 3. awaitClose 用于在 Flow 被取消时执行清理操作
         // 当收集 Flow 的协程被取消时，这个块会被调用

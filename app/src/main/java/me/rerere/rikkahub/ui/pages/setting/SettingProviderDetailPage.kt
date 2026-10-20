@@ -1,23 +1,9 @@
 package me.rerere.rikkahub.ui.pages.setting
 
-import androidx.annotation.StringRes
-import me.rerere.hugeicons.HugeIcons
-import me.rerere.hugeicons.stroke.Add01
-import me.rerere.hugeicons.stroke.ArrowDown01
-import me.rerere.hugeicons.stroke.ArrowUp01
-import me.rerere.hugeicons.stroke.Refresh03
-import me.rerere.hugeicons.stroke.Package01
-import me.rerere.hugeicons.stroke.Settings03
-import me.rerere.hugeicons.stroke.Share01
-import me.rerere.hugeicons.stroke.Cancel01
-import me.rerere.hugeicons.stroke.Delete01
-import me.rerere.hugeicons.stroke.Tick01
-import me.rerere.hugeicons.stroke.Toolbox
-import me.rerere.hugeicons.stroke.Tools
-import me.rerere.hugeicons.stroke.View
-import me.rerere.hugeicons.stroke.ViewOff
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,9 +11,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -52,11 +36,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -84,9 +67,11 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastFilter
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import me.rerere.ui.toast.ToastType
 import kotlinx.coroutines.launch
-import me.rerere.ai.provider.BalanceOption
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import me.rerere.ai.provider.BuiltInTools
 import me.rerere.ai.provider.Modality
 import me.rerere.ai.provider.Model
@@ -96,58 +81,67 @@ import me.rerere.ai.provider.ModelType
 import me.rerere.ai.provider.ProviderManager
 import me.rerere.ai.provider.ProviderSetting
 import me.rerere.ai.provider.supportedBuiltInTools
+import me.rerere.ai.provider.supportsQuota
 import me.rerere.ai.registry.ModelRegistry
-import me.rerere.common.http.isJsonExprValid
+import me.rerere.hugeicons.HugeIcons
+import me.rerere.hugeicons.stroke.Add01
+import me.rerere.hugeicons.stroke.Cancel01
+import me.rerere.hugeicons.stroke.Delete01
+import me.rerere.hugeicons.stroke.Package01
+import me.rerere.hugeicons.stroke.Settings03
+import me.rerere.hugeicons.stroke.Share01
+import me.rerere.hugeicons.stroke.Tick01
+import me.rerere.hugeicons.stroke.Toolbox
+import me.rerere.hugeicons.stroke.Tools
+import me.rerere.hugeicons.stroke.View
+import me.rerere.hugeicons.stroke.ViewOff
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.Screen
+import me.rerere.rikkahub.data.ai.account.preserveCredential
 import me.rerere.rikkahub.data.datastore.findProvider
 import me.rerere.rikkahub.ui.components.ai.ExtensionEmptyState
 import me.rerere.rikkahub.ui.components.ai.ModelAbilityTag
 import me.rerere.rikkahub.ui.components.ai.ModelListSheet
 import me.rerere.rikkahub.ui.components.ai.ModelModalityTag
 import me.rerere.rikkahub.ui.components.ai.ModelTypeTag
-import me.rerere.rikkahub.ui.components.ai.ProviderBalanceText
+import me.rerere.rikkahub.ui.components.ai.ProviderQuotaText
 import me.rerere.rikkahub.ui.components.ai.rememberModelListState
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
 import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
-import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.rikkahub.ui.components.ui.CardGroup
-import me.rerere.rikkahub.ui.components.ui.CardGroupScope
-import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
 import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceLabel
 import me.rerere.rikkahub.ui.components.ui.ConnectedMultiChoiceButtons
-import me.rerere.rikkahub.ui.components.ui.FormItem
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.PagerTab
 import me.rerere.rikkahub.ui.components.ui.PagerTabs
-import me.rerere.rikkahub.ui.components.ui.switchItem
-import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.ShareSheet
 import me.rerere.rikkahub.ui.components.ui.Tag
 import me.rerere.rikkahub.ui.components.ui.TagType
+import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
+import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.rikkahub.ui.components.ui.rememberShareSheetState
+import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.hooks.useEditState
 import me.rerere.rikkahub.ui.pages.assistant.detail.CustomRequestProperties
-import me.rerere.rikkahub.ui.pages.setting.components.convertTo
+import me.rerere.rikkahub.ui.pages.setting.components.ProviderAccountConfig
 import me.rerere.rikkahub.ui.pages.setting.components.ProviderConnectionTester
+import me.rerere.rikkahub.ui.pages.setting.components.SettingProviderQuotaQuery
+import me.rerere.rikkahub.ui.pages.setting.components.convertTo
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.utils.formatContextLength
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
+import me.rerere.ui.toast.ToastType
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import kotlin.uuid.Uuid
-
-private val ApiPathRegex = Regex("""^/[^ \t\n\r]*$""")
 
 // OpenAI 仅在 Responses API 下支持的内置工具，切换到 Chat Completions 时需要关闭
 private val ResponsesApiOnlyBuiltInTools = setOf(BuiltInTools.Search, BuiltInTools.ImageGeneration)
@@ -171,10 +165,10 @@ fun SettingProviderDetailSheet(
     val scope = rememberCoroutineScope()
     val providerManager = koinInject<ProviderManager>()
 
-    val provider = draftProvider ?: settings.providers.find { it.id == id } ?: return
+    // 账号类草稿在登录时会被写入设置，之后以设置里的最新凭据为准
+    val provider = settings.providers.find { it.id == id } ?: draftProvider ?: return
 
     var internalProvider by remember(provider) { mutableStateOf(provider) }
-    var balanceRefreshTick by remember { mutableStateOf(0) }
     var showModelPicker by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     val customModelDialog = useEditState<Model> { edited ->
@@ -225,13 +219,14 @@ fun SettingProviderDetailSheet(
     val onSave = {
         val providerToSave: ProviderSetting = internalProvider.copyProvider(name = internalProvider.name.trim())
         vm.updateSettings { latest ->
-            if (isNew) {
+            // 账号类草稿登录时已经写入设置，保存时按 id 更新，不能重复添加
+            if (latest.providers.none { it.id == providerToSave.id }) {
                 latest.copy(providers = listOf(providerToSave) + latest.providers)
             } else {
                 latest.copy(
                     providers = latest.providers.map {
-                        if (internalProvider.id == it.id) {
-                            providerToSave
+                        if (providerToSave.id == it.id) {
+                            providerToSave.preserveCredential(it)
                         } else {
                             it
                         }
@@ -319,7 +314,8 @@ fun SettingProviderDetailSheet(
                             .padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        if (!internalProvider.builtIn) {
+                        // 账号类提供商没有可切换的类型，不显示选择器
+                        if (!internalProvider.builtIn && internalProvider is ProviderSetting.ApiKey) {
                             ProviderTypeSelectorCard(
                                 provider = internalProvider,
                                 onEdit = { internalProvider = it },
@@ -328,17 +324,45 @@ fun SettingProviderDetailSheet(
                             )
                         }
 
-                        ProviderConfigFieldsCardGroup(
-                            provider = internalProvider,
-                            onEdit = { internalProvider = it },
-                        )
+                        val accountProvider = internalProvider as? ProviderSetting.Account
+                        if (accountProvider != null) {
+                            ProviderAccountConfig(
+                                provider = accountProvider,
+                                onEdit = { internalProvider = it },
+                            )
+                            ProviderConfigTogglesCardGroup(
+                                provider = accountProvider,
+                                onEdit = { internalProvider = it },
+                            )
+                        } else {
+                            ProviderConfigFieldsCardGroup(
+                                provider = internalProvider,
+                                onEdit = { internalProvider = it },
+                            )
 
-                        ProviderConfigTogglesCardGroup(
-                            provider = internalProvider,
-                            balanceRefreshTick = balanceRefreshTick,
-                            onRefreshBalance = { balanceRefreshTick += 1 },
-                            onEdit = { internalProvider = it },
-                        )
+                            ProviderConfigTogglesCardGroup(
+                                provider = internalProvider,
+                                onEdit = { internalProvider = it },
+                            )
+
+                            // 账号类的额度查询写死在 Provider 里，没有这一项
+                            (internalProvider as? ProviderSetting.ApiKey)?.let { apiKeyProvider ->
+                                SettingProviderQuotaQuery(
+                                    provider = apiKeyProvider,
+                                    // 额度按已保存的配置查，没开就不留这一行
+                                    supportingContent = if (provider.supportsQuota) {
+                                        { refreshKey ->
+                                            ProviderQuotaText(
+                                                providerSetting = provider,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                refreshKey = refreshKey,
+                                            )
+                                        }
+                                    } else null,
+                                    onEdit = { internalProvider = apiKeyProvider.withQuotaQuery(it) },
+                                )
+                            }
+                        }
 
                         CustomRequestProperties(
                             headers = internalProvider.customHeaders,
@@ -423,12 +447,15 @@ fun SettingProviderDetailSheet(
                 ProviderConnectionTester(
                     internalProvider = internalProvider,
                 )
-                IconButton(
-                    onClick = {
-                        shareSheetState.show(internalProvider)
+                // 账号型提供商离开账号就没法用，不提供分享
+                if (internalProvider !is ProviderSetting.Account) {
+                    IconButton(
+                        onClick = {
+                            shareSheetState.show(internalProvider)
+                        }
+                    ) {
+                        Icon(HugeIcons.Share01, null)
                     }
-                ) {
-                    Icon(HugeIcons.Share01, null)
                 }
                 Spacer(Modifier.weight(1f))
                 TextButton(
@@ -795,6 +822,9 @@ private fun ProviderConfigFieldsCardGroup(
                     headlineContent = {},
                 )
             }
+
+            // 账号类没有 API Key、地址等字段，名称与登录信息在 ProviderAccountConfig 里
+            is ProviderSetting.ChatGPT, is ProviderSetting.Grok -> Unit
         }
     }
 }
@@ -802,12 +832,8 @@ private fun ProviderConfigFieldsCardGroup(
 @Composable
 private fun ProviderConfigTogglesCardGroup(
     provider: ProviderSetting,
-    balanceRefreshTick: Int,
-    onRefreshBalance: () -> Unit,
     onEdit: (ProviderSetting) -> Unit,
-    showBalance: Boolean = true,
 ) {
-    var balanceExpanded by remember { mutableStateOf(false) }
     CardGroup(modifier = Modifier.fillMaxWidth()) {
         when (provider) {
             is ProviderSetting.OpenAI -> {
@@ -849,47 +875,6 @@ private fun ProviderConfigTogglesCardGroup(
                     headlineContent = { Text(stringResource(R.string.setting_provider_page_response_api)) },
                 )
 
-                if (showBalance) {
-                    BalanceFormItem(
-                        provider = provider,
-                        balanceRefreshTick = balanceRefreshTick,
-                        onRefreshBalance = onRefreshBalance,
-                        expand = balanceExpanded,
-                        onToggleExpand = { balanceExpanded = !balanceExpanded },
-                        onEdit = { option ->
-                            onEdit(provider.copy(balanceOption = option))
-                        },
-                    )
-
-                    // 默认收起，点击左侧展开/收起键才显示下面两项
-                    if (balanceExpanded) {
-                        item(
-                            supportingContent = {
-                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    OutlinedTextField(
-                                        value = provider.balanceOption.apiPath,
-                                        onValueChange = { onEdit(provider.copy(balanceOption = provider.balanceOption.copy(apiPath = it))) },
-                                        label = { Text(stringResource(R.string.setting_provider_page_balance_api_path)) },
-                                        isError = !provider.balanceOption.apiPath.matches(ApiPathRegex),
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                    OutlinedTextField(
-                                        value = provider.balanceOption.resultPath,
-                                        onValueChange = { onEdit(provider.copy(balanceOption = provider.balanceOption.copy(resultPath = it))) },
-                                        label = { Text(stringResource(R.string.setting_provider_page_balance_json_key)) },
-                                        isError = !isJsonExprValid(provider.balanceOption.resultPath),
-                                        modifier = Modifier.fillMaxWidth(),
-                                        textStyle = MaterialTheme.typography.bodySmall.copy(
-                                            fontFamily = JetbrainsMono,
-                                            fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
-                                        )
-                                    )
-                                }
-                            },
-                            headlineContent = {},
-                        )
-                    }
-                }
             }
 
             is ProviderSetting.Google -> {
@@ -930,61 +915,16 @@ private fun ProviderConfigTogglesCardGroup(
                     headlineContent = { Text(stringResource(R.string.setting_provider_page_enable)) },
                 )
             }
-        }
-    }
-}
 
-private fun CardGroupScope.BalanceFormItem(
-    provider: ProviderSetting,
-    balanceRefreshTick: Int,
-    onRefreshBalance: () -> Unit,
-    expand: Boolean,
-    onToggleExpand: () -> Unit,
-    onEdit: (BalanceOption) -> Unit,
-) {
-    FormItem(
-        onClick = { onEdit(provider.balanceOption.copy(enabled = !provider.balanceOption.enabled)) },
-        label = {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(stringResource(R.string.setting_provider_page_balance_info))
-                if (provider.balanceOption.enabled) {
-                    ProviderBalanceText(
-                        providerSetting = provider,
-                        style = MaterialTheme.typography.labelSmall,
-                        refreshKey = balanceRefreshTick,
-                    )
-                }
-            }
-        },
-        tail = {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconButton(
-                    onClick = onToggleExpand,
-                ) {
-                    Icon(
-                        if (expand) HugeIcons.ArrowUp01 else HugeIcons.ArrowDown01,
-                        contentDescription = null,
-                    )
-                }
-                IconButton(
-                    onClick = onRefreshBalance,
-                    enabled = provider.balanceOption.enabled,
-                ) {
-                    Icon(HugeIcons.Refresh03, null)
-                }
-                Switch(
-                    checked = provider.balanceOption.enabled,
-                    onCheckedChange = { onEdit(provider.balanceOption.copy(enabled = it)) }
+            is ProviderSetting.ChatGPT, is ProviderSetting.Grok -> {
+                switchItem(
+                    checked = provider.enabled,
+                    onCheckedChange = { onEdit(provider.copyProvider(enabled = it)) },
+                    headlineContent = { Text(stringResource(R.string.setting_provider_page_enable)) },
                 )
             }
-        },
-    )
+        }
+    }
 }
 
 @Composable
@@ -1628,39 +1568,42 @@ private fun ModelSettingsForm(
                             }
                         }
 
-                        CardGroup(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            item(
-                                supportingContent = {
-                                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        Text(
-                                            text = stringResource(R.string.setting_provider_page_provider_override),
-                                            style = MaterialTheme.typography.titleMedium,
-                                        )
-                                        ProviderOverrideSettings(
-                                            providerOverride = model.providerOverwrite,
-                                            onUpdateProviderOverride = { providerOverride ->
-                                                // 覆盖提供商切到 Chat Completions 时，关闭仅 Responses API 支持的内置工具
-                                                val tools =
-                                                    if (providerOverride is ProviderSetting.OpenAI && !providerOverride.useResponseApi) {
-                                                        model.tools - ResponsesApiOnlyBuiltInTools
-                                                    } else {
-                                                        model.tools
-                                                    }
-                                                onModelChange(
-                                                    model.copy(
-                                                        providerOverwrite = providerOverride,
-                                                        tools = tools,
+                        // 覆盖配置是提供商的独立副本，账号凭据不能复制出去，账号型提供商不支持覆盖
+                        if (parentProvider !is ProviderSetting.Account) {
+                            CardGroup(
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                item(
+                                    supportingContent = {
+                                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            Text(
+                                                text = stringResource(R.string.setting_provider_page_provider_override),
+                                                style = MaterialTheme.typography.titleMedium,
+                                            )
+                                            ProviderOverrideSettings(
+                                                providerOverride = model.providerOverwrite,
+                                                onUpdateProviderOverride = { providerOverride ->
+                                                    // 覆盖提供商切到 Chat Completions 时，关闭仅 Responses API 支持的内置工具
+                                                    val tools =
+                                                        if (providerOverride is ProviderSetting.OpenAI && !providerOverride.useResponseApi) {
+                                                            model.tools - ResponsesApiOnlyBuiltInTools
+                                                        } else {
+                                                            model.tools
+                                                        }
+                                                    onModelChange(
+                                                        model.copy(
+                                                            providerOverwrite = providerOverride,
+                                                            tools = tools,
+                                                        )
                                                     )
-                                                )
-                                            },
-                                            parentProvider = parentProvider
-                                        )
-                                    }
-                                },
-                                headlineContent = {},
-                            )
+                                                },
+                                                parentProvider = parentProvider
+                                            )
+                                        }
+                                    },
+                                    headlineContent = {},
+                                )
+                            }
                         }
 
                         CustomRequestProperties(
@@ -2385,7 +2328,7 @@ private fun ProviderOverrideSettings(
                             .padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        if (!internalProvider.builtIn) {
+                        if (!internalProvider.builtIn && internalProvider is ProviderSetting.ApiKey) {
                             ProviderTypeSelectorCard(
                                 provider = internalProvider,
                                 onEdit = { internalProvider = it },
@@ -2399,10 +2342,7 @@ private fun ProviderOverrideSettings(
 
                         ProviderConfigTogglesCardGroup(
                             provider = internalProvider,
-                            balanceRefreshTick = 0,
-                            onRefreshBalance = {},
                             onEdit = { internalProvider = it },
-                            showBalance = false,
                         )
                     }
 

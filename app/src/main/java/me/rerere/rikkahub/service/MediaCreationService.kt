@@ -35,7 +35,6 @@ import me.rerere.rikkahub.MEDIA_CREATION_NOTIFICATION_CHANNEL_ID
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.files.MediaCreationFiles
-import me.rerere.rikkahub.data.remote.RemoteFileStore
 import me.rerere.rikkahub.data.model.MediaCreationAsset
 import me.rerere.rikkahub.data.model.MediaCreationOutput
 import me.rerere.rikkahub.data.model.MediaCreationParams
@@ -44,6 +43,7 @@ import me.rerere.rikkahub.data.model.MediaCreationStatus
 import me.rerere.rikkahub.data.model.buildMediaGenerationRequest
 import me.rerere.rikkahub.data.model.deriveMediaCreationTitle
 import me.rerere.rikkahub.data.model.supportedBy
+import me.rerere.rikkahub.data.remote.RemoteFileStore
 import me.rerere.rikkahub.data.repository.MediaCreationRepository
 import me.rerere.rikkahub.utils.sendNotification
 import okhttp3.Headers.Companion.toHeaders
@@ -395,7 +395,11 @@ class MediaCreationService(
             val url = output.url
             when {
                 data != null -> file.writeBytes(data)
-                url != null -> download(setting, url, file)
+                url != null -> {
+                    Log.i(TAG, "Downloading output $index (${output.mimeType}) from $url")
+                    download(setting, url, file)
+                    Log.i(TAG, "Downloaded output $index: ${file.length()} bytes -> ${file.name}")
+                }
                 else -> return@mapIndexedNotNull null
             }
 

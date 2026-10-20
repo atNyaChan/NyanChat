@@ -15,6 +15,7 @@ import me.rerere.ai.util.parseErrorDetail
 import me.rerere.common.http.jsonArrayOrNull
 import me.rerere.common.http.jsonObjectOrNull
 import me.rerere.common.http.jsonPrimitiveOrNull
+import me.rerere.common.http.stringOrNull
 
 /**
  * Interactions API 的流按 step 组织：`step.start` → `step.delta`* → `step.stop`，

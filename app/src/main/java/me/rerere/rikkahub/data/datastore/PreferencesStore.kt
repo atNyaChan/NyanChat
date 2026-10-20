@@ -35,6 +35,7 @@ import kotlinx.coroutines.withContext
 import me.rerere.ai.core.ReasoningLevel
 import me.rerere.ai.provider.BuiltInTools
 import me.rerere.rikkahub.AppScope
+import me.rerere.rikkahub.data.datastore.migration.PreferenceStoreV5Migration
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.files.attachmentUrls
 import me.rerere.rikkahub.data.files.withRuntimeLocalFiles
@@ -73,6 +74,9 @@ private fun createSettingsDataStore(context: Context): DataStore<Preferences> {
             }
             emptyPreferences()
         },
+        migrations = listOf(
+            PreferenceStoreV5Migration(),
+        ),
         produceFile = { file },
     )
 }
@@ -93,6 +97,9 @@ class SettingsStore internal constructor(
         this(context.settingsStore, context.filesDir, scope, filesManager)
 
     companion object {
+        // 版本号
+        val VERSION = intPreferencesKey("data_version")
+
         // UI设置
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
         val THEME_ID = stringPreferencesKey("theme_id")

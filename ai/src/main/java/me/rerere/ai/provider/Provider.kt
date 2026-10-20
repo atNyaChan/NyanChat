@@ -5,8 +5,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import me.rerere.ai.core.ReasoningLevel
-import me.rerere.ai.core.Tool
 import me.rerere.ai.core.TokenUsage
+import me.rerere.ai.core.Tool
 import me.rerere.ai.ui.ImageGenSize
 import me.rerere.ai.ui.ImageGenerationItem
 import me.rerere.ai.ui.StreamChunk
@@ -18,9 +18,8 @@ import kotlin.uuid.Uuid
 interface Provider<T : ProviderSetting> {
     suspend fun listModels(providerSetting: T): List<Model>
 
-    suspend fun getBalance(providerSetting: T): String {
-        return "TODO"
-    }
+    /** 查询额度，见 [ProviderQuota]。不支持或没有开启时返回 null */
+    suspend fun getQuota(providerSetting: T): ProviderQuota? = null
 
     suspend fun generateText(
         providerSetting: T,
