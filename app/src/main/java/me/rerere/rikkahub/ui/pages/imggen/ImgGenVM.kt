@@ -9,15 +9,15 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import me.rerere.ai.provider.ImageEditParams
 import me.rerere.ai.provider.ImageGenerationParams
@@ -147,7 +147,7 @@ class ImgGenVM(
     }
 
     fun generateImage() {
-        if(prompt.value.isBlank()) return
+        if (prompt.value.isBlank()) return
         cancelJob?.cancel()
         cancelJob = viewModelScope.launch {
             try {
@@ -182,7 +182,7 @@ class ImgGenVM(
                     modelName = model.displayName,
                 )
             } catch (e: Exception) {
-                if(e is CancellationException) return@launch
+                if (e is CancellationException) return@launch
                 Log.e(TAG, "Failed to generate image", e)
                 _error.value = e.message ?: "Unknown error occurred"
             } finally {

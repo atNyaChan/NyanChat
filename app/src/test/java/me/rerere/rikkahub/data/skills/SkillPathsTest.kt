@@ -1,11 +1,11 @@
 package me.rerere.rikkahub.data.skills
 
-import java.io.File
-import java.nio.file.Files
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Test
+import java.io.File
+import java.nio.file.Files
 
 class SkillPathsTest {
     @Test

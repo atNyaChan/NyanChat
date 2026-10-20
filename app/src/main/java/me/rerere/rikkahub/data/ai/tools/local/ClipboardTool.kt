@@ -11,9 +11,9 @@ import kotlinx.serialization.json.put
 import me.rerere.ai.core.InputSchema
 import me.rerere.ai.core.Tool
 import me.rerere.ai.ui.UIMessagePart
+import me.rerere.common.android.Logging
 import me.rerere.rikkahub.utils.readClipboardText
 import me.rerere.rikkahub.utils.writeClipboardText
-import me.rerere.common.android.Logging
 
 internal fun buildClipboardTool(context: Context): Tool = Tool(
     name = "clipboard_tool",

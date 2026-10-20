@@ -13,7 +13,9 @@ class TextChunker(
         val punctuationRegex = "(?<=[。！？，、：;.!?:,\n])".toRegex()
 
         val chunks = paragraphs.flatMap { paragraph ->
-            if (paragraph.isBlank()) emptyList() else {
+            if (paragraph.isBlank()) {
+                emptyList()
+            } else {
                 paragraph
                     .split(punctuationRegex)
                     .asSequence()
@@ -42,4 +44,3 @@ data class TtsChunk(
     val index: Int,
     val text: String
 )
-

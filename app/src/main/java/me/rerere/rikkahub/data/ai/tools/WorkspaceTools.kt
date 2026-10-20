@@ -1,9 +1,9 @@
 package me.rerere.rikkahub.data.ai.tools
 
 import androidx.core.net.toUri
+import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
@@ -209,7 +209,9 @@ private fun createShellTool(
 ) = Tool(
     name = "workspace_shell",
     description = buildString {
-        append("Run a shell command in the assistant's bound workspace Rootfs. The workspace files area is mounted at /workspace. ")
+        append(
+            "Run a shell command in the assistant's bound workspace Rootfs. The workspace files area is mounted at /workspace. "
+        )
         append("Use cwd for a path relative to the workspace files root. ")
         if (!defaultCwd.isNullOrBlank()) {
             append("Defaults to '$defaultCwd'. ")

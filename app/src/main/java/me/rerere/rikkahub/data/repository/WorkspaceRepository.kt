@@ -430,7 +430,11 @@ class WorkspaceRepository(
         return runInterruptible(Dispatchers.IO) {
             manager.ensureWorkspace(workspace.root)
             manager.executeCommand(
-                workspace.root, command, cwd, timeoutMillis, stdin,
+                workspace.root,
+                command,
+                cwd,
+                timeoutMillis,
+                stdin,
                 shellCompatibilityMode = workspace.shellCompatibilityMode,
             )
         }

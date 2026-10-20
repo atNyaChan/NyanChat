@@ -274,7 +274,10 @@ internal class InteractionsStreamDecoder(
             raw.stringOrNull("id") ?: "${interactionId ?: "interaction"}:tool-$index"
 
         fun closeText(): List<StreamChunk> =
-            textId?.let { textId = null; listOf(StreamChunk.TextEnd(it)) }.orEmpty()
+            textId?.let {
+                textId = null
+                listOf(StreamChunk.TextEnd(it))
+            }.orEmpty()
 
         fun serverToolStart() = StreamChunk.ServerToolStart(
             id = raw.stringOrNull("id") ?: "",

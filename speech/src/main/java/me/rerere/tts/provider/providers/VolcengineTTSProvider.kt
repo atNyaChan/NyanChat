@@ -79,12 +79,16 @@ internal class VolcengineTTSStreamProcessor {
             hasAudio = hasAudio || audio.isNotEmpty()
             val finished = response.code == 20000000
             if (finished) check(hasAudio) { "Volcengine TTS returned no audio" }
-            if (audio.isEmpty() && !finished) null else AudioChunk(
-                data = audio,
-                format = AudioFormat.MP3,
-                isLast = finished,
-                metadata = mapOf("provider" to "volcengine"),
-            )
+            if (audio.isEmpty() && !finished) {
+                null
+            } else {
+                AudioChunk(
+                    data = audio,
+                    format = AudioFormat.MP3,
+                    isLast = finished,
+                    metadata = mapOf("provider" to "volcengine"),
+                )
+            }
         }
         SseEvent.Closed -> error("Volcengine TTS stream closed before synthesis completed")
         is SseEvent.Failure -> throw TTSProviderException(

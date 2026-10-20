@@ -69,7 +69,6 @@ object DefaultPlaceholderProvider : PlaceholderProvider {
             "${Build.BRAND} ${Build.MODEL}"
         }
     }
-
 }
 
 object PlaceholderTransformer : InputMessageTransformer, KoinComponent {

@@ -208,8 +208,10 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
             }
         }
         val ordered = if (sort == MessageSearchSort.RELEVANCE) {
-            matches.sortedWith(compareBy<Pair<Int, MessageSearchResult>> { it.first }
-                .thenByDescending { it.second.timeAt })
+            matches.sortedWith(
+                compareBy<Pair<Int, MessageSearchResult>> { it.first }
+                    .thenByDescending { it.second.timeAt }
+            )
         } else {
             matches
         }
@@ -482,7 +484,6 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
             }
         }
     }
-
 }
 
 private fun UIMessage.attachmentParts(): List<UIMessagePart> = parts.filter {

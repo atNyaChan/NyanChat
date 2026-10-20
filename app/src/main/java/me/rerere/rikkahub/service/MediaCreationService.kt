@@ -149,7 +149,12 @@ class MediaCreationService(
                     record
                 } else {
                     record.copy(
-                        status = if (record.taskId != null) MediaCreationStatus.RUNNING else MediaCreationStatus.PREPARING,
+                        status = if (record.taskId !=
+                            null) {
+                            MediaCreationStatus.RUNNING
+                        } else {
+                            MediaCreationStatus.PREPARING
+                        },
                         error = null,
                         outputs = emptyList(),
                     )

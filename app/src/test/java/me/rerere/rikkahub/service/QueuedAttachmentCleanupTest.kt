@@ -20,7 +20,9 @@ class QueuedAttachmentCleanupTest {
         val queue = MessageQueue()
         queue.enqueue(
             listOf(
-                image, image, video,
+                image,
+                image,
+                video,
                 UIMessagePart.Audio("file:///upload/audio.mp3"),
                 UIMessagePart.Document("file:///upload/document.pdf", "document.pdf"),
                 UIMessagePart.Image("https://example.com/image.png"),

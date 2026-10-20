@@ -42,7 +42,8 @@ class StreamChunkHandlerTest {
         messages = handler.handle(messages, StreamChunk.ReasoningDelta("reasoning-1", "think"))
         messages = handler.handle(messages, StreamChunk.ReasoningEnd("reasoning-1"))
         messages = handler.handle(messages, StreamChunk.ToolCallStart("call-1"))
-        messages = handler.handle(messages,
+        messages = handler.handle(
+            messages,
             StreamChunk.ToolCallDelta(
                 id = "call-1",
                 toolNameDelta = "search",
@@ -50,7 +51,8 @@ class StreamChunkHandlerTest {
             ),
         )
         messages = handler.handle(messages, StreamChunk.ToolCallEnd("call-1"))
-        messages = handler.handle(messages,
+        messages = handler.handle(
+            messages,
             StreamChunk.Usage(TokenUsage(promptTokens = 10, completionTokens = 5)),
         )
 

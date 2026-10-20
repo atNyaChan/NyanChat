@@ -126,7 +126,6 @@ object SearXNGService : SearchService<SearchServiceOptions.SearXNGOptions> {
         return Result.failure(Exception("Scraping is not supported for SearXNG"))
     }
 
-
     @Serializable
     data class SearXNGResponse(
         @SerialName("results")

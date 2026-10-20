@@ -1,6 +1,5 @@
 package me.rerere.rikkahub.data.files
 
-import java.io.File
 import me.rerere.rikkahub.data.sync.ManagedFilesArchive
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -9,6 +8,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.io.File
 
 class AttachmentCasTest {
     @get:Rule

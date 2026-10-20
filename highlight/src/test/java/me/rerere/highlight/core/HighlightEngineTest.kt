@@ -17,7 +17,10 @@ class HighlightEngineTest {
     @Test
     fun `applies keywords to the text between matches`() {
         val tokens = highlight("let x = 1", language("demo") {
-            keywords = keywords { keyword("let"); literal("true false") }
+            keywords = keywords {
+                keyword("let")
+                literal("true false")
+            }
             contains = listOf(NUMBER_MODE)
         })
 

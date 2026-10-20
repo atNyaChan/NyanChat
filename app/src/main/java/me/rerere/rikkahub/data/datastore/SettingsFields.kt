@@ -47,7 +47,9 @@ private inline fun <reified T> json(
     property: KProperty1<Settings, T>,
     noinline set: Settings.(T) -> Settings,
 ) = SettingsField(
-    key, property, set,
+    key,
+    property,
+    set,
     encode = { JsonInstant.encodeToString(it) },
     decode = { JsonInstant.decodeFromString<T>(it) },
 )
@@ -73,7 +75,9 @@ internal val SETTINGS_FIELDS: List<SettingsField<*, *>> = with(SettingsStore) {
         uuid(SELECT_MODEL, Settings::chatModelId) { copy(chatModelId = it) },
         uuid(FAST_MODEL, Settings::fastModelId) { copy(fastModelId = it) },
         SettingsField(
-            FAST_MODEL_REASONING_LEVEL, Settings::fastModelReasoningLevel, { copy(fastModelReasoningLevel = it) },
+            FAST_MODEL_REASONING_LEVEL,
+            Settings::fastModelReasoningLevel,
+            { copy(fastModelReasoningLevel = it) },
             encode = { it.name },
             // 认不出的值按 OFF 处理
             decode = { name -> ReasoningLevel.entries.find { it.name == name } ?: ReasoningLevel.OFF },
@@ -124,7 +128,9 @@ internal val SETTINGS_FIELDS: List<SettingsField<*, *>> = with(SettingsStore) {
         // ASR
         json(ASR_PROVIDERS, Settings::asrProviders) { copy(asrProviders = it) },
         SettingsField(
-            SELECTED_ASR_PROVIDER, Settings::selectedASRProviderId, { copy(selectedASRProviderId = it) },
+            SELECTED_ASR_PROVIDER,
+            Settings::selectedASRProviderId,
+            { copy(selectedASRProviderId = it) },
             // 没选时不存这个 key
             encode = { it?.toString() },
             decode = { Uuid.parse(it) },

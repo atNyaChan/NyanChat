@@ -15,7 +15,8 @@ class MessageToolMigrationTest {
         val messages = listOf(
             UIMessage(role = MessageRole.USER, parts = listOf(UIMessagePart.Text("Query"))),
             UIMessage(
-                role = MessageRole.ASSISTANT, parts = listOf(
+                role = MessageRole.ASSISTANT,
+                parts = listOf(
                     UIMessagePart.ToolCall(
                         toolCallId = "call1",
                         toolName = "test_tool",
@@ -45,7 +46,8 @@ class MessageToolMigrationTest {
         val messages = listOf(
             UIMessage(role = MessageRole.USER, parts = listOf(UIMessagePart.Text("Query"))),
             UIMessage(
-                role = MessageRole.ASSISTANT, parts = listOf(
+                role = MessageRole.ASSISTANT,
+                parts = listOf(
                     UIMessagePart.ToolCall(
                         toolCallId = "call1",
                         toolName = "test_tool",
@@ -54,7 +56,8 @@ class MessageToolMigrationTest {
                 )
             ),
             UIMessage(
-                role = MessageRole.TOOL, parts = listOf(
+                role = MessageRole.TOOL,
+                parts = listOf(
                     UIMessagePart.ToolResult(
                         toolCallId = "call1",
                         toolName = "test_tool",
@@ -85,13 +88,15 @@ class MessageToolMigrationTest {
         val messages = listOf(
             UIMessage(role = MessageRole.USER, parts = listOf(UIMessagePart.Text("Query"))),
             UIMessage(
-                role = MessageRole.ASSISTANT, parts = listOf(
+                role = MessageRole.ASSISTANT,
+                parts = listOf(
                     UIMessagePart.ToolCall("call1", "tool1", "{}"),
                     UIMessagePart.ToolCall("call2", "tool2", "{}")
                 )
             ),
             UIMessage(
-                role = MessageRole.TOOL, parts = listOf(
+                role = MessageRole.TOOL,
+                parts = listOf(
                     UIMessagePart.ToolResult("call1", "tool1", JsonPrimitive("result1"), JsonPrimitive("{}")),
                     UIMessagePart.ToolResult("call2", "tool2", JsonPrimitive("result2"), JsonPrimitive("{}"))
                 )
@@ -111,7 +116,8 @@ class MessageToolMigrationTest {
         val messages = listOf(
             UIMessage(role = MessageRole.USER, parts = listOf(UIMessagePart.Text("Query"))),
             UIMessage(
-                role = MessageRole.ASSISTANT, parts = listOf(
+                role = MessageRole.ASSISTANT,
+                parts = listOf(
                     UIMessagePart.Tool(
                         toolCallId = "call1",
                         toolName = "test_tool",

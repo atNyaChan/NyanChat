@@ -15,17 +15,17 @@ import me.rerere.ai.core.MessageRole
 import me.rerere.ai.ui.UIMessage
 import me.rerere.rikkahub.data.datastore.ConversationSortOrder
 import me.rerere.rikkahub.data.db.AppDatabase
-import me.rerere.rikkahub.data.db.fts.MessageFtsManager
-import me.rerere.rikkahub.data.db.fts.MessagePreviewKey
-import me.rerere.rikkahub.data.db.fts.MessageSearchSort
-import me.rerere.rikkahub.data.db.fts.MessageSearchMode
-import me.rerere.rikkahub.data.db.fts.MessageSearchRequest
-import me.rerere.rikkahub.data.db.fts.MessageSearchResult
 import me.rerere.rikkahub.data.db.dao.ConversationDAO
 import me.rerere.rikkahub.data.db.dao.FavoriteDAO
 import me.rerere.rikkahub.data.db.dao.MessageNodeDAO
 import me.rerere.rikkahub.data.db.entity.ConversationEntity
 import me.rerere.rikkahub.data.db.entity.MessageNodeEntity
+import me.rerere.rikkahub.data.db.fts.MessageFtsManager
+import me.rerere.rikkahub.data.db.fts.MessagePreviewKey
+import me.rerere.rikkahub.data.db.fts.MessageSearchMode
+import me.rerere.rikkahub.data.db.fts.MessageSearchRequest
+import me.rerere.rikkahub.data.db.fts.MessageSearchResult
+import me.rerere.rikkahub.data.db.fts.MessageSearchSort
 import me.rerere.rikkahub.data.files.CommitInfo
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.files.LocalFileUrls
@@ -317,7 +317,9 @@ class ConversationRepository(
         return if (entity != null) {
             val nodes = loadMessageNodes(entity.id)
             conversationEntityToConversation(entity, nodes)
-        } else null
+        } else {
+            null
+        }
     }
 
     suspend fun existsConversationById(uuid: Uuid): Boolean {
@@ -516,7 +518,7 @@ class ConversationRepository(
         return ConversationEntity(
             id = conversation.id.toString(),
             title = conversation.title,
-            nodes = "[]",  // nodes 现在存储在单独的表中
+            nodes = "[]", // nodes 现在存储在单独的表中
             createAt = conversation.createAt.toEpochMilli(),
             updateAt = conversation.updateAt.toEpochMilli(),
             assistantId = conversation.assistantId.toString(),

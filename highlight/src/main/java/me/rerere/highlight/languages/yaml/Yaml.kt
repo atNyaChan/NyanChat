@@ -33,9 +33,15 @@ internal fun yaml(): Language {
         scope = "template-variable"
         variants = listOf(
             // Jinja templates, Ansible.
-            { begin = """\{\{"""; end = """\}\}""" },
+            {
+                begin = """\{\{"""
+                end = """\}\}"""
+            },
             // Ruby i18n.
-            { begin = """%\{"""; end = """\}""" },
+            {
+                begin = """%\{"""
+                end = """\}"""
+            },
         )
     }
 
@@ -57,7 +63,10 @@ internal fun yaml(): Language {
         scope = "string"
         relevance = 0.0
         variants = listOf(
-            { begin = "\""; end = "\"" },
+            {
+                begin = "\""
+                end = "\""
+            },
             { begin = """\S+""" },
         )
         contains = listOf(BACKSLASH_ESCAPE, templateVariables)
@@ -69,9 +78,15 @@ internal fun yaml(): Language {
             {
                 begin = "'"
                 end = "'"
-                contains = listOf(mode { begin = "''"; relevance = 0.0 })
+                contains = listOf(mode {
+                    begin = "''"
+                    relevance = 0.0
+                })
             },
-            { begin = "\""; end = "\"" },
+            {
+                begin = "\""
+                end = "\""
+            },
             { begin = """[^\s,{}[\]]+""" },
         )
     }

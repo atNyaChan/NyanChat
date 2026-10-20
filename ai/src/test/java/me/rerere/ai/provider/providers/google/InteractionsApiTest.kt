@@ -275,7 +275,10 @@ class InteractionsApiTest {
         assertEquals("The GCD is 21.", (message.parts[1] as UIMessagePart.Text).text)
         assertEquals(2, message.parts.size)
         assertEquals(listOf(UIMessageAnnotation.UrlCitation("Example", "https://example.com")), message.annotations)
-        assertEquals(TokenUsage(promptTokens = 11, completionTokens = 335, totalTokens = 346, cachedTokens = 2), message.usage)
+        assertEquals(
+            TokenUsage(promptTokens = 11, completionTokens = 335, totalTokens = 346, cachedTokens = 2),
+            message.usage
+        )
         assertEquals(StreamChunk.Finish("completed", "v1_abc", "gemini-3.8-flash"), chunks.last())
     }
 
@@ -444,7 +447,10 @@ class InteractionsApiTest {
         assertEquals("int_456", result.id)
         assertEquals("requires_action", result.finishReason)
         assertEquals(TokenUsage(promptTokens = 10, completionTokens = 8, totalTokens = 18), result.usage)
-        assertEquals(listOf(UIMessageAnnotation.UrlCitation("NFL.com", "https://www.nfl.com")), result.message.annotations)
+        assertEquals(
+            listOf(UIMessageAnnotation.UrlCitation("NFL.com", "https://www.nfl.com")),
+            result.message.annotations
+        )
 
         val parts = result.message.parts
         assertEquals(5, parts.size)

@@ -25,7 +25,14 @@ internal fun ruby(): Language {
     )
     val classNameWithNamespaceRe = concat(classNameRe, """(::\w+)*""")
     val pseudoKeywords = listOf(
-        "include", "extend", "prepend", "public", "private", "protected", "raise", "throw",
+        "include",
+        "extend",
+        "prepend",
+        "public",
+        "private",
+        "protected",
+        "raise",
+        "throw",
     )
     val rubyKeywords = keywords {
         scope("variable.constant", listOf("__FILE__", "__LINE__", "__ENCODING__"))
@@ -40,8 +47,14 @@ internal fun ruby(): Language {
         )
         builtIn(
             listOf(
-                "proc", "lambda", "attr_accessor", "attr_reader", "attr_writer", "define_method",
-                "private_constant", "module_function",
+                "proc",
+                "lambda",
+                "attr_accessor",
+                "attr_reader",
+                "attr_writer",
+                "define_method",
+                "private_constant",
+                "module_function",
             ),
         )
         literal(listOf("true", "false", "nil"))

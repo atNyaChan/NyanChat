@@ -73,7 +73,10 @@ class WorkspaceFileSystem(
         val ext = file.extension.let { if (it.isNotEmpty()) ".$it" else "" }
         var n = 1
         var candidate: File
-        do { candidate = File(file.parentFile, "$stem ($n)$ext"); n++ } while (candidate.exists())
+        do {
+            candidate = File(file.parentFile, "$stem ($n)$ext")
+            n++
+        } while (candidate.exists())
         return candidate
     }
 
@@ -186,7 +189,10 @@ class WorkspaceFileSystem(
     private fun resolvePath(root: File, path: String): File = resolvePath(root, path, followFinalSymlink = true)
 
     /** 解析路径但不跟随最后一段的软链接，用于删除/移动/新建目录等应作用于条目本身的操作 */
-    private fun resolvePathNoFollow(root: File, path: String): File = resolvePath(root, path, followFinalSymlink = false)
+    private fun resolvePathNoFollow(
+        root: File,
+        path: String
+    ): File = resolvePath(root, path, followFinalSymlink = false)
 
     private fun resolvePath(root: File, path: String, followFinalSymlink: Boolean): File {
         root.mkdirs()

@@ -308,7 +308,7 @@ class BackupManager(
         Log.i(TAG, "addVirtualFileToZip: $name (${content.length} bytes)")
     }
 
-    private suspend fun addWorkspaceArchives(tar: TarArchiveOutputStream): Unit {
+    private suspend fun addWorkspaceArchives(tar: TarArchiveOutputStream) {
         tar.putArchiveEntry(TarArchiveEntry(WORKSPACES_ENTRY))
         tar.closeArchiveEntry()
         workspaceRepository.list()
@@ -355,7 +355,9 @@ class BackupManager(
                 DATABASE_ENTRY, DatabaseBackup.ARCHIVE_DATABASE -> stagedDatabase
                 else -> if (isAttachment(name)) {
                     PendingRestore.resolveInside(File(payload, "files"), name)
-                } else null
+                } else {
+                    null
+                }
             }
 
             fun createParent(target: File) {
@@ -500,7 +502,10 @@ class BackupManager(
                 // 关闭备份里当前提供商类型不支持的内置工具
                 val sanitized = settings.sanitizeBuiltInTools()
                 // Persist the rewritten value once, including generated IDs, for restart/retry consistency.
-                PendingRestore.writeDurably(settingsFile, json.encodeSettings(sanitized, json.launchCountOf(settingsJson)))
+                PendingRestore.writeDurably(
+                    settingsFile,
+                    json.encodeSettings(sanitized, json.launchCountOf(settingsJson))
+                )
             }
             currentCoroutineContext().ensureActive()
             restore.publish(staging)

@@ -48,7 +48,10 @@ internal fun go(): Language {
                     variants = listOf(
                         variant(QUOTE_STRING_MODE),
                         variant(APOS_STRING_MODE),
-                        { begin = "`"; end = "`" },
+                        {
+                            begin = "`"
+                            end = "`"
+                        },
                     )
                 },
                 mode {

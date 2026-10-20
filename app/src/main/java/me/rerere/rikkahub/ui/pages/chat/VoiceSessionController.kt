@@ -138,7 +138,10 @@ class VoiceSessionController(
                         asr = null
                         if (event.text.isNotBlank()) {
                             val reply = enqueueMessage(event.text)
-                            mutableState.update { it.copy(transcript = event.text, pendingReplies = it.pendingReplies + 1) }
+                            mutableState.update {
+                                it.copy(transcript = event.text, pendingReplies =
+                                    it.pendingReplies + 1)
+                            }
                             submitted.send(reply)
                         }
                     }
@@ -163,13 +166,24 @@ class VoiceSessionController(
                 asr.state.first {
                     check(it.errorMessage == null) { it.errorMessage.orEmpty() }
                     it.status != ASRStatus.Connecting
-                }.also { check(it.status == ASRStatus.Listening || it.voiceTurn.isComplete) { "Unable to start speech recognition" } }
+                }.also {
+                    check(
+                        it.status == ASRStatus.Listening || it.voiceTurn.isComplete
+                    ) { "Unable to start speech recognition" }
+                }
             }
             val ended = withTimeout(120_000) {
                 asr.state.onEach {
                     check(it.errorMessage == null) { it.errorMessage.orEmpty() }
-                    check(it.status == ASRStatus.Listening || it.voiceTurn.isComplete) { "Speech recognition disconnected" }
-                    mutableState.update { current -> current.copy(phase = VoicePhase.Listening, transcript = it.transcript) }
+                    check(
+                        it.status == ASRStatus.Listening || it.voiceTurn.isComplete
+                    ) { "Speech recognition disconnected" }
+                    mutableState.update { current ->
+                        current.copy(
+                            phase = VoicePhase.Listening,
+                            transcript = it.transcript
+                        )
+                    }
                 }.first { it.voiceTurn.speechEnded }
             }
             asr.pauseCapture()

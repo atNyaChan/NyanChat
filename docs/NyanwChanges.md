@@ -671,6 +671,7 @@
 - 统一 compileSdk/targetSdk 至 37，并在根构建脚本为所有 Android 模块显式固定 Build-Tools 为 37.0.0，避免 AGP 按需下载默认的 Build-Tools 36。
 - 所有 Android 模块统一使用 `compileSdk { version = release(37) { minorApiLevel = 2 } }`（即 Android SDK Platform 37.2）。
 - 各 library 模块的共享构建配置改由 `build-logic` 的 `rikkahub.android.library` / `rikkahub.android.library.compose` convention plugin 统一提供（compileSdk 37.2、minSdk 28、Java 21、Kotlin jvmTarget 21、Compose）；应用级 keep 规则集中在 `app/src/main/keepRules/rikkahub.keep`，其中保留 fork 特有的 zstd-jni `-keep` 规则。
+- 根构建脚本的 Spotless 取消 `ratchetFrom("origin/master")` 默认值，改为默认对整个仓库执行 ktlint 格式化；需要只格式化相对某个 ref 有改动的文件时传 `-PspotlessRatchet=<ref>`，`.kt` target 另可用 `-PspotlessTarget=<glob>` 临时收窄到某个目录（`*.gradle.kts` 不受该参数影响）。
 - `app/baselineprofile` 生成器在发送消息后不再只做一次 20 秒等待，而是在等待回复结尾标记期间持续把聊天消息列表翻到底部：长回复超过一屏后聊天列表的自动跟随会在气泡底边离开视口时停止，原实现会因结尾标记停在屏幕外而误报回复未渲染。
 - 在 `app` 的 `packaging` 中显式设置 `dex { useLegacyPackaging = true }`（与已有的 `jniLibs { useLegacyPackaging = true }` 一致），让 dex 继续以 deflate 压缩进 APK。因为 `minSdk` 提升到 28 后，AGP 的 `DexPackagingOptionsImpl` 默认 `useLegacyPackaging = (minSdk < 28)` 变为 false，会把 `classes*.dex` 以不压缩（STORED）方式存入 APK，使 release APK 由约 34MB 涨到约 47MB、debug APK 约翻倍；该默认与内容无关，只影响 zip 压缩方式和安装时的 dex2oat。
 - 清理 Firebase 移除后的残留引用：删除 `AGENTS.md` 中关于 `google-services.json` 的过时说明，删除 CI workflow 中写入 `google-services.json` 的步骤。

@@ -22,6 +22,8 @@ interface TranslationHistoryDAO {
     suspend fun deleteAll()
 
     // 只留最新的 keep 条
-    @Query("DELETE FROM translation_history WHERE id NOT IN (SELECT id FROM translation_history ORDER BY create_at DESC LIMIT :keep)")
+    @Query(
+        "DELETE FROM translation_history WHERE id NOT IN (SELECT id FROM translation_history ORDER BY create_at DESC LIMIT :keep)"
+    )
     suspend fun trimTo(keep: Int)
 }

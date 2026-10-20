@@ -63,8 +63,9 @@ internal suspend fun loadSketchBackground(context: Context, uri: Uri): ImageBitm
         var sampleSize = 1
         while (maxOf(bounds.outWidth, bounds.outHeight) / sampleSize > MAX_IMAGE_SIZE) sampleSize *= 2
         val options = BitmapFactory.Options().apply { inSampleSize = sampleSize }
-        val decoded = context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, options) }
-            ?: error("Failed to decode $uri")
+        val decoded =
+            context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, options) }
+                ?: error("Failed to decode $uri")
         decoded.upright(context, uri).asImageBitmap()
     }.onFailure {
         Log.e(TAG, "Failed to load $uri", it)

@@ -8,4 +8,3 @@ interface CacheStore<K, V> {
     fun loadAllEntries(): Map<K, CacheEntry<V>>
     fun keys(): Set<K>
 }
-

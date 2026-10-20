@@ -27,7 +27,6 @@ android {
     }
 
     targetProjectPath = ":app"
-
 }
 
 // This is the configuration block for the Baseline Profile plugin.

@@ -326,7 +326,13 @@ class ChatService(
         session.initialize(
             load = { loadConversation(conversationId) },
             create = {
-                if (createIfMissing) newConversation(conversationId) else throw NotFoundException("Conversation not found")
+                if (createIfMissing) {
+                    newConversation(
+                        conversationId
+                    )
+                } else {
+                    throw NotFoundException("Conversation not found")
+                }
             },
         )
         block(session)
@@ -387,7 +393,7 @@ class ChatService(
     private suspend fun deleteUnreferencedFiles(previous: Conversation, current: Conversation) {
         val session = sessionManager.get(current.id)
         val queuedFiles = (session?.messageQueue?.state?.value?.messages.orEmpty() +
-                listOfNotNull(session?.submittingMessage))
+            listOfNotNull(session?.submittingMessage))
             .flatMap { it.parts }.localFileUrls().map { it.toUri() }
         val retainedFiles = (current.files + queuedFiles).toSet()
         val deletedFiles = previous.files.filter { it !in retainedFiles }

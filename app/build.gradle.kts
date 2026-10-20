@@ -269,7 +269,6 @@ dependencies {
     // Apache Commons Text
     implementation(libs.commons.text)
 
-
     // Reorderable (https://github.com/Calvin-LL/Reorderable/)
     implementation(libs.reorderable)
 

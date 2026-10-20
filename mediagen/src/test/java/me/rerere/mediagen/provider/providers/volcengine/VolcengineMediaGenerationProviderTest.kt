@@ -100,7 +100,12 @@ class VolcengineMediaGenerationProviderTest {
             body(MediaGenerationRequest(prompt = "cat", aspectRatio = "16:9"))
         }
         assertThrows(IllegalArgumentException::class.java) {
-            body(MediaGenerationRequest(prompt = "cat", inputs = listOf(MediaGenerationInput.Video("https://e.com/a.mp4"))))
+            body(
+                MediaGenerationRequest(
+                    prompt = "cat",
+                    inputs = listOf(MediaGenerationInput.Video("https://e.com/a.mp4"))
+                )
+            )
         }
         assertThrows(IllegalArgumentException::class.java) {
             body(MediaGenerationRequest(prompt = "cat", inputs = listOf(MediaGenerationInput.Image("/not/exist.png"))))
@@ -166,10 +171,16 @@ class VolcengineMediaGenerationProviderTest {
             if (request.url.encodedPath.endsWith("/images/generations")) {
                 jsonResponse(request, """{"data":[{"url":"https://tos.example.com/a.png","size":"2048x2048"}]}""")
             } else {
-                jsonResponse(request, """{"id":"cgt-1","status":"succeeded","content":{"video_url":"https://e.com/a.mp4"}}""")
+                jsonResponse(
+                    request,
+                    """{"id":"cgt-1","status":"succeeded","content":{"video_url":"https://e.com/a.mp4"}}"""
+                )
             }
         })
-        val setting = MediaGenerationProviderSetting.Volcengine(apiKey = "key", baseUrl = "https://ark.example.com/api/v3/")
+        val setting = MediaGenerationProviderSetting.Volcengine(
+            apiKey = "key",
+            baseUrl = "https://ark.example.com/api/v3/"
+        )
         val video = MediaGenerationModel(modelId = "doubao-seedance-2-0-260128", kind = MediaKind.VIDEO)
 
         assertEquals(setOf(MediaKind.IMAGE, MediaKind.VIDEO), setting.supportedKinds)

@@ -139,8 +139,10 @@ class GoogleRequestMessageTest {
         val nextMsg = result[modelWithFunctionCallIndex + 1].jsonObject
         assertEquals("user", nextMsg["role"]?.jsonPrimitive?.content)
         val nextParts = nextMsg["parts"]?.jsonArray
-        assertTrue("Next message should have functionResponse",
-            nextParts?.any { it.jsonObject.containsKey("functionResponse") } == true)
+        assertTrue(
+            "Next message should have functionResponse",
+            nextParts?.any { it.jsonObject.containsKey("functionResponse") } == true
+        )
     }
 
     @Test
@@ -178,7 +180,7 @@ class GoogleRequestMessageTest {
         // Verify we have both regular text and thought text
         val hasThoughtPart = textParts.any {
             it.jsonObject["thought"]?.jsonPrimitive?.content == "true" ||
-            it.jsonObject["thought"]?.toString() == "true"
+                it.jsonObject["thought"]?.toString() == "true"
         }
         // Note: If reasoning is handled differently, adjust this assertion
     }
@@ -225,8 +227,10 @@ class GoogleRequestMessageTest {
             }
         }
 
-        assertTrue("Should have model with 3 parallel functionCall parts",
-            foundModelWithMultipleCalls)
+        assertTrue(
+            "Should have model with 3 parallel functionCall parts",
+            foundModelWithMultipleCalls
+        )
 
         // Verify corresponding functionResponse parts in user message
         var foundUserWithMultipleResponses = false
@@ -243,8 +247,10 @@ class GoogleRequestMessageTest {
             }
         }
 
-        assertTrue("Should have user with 3 functionResponse parts",
-            foundUserWithMultipleResponses)
+        assertTrue(
+            "Should have user with 3 functionResponse parts",
+            foundUserWithMultipleResponses
+        )
     }
 
     @Test
@@ -300,8 +306,10 @@ class GoogleRequestMessageTest {
                 val nextMsg = result[i + 1].jsonObject
                 assertEquals("user", nextMsg["role"]?.jsonPrimitive?.content)
                 val nextParts = nextMsg["parts"]?.jsonArray
-                assertTrue("Should have functionResponse in next message",
-                    nextParts?.any { it.jsonObject.containsKey("functionResponse") } == true)
+                assertTrue(
+                    "Should have functionResponse in next message",
+                    nextParts?.any { it.jsonObject.containsKey("functionResponse") } == true
+                )
             }
         }
     }
@@ -410,10 +418,14 @@ class GoogleRequestMessageTest {
 
         // Verify response structure
         val response = functionResponse["response"]?.jsonObject
-        assertTrue("Response should contain result",
-            response?.containsKey("result") == true)
-        assertTrue("Result should contain expected output",
-            response?.get("result")?.jsonPrimitive?.content?.contains("Expected output value") == true)
+        assertTrue(
+            "Response should contain result",
+            response?.containsKey("result") == true
+        )
+        assertTrue(
+            "Result should contain expected output",
+            response?.get("result")?.jsonPrimitive?.content?.contains("Expected output value") == true
+        )
     }
 
     // ==================== Helper Functions ====================

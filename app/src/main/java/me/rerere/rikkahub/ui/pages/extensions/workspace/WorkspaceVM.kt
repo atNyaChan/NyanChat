@@ -6,12 +6,12 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
+import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.workspace.RootfsInstallProgress
 
 class WorkspaceVM(
@@ -42,5 +42,4 @@ class WorkspaceVM(
 
     val settings = settingsStore.settingsFlow
         .stateIn(viewModelScope, SharingStarted.Lazily, settingsStore.settingsFlow.value)
-
 }

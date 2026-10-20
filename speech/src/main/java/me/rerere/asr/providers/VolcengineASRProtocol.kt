@@ -54,7 +54,9 @@ internal object VolcengineASRProtocol {
     fun decode(data: ByteArray): Response {
         require(data.size >= 4) { "ASR response header is truncated" }
         val headerSize = (data[0].toInt() and 15) * 4
-        require((data[0].toInt() ushr 4) == 1 && headerSize >= 4 && headerSize <= data.size) { "Invalid ASR response header" }
+        require(
+            (data[0].toInt() ushr 4) == 1 && headerSize >= 4 && headerSize <= data.size
+        ) { "Invalid ASR response header" }
         val type = (data[1].toInt() and 255) ushr 4
         val flags = data[1].toInt() and 15
         val compression = data[2].toInt() and 15

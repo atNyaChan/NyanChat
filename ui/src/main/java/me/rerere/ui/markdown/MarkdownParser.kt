@@ -354,7 +354,14 @@ private class DomConverter(
                 val style = element.inlineStyle()
                 when {
                     children.isEmpty() -> Unit
-                    style == null -> children.forEach { if (it is MarkdownInline.Text) out.appendText(it.text) else out += it }
+                    style == null -> children.forEach {
+                        if (it is MarkdownInline.Text) {
+                            out.appendText(it.text)
+                        } else {
+                            out +=
+                                it
+                        }
+                    }
                     else -> out += MarkdownInline.Styled(style, children)
                 }
             }

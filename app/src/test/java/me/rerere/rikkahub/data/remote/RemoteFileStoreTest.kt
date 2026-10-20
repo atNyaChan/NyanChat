@@ -214,7 +214,15 @@ class RemoteFileStoreTest {
                 .filter { it.key.startsWith(prefix) && (continuationToken == null || it.key > continuationToken) }
             val page = remaining.take(pageSize)
             return S3ListResult(
-                objects = page.map { S3Object(it.key, size = 0, etag = null, lastModified = it.value, storageClass = null) },
+                objects = page.map {
+                    S3Object(
+                        it.key,
+                        size = 0,
+                        etag = null,
+                        lastModified = it.value,
+                        storageClass = null
+                    )
+                },
                 commonPrefixes = emptyList(),
                 isTruncated = remaining.size > page.size,
                 nextContinuationToken = page.lastOrNull()?.key,

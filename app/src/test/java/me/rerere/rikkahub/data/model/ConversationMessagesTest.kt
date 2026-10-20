@@ -126,7 +126,8 @@ class ConversationMessagesTest {
 
     @Test
     fun `nothing to cancel returns null`() {
-        val conversation = conversationOf(UIMessage.user("hi").toMessageNode(), UIMessage.assistant("done").toMessageNode())
+        val conversation =
+            conversationOf(UIMessage.user("hi").toMessageNode(), UIMessage.assistant("done").toMessageNode())
 
         assertNull(conversation.cancelInterruptedTools())
         assertNull(Conversation.ofId(Uuid.random()).cancelInterruptedTools())

@@ -10,8 +10,11 @@ plugins {
 }
 
 spotless {
-    // 只格式化相对 origin/master 有改动的文件，避免一次性重排整个仓库
-    ratchetFrom("origin/master")
+    // 默认格式化整个仓库（已全仓库格式化过，日常 apply 是幂等的）
+    // 只想处理相对某个 ref 有改动的文件时传 -PspotlessRatchet=<ref>
+    providers.gradleProperty("spotlessRatchet").orNull
+        ?.takeIf { it.isNotBlank() }
+        ?.let { ratchetFrom(it) }
 
     // Spotless 只从 .editorconfig 读标准属性，ktlint 的风格和规则开关得写在这里
     val ktlintVersion = libs.versions.ktlint.get()
@@ -28,7 +31,7 @@ spotless {
         "ktlint_standard_wrapping" to "disabled",
     )
     kotlin {
-        target("**/*.kt")
+        target(providers.gradleProperty("spotlessTarget").getOrElse("**/*.kt"))
         // 子项目的 build 目录 Spotless 会自动排除；targetExclude 是先列出再相减，写 **/build/** 会把所有 build 目录遍历一遍。
         // build-logic 是 included build，不在自动排除之列
         targetExclude("build-logic/build/**", "material3/material-color-utilities/**")

@@ -16,19 +16,19 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonPrimitive
-import me.rerere.asr.VOLCENGINE_ASR_WEBSOCKET_URL
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import me.rerere.asr.ASRController
 import me.rerere.asr.ASRProviderSetting
 import me.rerere.asr.ASRState
 import me.rerere.asr.ASRStatus
+import me.rerere.asr.VOLCENGINE_ASR_WEBSOCKET_URL
 import me.rerere.asr.appendAmplitude
 import me.rerere.asr.calculateRmsAmplitude
 import okhttp3.OkHttpClient
@@ -62,7 +62,9 @@ class VolcengineASRController(
     override fun start(onTranscriptChange: (String) -> Unit) {
         if (state.value.isRecording) return
         if (provider.websocketUrl.trim().trimEnd('/') == "wss://openspeech.bytedance.com/api/v3/sauc/bigmodel") {
-            setError("The Volcengine ASR endpoint is outdated. Change the WebSocket URL to $VOLCENGINE_ASR_WEBSOCKET_URL in settings.")
+            setError(
+                "The Volcengine ASR endpoint is outdated. Change the WebSocket URL to $VOLCENGINE_ASR_WEBSOCKET_URL in settings."
+            )
             return
         }
         if (ContextCompat.checkSelfPermission(
@@ -92,7 +94,8 @@ class VolcengineASRController(
         webSocket = httpClient.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 scope.launch {
-                    if (this@VolcengineASRController.webSocket !== webSocket || state.value.status != ASRStatus.Connecting) {
+                    if (this@VolcengineASRController.webSocket !== webSocket ||
+                        state.value.status != ASRStatus.Connecting) {
                         webSocket.cancel()
                         return@launch
                     }
@@ -181,7 +184,10 @@ class VolcengineASRController(
     private fun handleBinaryResponse(socket: WebSocket, data: ByteArray) {
         try {
             val response = VolcengineASRProtocol.decode(data)
-            response.error?.let { setError(it); return }
+            response.error?.let {
+                setError(it)
+                return
+            }
             val text = response.result?.get("text")?.jsonPrimitive?.contentOrNull
             _state.update {
                 it.copy(
@@ -241,8 +247,10 @@ class VolcengineASRController(
                     }
                 }
             } catch (e: Exception) {
-                if (isActive) scope.launch(Dispatchers.Main.immediate) {
-                    if (webSocket === socket) setError(e.message ?: "Audio recording failed")
+                if (isActive) {
+                    scope.launch(Dispatchers.Main.immediate) {
+                        if (webSocket === socket) setError(e.message ?: "Audio recording failed")
+                    }
                 }
             } finally {
                 runCatching { recorder.stop() }

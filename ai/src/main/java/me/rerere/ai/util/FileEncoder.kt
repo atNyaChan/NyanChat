@@ -1,9 +1,9 @@
 package me.rerere.ai.util
 
-import android.media.ExifInterface
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.media.ExifInterface
 import android.util.Base64
 import android.util.Base64OutputStream
 import androidx.core.net.toUri
@@ -237,7 +237,7 @@ private fun File.guessMimeType(): Result<String> = runCatching {
                 "heic", "heix", "heim", "heis",
                 "hevc", "hevx", "hevm", "hevs",
                 "mif1", "msf1", "heif",
-                    -> return@runCatching "image/heic"
+                -> return@runCatching "image/heic"
 
                 "avif", "avis" -> return@runCatching "image/avif"
             }

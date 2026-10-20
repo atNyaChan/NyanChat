@@ -4,11 +4,6 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import java.io.ByteArrayInputStream
-import java.net.HttpURLConnection
-import java.net.URL
-import java.util.LinkedHashMap
-import java.util.zip.ZipInputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,13 +12,18 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.rerere.rikkahub.R
+import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.files.FileUtils
 import me.rerere.rikkahub.data.skills.SkillFrontmatterParser
 import me.rerere.rikkahub.data.skills.SkillManager
 import me.rerere.rikkahub.data.skills.SkillMetadata
-import me.rerere.rikkahub.data.datastore.SettingsStore
-import me.rerere.rikkahub.R
 import org.json.JSONArray
+import java.io.ByteArrayInputStream
+import java.net.HttpURLConnection
+import java.net.URL
+import java.util.LinkedHashMap
+import java.util.zip.ZipInputStream
 import kotlin.collections.iterator
 
 class SkillsVM(
@@ -87,7 +87,9 @@ class SkillsVM(
                 val fileName = FileUtils.getFileNameFromUri(appContext, uri).orEmpty()
                 val bytes = appContext.contentResolver.openInputStream(uri)?.use { it.readBytes() }
                     ?: run {
-                        withContext(Dispatchers.Main) { onResult(false, context.getString(R.string.error_skill_cannot_read_file)) }
+                        withContext(
+                            Dispatchers.Main
+                        ) { onResult(false, context.getString(R.string.error_skill_cannot_read_file)) }
                         return@launch
                     }
 
@@ -102,7 +104,12 @@ class SkillsVM(
                     onResult(true, importedNames.joinToString())
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) { onResult(false, e.message ?: context.getString(R.string.common_error_unknown)) }
+                withContext(Dispatchers.Main) {
+                    onResult(
+                        false,
+                        e.message ?: context.getString(R.string.common_error_unknown)
+                    )
+                }
             }
         }
     }
@@ -111,7 +118,9 @@ class SkillsVM(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val info = parseGitHubUrl(repoUrl) ?: run {
-                    withContext(Dispatchers.Main) { onResult(false, context.getString(R.string.error_skill_invalid_github_url)) }
+                    withContext(
+                        Dispatchers.Main
+                    ) { onResult(false, context.getString(R.string.error_skill_invalid_github_url)) }
                     return@launch
                 }
 
@@ -119,24 +128,32 @@ class SkillsVM(
                 val files = mutableListOf<Pair<String, String>>() // relativePath -> downloadUrl
                 val listed = listFilesRecursively(info.owner, info.repo, info.branch, info.path, info.path, files)
                 if (!listed) {
-                    withContext(Dispatchers.Main) { onResult(false, context.getString(R.string.error_skill_read_github_dir)) }
+                    withContext(
+                        Dispatchers.Main
+                    ) { onResult(false, context.getString(R.string.error_skill_read_github_dir)) }
                     return@launch
                 }
 
                 val skillMdEntry = files.find { it.first == "SKILL.md" } ?: run {
-                    withContext(Dispatchers.Main) { onResult(false, context.getString(R.string.error_skill_no_skill_md)) }
+                    withContext(
+                        Dispatchers.Main
+                    ) { onResult(false, context.getString(R.string.error_skill_no_skill_md)) }
                     return@launch
                 }
 
                 val skillMdBytes = downloadBytes(skillMdEntry.second) ?: run {
-                    withContext(Dispatchers.Main) { onResult(false, context.getString(R.string.error_skill_download_skill_md)) }
+                    withContext(
+                        Dispatchers.Main
+                    ) { onResult(false, context.getString(R.string.error_skill_download_skill_md)) }
                     return@launch
                 }
 
                 val frontmatter = SkillFrontmatterParser.parse(skillMdBytes.toString(Charsets.UTF_8))
                 val name = frontmatter["name"]
                 if (name.isNullOrBlank()) {
-                    withContext(Dispatchers.Main) { onResult(false, context.getString(R.string.error_skill_missing_name)) }
+                    withContext(
+                        Dispatchers.Main
+                    ) { onResult(false, context.getString(R.string.error_skill_missing_name)) }
                     return@launch
                 }
 
@@ -145,7 +162,9 @@ class SkillsVM(
                 for ((relativePath, downloadUrl) in files) {
                     val content = if (relativePath == "SKILL.md") skillMdBytes else downloadBytes(downloadUrl)
                     if (content == null) {
-                        withContext(Dispatchers.Main) { onResult(false, context.getString(R.string.error_skill_download_file, relativePath)) }
+                        withContext(
+                            Dispatchers.Main
+                        ) { onResult(false, context.getString(R.string.error_skill_download_file, relativePath)) }
                         return@launch
                     }
                     fileContents[relativePath] = content
@@ -153,7 +172,9 @@ class SkillsVM(
 
                 val saved = skillManager.saveSkillFileBytesAtomically(name, fileContents)
                 if (!saved) {
-                    withContext(Dispatchers.Main) { onResult(false, context.getString(R.string.common_error_save_failed)) }
+                    withContext(
+                        Dispatchers.Main
+                    ) { onResult(false, context.getString(R.string.common_error_save_failed)) }
                     return@launch
                 }
 
@@ -161,7 +182,12 @@ class SkillsVM(
                 withContext(Dispatchers.Main) { onResult(true, name) }
             } catch (e: Exception) {
                 e.printStackTrace()
-                withContext(Dispatchers.Main) { onResult(false, e.message ?: context.getString(R.string.common_error_unknown)) }
+                withContext(Dispatchers.Main) {
+                    onResult(
+                        false,
+                        e.message ?: context.getString(R.string.common_error_unknown)
+                    )
+                }
             }
         }
     }
@@ -176,7 +202,8 @@ class SkillsVM(
         if (frontmatter["description"].isNullOrBlank()) {
             error(context.getString(R.string.error_skill_missing_description))
         }
-        val saved = skillManager.saveSkill(name, content) ?: error(context.getString(R.string.error_skill_save_check_format))
+        val saved =
+            skillManager.saveSkill(name, content) ?: error(context.getString(R.string.error_skill_save_check_format))
         return listOf(saved.name)
     }
 

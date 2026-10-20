@@ -1,14 +1,14 @@
 package me.rerere.search
 
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.int
-import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.put
 import me.rerere.ai.core.InputSchema
 import org.junit.Assert.assertEquals
@@ -83,7 +83,8 @@ class ExaSearchServiceTest {
 
         assertEquals(
             listOf("old", "undated", "new"),
-            result.items.map { it.url.substringAfterLast('/') })
+            result.items.map { it.url.substringAfterLast('/') }
+        )
     }
 
     @Test

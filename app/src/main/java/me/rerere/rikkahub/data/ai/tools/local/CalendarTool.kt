@@ -7,7 +7,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.provider.CalendarContract
 import androidx.core.content.ContextCompat
-import me.rerere.common.android.Logging
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
@@ -15,10 +15,10 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
-import kotlinx.serialization.json.JsonObject
 import me.rerere.ai.core.InputSchema
 import me.rerere.ai.core.Tool
 import me.rerere.ai.ui.UIMessagePart
+import me.rerere.common.android.Logging
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -121,17 +121,21 @@ internal fun buildCalendarQueryTool(context: Context): Tool = Tool(
         try {
             startTime = if (beginRaw != null) {
                 parseCalendarTime(beginRaw, zone)
-            } else when (rangePreset) {
-                "week" -> now.toLocalDate().atStartOfDay(zone).minusDays(now.dayOfWeek.value.toLong() - 1)
-                "month" -> now.toLocalDate().withDayOfMonth(1).atStartOfDay(zone)
-                else -> now.toLocalDate().atStartOfDay(zone)
+            } else {
+                when (rangePreset) {
+                    "week" -> now.toLocalDate().atStartOfDay(zone).minusDays(now.dayOfWeek.value.toLong() - 1)
+                    "month" -> now.toLocalDate().withDayOfMonth(1).atStartOfDay(zone)
+                    else -> now.toLocalDate().atStartOfDay(zone)
+                }
             }
             endTime = if (endRaw != null) {
                 parseCalendarTime(endRaw, zone)
-            } else when (rangePreset) {
-                "week" -> startTime.plusDays(7)
-                "month" -> startTime.plusMonths(1)
-                else -> now.toLocalDate().plusDays(1).atStartOfDay(zone)
+            } else {
+                when (rangePreset) {
+                    "week" -> startTime.plusDays(7)
+                    "month" -> startTime.plusMonths(1)
+                    else -> now.toLocalDate().plusDays(1).atStartOfDay(zone)
+                }
             }
         } catch (e: Exception) {
             val payload = buildJsonObject {
@@ -165,10 +169,14 @@ internal fun buildCalendarQueryTool(context: Context): Tool = Tool(
 
         val selection = if (query != null) {
             "${CalendarContract.Instances.TITLE} LIKE ?"
-        } else null
+        } else {
+            null
+        }
         val selectionArgs = if (query != null) {
             arrayOf("%$query%")
-        } else null
+        } else {
+            null
+        }
 
         val uri = CalendarContract.Instances.CONTENT_URI.buildUpon()
             .appendPath(startMs.toString())
@@ -419,8 +427,12 @@ private fun hasCalendarReadPermission(context: Context): Boolean =
     ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED
 
 private fun hasCalendarWritePermission(context: Context): Boolean =
-    ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED &&
-        ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED
+    ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.READ_CALENDAR
+    ) == PackageManager.PERMISSION_GRANTED &&
+        ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) ==
+        PackageManager.PERMISSION_GRANTED
 
 private fun getDefaultCalendarId(context: Context): Long? {
     val projection = arrayOf(CalendarContract.Calendars._ID)

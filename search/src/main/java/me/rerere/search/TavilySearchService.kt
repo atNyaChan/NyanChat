@@ -108,18 +108,17 @@ object TavilySearchService : SearchService<SearchServiceOptions.TavilyOptions> {
                     json.decodeFromString<SearchResponse>(it)
                 }
 
-                return@withContext Result.success(
-                    SearchResult(
-                        answer = response.answer,
-                        items = response.results.map {
-                            SearchResultItem(
-                                title = it.title,
-                                url = it.url,
-                                text = it.content
-                            )
-                        },
-                        images = response.images,
-                    ))
+                return@withContext Result.success(SearchResult(
+                    answer = response.answer,
+                    items = response.results.map {
+                        SearchResultItem(
+                            title = it.title,
+                            url = it.url,
+                            text = it.content
+                        )
+                    },
+                    images = response.images,
+                ))
             } else {
                 error("response failed #${response.code}")
             }

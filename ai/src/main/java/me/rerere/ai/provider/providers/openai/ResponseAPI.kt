@@ -350,7 +350,7 @@ class ResponseAPI(
                         part is UIMessagePart.Reasoning &&
                             part.metadataAs<OpenAIReasoningMetadata>()?.encryptedContent != null
                     }
-                )
+                    )
             }
             .forEach { message ->
                 if (message.role == MessageRole.ASSISTANT) {
@@ -534,9 +534,13 @@ class ResponseAPI(
             put("id", tool.toolCallId)
             put("status", tool.status.toOpenAIStatus())
             tool.input?.let { input ->
-                if (tool.toolName.removeSuffix("_call") == "web_search") put("action", input)
-                else if (input is JsonObject) input.forEach { (key, value) -> put(key, value) }
-                else put("input", input)
+                if (tool.toolName.removeSuffix("_call") == "web_search") {
+                    put("action", input)
+                } else if (input is JsonObject) {
+                    input.forEach { (key, value) -> put(key, value) }
+                } else {
+                    put("input", input)
+                }
             }
             tool.output?.let { put("output", it) }
         })
@@ -715,7 +719,8 @@ class ResponseAPI(
             promptTokens = jsonObject["input_tokens"]?.jsonPrimitive?.intOrNull ?: 0,
             completionTokens = jsonObject["output_tokens"]?.jsonPrimitive?.intOrNull ?: 0,
             totalTokens = jsonObject["total_tokens"]?.jsonPrimitive?.intOrNull ?: 0,
-            cachedTokens = jsonObject["input_tokens_details"]?.jsonObjectOrNull?.get("cached_tokens")?.jsonPrimitive?.intOrNull
+            cachedTokens =
+            jsonObject["input_tokens_details"]?.jsonObjectOrNull?.get("cached_tokens")?.jsonPrimitive?.intOrNull
                 ?: 0
         )
     }

@@ -35,7 +35,8 @@ class TemplateTransformer(
                         is UIMessagePart.Text -> {
                             val result = StringWriter()
                             template.evaluate(
-                                result, mapOf(
+                                result,
+                                mapOf(
                                     "message" to part.text,
                                     "role" to message.role.name.lowercase(),
                                     "time" to createdAt.toLocalTime(),

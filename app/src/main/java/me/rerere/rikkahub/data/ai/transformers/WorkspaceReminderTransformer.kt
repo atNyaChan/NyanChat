@@ -131,28 +131,50 @@ private fun buildWorkspacePrompt(
     cwd: String? = null,
 ): String = buildString {
     appendLine("<workspace>")
-    appendLine("You have access to a persistent Linux workspace named \"${workspace.name}\", running in a sandboxed proot rootfs environment.")
+    appendLine(
+        "You have access to a persistent Linux workspace named \"${workspace.name}\", running in a sandboxed proot rootfs environment."
+    )
     appendLine()
-    appendLine("- The workspace files area is mounted at `/workspace`. Use it as your working directory; files written there persist across turns of this conversation.")
-    appendLine("- All paths passed to workspace tools must be absolute and inside the Rootfs (for example `/workspace/notes.md`).")
+    appendLine(
+        "- The workspace files area is mounted at `/workspace`. Use it as your working directory; files written there persist across turns of this conversation."
+    )
+    appendLine(
+        "- All paths passed to workspace tools must be absolute and inside the Rootfs (for example `/workspace/notes.md`)."
+    )
     if (distro != null) {
-        appendLine("- The Rootfs distribution is $distro. Use its native package manager when you need to install missing tools.")
+        appendLine(
+            "- The Rootfs distribution is $distro. Use its native package manager when you need to install missing tools."
+        )
     }
     if (shell == "/bin/bash") {
         appendLine("- `workspace_shell` runs commands with `/bin/bash`.")
     } else {
-        appendLine("- `workspace_shell` runs commands with `$shell`, a POSIX shell. Bash is not installed, so avoid bash-only syntax such as arrays, here-strings (`<<<`) and brace expansion.")
+        appendLine(
+            "- `workspace_shell` runs commands with `$shell`, a POSIX shell. Bash is not installed, so avoid bash-only syntax such as arrays, here-strings (`<<<`) and brace expansion."
+        )
     }
     appendLine("- Available tools:")
     appendLine("  - `workspace_read_file`: read file contents.")
-    appendLine("  - `workspace_write_file` / `workspace_edit_file`: create files, or make precise edits to existing files.")
+    appendLine(
+        "  - `workspace_write_file` / `workspace_edit_file`: create files, or make precise edits to existing files."
+    )
     appendLine("  - `workspace_shell`: run shell commands (the files area is mounted at /workspace).")
-    appendLine("- Prefer `workspace_shell` for tasks that standard Unix tools handle well, and prefer `workspace_edit_file` for targeted edits over rewriting whole files.")
-    appendLine("- The skills directory is mounted at `/skills`. Each skill is a subdirectory `/skills/<skill-name>/` containing a `SKILL.md` (with `name` and `description` frontmatter) plus any supporting files. Read a skill's `SKILL.md` before using it, and follow its instructions.")
-    appendLine("- Built-in skills shipped with the app are mounted at `/builtin_skills/<skill-name>/` with the same layout. Treat `/builtin_skills` as READ-ONLY: you may read files and run scripts there, but never modify, overwrite, or delete anything. A skill in `/skills` with the same name overrides the built-in one.")
-    appendLine("- Files the user uploaded live under `/upload`, named by their content sha256. The same content may be referenced from several places, so **never modify anything under `/upload`**. Read uploaded files from `/upload/<sha256>`, and if you need to change one, copy it into `/workspace` first and edit the copy.")
+    appendLine(
+        "- Prefer `workspace_shell` for tasks that standard Unix tools handle well, and prefer `workspace_edit_file` for targeted edits over rewriting whole files."
+    )
+    appendLine(
+        "- The skills directory is mounted at `/skills`. Each skill is a subdirectory `/skills/<skill-name>/` containing a `SKILL.md` (with `name` and `description` frontmatter) plus any supporting files. Read a skill's `SKILL.md` before using it, and follow its instructions."
+    )
+    appendLine(
+        "- Built-in skills shipped with the app are mounted at `/builtin_skills/<skill-name>/` with the same layout. Treat `/builtin_skills` as READ-ONLY: you may read files and run scripts there, but never modify, overwrite, or delete anything. A skill in `/skills` with the same name overrides the built-in one."
+    )
+    appendLine(
+        "- Files the user uploaded live under `/upload`, named by their content sha256. The same content may be referenced from several places, so **never modify anything under `/upload`**. Read uploaded files from `/upload/<sha256>`, and if you need to change one, copy it into `/workspace` first and edit the copy."
+    )
     if (!cwd.isNullOrBlank()) {
-        appendLine("- Current working directory: `$cwd`. Use this as the default context for file operations and shell commands.")
+        appendLine(
+            "- Current working directory: `$cwd`. Use this as the default context for file operations and shell commands."
+        )
     }
     appendLine()
     append("</workspace>")

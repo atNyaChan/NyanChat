@@ -12,7 +12,10 @@ class PerKeyFileCacheStore<K : Any, V : Any>(
     private val dir: File,
     private val keyCodec: KeyCodec<K>,
     private val valueSerializer: KSerializer<V>,
-    private val json: Json = Json { prettyPrint = false; ignoreUnknownKeys = true }
+    private val json: Json = Json {
+        prettyPrint = false
+        ignoreUnknownKeys = true
+    }
 ) : CacheStore<K, V> {
     private val lock = ReentrantLock()
     private val ext = ".json"
@@ -78,4 +81,3 @@ class PerKeyFileCacheStore<K : Any, V : Any>(
         return File(dir, name)
     }
 }
-

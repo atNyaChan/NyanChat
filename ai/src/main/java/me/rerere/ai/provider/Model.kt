@@ -103,5 +103,3 @@ fun chatRequestBuiltInTools(
     val candidate = if (useBuiltInSearch) model.tools else model.tools - BuiltInTools.Search
     return candidate.intersect(provider.supportedBuiltInTools())
 }
-
-

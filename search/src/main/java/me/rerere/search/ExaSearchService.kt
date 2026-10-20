@@ -56,7 +56,10 @@ object ExaSearchService : SearchService<SearchServiceOptions.ExaOptions> {
                 })
                 put("type", buildJsonObject {
                     put("type", "string")
-                    put("description", "Search type: fast (quick results), auto (default, balanced), deep (synthesized answer with citations)")
+                    put(
+                        "description",
+                        "Search type: fast (quick results), auto (default, balanced), deep (synthesized answer with citations)"
+                    )
                     put("enum", buildJsonArray {
                         add("fast")
                         add("auto")
@@ -65,17 +68,26 @@ object ExaSearchService : SearchService<SearchServiceOptions.ExaOptions> {
                 })
                 put("startPublishedDate", buildJsonObject {
                     put("type", "string")
-                    put("description", "Optional ISO-8601 publication date lower bound; results are published after this date")
+                    put(
+                        "description",
+                        "Optional ISO-8601 publication date lower bound; results are published after this date"
+                    )
                 })
                 put("endPublishedDate", buildJsonObject {
                     put("type", "string")
-                    put("description", "Optional ISO-8601 publication date upper bound; results are published before this date")
+                    put(
+                        "description",
+                        "Optional ISO-8601 publication date upper bound; results are published before this date"
+                    )
                 })
                 put("includeDomains", domainArraySchema("Optional domains to include"))
                 put("excludeDomains", domainArraySchema("Optional domains to exclude"))
                 put("maxAgeHours", buildJsonObject {
                     put("type", "integer")
-                    put("description", "Optional maximum age in hours for fetched page content; use only when content freshness matters")
+                    put(
+                        "description",
+                        "Optional maximum age in hours for fetched page content; use only when content freshness matters"
+                    )
                     put("minimum", MIN_MAX_AGE_HOURS)
                     put("maximum", MAX_MAX_AGE_HOURS)
                 })

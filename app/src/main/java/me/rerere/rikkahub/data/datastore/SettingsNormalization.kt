@@ -1,6 +1,5 @@
 package me.rerere.rikkahub.data.datastore
 
-
 /** 读盘后和每次修改后都要过一遍，保证内存里的设置始终是规整的。 */
 internal fun Settings.normalized(): Settings =
     withBuiltInDefaults().withoutInvalidReferences().withValuesInRange().withSanitizedUserAgent()
@@ -21,7 +20,9 @@ internal fun Settings.withBuiltInDefaults(): Settings {
                 description = defaultProvider.description,
                 shortDescription = defaultProvider.shortDescription,
             )
-        } else provider
+        } else {
+            provider
+        }
     }.toMutableList()
     val ttsProviders = this.ttsProviders.ifEmpty { DEFAULT_TTS_PROVIDERS }.toMutableList()
     DEFAULT_TTS_PROVIDERS.forEach { defaultTTSProvider ->

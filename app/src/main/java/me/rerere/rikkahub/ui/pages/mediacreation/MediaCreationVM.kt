@@ -45,7 +45,6 @@ import me.rerere.rikkahub.AppScope
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.files.MediaCreationFiles
-import me.rerere.rikkahub.data.remote.RemoteFileStore
 import me.rerere.rikkahub.data.model.MediaCreationAsset
 import me.rerere.rikkahub.data.model.MediaCreationAssetType
 import me.rerere.rikkahub.data.model.MediaCreationDraft
@@ -58,6 +57,7 @@ import me.rerere.rikkahub.data.model.MediaCreationStatus
 import me.rerere.rikkahub.data.model.canSubmit
 import me.rerere.rikkahub.data.model.supportedBy
 import me.rerere.rikkahub.data.model.withRequired
+import me.rerere.rikkahub.data.remote.RemoteFileStore
 import me.rerere.rikkahub.data.repository.MediaCreationRepository
 import me.rerere.rikkahub.service.MediaCreationService
 import me.rerere.rikkahub.service.MediaCreationSubmission
@@ -610,7 +610,11 @@ class MediaCreationVM(
         viewModelScope.launch {
             val records = service.deleteNodes(sessionId, nodeIds)
             // 草稿可能正引用着这些记录的文件，也可能正在修改其中某一项
-            val recordDirs = records.map { repository.relativePath(repository.recordDir(sessionId, it)) + File.separator }
+            val recordDirs = records.map {
+                repository.relativePath(
+                    repository.recordDir(sessionId, it)
+                ) + File.separator
+            }
             updateDraft { draft ->
                 draft.copy(
                     assets = draft.assets.filterNot { asset -> recordDirs.any { asset.path.startsWith(it) } },

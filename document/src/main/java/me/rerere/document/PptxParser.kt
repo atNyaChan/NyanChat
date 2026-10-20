@@ -38,12 +38,14 @@ object PptxParser {
                     }
 
                     // Try to get notes for this slide
-                    val notesEntry = zipFile.getEntry("ppt/notesSlides/notesSlide${slideNumber}.xml")
+                    val notesEntry = zipFile.getEntry("ppt/notesSlides/notesSlide$slideNumber.xml")
                     val notes = if (notesEntry != null) {
                         zipFile.getInputStream(notesEntry).use { stream ->
                             parseNotesXml(stream)
                         }
-                    } else ""
+                    } else {
+                        ""
+                    }
 
                     slides.add(SlideContent(slideNumber, slideContent, notes))
                 }
@@ -87,8 +89,8 @@ object PptxParser {
                 when (parser.eventType) {
                     XmlPullParser.START_TAG -> {
                         when (parser.name) {
-                            "sp" -> processShape(parser, result)  // Text box/shape
-                            "graphicFrame" -> processGraphicFrame(parser, result)  // Table
+                            "sp" -> processShape(parser, result) // Text box/shape
+                            "graphicFrame" -> processGraphicFrame(parser, result) // Table
                         }
                     }
                 }

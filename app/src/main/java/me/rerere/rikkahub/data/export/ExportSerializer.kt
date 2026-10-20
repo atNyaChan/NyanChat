@@ -30,7 +30,7 @@ interface ExportSerializer<T> {
     fun import(context: Context, uri: Uri): Result<T>
 
     // 获取导出文件名
-    fun getExportFileName(data: T): String = "${type}.json"
+    fun getExportFileName(data: T): String = "$type.json"
 
     // 便捷方法：直接导出为 JSON 字符串
     fun exportToJson(data: T, json: Json = DefaultJson): String {
@@ -50,7 +50,9 @@ interface ExportSerializer<T> {
             if (cursor.moveToFirst()) {
                 val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
                 if (nameIndex != -1) cursor.getString(nameIndex) else null
-            } else null
+            } else {
+                null
+            }
         }
     }
 
@@ -141,7 +143,7 @@ object LorebookSerializer : ExportSerializer<Lorebook> {
             val json = readUri(context, uri)
             // 首先尝试解析为自己的格式
             tryImportNative(json)
-            // 然后尝试解析为 SillyTavern 格式
+                // 然后尝试解析为 SillyTavern 格式
                 ?: tryImportSillyTavern(json, getUriFileName(context, uri)?.removeSuffix(".json"))
                 ?: throw IllegalArgumentException("Unsupported format")
         }
@@ -202,7 +204,7 @@ object LorebookSerializer : ExportSerializer<Lorebook> {
             1 -> InjectionPosition.AFTER_SYSTEM_PROMPT
             2 -> InjectionPosition.TOP_OF_CHAT
             3 -> InjectionPosition.TOP_OF_CHAT // After Examples -> 聊天历史开头
-            4 -> InjectionPosition.AT_DEPTH    // @Depth 模式
+            4 -> InjectionPosition.AT_DEPTH // @Depth 模式
             else -> InjectionPosition.AFTER_SYSTEM_PROMPT
         }
     }

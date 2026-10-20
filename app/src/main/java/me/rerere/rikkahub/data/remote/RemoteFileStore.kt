@@ -152,7 +152,9 @@ class RemoteFileStore internal constructor(
         val cached = hashes[file.path]?.takeIf { it.length == length && it.lastModified == lastModified }
         val sha256 = cached?.sha256
             ?: file.sha256Hex().also { hashes[file.path] = FileHash(length, lastModified, it) }
-        val extension = file.extension.lowercase().takeIf { ext -> ext.isNotEmpty() && ext.all { it.isLetterOrDigit() } }
+        val extension = file.extension.lowercase().takeIf { ext ->
+            ext.isNotEmpty() && ext.all { it.isLetterOrDigit() }
+        }
         KEY_PREFIX + sha256 + extension?.let { ".$it" }.orEmpty()
     }
 

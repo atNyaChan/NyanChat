@@ -381,9 +381,13 @@ internal class InteractionsAPI(
     }
 
     private fun UIMessagePart.toInteractionsContent(): JsonObject? = when (this) {
-        is UIMessagePart.Text -> if (text.isEmpty()) null else buildJsonObject {
-            put("type", "text")
-            put("text", text)
+        is UIMessagePart.Text -> if (text.isEmpty()) {
+            null
+        } else {
+            buildJsonObject {
+                put("type", "text")
+                put("text", text)
+            }
         }
 
         is UIMessagePart.Image -> encodeBase64(false).getOrNull()?.let { encoded ->

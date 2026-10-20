@@ -10,8 +10,8 @@ import me.rerere.highlight.languages.css.css
 import me.rerere.highlight.languages.dart.dart
 import me.rerere.highlight.languages.diff.diff
 import me.rerere.highlight.languages.dockerfile.dockerfile
-import me.rerere.highlight.languages.go.go
 import me.rerere.highlight.languages.glsl.glsl
+import me.rerere.highlight.languages.go.go
 import me.rerere.highlight.languages.ini.ini
 import me.rerere.highlight.languages.java.java
 import me.rerere.highlight.languages.javascript.javascript
@@ -24,8 +24,8 @@ import me.rerere.highlight.languages.php.php
 import me.rerere.highlight.languages.powershell.powershell
 import me.rerere.highlight.languages.properties.properties
 import me.rerere.highlight.languages.python.python
-import me.rerere.highlight.languages.rust.rust
 import me.rerere.highlight.languages.ruby.ruby
+import me.rerere.highlight.languages.rust.rust
 import me.rerere.highlight.languages.sql.sql
 import me.rerere.highlight.languages.swift.swift
 import me.rerere.highlight.languages.typescript.typescript

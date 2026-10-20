@@ -109,9 +109,15 @@ internal fun dart(): Language {
         builtIn(
             builtInTypes + nullableBuiltInTypes + listOf(
                 // dart:core
-                "Never", "Null", "dynamic", "print",
+                "Never",
+                "Null",
+                "dynamic",
+                "print",
                 // dart:html
-                "document", "querySelector", "querySelectorAll", "window",
+                "document",
+                "querySelector",
+                "querySelectorAll",
+                "window",
             ),
         )
     }

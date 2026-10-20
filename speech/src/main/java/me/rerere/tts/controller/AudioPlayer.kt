@@ -55,7 +55,9 @@ class AudioPlayer(context: Context) {
     suspend fun play(response: TTSResponse) = suspendCancellableCoroutine<Unit> { cont ->
         val bytes = if (response.format == AudioFormat.PCM) {
             pcmToWav(response.audioData, response.sampleRate ?: 24000)
-        } else response.audioData
+        } else {
+            response.audioData
+        }
 
         val dataSourceFactory = DataSource.Factory { ByteArrayDataSource(bytes) }
         val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
@@ -191,4 +193,3 @@ class AudioPlayer(context: Context) {
         ((value.toInt() shr 8) and 0xFF).toByte()
     )
 }
-

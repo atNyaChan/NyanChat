@@ -15,8 +15,8 @@ import me.rerere.ai.provider.TextGenerationParams
 import me.rerere.ai.ui.UIMessage
 import okhttp3.OkHttpClient
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -211,7 +211,9 @@ class ClaudePromptCacheRequestTest {
                     it.jsonObject["type"]?.jsonPrimitive?.content == "tool_result"
                 } == true
                 if (!isToolResult) index else null
-            } else null
+            } else {
+                null
+            }
         }
 
         // Should have 3 real user messages

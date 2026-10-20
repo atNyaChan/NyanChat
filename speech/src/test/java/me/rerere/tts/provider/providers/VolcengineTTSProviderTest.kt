@@ -20,7 +20,8 @@ class VolcengineTTSProviderTest {
     fun usesApiKeyAndEscapesText() {
         val setting = TTSProviderSetting.Volcengine(
             apiKey = " key ",
-            baseUrl = "https://example.com/", speechRate = 200,
+            baseUrl = "https://example.com/",
+            speechRate = 200,
         )
         val text = "你好，\"世界\"！\n第二行"
         val request = buildVolcengineTTSRequest(setting, text)
@@ -29,7 +30,10 @@ class VolcengineTTSProviderTest {
         assertNull(request.header("X-Api-App-Id"))
         assertNull(request.header("X-Api-Access-Key"))
         assertEquals("seed-tts-2.0", request.header("X-Api-Resource-Id"))
-        assertNotEquals(request.header("X-Api-Request-Id"), buildVolcengineTTSRequest(setting, text).header("X-Api-Request-Id"))
+        assertNotEquals(
+            request.header("X-Api-Request-Id"),
+            buildVolcengineTTSRequest(setting, text).header("X-Api-Request-Id")
+        )
         val buffer = Buffer()
         request.body!!.writeTo(buffer)
         val params = Json.parseToJsonElement(buffer.readUtf8()).jsonObject.getValue("req_params").jsonObject

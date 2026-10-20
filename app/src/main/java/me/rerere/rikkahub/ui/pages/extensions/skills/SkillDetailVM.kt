@@ -96,13 +96,17 @@ class SkillDetailVM(
             if (relativePath == "SKILL.md") {
                 val name = SkillFrontmatterParser.parse(content)["name"]
                 if (name != skillName) {
-                    withContext(Dispatchers.Main) { onResult(context.getString(R.string.error_skill_rename_forbidden, skillName)) }
+                    withContext(
+                        Dispatchers.Main
+                    ) { onResult(context.getString(R.string.error_skill_rename_forbidden, skillName)) }
                     return@launch
                 }
             }
             val success = skillManager.saveSkillFile(skillName, relativePath, content)
             loadFiles()
-            withContext(Dispatchers.Main) { onResult(if (success) null else context.getString(R.string.common_error_save_failed)) }
+            withContext(
+                Dispatchers.Main
+            ) { onResult(if (success) null else context.getString(R.string.common_error_save_failed)) }
         }
     }
 

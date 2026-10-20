@@ -1,8 +1,5 @@
 package me.rerere.ai.provider.stream
 
-import java.io.File
-import java.security.MessageDigest
-import java.util.Base64
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -35,6 +32,9 @@ import me.rerere.ai.util.json
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.File
+import java.security.MessageDigest
+import java.util.Base64
 
 class StreamTraceReplayTest {
     @Test
@@ -213,7 +213,10 @@ class StreamTraceReplayTest {
         assertEquals("web_search", serverTool.toolName)
         assertEquals(ServerToolStatus.COMPLETED, serverTool.status)
         assertTrue("$path should preserve the server tool input", serverTool.input != null)
-        assertTrue("$path should preserve server search results", (serverTool.output as? JsonArray)?.isNotEmpty() == true)
+        assertTrue(
+            "$path should preserve server search results",
+            (serverTool.output as? JsonArray)?.isNotEmpty() == true
+        )
         assertEquals(
             "server_tool_use",
             serverTool.metadataAs<ServerToolMetadata>()?.call
@@ -224,7 +227,10 @@ class StreamTraceReplayTest {
             serverTool.metadataAs<ServerToolMetadata>()?.result
                 ?.get("type")?.jsonPrimitive?.contentOrNull,
         )
-        assertTrue("$path should emit the client tool before the server tool", clientToolStartIndex in 0..<serverToolStartIndex)
+        assertTrue(
+            "$path should emit the client tool before the server tool",
+            clientToolStartIndex in 0..<serverToolStartIndex
+        )
         assertTrue("$path should finish the server tool before the response", serverToolEndIndex in 0..<finishIndex)
     }
 

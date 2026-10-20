@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit
 // MiMo 流式音频按文档示例使用 24kHz PCM16LE
 private const val MIMO_SAMPLE_RATE = 24000
 private val JSON_MEDIA_TYPE = "application/json".toMediaType()
+
 // 只关心 delta.audio.data 其余字段忽略
 private val mimoJson = Json { ignoreUnknownKeys = true }
 
@@ -66,6 +67,7 @@ internal class MiMoSseProcessor(
     private val voice: String
 ) {
     private var hasAudio = false
+
     // metadata 只构造一次 贯穿整个流
     private val metadata = mapOf(
         "provider" to "mimo",

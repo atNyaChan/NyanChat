@@ -1,5 +1,3 @@
 package me.rerere.rikkahub.data.remote
 
-interface RikkaHubAPI {
-
-}
+interface RikkaHubAPI

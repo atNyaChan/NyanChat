@@ -318,10 +318,15 @@ class ResponseApiRequestMessageTest {
             if (item["type"]?.jsonPrimitive?.content == "function_call") {
                 assertTrue("function_call should not be last", i < result.size - 1)
                 val next = result[i + 1].jsonObject
-                assertEquals("function_call_output should follow",
-                    "function_call_output", next["type"]?.jsonPrimitive?.content)
-                assertTrue("call_id should match",
-                    item["call_id"]?.jsonPrimitive?.content == next["call_id"]?.jsonPrimitive?.content)
+                assertEquals(
+                    "function_call_output should follow",
+                    "function_call_output",
+                    next["type"]?.jsonPrimitive?.content
+                )
+                assertTrue(
+                    "call_id should match",
+                    item["call_id"]?.jsonPrimitive?.content == next["call_id"]?.jsonPrimitive?.content
+                )
                 assertTrue("Order should be maintained", i > lastCallIndex)
                 lastCallIndex = i
             }

@@ -40,7 +40,10 @@ class MemoryToolsTest {
             put("if_version", "new")
         }
         val read = call(MemoryToolNames.READ) {
-            put("path", buildJsonArray { add("/topics/food.md"); add("/topics/none.md") })
+            put("path", buildJsonArray {
+                add("/topics/food.md")
+                add("/topics/none.md")
+            })
         }
         val file = read.getValue("files").jsonArray.single().jsonObject
 

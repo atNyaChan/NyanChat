@@ -2,12 +2,12 @@ package me.rerere.rikkahub.data.files
 
 import android.net.Uri
 import androidx.core.net.toFile
-import java.io.File
 import me.rerere.ai.ui.UIMessage
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.Avatar
+import java.io.File
 
 /**
  * 本地附件的「落盘形式」与「运行形式」之间的转换。
@@ -119,7 +119,13 @@ fun Avatar.withRuntimeLocalFiles(filesDir: File): Avatar =
     if (this is Avatar.Image) Avatar.Image(LocalFileUrls.toRuntime(filesDir, url)) else this
 
 fun Avatar.withUpstreamLocalFiles(upstreamFilesDir: File, filenameBySha: Map<String, String>? = null): Avatar =
-    if (this is Avatar.Image) Avatar.Image(LocalFileUrls.toUpstreamAbsolute(upstreamFilesDir, url, filenameBySha)) else this
+    if (this is Avatar.Image) {
+        Avatar.Image(
+            LocalFileUrls.toUpstreamAbsolute(upstreamFilesDir, url, filenameBySha)
+        )
+    } else {
+        this
+    }
 
 fun Assistant.withStoredLocalFiles(filesDir: File): Assistant = copy(
     avatar = avatar.withStoredLocalFiles(filesDir),

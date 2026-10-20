@@ -31,8 +31,9 @@ object MediaCreationFiles {
         var sampleSize = 1
         while (maxOf(bounds.outWidth, bounds.outHeight) / sampleSize > MAX_IMAGE_SIZE) sampleSize *= 2
         val options = BitmapFactory.Options().apply { inSampleSize = sampleSize }
-        val decoded = context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, options) }
-            ?: error("无法读取图片")
+        val decoded =
+            context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, options) }
+                ?: error("无法读取图片")
         val bitmap = ImageUtils.correctImageOrientation(context, uri, decoded)
         try {
             // 带透明通道的图片保留 PNG，其余用 JPEG 控制体积
@@ -72,7 +73,8 @@ object MediaCreationFiles {
 
     fun videoInfo(file: File): MediaInfo? = file.withRetriever { retriever ->
         val width = retriever.metadataInt(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH) ?: return@withRetriever null
-        val height = retriever.metadataInt(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT) ?: return@withRetriever null
+        val height =
+            retriever.metadataInt(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT) ?: return@withRetriever null
         val rotated = retriever.metadataInt(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION) in listOf(90, 270)
         MediaInfo(
             width = if (rotated) height else width,

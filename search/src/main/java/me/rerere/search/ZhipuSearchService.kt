@@ -81,16 +81,15 @@ object ZhipuSearchService : SearchService<SearchServiceOptions.ZhipuOptions> {
                     error("Failed to decode response: $bodyRaw")
                 }.getOrThrow()
 
-                return@withContext Result.success(
-                    SearchResult(
-                        items = response.searchResult.map {
-                            SearchResultItem(
-                                title = it.title,
-                                url = it.link,
-                                text = it.content,
-                            )
-                        }
-                    ))
+                return@withContext Result.success(SearchResult(
+                    items = response.searchResult.map {
+                        SearchResultItem(
+                            title = it.title,
+                            url = it.link,
+                            text = it.content,
+                        )
+                    }
+                ))
             } else {
                 println(response.body.string())
                 error("response failed #${response.code}")

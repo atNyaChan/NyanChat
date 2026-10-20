@@ -26,6 +26,7 @@ internal const val MCP_OAUTH_CALLBACK_PORT = 52_134
 internal const val MCP_OAUTH_CALLBACK_PATH = "/oauth/callback"
 internal const val MCP_OAUTH_REDIRECT_URI =
     "http://localhost:$MCP_OAUTH_CALLBACK_PORT$MCP_OAUTH_CALLBACK_PATH"
+
 // 托管在 GitHub Pages 上的 Client ID Metadata Document，其 redirect_uris 必须与 MCP_OAUTH_REDIRECT_URI 一致
 internal const val MCP_OAUTH_CLIENT_METADATA_URL = "https://rikkahub.github.io/oauth/client.json"
 private val OAUTH_CALLBACK_TIMEOUT = 5.minutes
@@ -222,7 +223,12 @@ internal class McpOAuthCoordinator(
             val callback = callbackSession.awaitCallback(OAUTH_CALLBACK_TIMEOUT)
                 ?: error(context.getString(R.string.error_mcp_oauth_timeout))
             callback.error?.let {
-                error(context.getString(R.string.error_mcp_auth_failed, buildAuthorizationError(it, callback.errorDescription)))
+                error(
+                    context.getString(
+                        R.string.error_mcp_auth_failed,
+                        buildAuthorizationError(it, callback.errorDescription)
+                    )
+                )
             }
             val code = callback.code ?: error(context.getString(R.string.error_mcp_auth_no_code))
 
@@ -267,8 +273,11 @@ internal class McpOAuthCoordinator(
         settingsStore.update { old ->
             old.copy(
                 mcpServers = old.mcpServers.map { server ->
-                    if (server.id != configId) server
-                    else server.clone(commonOptions = server.commonOptions.copy(oauth = oauth))
+                    if (server.id != configId) {
+                        server
+                    } else {
+                        server.clone(commonOptions = server.commonOptions.copy(oauth = oauth))
+                    }
                 }
             )
         }

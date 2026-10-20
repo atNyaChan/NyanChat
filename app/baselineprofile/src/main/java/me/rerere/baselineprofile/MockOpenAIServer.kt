@@ -78,7 +78,8 @@ class MockOpenAIServer(private val port: Int = PORT) {
                 .put("object", "chat.completion.chunk")
                 .put("model", "mock-model")
                 .put(
-                    "choices", JSONArray().put(
+                    "choices",
+                    JSONArray().put(
                         JSONObject()
                             .put("index", 0)
                             .put("delta", delta)
@@ -107,7 +108,8 @@ class MockOpenAIServer(private val port: Int = PORT) {
         .put("object", "chat.completion")
         .put("model", "mock-model")
         .put(
-            "choices", JSONArray().put(
+            "choices",
+            JSONArray().put(
                 JSONObject()
                     .put("index", 0)
                     .put("message", JSONObject().put("role", "assistant").put("content", content))

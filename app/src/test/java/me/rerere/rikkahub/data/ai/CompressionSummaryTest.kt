@@ -33,7 +33,9 @@ class CompressionSummaryTest {
 
     @Test
     fun `inline think tags are stripped`() {
-        val summary = reply(UIMessagePart.Text("<think>planning the summary</think>\n[Summary of previous conversation]"))
+        val summary = reply(
+            UIMessagePart.Text("<think>planning the summary</think>\n[Summary of previous conversation]")
+        )
             .compressionSummaryOrNull()
 
         assertEquals("[Summary of previous conversation]", summary)

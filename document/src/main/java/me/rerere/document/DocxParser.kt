@@ -342,7 +342,9 @@ object DocxParser {
 
         val listInfo = if (listLevel > 0 || isNumbered) {
             ListInfo(level = listLevel, isNumbered = isNumbered, number = 1)
-        } else null
+        } else {
+            null
+        }
 
         return ParagraphProperties(listInfo = listInfo, headingLevel = headingLevel)
     }

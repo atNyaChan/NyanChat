@@ -18,6 +18,7 @@ import me.rerere.ai.provider.Model
 import me.rerere.ai.provider.ModelAbility
 import me.rerere.ai.provider.ProviderManager
 import me.rerere.ai.ui.UIMessage
+import me.rerere.common.android.Logging
 import me.rerere.rikkahub.data.ai.prompts.MemoryConsolidationConversation
 import me.rerere.rikkahub.data.ai.prompts.buildMemoryConsolidationInput
 import me.rerere.rikkahub.data.ai.prompts.buildMemoryConsolidationPrompt
@@ -40,7 +41,6 @@ import me.rerere.rikkahub.data.model.getChatModelOf
 import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.rikkahub.data.repository.MemoryRepository
 import me.rerere.rikkahub.data.repository.memoryId
-import me.rerere.common.android.Logging
 import kotlin.uuid.Uuid
 
 private const val TAG = "MemoryConsolidator"

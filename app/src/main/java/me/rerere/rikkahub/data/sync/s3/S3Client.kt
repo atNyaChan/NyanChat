@@ -12,9 +12,9 @@ import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpMethod
 import io.ktor.http.isSuccess
+import io.ktor.util.cio.readChannel
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import io.ktor.utils.io.readAvailable
-import io.ktor.util.cio.readChannel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.xmlpull.v1.XmlPullParser

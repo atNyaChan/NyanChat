@@ -119,21 +119,33 @@ private fun buildAxisSchema(): JsonObject = buildJsonObject {
         put("data", buildJsonObject {
             put("type", "array")
             put("items", buildJsonObject { put("type", "string") })
-            put("description", "Category labels (e.g. months) for line/bar charts, aligned with series values. " +
-                "Only allowed on x_axis, and not for scatter charts.")
+            put(
+                "description",
+                "Category labels (e.g. months) for line/bar charts, aligned with series values. " +
+                    "Only allowed on x_axis, and not for scatter charts."
+            )
         })
         put("min", buildJsonObject {
             put("type", "number")
-            put("description", "Lower bound of the display range. Allowed on y_axis for line charts and on both axes for scatter charts.")
+            put(
+                "description",
+                "Lower bound of the display range. Allowed on y_axis for line charts and on both axes for scatter charts."
+            )
         })
         put("max", buildJsonObject {
             put("type", "number")
-            put("description", "Upper bound of the display range. Allowed on y_axis for line charts and on both axes for scatter charts.")
+            put(
+                "description",
+                "Upper bound of the display range. Allowed on y_axis for line charts and on both axes for scatter charts."
+            )
         })
         put("scale", buildJsonObject {
             put("type", "string")
             put("enum", buildJsonArray { AXIS_SCALES.forEach { add(it) } })
-            put("description", "Scale type, default linear. Log is allowed on y_axis for all charts and on x_axis for scatter charts only.")
+            put(
+                "description",
+                "Scale type, default linear. Log is allowed on y_axis for all charts and on x_axis for scatter charts only."
+            )
         })
         put("format", buildJsonObject {
             put("type", "string")
@@ -184,7 +196,10 @@ private fun validateChartArgs(params: JsonObject): String? {
         if (style == "scatter") {
             if ("values" in item) return "series[$index] must not use 'values' for scatter charts; use 'points'"
             val points = item["points"] as? JsonArray ?: return "series[$index].points is required for scatter charts"
-            if (points.size > MAX_SERIES_POINTS) return "series[$index].points can contain at most $MAX_SERIES_POINTS items"
+            if (points.size >
+                MAX_SERIES_POINTS) {
+                return "series[$index].points can contain at most $MAX_SERIES_POINTS items"
+            }
             points.forEachIndexed { pointIndex, point ->
                 val obj = point as? JsonObject
                 val x = obj?.number("x")
@@ -196,7 +211,10 @@ private fun validateChartArgs(params: JsonObject): String? {
         } else {
             if ("points" in item) return "series[$index] must not use 'points' for $style charts; use 'values'"
             val values = item["values"] as? JsonArray ?: return "series[$index].values is required for $style charts"
-            if (values.size > MAX_SERIES_POINTS) return "series[$index].values can contain at most $MAX_SERIES_POINTS items"
+            if (values.size >
+                MAX_SERIES_POINTS) {
+                return "series[$index].values can contain at most $MAX_SERIES_POINTS items"
+            }
             values.forEachIndexed { valueIndex, value ->
                 val number = (value as? JsonPrimitive)?.doubleOrNull
                     ?: return "series[$index].values[$valueIndex] must be a number"

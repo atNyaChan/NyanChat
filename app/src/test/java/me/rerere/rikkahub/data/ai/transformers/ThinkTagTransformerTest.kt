@@ -77,7 +77,11 @@ class ThinkTagTransformerTest {
         val message = UIMessage.assistant("<think>reason in progress")
         val visualResult = listOf(message).transformThinkTags(now, generationFinished = false, parseMidThink = false)
 
-        val finishedResult = visualResult.transformThinkTags(now, generationFinished = true, parseMidThink = false).single()
+        val finishedResult = visualResult.transformThinkTags(
+            now,
+            generationFinished = true,
+            parseMidThink = false
+        ).single()
 
         assertEquals(now, finishedResult.parts.filterIsInstance<UIMessagePart.Reasoning>().single().finishedAt)
     }

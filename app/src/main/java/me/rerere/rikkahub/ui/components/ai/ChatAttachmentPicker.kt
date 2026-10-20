@@ -13,7 +13,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
-import me.rerere.ui.toast.ToastType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -31,6 +30,7 @@ import me.rerere.rikkahub.utils.ImageUtils
 import me.rerere.rikkahub.utils.isAllowedFileType
 import me.rerere.ui.sketch.SketchDialog
 import me.rerere.ui.sketch.SketchResult
+import me.rerere.ui.toast.ToastType
 import org.koin.compose.koinInject
 import java.io.File
 import kotlin.uuid.Uuid
@@ -114,7 +114,9 @@ internal fun rememberChatAttachmentPickerActions(
         if (cameraPermission.allRequiredPermissionsGranted) {
             cameraOutputFile = context.cacheDir.resolve("camera_${Uuid.random()}.jpg")
             cameraOutputUri = FileProvider.getUriForFile(
-                context, "${context.packageName}.fileprovider", cameraOutputFile!!
+                context,
+                "${context.packageName}.fileprovider",
+                cameraOutputFile!!
             )
             cameraLauncher.launch(cameraOutputUri!!)
         } else {

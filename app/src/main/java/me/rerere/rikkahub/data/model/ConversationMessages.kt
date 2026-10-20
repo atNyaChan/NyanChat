@@ -70,7 +70,9 @@ internal fun Conversation.withNodeFavorite(nodeId: Uuid, favorite: Boolean): Con
 internal fun Conversation.withToolApproval(toolCallId: String, approvalState: ToolApprovalState): Conversation? {
     if (currentMessages.none { message ->
             message.getTools().any { it.toolCallId == toolCallId && it.isPending }
-        }) return null
+        }) {
+        return null
+    }
     return copy(
         messageNodes = messageNodes.map { node ->
             node.copy(messages = node.messages.map { message ->

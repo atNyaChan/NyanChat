@@ -5,8 +5,8 @@ import me.rerere.ai.ui.UIMessage
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.InjectionPosition
-import me.rerere.rikkahub.data.model.PromptInjection
 import me.rerere.rikkahub.data.model.Lorebook
+import me.rerere.rikkahub.data.model.PromptInjection
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

@@ -102,10 +102,13 @@ data class NetworkSetting(
 enum class ChatFontFamily {
     @SerialName("default")
     DEFAULT,
+
     @SerialName("outfit")
     OUTFIT,
+
     @SerialName("serif")
     SERIF,
+
     @SerialName("monospace")
     MONOSPACE,
 

@@ -151,7 +151,7 @@ as an ordinary folder, and never invent a uuid/filename-keyed path for an attach
 ./gradlew assembleDebug          # Build Debug APK
 ./gradlew test                   # Run all JVM tests
 ./gradlew lint                   # Run Android Lint
-./gradlew spotlessApply          # Format Kotlin files changed relative to origin/master with ktlint
+./gradlew spotlessApply          # Format all Kotlin files with ktlint (-PspotlessRatchet=<ref> limits to files changed since that ref)
 ./gradlew spotlessCheck          # Check formatting without modifying files
 ```
 

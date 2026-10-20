@@ -77,7 +77,9 @@ private fun buildLinearScale(
     if (high <= low) {
         // 所有值相同或 min/max 冲突时扩展出一个可见范围
         val pad = if (low == 0.0) 1.0 else abs(low) * 0.1
-        if (includeZero && low == 0.0) high = low + pad else {
+        if (includeZero && low == 0.0) {
+            high = low + pad
+        } else {
             low -= pad
             high = low + pad * 2
         }

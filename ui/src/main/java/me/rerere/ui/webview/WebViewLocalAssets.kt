@@ -33,7 +33,12 @@ internal object WebViewLocalAssets {
         return runCatching {
             WebResourceResponse(
                 mimeType,
-                if (mimeType.startsWith("text/") || mimeType.endsWith("json") || mimeType.endsWith("xml")) "UTF-8" else null,
+                if (mimeType.startsWith("text/") || mimeType.endsWith("json") ||
+                    mimeType.endsWith("xml")) {
+                    "UTF-8"
+                } else {
+                    null
+                },
                 context.assets.open(assetPath)
             )
         }.getOrNull()

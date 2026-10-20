@@ -7,8 +7,12 @@ import org.junit.Test
 class ToolApprovalStateTest {
     @Test
     fun `cancelled pending tool no longer waits for approval or resumes execution`() {
-        val pending = UIMessagePart.Tool("call", "write_file", "{}",
-            approvalState = ToolApprovalState.Pending)
+        val pending = UIMessagePart.Tool(
+            "call",
+            "write_file",
+            "{}",
+            approvalState = ToolApprovalState.Pending
+        )
         assertTrue(pending.isPending)
         val cancelled = pending.copy(output = listOf(UIMessagePart.Text("cancelled")))
         assertFalse(cancelled.isPending)

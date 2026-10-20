@@ -15,6 +15,9 @@ import me.rerere.rikkahub.data.db.AppDatabaseFactory
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.rikkahub.utils.JsonInstant
 import me.rerere.workspace.RootfsInstaller
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -27,9 +30,6 @@ import java.io.File
 import java.nio.file.Files
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream
 
 @RunWith(AndroidJUnit4::class)
 class BackupManagerTest {
@@ -46,8 +46,11 @@ class BackupManagerTest {
             override fun getFilesDir() = File(directory, "files").apply { mkdirs() }
             override fun getCacheDir() = File(directory, "cache").apply { mkdirs() }
             override fun getNoBackupFilesDir() = File(directory, "no-backup").apply { mkdirs() }
-            override fun getDatabasePath(name: String): File = if (File(name).isAbsolute) File(name)
-                else File(directory, "databases/$name").also { it.parentFile!!.mkdirs() }
+            override fun getDatabasePath(name: String): File = if (File(name).isAbsolute) {
+                File(name)
+            } else {
+                File(directory, "databases/$name").also { it.parentFile!!.mkdirs() }
+            }
         }
         liveDatabase = AppDatabaseFactory.create(context)
         liveDatabase.openHelper.writableDatabase.execSQL("CREATE TABLE backup_probe (text TEXT)")
@@ -299,7 +302,10 @@ class BackupManagerTest {
     }
 
     private fun probe(database: AppDatabase): String = database.openHelper.readableDatabase
-        .query("SELECT text FROM backup_probe").use { check(it.moveToFirst()); it.getString(0) }
+        .query("SELECT text FROM backup_probe").use {
+            check(it.moveToFirst())
+            it.getString(0)
+        }
 
     private fun addFile(zip: ZipOutputStream, name: String, file: File) {
         zip.putNextEntry(ZipEntry(name))

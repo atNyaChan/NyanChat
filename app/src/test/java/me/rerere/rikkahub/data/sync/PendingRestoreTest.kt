@@ -16,7 +16,9 @@ class PendingRestoreTest {
     @get:Rule val temporary = TemporaryFolder()
 
     private fun restore() = PendingRestore(
-        File(temporary.root, "restore"), database(), File(temporary.root, "files")
+        File(temporary.root, "restore"),
+        database(),
+        File(temporary.root, "files")
     )
 
     private fun database() = File(temporary.root, "databases/rikka_hub")

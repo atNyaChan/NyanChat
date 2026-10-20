@@ -14,13 +14,14 @@ import java.io.File
 class ShortcutHandlerActivity : ComponentActivity() {
     private var photoURI: Uri? = null
 
-    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-        if (isGranted) {
-            launchCamera()
-        } else {
-            finish()
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                launchCamera()
+            } else {
+                finish()
+            }
         }
-    }
 
     private val takePictureLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success) {

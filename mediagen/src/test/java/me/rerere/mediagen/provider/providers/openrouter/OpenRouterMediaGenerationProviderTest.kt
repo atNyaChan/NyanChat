@@ -103,7 +103,12 @@ class OpenRouterMediaGenerationProviderTest {
             body(MediaGenerationRequest(prompt = "cat", watermark = false))
         }
         assertThrows(IllegalArgumentException::class.java) {
-            body(MediaGenerationRequest(prompt = "cat", inputs = listOf(MediaGenerationInput.Video("https://e.com/a.mp4"))))
+            body(
+                MediaGenerationRequest(
+                    prompt = "cat",
+                    inputs = listOf(MediaGenerationInput.Video("https://e.com/a.mp4"))
+                )
+            )
         }
     }
 
@@ -247,12 +252,18 @@ class OpenRouterMediaGenerationProviderTest {
         assertTrue(completed.outputs.all { it.mimeType == "video/mp4" })
         assertEquals(JsonPrimitive(0.25), completed.metadata["usage"]!!.jsonObject["cost"])
 
-        val failed = generation.parseTask(setting, parse("""{"id":"j","status":"failed","error":"Content policy violation"}"""))
+        val failed = generation.parseTask(
+            setting,
+            parse("""{"id":"j","status":"failed","error":"Content policy violation"}""")
+        )
         assertEquals(MediaGenerationStatus.FAILED, failed.status)
         assertEquals("Content policy violation", failed.error?.message)
         assertTrue(failed.outputs.isEmpty())
 
-        val expired = generation.parseTask(setting, parse("""{"id":"j","status":"expired","error":{"message":"too late"}}"""))
+        val expired = generation.parseTask(
+            setting,
+            parse("""{"id":"j","status":"expired","error":{"message":"too late"}}""")
+        )
         assertEquals(MediaGenerationStatus.EXPIRED, expired.status)
         assertEquals("too late", expired.error?.message)
         assertEquals(
@@ -271,7 +282,11 @@ class OpenRouterMediaGenerationProviderTest {
                     jsonResponse(request, """{"created":1,"data":[{"b64_json":"aGVsbG8=","media_type":"image/png"}]}""")
 
                 request.method == "POST" ->
-                    jsonResponse(request, """{"id":"job-1","polling_url":"/api/v1/videos/job-1","status":"pending"}""", 202)
+                    jsonResponse(
+                        request,
+                        """{"id":"job-1","polling_url":"/api/v1/videos/job-1","status":"pending"}""",
+                        202
+                    )
 
                 ++queries < 2 -> jsonResponse(request, """{"id":"job-1","status":"in_progress"}""")
 
@@ -281,7 +296,10 @@ class OpenRouterMediaGenerationProviderTest {
                 )
             }
         })
-        val setting = MediaGenerationProviderSetting.OpenRouter(apiKey = "key", baseUrl = "https://or.example.com/api/v1/")
+        val setting = MediaGenerationProviderSetting.OpenRouter(
+            apiKey = "key",
+            baseUrl = "https://or.example.com/api/v1/"
+        )
 
         assertEquals(setOf(MediaKind.IMAGE, MediaKind.VIDEO), setting.supportedKinds)
         val image = manager.generate(setting, imageModel, MediaGenerationRequest(prompt = "cat")).toList().single()

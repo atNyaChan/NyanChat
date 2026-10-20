@@ -31,12 +31,18 @@ fun createSkillTools(
             systemPrompt = { _, _ ->
                 buildString {
                     appendLine("**Skills**")
-                    appendLine("You have access to the following skills. Use the `use_skill` tool to load a skill's instructions when the user's request matches.")
+                    appendLine(
+                        "You have access to the following skills. Use the `use_skill` tool to load a skill's instructions when the user's request matches."
+                    )
                     appendLine("<available_skills>")
                     available.forEach { skill ->
                         appendLine("  <skill>")
                         appendLine("    <name>${skill.name.escapeXml()}</name>")
-                        appendLine("    <description>${skill.description.take(MAX_SKILL_DESCRIPTION_LENGTH).escapeXml()}</description>")
+                        appendLine(
+                            "    <description>${skill.description.take(
+                                MAX_SKILL_DESCRIPTION_LENGTH
+                            ).escapeXml()}</description>"
+                        )
                         appendLine("  </skill>")
                     }
                     append("</available_skills>")

@@ -445,10 +445,12 @@ class ClaudeProvider(private val client: OkHttpClient, context: Context? = null)
             // 顶层 cache_control: 让 Anthropic 自动管理缓存断点
             params.cacheControl?.let { put("cache_control", it) }
 
-            if (params.temperature != null && !params.reasoningLevel.isEnabled) put(
-                "temperature",
-                params.temperature
-            )
+            if (params.temperature != null && !params.reasoningLevel.isEnabled) {
+                put(
+                    "temperature",
+                    params.temperature
+                )
+            }
             if (params.topP != null) put("top_p", params.topP)
 
             put("stream", stream)
@@ -519,7 +521,7 @@ class ClaudeProvider(private val client: OkHttpClient, context: Context? = null)
                         })
                         BuiltInTools.UrlContext,
                         BuiltInTools.ImageGeneration,
-                            -> Unit
+                        -> Unit
                     }
                 }
             }
@@ -576,13 +578,17 @@ class ClaudeProvider(private val client: OkHttpClient, context: Context? = null)
                     it.jsonObject["type"]?.jsonPrimitive?.contentOrNull == "tool_result"
                 } == true
                 if (!isToolResult) index else null
-            } else null
+            } else {
+                null
+            }
         }
 
         // 取最后一条
         val targetIndex = if (realUserIndices.isNotEmpty()) {
             realUserIndices.last()
-        } else return messages
+        } else {
+            return messages
+        }
 
         // 在目标 message 的最后一个 content block 上添加 cache_control
         return JsonArray(messages.mapIndexed { index, msg ->
@@ -594,10 +600,14 @@ class ClaudeProvider(private val client: OkHttpClient, context: Context? = null)
                         JsonObject(
                             block.jsonObject + mapOf("cache_control" to cacheControl)
                         )
-                    } else block
+                    } else {
+                        block
+                    }
                 })
                 JsonObject(obj + mapOf("content" to newContent))
-            } else msg
+            } else {
+                msg
+            }
         })
     }
 
@@ -612,8 +622,11 @@ class ClaudeProvider(private val client: OkHttpClient, context: Context? = null)
             when (group) {
                 is PartGroup.Content -> {
                     val contentParts =
-                        if (includeHistoryReasoning) group.parts
-                        else group.parts.filterNot { it is UIMessagePart.Reasoning }
+                        if (includeHistoryReasoning) {
+                            group.parts
+                        } else {
+                            group.parts.filterNot { it is UIMessagePart.Reasoning }
+                        }
                     contentParts.toContentBlocks().forEach { contentBuffer.add(it) }
                 }
 
@@ -709,11 +722,11 @@ class ClaudeProvider(private val client: OkHttpClient, context: Context? = null)
             add(rawCall?.let {
                 if (input == null) it else JsonObject(it + mapOf("input" to input))
             } ?: buildJsonObject {
-                    put("type", "server_tool_use")
-                    put("id", toolCallId)
-                    put("name", toolName)
-                    input?.let { put("input", it) }
-                })
+                put("type", "server_tool_use")
+                put("id", toolCallId)
+                put("name", toolName)
+                input?.let { put("input", it) }
+            })
             val rawResult = metadata?.result.takeIf { protocol == ServerToolProtocol.ANTHROPIC_MESSAGES }
             if (isFinished && (output != null || rawResult != null)) {
                 add(rawResult ?: buildJsonObject {

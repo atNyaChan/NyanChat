@@ -199,5 +199,4 @@ class ChatInputState {
             else -> null
         }
     }
-
 }

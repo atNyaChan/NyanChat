@@ -2,7 +2,6 @@ package me.rerere.rikkahub.data.sync
 
 import android.database.sqlite.SQLiteDatabase
 import androidx.core.net.toUri
-import java.io.File
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
@@ -23,6 +22,7 @@ import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.files.FileUtils
 import me.rerere.rikkahub.data.files.attachmentShaFromUrl
 import me.rerere.rikkahub.utils.JsonInstant
+import java.io.File
 
 /**
  * 附件表与 `upload` 目录在「新格式（内容寻址）」与「旧格式（RikkaHub 兼容）」之间的转换。
@@ -366,8 +366,17 @@ internal object ManagedFilesArchive {
             }
             var childChanged = false
             val values = obj.mapValues { (key, value) ->
-                if (key == "url") value else {
-                    val (rewritten, c) = rewriteNode(value, messageId, messageAt, conversationId, nodeId, rewriteAttachment)
+                if (key == "url") {
+                    value
+                } else {
+                    val (rewritten, c) = rewriteNode(
+                        value,
+                        messageId,
+                        messageAt,
+                        conversationId,
+                        nodeId,
+                        rewriteAttachment
+                    )
                     childChanged = childChanged || c
                     rewritten
                 }
@@ -381,7 +390,13 @@ internal object ManagedFilesArchive {
     private fun rewriteStrings(element: JsonElement, oldNameToSha: Map<String, String>): JsonElement = when (element) {
         is JsonObject -> JsonObject(element.mapValues { (_, value) -> rewriteStrings(value, oldNameToSha) })
         is JsonArray -> JsonArray(element.map { rewriteStrings(it, oldNameToSha) })
-        is JsonPrimitive -> if (element.isString) JsonPrimitive(mapAttachmentUrl(element.content, oldNameToSha)) else element
+        is JsonPrimitive -> if (element.isString) {
+            JsonPrimitive(
+                mapAttachmentUrl(element.content, oldNameToSha)
+            )
+        } else {
+            element
+        }
     }
 
     private fun mapAttachmentUrl(value: String, oldNameToSha: Map<String, String>): String {

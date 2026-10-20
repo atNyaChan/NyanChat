@@ -69,7 +69,8 @@ internal class AliyunVideoGeneration(
                             when (input) {
                                 is MediaGenerationInput.Image -> {
                                     put(
-                                        "type", when (input.role) {
+                                        "type",
+                                        when (input.role) {
                                             ImageRole.FIRST_FRAME -> "first_frame"
                                             ImageRole.LAST_FRAME -> "last_frame"
                                             ImageRole.REFERENCE -> "reference_image"

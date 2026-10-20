@@ -21,5 +21,3 @@ data class PlaybackState(
     val totalChunks: Int = 0,
     val errorMessage: String? = null
 )
-
-

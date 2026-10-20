@@ -26,12 +26,14 @@ class MemoryConsolidationSchedulerTest {
     /** 扮演数据库和模型：[pending] 是还没整理的轮数，整理成功后清掉 */
     private inner class FakeWorker : MemoryConsolidationWorker {
         val pending = mutableMapOf<Uuid, Int>()
+
         // 不在这里的对话都属于 memoryId
         val memoryIdOf = mutableMapOf<Uuid, String>()
         val calls = mutableListOf<Call>()
         var failure: Exception? = null
         var autoDreamEnabled = true
         var gate: CompletableDeferred<Unit>? = null
+
         // 查完数据库、结果还没返回时停在这里
         var scanGate: CompletableDeferred<Unit>? = null
 

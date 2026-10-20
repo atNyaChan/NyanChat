@@ -5,8 +5,8 @@ import me.rerere.ai.ui.UIMessage
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.InjectionPosition
-import me.rerere.rikkahub.data.model.PromptInjection
 import me.rerere.rikkahub.data.model.Lorebook
+import me.rerere.rikkahub.data.model.PromptInjection
 import me.rerere.rikkahub.data.model.extractContextForMatching
 import me.rerere.rikkahub.data.model.isTriggered
 
@@ -239,8 +239,8 @@ internal fun findSafeInsertIndex(messages: List<UIMessage>, targetIndex: Int): I
 
         // 不能插入到 USER → ASSISTANT(含Tool) 之间
         val isPrevUser = prevMessage?.role == MessageRole.USER
-        val isCurrentAssistantWithTools = currentMessage?.role == MessageRole.ASSISTANT
-            && currentMessage.getTools().isNotEmpty()
+        val isCurrentAssistantWithTools = currentMessage?.role == MessageRole.ASSISTANT &&
+            currentMessage.getTools().isNotEmpty()
 
         if (isPrevUser && isCurrentAssistantWithTools) {
             index--

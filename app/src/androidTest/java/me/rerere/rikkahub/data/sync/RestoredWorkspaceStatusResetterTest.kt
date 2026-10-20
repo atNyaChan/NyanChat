@@ -5,14 +5,14 @@ import android.content.ContextWrapper
 import android.database.sqlite.SQLiteDatabase
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import java.io.File
-import java.nio.file.Files
 import me.rerere.workspace.WorkspaceShellStatus
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.File
+import java.nio.file.Files
 
 @RunWith(AndroidJUnit4::class)
 class RestoredWorkspaceStatusResetterTest {

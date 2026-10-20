@@ -6,13 +6,6 @@ import android.net.Uri
 import android.util.Log
 import androidx.core.net.toFile
 import androidx.core.net.toUri
-import java.io.File
-import java.io.FileOutputStream
-import java.io.OutputStream
-import java.net.HttpURLConnection
-import java.net.URL
-import java.security.DigestOutputStream
-import java.security.MessageDigest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,6 +38,13 @@ import me.rerere.rikkahub.utils.JsonInstant
 import me.rerere.rikkahub.utils.exportImage
 import me.rerere.rikkahub.utils.exportImageFile
 import me.rerere.rikkahub.utils.getActivity
+import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStream
+import java.net.HttpURLConnection
+import java.net.URL
+import java.security.DigestOutputStream
+import java.security.MessageDigest
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.uuid.Uuid
@@ -672,7 +672,10 @@ class FilesManager(
                 }
                 // 已登记内容再次带入时，若登记类型还是空值/兜底值，用本次更具体的来源 MIME 补全
                 val mimeType = info?.mimeType
-                    ?.takeIf { it.isNotBlank() && it != row.mimeType && (row.mimeType.isBlank() || row.mimeType == GENERIC_MIME_TYPE) }
+                    ?.takeIf {
+                        it.isNotBlank() && it != row.mimeType &&
+                            (row.mimeType.isBlank() || row.mimeType == GENERIC_MIME_TYPE)
+                    }
                     ?: row.mimeType
                 val combined = withNoneUsage(others + newUsages) { fileTime(row.sha256) }
                 if (combined != usages || mimeType != row.mimeType) {

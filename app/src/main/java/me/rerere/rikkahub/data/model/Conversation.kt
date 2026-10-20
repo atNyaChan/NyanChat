@@ -2,6 +2,7 @@ package me.rerere.rikkahub.data.model
 
 import android.net.Uri
 import androidx.core.net.toUri
+import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import me.rerere.ai.core.MessageRole
@@ -15,7 +16,6 @@ import me.rerere.rikkahub.data.datastore.Settings
 import java.time.Instant
 import java.time.ZoneId
 import kotlin.uuid.Uuid
-import kotlinx.datetime.toJavaLocalDateTime
 
 @Serializable
 data class Conversation(
@@ -150,7 +150,9 @@ data class MessageNode(
     val isFavorite: Boolean = false,
 ) {
     val currentMessage get() = if (messages.isEmpty() || selectIndex !in messages.indices) {
-        throw IllegalStateException("MessageNode has no valid current message: messages.size=${messages.size}, selectIndex=$selectIndex")
+        throw IllegalStateException(
+            "MessageNode has no valid current message: messages.size=${messages.size}, selectIndex=$selectIndex"
+        )
     } else {
         messages[selectIndex]
     }
@@ -202,7 +204,8 @@ internal fun Conversation.insertContextCheckpoint(afterNodeId: Uuid, summary: St
     if (index == -1) return null
     val checkpoint = UIMessage.user(summary).copy(isContextCheckpoint = true).toMessageNode()
     return copy(
-        messageNodes = messageNodes.subList(0, index + 1) + checkpoint + messageNodes.subList(index + 1, messageNodes.size),
+        messageNodes =
+        messageNodes.subList(0, index + 1) + checkpoint + messageNodes.subList(index + 1, messageNodes.size),
     )
 }
 

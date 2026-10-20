@@ -151,8 +151,10 @@ class ClaudeRequestMessageTest {
         val nextMsg = result[assistantWithToolUseIndex + 1].jsonObject
         assertEquals("user", nextMsg["role"]?.jsonPrimitive?.content)
         val nextContent = nextMsg["content"]?.jsonArray
-        assertTrue("Next message should have tool_result",
-            nextContent?.any { it.jsonObject["type"]?.jsonPrimitive?.content == "tool_result" } == true)
+        assertTrue(
+            "Next message should have tool_result",
+            nextContent?.any { it.jsonObject["type"]?.jsonPrimitive?.content == "tool_result" } == true
+        )
     }
 
     @Test
@@ -192,8 +194,10 @@ class ClaudeRequestMessageTest {
         val thinkingBlock = content.find {
             it.jsonObject["type"]?.jsonPrimitive?.content == "thinking"
         }?.jsonObject
-        assertEquals("Let me think about this...",
-            thinkingBlock?.get("thinking")?.jsonPrimitive?.content)
+        assertEquals(
+            "Let me think about this...",
+            thinkingBlock?.get("thinking")?.jsonPrimitive?.content
+        )
     }
 
     @Test
@@ -348,8 +352,10 @@ class ClaudeRequestMessageTest {
                 val nextMsg = result[i + 1].jsonObject
                 assertEquals("user", nextMsg["role"]?.jsonPrimitive?.content)
                 val nextContent = nextMsg["content"]?.jsonArray
-                assertTrue("Should have tool_result in next message",
-                    nextContent?.any { it.jsonObject["type"]?.jsonPrimitive?.content == "tool_result" } == true)
+                assertTrue(
+                    "Should have tool_result in next message",
+                    nextContent?.any { it.jsonObject["type"]?.jsonPrimitive?.content == "tool_result" } == true
+                )
             }
         }
     }
@@ -398,8 +404,10 @@ class ClaudeRequestMessageTest {
             }
         }
 
-        assertTrue("Should have assistant with 3 parallel tool_use blocks",
-            foundAssistantWithMultipleTools)
+        assertTrue(
+            "Should have assistant with 3 parallel tool_use blocks",
+            foundAssistantWithMultipleTools
+        )
 
         // Verify corresponding tool_result blocks in user message
         var foundUserWithMultipleResults = false
@@ -418,8 +426,10 @@ class ClaudeRequestMessageTest {
             }
         }
 
-        assertTrue("Should have user with 3 tool_result blocks",
-            foundUserWithMultipleResults)
+        assertTrue(
+            "Should have user with 3 tool_result blocks",
+            foundUserWithMultipleResults
+        )
     }
 
     @Test

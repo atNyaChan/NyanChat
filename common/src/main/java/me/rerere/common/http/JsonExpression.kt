@@ -66,9 +66,19 @@ fun evaluateJsonExpr(input: String, root: JsonObject): String {
 // Lexer
 
 private enum class TokenType {
-    IDENT, NUMBER, STRING,
-    DOT, LBRACKET, RBRACKET, LPAREN, RPAREN,
-    PLUS, MINUS, STAR, SLASH, CONCAT,
+    IDENT,
+    NUMBER,
+    STRING,
+    DOT,
+    LBRACKET,
+    RBRACKET,
+    LPAREN,
+    RPAREN,
+    PLUS,
+    MINUS,
+    STAR,
+    SLASH,
+    CONCAT,
     EOF
 }
 
@@ -83,19 +93,50 @@ private class Lexer(private val src: String) {
         val start = i
         val c = src[i]
         when (c) {
-            '.' -> { i++; return Token(TokenType.DOT, ".", start) }
-            '[' -> { i++; return Token(TokenType.LBRACKET, "[", start) }
-            ']' -> { i++; return Token(TokenType.RBRACKET, "]", start) }
-            '(' -> { i++; return Token(TokenType.LPAREN, "(", start) }
-            ')' -> { i++; return Token(TokenType.RPAREN, ")", start) }
-            '+' -> {
-                if (peek() == '+') { i += 2; return Token(TokenType.CONCAT, "++", start) }
-                i++; return Token(TokenType.PLUS, "+", start)
+            '.' -> {
+                i++
+                return Token(TokenType.DOT, ".", start)
             }
-            '-' -> { i++; return Token(TokenType.MINUS, "-", start) }
-            '*' -> { i++; return Token(TokenType.STAR, "*", start) }
-            '/' -> { i++; return Token(TokenType.SLASH, "/", start) }
-            'x', 'X' -> { i++; return Token(TokenType.STAR, c.toString(), start) }
+            '[' -> {
+                i++
+                return Token(TokenType.LBRACKET, "[", start)
+            }
+            ']' -> {
+                i++
+                return Token(TokenType.RBRACKET, "]", start)
+            }
+            '(' -> {
+                i++
+                return Token(TokenType.LPAREN, "(", start)
+            }
+            ')' -> {
+                i++
+                return Token(TokenType.RPAREN, ")", start)
+            }
+            '+' -> {
+                if (peek() == '+') {
+                    i += 2
+                    return Token(TokenType.CONCAT, "++", start)
+                }
+                i++
+                return Token(TokenType.PLUS, "+", start)
+            }
+            '-' -> {
+                i++
+                return Token(TokenType.MINUS, "-", start)
+            }
+            '*' -> {
+                i++
+                return Token(TokenType.STAR, "*", start)
+            }
+            '/' -> {
+                i++
+                return Token(TokenType.SLASH, "/", start)
+            }
+            'x', 'X' -> {
+                i++
+                return Token(TokenType.STAR, c.toString(), start)
+            }
             '"' -> return stringToken()
         }
 
@@ -128,13 +169,18 @@ private class Lexer(private val src: String) {
                 }
                 escaped = false
             } else {
-                if (ch == '\\') escaped = true
-                else if (ch == '"') break
-                else sb.append(ch)
+                if (ch == '\\') {
+                    escaped = true
+                } else if (ch == '"') {
+                    break
+                } else {
+                    sb.append(ch)
+                }
             }
         }
-        if (i > src.length || (i <= src.length && src[i - 1] != '"'))
+        if (i > src.length || (i <= src.length && src[i - 1] != '"')) {
             throw ParseException("Unterminated string starting at $start")
+        }
         return Token(TokenType.STRING, sb.toString(), start)
     }
 
@@ -275,7 +321,10 @@ private class Parser(private val lexer: Lexer) {
     }
 
     private fun match(type: TokenType): Boolean {
-        if (current.type == type) { advance(); return true }
+        if (current.type == type) {
+            advance()
+            return true
+        }
         return false
     }
 
@@ -286,7 +335,10 @@ private class Parser(private val lexer: Lexer) {
         return tok
     }
 
-    private fun advance() { last = current; current = lexer.next() }
+    private fun advance() {
+        last = current
+        current = lexer.next()
+    }
     private fun previous(): Token = last
     private fun error(msg: String) = ParseException(msg)
 }
@@ -352,8 +404,11 @@ private class Evaluator(private val root: JsonObject) {
         if (elem == null || elem is JsonNull) return Value.Str("")
         return when (elem) {
             is JsonPrimitive -> {
-                if (elem.isString) Value.Str(elem.content)
-                else elem.doubleOrNull()?.let { Value.Num("%.2f".format(it).toDouble()) } ?: Value.Str(elem.content)
+                if (elem.isString) {
+                    Value.Str(elem.content)
+                } else {
+                    elem.doubleOrNull()?.let { Value.Num("%.2f".format(it).toDouble()) } ?: Value.Str(elem.content)
+                }
             }
             is JsonObject, is JsonArray -> Value.Str(elem.toString())
         }
@@ -372,7 +427,9 @@ private class Evaluator(private val root: JsonObject) {
 
 private fun JsonPrimitive.doubleOrNull(): Double? = try {
     this.content.toDouble()
-} catch (_: Exception) { null }
+} catch (_: Exception) {
+    null
+}
 
 private fun formatNumber(d: Double): String {
     if (d.isNaN() || d.isInfinite()) return d.toString()

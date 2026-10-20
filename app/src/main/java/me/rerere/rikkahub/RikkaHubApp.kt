@@ -19,37 +19,37 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import me.rerere.rikkahub.data.files.AttachmentCas
-import me.rerere.rikkahub.data.files.FileFolders
-import me.rerere.rikkahub.data.skills.SkillManager
-import me.rerere.rikkahub.data.ai.MemoryConsolidationScheduler
-import java.io.File
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import me.rerere.common.android.appTempFolder
+import me.rerere.rikkahub.data.ai.MemoryConsolidationScheduler
+import me.rerere.rikkahub.data.datastore.SettingsStore
+import me.rerere.rikkahub.data.files.AttachmentCas
+import me.rerere.rikkahub.data.files.FileFolders
+import me.rerere.rikkahub.data.files.FilesManager
+import me.rerere.rikkahub.data.repository.WorkspaceRepository
+import me.rerere.rikkahub.data.skills.SkillManager
+import me.rerere.rikkahub.data.sync.BackupManager
+import me.rerere.rikkahub.data.sync.RestoreFailedException
 import me.rerere.rikkahub.di.appModule
 import me.rerere.rikkahub.di.dataSourceModule
 import me.rerere.rikkahub.di.repositoryModule
 import me.rerere.rikkahub.di.viewModelModule
-import me.rerere.rikkahub.data.files.FilesManager
-import me.rerere.rikkahub.data.datastore.SettingsStore
-import me.rerere.rikkahub.data.sync.BackupManager
-import me.rerere.rikkahub.data.sync.RestoreFailedException
-import me.rerere.rikkahub.utils.JsonInstant
 import me.rerere.rikkahub.service.MediaCreationService
 import me.rerere.rikkahub.service.WebServerService
 import me.rerere.rikkahub.utils.CrashHandler
 import me.rerere.rikkahub.utils.DatabaseUtil
-import me.rerere.rikkahub.data.repository.WorkspaceRepository
+import me.rerere.rikkahub.utils.JsonInstant
 import me.rerere.workspace.WorkspaceManager
 import org.koin.android.ext.android.get
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.androidx.workmanager.koin.workManagerFactory
 import org.koin.core.context.startKoin
+import java.io.File
 
 private const val TAG = "RikkaHubApp"
 
@@ -335,10 +335,10 @@ class RikkaHubApp : Application() {
 }
 
 class AppScope : CoroutineScope by CoroutineScope(
-    SupervisorJob()
-        + Dispatchers.Main
-        + CoroutineName("AppScope")
-        + CoroutineExceptionHandler { _, e ->
-        Log.e(TAG, "AppScope exception", e)
-    }
+    SupervisorJob() +
+        Dispatchers.Main +
+        CoroutineName("AppScope") +
+        CoroutineExceptionHandler { _, e ->
+            Log.e(TAG, "AppScope exception", e)
+        }
 )

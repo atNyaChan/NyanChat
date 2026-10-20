@@ -38,7 +38,7 @@ fun ToolApprovalState.canResumeToolExecution(): Boolean {
         is ToolApprovalState.Answered -> true
         ToolApprovalState.Auto,
         ToolApprovalState.Pending,
-            -> false
+        -> false
     }
 }
 

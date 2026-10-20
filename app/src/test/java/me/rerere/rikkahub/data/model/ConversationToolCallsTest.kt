@@ -58,7 +58,10 @@ class ConversationToolCallsTest {
     @Test
     fun `node left without messages is removed`() {
         val conversation = Conversation.ofId(Uuid.random()).copy(
-            messageNodes = listOf(UIMessage.user("hi").toMessageNode(), toolReply(ToolApprovalState.Auto).toMessageNode())
+            messageNodes = listOf(
+                UIMessage.user("hi").toMessageNode(),
+                toolReply(ToolApprovalState.Auto).toMessageNode()
+            )
         )
 
         assertEquals(1, conversation.withoutUnresumableToolCalls().messageNodes.size)

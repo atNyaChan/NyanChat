@@ -40,7 +40,9 @@ class ChatCompletionsUsageParsingTest {
         // OpenAI 官方嵌套格式
         assertEquals(
             12,
-            usage("""{"prompt_tokens":1,"completion_tokens":1,"total_tokens":2,"prompt_tokens_details":{"cached_tokens":12}}""")?.cachedTokens
+            usage(
+                """{"prompt_tokens":1,"completion_tokens":1,"total_tokens":2,"prompt_tokens_details":{"cached_tokens":12}}"""
+            )?.cachedTokens
         )
         // Moonshot 顶层 cached_tokens
         assertEquals(
@@ -50,12 +52,16 @@ class ChatCompletionsUsageParsingTest {
         // DeepSeek 顶层 prompt_cache_hit_tokens
         assertEquals(
             5,
-            usage("""{"prompt_tokens":1,"completion_tokens":1,"total_tokens":2,"prompt_cache_hit_tokens":5,"prompt_cache_miss_tokens":3}""")?.cachedTokens
+            usage(
+                """{"prompt_tokens":1,"completion_tokens":1,"total_tokens":2,"prompt_cache_hit_tokens":5,"prompt_cache_miss_tokens":3}"""
+            )?.cachedTokens
         )
         // 嵌套字段优先于顶层兜底
         assertEquals(
             12,
-            usage("""{"prompt_tokens":1,"completion_tokens":1,"total_tokens":2,"prompt_tokens_details":{"cached_tokens":12},"cached_tokens":7}""")?.cachedTokens
+            usage(
+                """{"prompt_tokens":1,"completion_tokens":1,"total_tokens":2,"prompt_tokens_details":{"cached_tokens":12},"cached_tokens":7}"""
+            )?.cachedTokens
         )
         // 都没有时为 0
         assertEquals(

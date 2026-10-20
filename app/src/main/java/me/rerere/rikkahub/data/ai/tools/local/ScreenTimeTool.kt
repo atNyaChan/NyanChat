@@ -5,6 +5,7 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
@@ -12,14 +13,13 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
-import kotlinx.serialization.json.JsonObject
 import me.rerere.ai.core.InputSchema
 import me.rerere.ai.core.Tool
 import me.rerere.ai.ui.UIMessagePart
+import me.rerere.common.android.Logging
 import me.rerere.rikkahub.data.event.AppEvent
 import me.rerere.rikkahub.data.event.AppEventBus
 import me.rerere.rikkahub.utils.hasUsageStatsPermission
-import me.rerere.common.android.Logging
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -118,9 +118,11 @@ internal fun buildScreenTimeTool(context: Context, eventBus: AppEventBus): Tool 
             endTime = endRaw?.let { raw -> parseUsageTime(raw, zone) } ?: now
             startTime = if (beginRaw != null) {
                 parseUsageTime(beginRaw, zone)
-            } else when (rangePreset) {
-                "week" -> now.minusDays(7)
-                else -> now.toLocalDate().atStartOfDay(zone)
+            } else {
+                when (rangePreset) {
+                    "week" -> now.minusDays(7)
+                    else -> now.toLocalDate().atStartOfDay(zone)
+                }
             }
         } catch (e: Exception) {
             val payload = buildJsonObject {
@@ -231,8 +233,8 @@ private fun computeForegroundTime(
         when (event.eventType) {
             UsageEvents.Event.MOVE_TO_FOREGROUND -> {
                 if (event.packageName != currentPkg) {
-                    settle(event.timeStamp)         // 先结算上一个前台 App
-                    currentPkg = event.packageName  // 再开始为新 App 计时
+                    settle(event.timeStamp) // 先结算上一个前台 App
+                    currentPkg = event.packageName // 再开始为新 App 计时
                     currentStart = event.timeStamp
                 }
             }

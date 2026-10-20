@@ -17,7 +17,12 @@ class ConversationUpsertMessageTest {
 
         val updated = conversation
             .upsertMessage(nodeId, UIMessage.assistant("partial"))
-            .let { it.upsertMessage(nodeId, it.messageNodes.last().messages.single().copy(parts = UIMessage.assistant("full").parts)) }
+            .let {
+                it.upsertMessage(
+                    nodeId,
+                    it.messageNodes.last().messages.single().copy(parts = UIMessage.assistant("full").parts)
+                )
+            }
 
         assertEquals(nodeId, updated.messageNodes.last().id)
         assertEquals(listOf("question", "full"), updated.currentMessages.map { it.toText() })
@@ -42,7 +47,10 @@ class ConversationUpsertMessageTest {
         val conversation = conversationOf(user.toMessageNode(), answerNode)
             .let { it.copy(messageNodes = it.messageNodes.drop(1)) }
 
-        val updated = conversation.upsertMessage(answerNode.id, answer.copy(parts = UIMessage.assistant("streamed").parts))
+        val updated = conversation.upsertMessage(
+            answerNode.id,
+            answer.copy(parts = UIMessage.assistant("streamed").parts)
+        )
 
         assertEquals(1, updated.messageNodes.size)
         assertEquals(listOf("streamed"), updated.messageNodes.single().messages.map { it.toText() })
@@ -54,7 +62,10 @@ class ConversationUpsertMessageTest {
         val answerNode = MessageNode(messages = listOf(answer, regenerated), selectIndex = 0)
         val conversation = conversationOf(user.toMessageNode(), answerNode)
 
-        val updated = conversation.upsertMessage(answerNode.id, regenerated.copy(parts = UIMessage.assistant("longer").parts))
+        val updated = conversation.upsertMessage(
+            answerNode.id,
+            regenerated.copy(parts = UIMessage.assistant("longer").parts)
+        )
 
         assertEquals(0, updated.messageNodes[1].selectIndex)
         assertEquals("longer", updated.messageNodes[1].messages[1].toText())

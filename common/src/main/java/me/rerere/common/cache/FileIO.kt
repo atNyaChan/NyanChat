@@ -32,4 +32,3 @@ internal fun atomicWrite(file: File, content: String) {
         }
     }
 }
-

@@ -42,7 +42,10 @@ internal fun sql(): Language {
     )
 
     val multiWordTypes = listOf(
-        "double precision", "large object", "with timezone", "without timezone",
+        "double precision",
+        "large object",
+        "with timezone",
+        "without timezone",
     )
 
     val types = listOf(
@@ -54,7 +57,14 @@ internal fun sql(): Language {
     )
 
     val nonReservedWords = listOf(
-        "add", "asc", "collation", "desc", "final", "first", "last", "view",
+        "add",
+        "asc",
+        "collation",
+        "desc",
+        "final",
+        "first",
+        "last",
+        "view",
     )
 
     // https://jakewheat.github.io/sql-overview/sql-2016-foundation-grammar.html#reserved-word

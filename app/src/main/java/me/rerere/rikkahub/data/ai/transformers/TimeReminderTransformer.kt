@@ -1,6 +1,5 @@
 package me.rerere.rikkahub.data.ai.transformers
 
-import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import me.rerere.ai.core.MessageRole
@@ -9,6 +8,7 @@ import me.rerere.rikkahub.utils.toLocalDateTime
 import java.time.ZoneId
 import java.time.format.TextStyle
 import java.util.Locale
+import kotlin.time.Instant
 import kotlin.time.toJavaInstant
 
 /**

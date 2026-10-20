@@ -8,8 +8,8 @@ import android.location.LocationManager
 import android.os.CancellationSignal
 import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull

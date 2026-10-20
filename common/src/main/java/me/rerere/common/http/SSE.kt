@@ -40,12 +40,11 @@ sealed class SseEvent {
     data class Failure(val throwable: Throwable?, val response: Response?) : SseEvent()
 }
 
-
 /**
  * 为 OkHttpClient 创建 SSE (Server-Sent Events) 连接的扩展函数
- * 
+ *
  * 将 OkHttp 的 EventSource 封装成 Kotlin Flow，提供响应式的 SSE 事件流
- * 
+ *
  * @param request HTTP 请求，用于建立 SSE 连接
  * @return Flow<SseEvent> 包含 SSE 事件的响应式流
  */

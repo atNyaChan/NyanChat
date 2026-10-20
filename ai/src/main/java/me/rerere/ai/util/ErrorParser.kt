@@ -42,6 +42,5 @@ fun JsonElement.parseErrorDetail(): HttpException {
             // 对于基本类型，直接使用其内容
             HttpException(this.jsonPrimitive.content)
         }
-
     }
 }

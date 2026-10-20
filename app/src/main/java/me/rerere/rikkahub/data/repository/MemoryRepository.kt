@@ -97,7 +97,9 @@ class MemoryRepository(private val memoryDAO: MemoryDAO) {
         when {
             index < 0 -> Edit.Reject("old_str was not found in $path.")
             current.indexOf(oldStr, index + 1) >= 0 ->
-                Edit.Reject("old_str matches more than one place in $path; include more surrounding text to make it unique.")
+                Edit.Reject(
+                    "old_str matches more than one place in $path; include more surrounding text to make it unique."
+                )
 
             else -> Edit.Content(current.replaceAt(index, oldStr.length, newStr))
         }
@@ -208,7 +210,11 @@ private fun String.replaceAt(index: Int, length: Int, replacement: String): Stri
         val atLineStart = start == 0 || this[start - 1] == '\n'
         val atLineEnd = end == this.length || this[end] == '\n'
         if (atLineStart && atLineEnd) {
-            if (end < this.length) end++ else if (start > 0) start--
+            if (end < this.length) {
+                end++
+            } else if (start > 0) {
+                start--
+            }
         }
     }
     return substring(0, start) + replacement + substring(end)

@@ -29,7 +29,10 @@ class DatabaseBackupTest {
     }
 
     private fun open(file: File): SQLiteDatabase = SQLiteDatabase.openDatabase(
-        SQLiteConfiguration.configure(context, SQLiteDatabaseConfiguration(file.path, SQLiteDatabase.CREATE_IF_NECESSARY)),
+        SQLiteConfiguration.configure(
+            context,
+            SQLiteDatabaseConfiguration(file.path, SQLiteDatabase.CREATE_IF_NECESSARY)
+        ),
         null,
         null,
     )

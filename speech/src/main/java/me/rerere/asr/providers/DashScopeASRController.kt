@@ -371,8 +371,11 @@ private fun ASRProviderSetting.DashScope.websocketEndpoint(): String {
         .trimEnd('/')
         .replace("/api-ws/v1/inference", "/api-ws/v1/realtime")
     val separator = if (endpoint.contains("?")) "&" else "?"
-    return if (endpoint.contains("model=")) endpoint
-    else "${endpoint}${separator}model=${model}"
+    return if (endpoint.contains("model=")) {
+        endpoint
+    } else {
+        "${endpoint}${separator}model=$model"
+    }
 }
 
 private fun ASRProviderSetting.DashScope.sessionUpdateEvent(): JSONObject {

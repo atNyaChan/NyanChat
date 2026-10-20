@@ -43,7 +43,7 @@ object DocumentAsPromptTransformer : InputMessageTransformer {
                           $content
                           ```
                           </UploadFile>
-                          """.trimMargin()
+                        """.trimMargin()
                         UIMessagePart.Text(prompt)
                     }
                     // 文件内容放在用户消息之后, 避免解析出的文件正文被排到用户提问前面。

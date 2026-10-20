@@ -2,9 +2,9 @@ package me.rerere.rikkahub.data.sync
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import java.io.File
 import me.rerere.workspace.WorkspaceManager
 import me.rerere.workspace.WorkspaceShellStatus
+import java.io.File
 
 internal object RestoredWorkspaceStatusResetter {
     fun resetAfterRestore(context: Context): Int {

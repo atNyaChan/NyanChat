@@ -66,7 +66,7 @@ object TinyfishSearchService : SearchService<SearchServiceOptions.TinyfishOption
         runCatching {
             val query = params["query"]?.jsonPrimitive?.content ?: error("query is required")
             val url = "https://api.search.tinyfish.ai" +
-                    "?query=${java.net.URLEncoder.encode(query, "UTF-8")}"
+                "?query=${java.net.URLEncoder.encode(query, "UTF-8")}"
 
             val request = Request.Builder()
                 .url(url)

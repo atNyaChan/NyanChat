@@ -22,8 +22,14 @@ internal fun ini(): Language {
     }
     val comments = comment().apply {
         variants = listOf(
-            { begin = ";"; end = "$" },
-            { begin = "#"; end = "$" },
+            {
+                begin = ";"
+                end = "$"
+            },
+            {
+                begin = "#"
+                end = "$"
+            },
         )
     }
     val variables = mode {
@@ -41,10 +47,24 @@ internal fun ini(): Language {
         scope = "string"
         contains = listOf(BACKSLASH_ESCAPE)
         variants = listOf(
-            { begin = "'''"; end = "'''"; relevance = 10.0 },
-            { begin = "\"\"\""; end = "\"\"\""; relevance = 10.0 },
-            { begin = "\""; end = "\"" },
-            { begin = "'"; end = "'" },
+            {
+                begin = "'''"
+                end = "'''"
+                relevance = 10.0
+            },
+            {
+                begin = "\"\"\""
+                end = "\"\"\""
+                relevance = 10.0
+            },
+            {
+                begin = "\""
+                end = "\""
+            },
+            {
+                begin = "'"
+                end = "'"
+            },
         )
     }
     val array = mode {

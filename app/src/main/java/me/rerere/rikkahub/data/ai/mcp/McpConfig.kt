@@ -46,7 +46,7 @@ data class McpOAuthState(
     private fun String?.masked(): String = when {
         this == null -> "null"
         isBlank() -> "***"
-        else -> "***(${length})"
+        else -> "***($length)"
     }
 }
 

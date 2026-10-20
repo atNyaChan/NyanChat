@@ -37,7 +37,11 @@ private val SCHEMA_KEYWORDS = setOf(
 
 // 值为「名称 -> 子 Schema」映射的关键字
 private val SCHEMA_MAP_KEYWORDS = setOf(
-    "properties", "patternProperties", "dependentSchemas", "\$defs", "definitions",
+    "properties",
+    "patternProperties",
+    "dependentSchemas",
+    "\$defs",
+    "definitions",
 )
 
 private fun inlineSchemaMap(schemas: JsonObject, root: JsonObject, resolving: Set<String>): JsonObject =

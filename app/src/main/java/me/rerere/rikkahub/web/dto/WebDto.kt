@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 import me.rerere.ai.core.ReasoningLevel
 import me.rerere.ai.core.TokenUsage
 import me.rerere.ai.ui.ModelSnapshot
-import me.rerere.ai.ui.UIMessageAnnotation
 import me.rerere.ai.ui.UIMessage
+import me.rerere.ai.ui.UIMessageAnnotation
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.data.model.ConversationConfig

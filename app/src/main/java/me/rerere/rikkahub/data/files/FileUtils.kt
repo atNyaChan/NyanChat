@@ -119,7 +119,7 @@ object FileUtils {
                 "heic", "heix", "heim", "heis",
                 "hevc", "hevx", "hevm", "hevs",
                 "mif1", "msf1", "heif",
-                    -> return "image/heic"
+                -> return "image/heic"
 
                 "avif", "avis" -> return "image/avif"
             }

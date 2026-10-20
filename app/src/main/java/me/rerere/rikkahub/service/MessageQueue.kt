@@ -89,10 +89,14 @@ class MessageQueue {
         val previous = state.value.messages.find { it.id == id } ?: return null
         mutableState.value = state.value.copy(
             messages = state.value.messages.map {
-                if (it.id == id) it.copy(
-                    parts = parts?.toList() ?: it.parts,
-                    isEditing = false
-                ) else it
+                if (it.id == id) {
+                    it.copy(
+                        parts = parts?.toList() ?: it.parts,
+                        isEditing = false
+                    )
+                } else {
+                    it
+                }
             },
         )
         // 取消编辑只释放占位，不能清理原附件。

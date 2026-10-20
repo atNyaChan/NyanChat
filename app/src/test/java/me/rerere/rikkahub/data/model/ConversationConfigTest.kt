@@ -188,7 +188,10 @@ class ConversationConfigTest {
         val bound = conversation().bindConfig(settings()).copy(workspaceCwd = "/workspace/project")
         val assistantView = settings().getAssistantOf(bound)
 
-        val sameWorkspace = bound.withAssistantUpdate(assistantView.copy(reasoningLevel = ReasoningLevel.LOW), settings())
+        val sameWorkspace = bound.withAssistantUpdate(
+            assistantView.copy(reasoningLevel = ReasoningLevel.LOW),
+            settings()
+        )
         val otherWorkspace = bound.withAssistantUpdate(assistantView.copy(workspaceId = Uuid.random()), settings())
 
         assertEquals("/workspace/project", sameWorkspace.workspaceCwd)

@@ -228,9 +228,13 @@ internal fun python(): Language {
                     variants = listOf(
                         {
                             matchList = listOf(
-                                """\bclass""", """\s+""",
-                                identRe, """\s*""",
-                                """\(\s*""", identRe, """\s*\)""",
+                                """\bclass""",
+                                """\s+""",
+                                identRe,
+                                """\s*""",
+                                """\(\s*""",
+                                identRe,
+                                """\s*\)""",
                             )
                         },
                         {

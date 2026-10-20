@@ -63,7 +63,10 @@ class StepTTSProvider : TTSProvider<TTSProviderSetting.Step> {
             }
         }
 
-        Log.i(TAG, "generateSpeech: model=${providerSetting.model} voice=${providerSetting.voice} format=${providerSetting.responseFormat}")
+        Log.i(
+            TAG,
+            "generateSpeech: model=${providerSetting.model} voice=${providerSetting.voice} format=${providerSetting.responseFormat}"
+        )
 
         val httpRequest = Request.Builder()
             .url("${providerSetting.baseUrl.trimEnd('/')}/v1/audio/speech")

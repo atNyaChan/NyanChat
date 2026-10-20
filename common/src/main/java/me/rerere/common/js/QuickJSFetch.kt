@@ -65,7 +65,9 @@ suspend fun QuickJs.injectFetch(httpClient: OkHttpClient) {
 
         val parsedHeaders = if (!headersJson.isNullOrBlank() && headersJson != "null") {
             json.parseToJsonElement(headersJson).jsonObject
-        } else null
+        } else {
+            null
+        }
 
         parsedHeaders?.entries?.forEach { (key, value) ->
             requestBuilder.addHeader(key, value.jsonPrimitive.content)

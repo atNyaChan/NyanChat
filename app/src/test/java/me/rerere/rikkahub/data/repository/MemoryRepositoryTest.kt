@@ -72,7 +72,11 @@ class MemoryRepositoryTest {
         val file = create("/topics/work.md", "- [stated] On the search team\n")
 
         val result = repository.replaceInFile(
-            assistant, "/topics/work.md", "On the search team", "On the infra team (previously on search)", file.version,
+            assistant,
+            "/topics/work.md",
+            "On the search team",
+            "On the infra team (previously on search)",
+            file.version,
         )
 
         assertEquals(
@@ -178,8 +182,13 @@ class MemoryRepositoryTest {
     @Test
     fun `files are grouped by directory with profile and preferences first`() = runBlocking {
         listOf(
-            "/people/mom.md", "/topics/food.md", "/work/notes.md", "/preferences.md",
-            "/areas/house-hunt.md", "/profile.md", "/topics/books.md",
+            "/people/mom.md",
+            "/topics/food.md",
+            "/work/notes.md",
+            "/preferences.md",
+            "/areas/house-hunt.md",
+            "/profile.md",
+            "/topics/books.md",
         ).forEach { create(it, "content") }
 
         val groups = repository.getFiles(assistant).groupByDirectory()

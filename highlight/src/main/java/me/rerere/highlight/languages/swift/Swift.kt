@@ -465,7 +465,13 @@ private val REGEX_KEYWORDS = listOf(
 private val ALL_KEYWORD_SOURCES = PLAIN_KEYWORDS + REGEX_KEYWORDS
 private val LITERALS = listOf("false", "nil", "true")
 private val PRECEDENCE_GROUP_KEYWORDS = listOf(
-    "assignment", "associativity", "higherThan", "left", "lowerThan", "none", "right",
+    "assignment",
+    "associativity",
+    "higherThan",
+    "left",
+    "lowerThan",
+    "none",
+    "right",
 )
 private val NUMBER_SIGN_KEYWORDS = listOf(
     "#colorLiteral", "#column", "#dsohandle", "#else", "#elseif", "#endif", "#error", "#file",

@@ -66,8 +66,14 @@ internal val JS_TYPES = listOf(
 )
 
 internal val JS_ERROR_TYPES = listOf(
-    "Error", "EvalError", "InternalError", "RangeError", "ReferenceError", "SyntaxError",
-    "TypeError", "URIError",
+    "Error",
+    "EvalError",
+    "InternalError",
+    "RangeError",
+    "ReferenceError",
+    "SyntaxError",
+    "TypeError",
+    "URIError",
 )
 
 internal val JS_BUILT_IN_GLOBALS = listOf(
@@ -431,8 +437,10 @@ internal fun javascriptGrammar(jsKeywords: Keywords): JavaScriptGrammar {
 
     val functionVariable = mode {
         matchList = listOf(
-            "const|var|let", """\s+""",
-            JS_IDENT_RE, """\s*""",
+            "const|var|let",
+            """\s+""",
+            JS_IDENT_RE,
+            """\s*""",
             """=\s*""",
             """(async\s*)?""", // `async` is optional
             lookahead(funcLeadInRe),

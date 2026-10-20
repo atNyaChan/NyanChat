@@ -15,9 +15,9 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
+import io.ktor.util.cio.readChannel
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import io.ktor.utils.io.readAvailable
-import io.ktor.util.cio.readChannel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.rerere.rikkahub.data.datastore.WebDavConfig
@@ -241,7 +241,11 @@ class WebDavClient(
             if (!response.status.isSuccess() && response.status != HttpStatusCode.MethodNotAllowed) {
                 val errorBody = response.bodyAsText()
                 Log.e(TAG, "mkcol failed: ${response.status} - $errorBody")
-                throw WebDavException("Failed to create collection: ${response.status}", response.status.value, errorBody)
+                throw WebDavException(
+                    "Failed to create collection: ${response.status}",
+                    response.status.value,
+                    errorBody
+                )
             }
 
             Log.d(TAG, "mkcol success: $path")

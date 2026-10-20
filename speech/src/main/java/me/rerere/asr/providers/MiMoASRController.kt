@@ -323,8 +323,8 @@ class MiMoASRController(
             out.write("WAVE".toByteArray(Charsets.US_ASCII))
             // fmt chunk
             out.write("fmt ".toByteArray(Charsets.US_ASCII))
-            writeIntLE(out, 16)            // PCM fmt chunk size
-            writeShortLE(out, 1)           // audio format = PCM
+            writeIntLE(out, 16) // PCM fmt chunk size
+            writeShortLE(out, 1) // audio format = PCM
             writeShortLE(out, channels)
             writeIntLE(out, sampleRate)
             writeIntLE(out, byteRate)

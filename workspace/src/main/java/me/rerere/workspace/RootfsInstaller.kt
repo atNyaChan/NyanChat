@@ -1,6 +1,7 @@
 package me.rerere.workspace
 
 import com.github.luben.zstd.ZstdInputStream
+import org.tukaani.xz.XZInputStream
 import java.io.BufferedInputStream
 import java.io.EOFException
 import java.io.File
@@ -10,7 +11,6 @@ import java.net.URL
 import java.nio.file.Files
 import java.util.Locale
 import java.util.zip.GZIPInputStream
-import org.tukaani.xz.XZInputStream
 
 class RootfsInstaller(
     private val manager: WorkspaceManager,

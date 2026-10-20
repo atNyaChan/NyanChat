@@ -1,6 +1,10 @@
 package me.rerere.rikkahub.data.remote
 
 import me.rerere.rikkahub.data.datastore.SettingsStore
+import okhttp3.Credentials
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.Route
 import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.PasswordAuthentication
@@ -9,10 +13,6 @@ import java.net.ProxySelector
 import java.net.SocketAddress
 import java.net.URI
 import okhttp3.Authenticator as OkHttpAuthenticator
-import okhttp3.Credentials
-import okhttp3.Request
-import okhttp3.Response
-import okhttp3.Route
 
 fun String.toProxyOrNull(): Proxy? {
     val value = trim()

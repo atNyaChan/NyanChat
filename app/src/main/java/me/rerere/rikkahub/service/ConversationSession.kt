@@ -57,12 +57,14 @@ class ConversationSession(
     val state: StateFlow<Conversation> = _state.asStateFlow()
     private val initializationMutex = Mutex()
     private val writeMutex = Mutex()
+
     @Volatile
     var isInitialized = false
         private set
 
     // 上次落库、加载或新建时的状态，内存还是这个实例就说明没有要落库的修改；只在 writeMutex 内修改
     private var lastWritten: Conversation = initial
+
     @Volatile
     var existsInDatabase = false
         private set
@@ -249,7 +251,7 @@ class ConversationSession(
     val isGenerating: Boolean get() = _generationJob.value?.isActive == true
     val isInUse: Boolean
         get() = refCount.get() > 0 || _generationJob.value != null ||
-                messageQueue.state.value.messages.isNotEmpty()
+            messageQueue.state.value.messages.isNotEmpty()
 
     // 空闲检查任务
     private var idleCheckJob: Job? = null

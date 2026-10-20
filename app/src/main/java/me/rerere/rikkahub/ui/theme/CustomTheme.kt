@@ -27,20 +27,32 @@ data class CustomTheme(
         val colorSpec = ColorSpecs.get(specVersion)
 
         val primaryPalette = colorSpec.getPrimaryPalette(
-            Variant.TONAL_SPOT, sourceHct, dark, platform, contrastLevel,
+            Variant.TONAL_SPOT,
+            sourceHct,
+            dark,
+            platform,
+            contrastLevel,
         )
         val secondaryPalette = if (secondaryColorArgb != null) {
             TonalPalette.fromInt(secondaryColorArgb.toInt())
         } else {
             colorSpec.getSecondaryPalette(
-                Variant.TONAL_SPOT, sourceHct, dark, platform, contrastLevel,
+                Variant.TONAL_SPOT,
+                sourceHct,
+                dark,
+                platform,
+                contrastLevel,
             )
         }
         val tertiaryPalette = if (tertiaryColorArgb != null) {
             TonalPalette.fromInt(tertiaryColorArgb.toInt())
         } else {
             colorSpec.getTertiaryPalette(
-                Variant.TONAL_SPOT, sourceHct, dark, platform, contrastLevel,
+                Variant.TONAL_SPOT,
+                sourceHct,
+                dark,
+                platform,
+                contrastLevel,
             )
         }
 
@@ -55,13 +67,25 @@ data class CustomTheme(
             secondaryPalette,
             tertiaryPalette,
             colorSpec.getNeutralPalette(
-                Variant.TONAL_SPOT, sourceHct, dark, platform, contrastLevel,
+                Variant.TONAL_SPOT,
+                sourceHct,
+                dark,
+                platform,
+                contrastLevel,
             ),
             colorSpec.getNeutralVariantPalette(
-                Variant.TONAL_SPOT, sourceHct, dark, platform, contrastLevel,
+                Variant.TONAL_SPOT,
+                sourceHct,
+                dark,
+                platform,
+                contrastLevel,
             ),
             colorSpec.getErrorPalette(
-                Variant.TONAL_SPOT, sourceHct, dark, platform, contrastLevel,
+                Variant.TONAL_SPOT,
+                sourceHct,
+                dark,
+                platform,
+                contrastLevel,
             ),
         )
         return scheme.toColorScheme()

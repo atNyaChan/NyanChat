@@ -1,9 +1,9 @@
 package me.rerere.rikkahub.data.skills
 
-import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.File
 
 class BuiltinSkillsTest {
     @Test
@@ -12,8 +12,18 @@ class BuiltinSkillsTest {
         val merged = mergeWithBuiltinSkills(
             local = listOf(local),
             builtin = listOf(
-                SkillMetadata(name = "shared", description = "builtin", skillDir = File("builtin/shared"), builtin = true),
-                SkillMetadata(name = "only-builtin", description = "builtin", skillDir = File("builtin/only"), builtin = true),
+                SkillMetadata(
+                    name = "shared",
+                    description = "builtin",
+                    skillDir = File("builtin/shared"),
+                    builtin = true
+                ),
+                SkillMetadata(
+                    name = "only-builtin",
+                    description = "builtin",
+                    skillDir = File("builtin/only"),
+                    builtin = true
+                ),
             ),
         )
 

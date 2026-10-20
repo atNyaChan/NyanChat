@@ -91,12 +91,18 @@ class AliyunMediaGenerationProviderTest {
             generation.buildBody(wan, MediaGenerationRequest(prompt = "cat", aspectRatio = "16:9"))
         }
         assertThrows(IllegalArgumentException::class.java) {
-            generation.buildBody(wan, MediaGenerationRequest(inputs = listOf(MediaGenerationInput.Image("https://e.com/a.png"))))
+            generation.buildBody(
+                wan,
+                MediaGenerationRequest(inputs = listOf(MediaGenerationInput.Image("https://e.com/a.png")))
+            )
         }
         assertThrows(IllegalArgumentException::class.java) {
             generation.buildBody(
                 wan,
-                MediaGenerationRequest(prompt = "cat", inputs = listOf(MediaGenerationInput.Audio("https://e.com/a.mp3"))),
+                MediaGenerationRequest(
+                    prompt = "cat",
+                    inputs = listOf(MediaGenerationInput.Audio("https://e.com/a.mp3"))
+                ),
             )
         }
     }
