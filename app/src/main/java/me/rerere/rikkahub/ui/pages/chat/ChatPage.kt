@@ -722,8 +722,8 @@ private fun ChatFilesPanel(
         assistant = assistant,
         chatModel = chatModel,
         mcpManager = vm.mcpManager,
-        onCompressContext = { additionalPrompt ->
-            vm.handleCompressContext(additionalPrompt).also {
+        onCompressContext = { additionalPrompt, keepRecentMessages ->
+            vm.handleCompressContext(additionalPrompt, keepRecentMessages).also {
                 onRequestStatsRefresh()
             }
         },

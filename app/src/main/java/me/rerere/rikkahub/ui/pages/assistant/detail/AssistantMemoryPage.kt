@@ -24,6 +24,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -44,6 +45,8 @@ import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.MemoryFile
 import me.rerere.rikkahub.data.model.groupByDirectory
 import me.rerere.rikkahub.data.model.memoryTitleOf
+import kotlinx.coroutines.launch
+import me.rerere.rikkahub.ui.components.ai.ExtensionEmptyState
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.AppLoadingIndicator
 import me.rerere.rikkahub.ui.components.ui.CardGroup
@@ -83,6 +86,7 @@ fun AssistantMemoryPage(id: String) {
     val navController = LocalNavController.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val pagerState = rememberPagerState { MemoryTab.entries.size }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -128,7 +132,11 @@ fun AssistantMemoryPage(id: String) {
                 when (MemoryTab.entries[page]) {
                     MemoryTab.FILES -> MemoryFilesTab(
                         memories = memories,
+                        memoryEnabled = assistant.enableMemory,
                         onOpenMemory = { path -> navController.navigate(Screen.MemoryFile(vm.memoryId, path)) },
+                        onOpenSettings = {
+                            scope.launch { pagerState.animateScrollToPage(MemoryTab.SETTINGS.ordinal) }
+                        },
                     )
 
                     MemoryTab.SETTINGS -> MemorySettingsTab(
@@ -213,9 +221,29 @@ private fun MemorySettingsTab(
 @Composable
 private fun MemoryFilesTab(
     memories: List<MemoryFile>,
+    memoryEnabled: Boolean,
     onOpenMemory: (path: String) -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     val memoryGroups = remember(memories) { memories.groupByDirectory() }
+
+    // 空列表不滚动，占位才能在剩余空间里居中
+    if (memoryGroups.isEmpty()) {
+        ExtensionEmptyState(
+            message = stringResource(R.string.assistant_page_memory_empty),
+            description = stringResource(
+                if (memoryEnabled) {
+                    R.string.assistant_page_memory_empty_hint
+                } else {
+                    R.string.assistant_page_memory_empty_disabled_hint
+                }
+            ),
+            buttonText = stringResource(R.string.settings).takeIf { !memoryEnabled },
+            onAction = onOpenSettings,
+            icon = HugeIcons.Brain02,
+        )
+        return
+    }
 
     Column(
         modifier = Modifier

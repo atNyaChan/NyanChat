@@ -7,11 +7,12 @@
 - 禁止 Agent 自行执行编译、构建、测试或 Lint；相关验证由维护者手动完成。
 
 ## 聊天与消息
-### 词数及生成统计（开启“显示 Token 数等统计信息”时）
+### 词数及生成统计
+- 设置里的“显示 Token 数等统计信息”改为三档选择：关闭 / 简洁 / 详细（默认详细）。持久化上沿用原 `showTokenUsage` 布尔字段表示是否关闭，新增 `detailedTokenUsage` 区分简洁与详细。“简洁”跟上游打开 token 统计时的行为一致，“详细”在下面具体说明。
 - 相邻 ASCII 英文字母合计为一个词；其他 ASCII 符号、空格、CJK 字符和 emoji 等每个 Unicode 码点各计一个词。
 - 用户消息的操作按钮行左侧显示词数。
 - 流式回复期间每 100ms 更新词数（包含正文和思考过程）、已用时间、词/秒（尚未调用工具时）及生成中的思考词数。
-- 生成完成后助手统计变为两行：第一行显示词数、时间（、词/秒）、`round #n`（表示该消息是当前会话中第 n 条助手消息），第二行显示输入（缓存 token）、输出（、token/秒）及费用（如果设置了模型单价）。未调用工具或消息记录了 `generationTimeMs`（此时耗时不含工具执行与审批等待）时显示 `word/s` 和 `tok/s`。
+- 生成完成后助手统计变为两行：第一行显示词数、时间（、词/秒）、`round #n`（表示该消息是当前会话中第 n 条助手消息）、`, {n} steps`（仅当该消息请求模型的步数大于 1 时追加），第二行显示输入（缓存 token）、输出（、token/秒）及费用（如果设置了模型单价）。未调用工具或消息记录了 `generationTimeMs`（此时耗时不含工具执行与审批等待）时显示 `word/s` 和 `tok/s`。
 - 消息用时不足 150ms 时不显示 `word/s` 和 `tok/s`，避免展示失真的瞬时速度。
 - 没有 `generationTimeMs` 的旧的含多次模型调用（多轮工具调用）的助手消息第二行最前面标注 `Last LLM Call:` 且不显示速度；若有 `generationTimeMs` 则在第二行最前面标注 `Total:`。
 - 点击统计只切换精确数字和 `12.3K` 一类的缩写；仅数量超过 `10000` 时才采用缩写，并且无论数量多大都只使用 `K`。
@@ -125,10 +126,11 @@
 - 多选状态下长按聊天时弹出与长按单个聊天同款的选项框，只含“移动到…”和“删除”两项，其效果与多选栏顶部的移动/删除按钮一致。
 - 删除消息或聊天（单个/批量）均增加确认框。
 - 删除聊天后等待数据库操作完成再刷新列表，并保持原列表滚动位置，避免当前聊天残留或列表突然跳动。
-- 统计页的聊天热力图标题改为“消息数热图”，从实际首次使用日期附近开始绘制，不再保留大量无数据区域。最左侧保留一个星期的空白，便于观察起始边界。
+- 统计页的聊天热力图标题改为“请求数热图”，并从实际首次使用日期附近开始绘制，不再保留大量无数据区域。最左侧保留一个星期的空白，便于观察起始边界。
 - 侧栏统计页仅 Token 数支持 K/M/B 缩写；聊天数和消息数等计数仍只使用 K。
 - 侧栏统计页点击输入、输出或缓存节省 Token 统计卡中的任意一个，同时把这三个 Token 数值切换为未缩写（三位一段，逗号分隔）形式；再次点击任意一个则切回 K/M/B 缩写。
 - 侧栏统计页各统计卡的名称（总对话数、总消息数、输入/输出 Token、缓存节省 Token、应用启动次数）移到与卡片左上角图标同一行，数值显示在下方。
+- 侧栏统计页“按模型/按来源”水平条形图的条形左右两端均为圆角。
 - 翻译页和图像生成页改用与收藏、统计页一致的大标题栏、页面背景和卡片层级。
 - 翻译输入与结果分别置于卡片中，两张卡片按屏幕物理圆角适配；输入卡片背景为 `surfaceContainer`；图像生成的结果区、输入区和图库卡片统一圆角与配色，并增加空结果提示。
 - 图像生成进行中的加载指示器改为与聊天消息生成一致的 `AppLoadingIndicator`，并在其下方显示“正在生成图片（已用时 %d s）”。
@@ -222,7 +224,7 @@
 - 显示模型图标（默认：关闭；描述：在聊天页面显示模型图标）
 - 显示模型名称（默认：关闭；描述：在聊天页面显示模型名称）
 - 显示消息的时间（默认：关闭；描述：显示创建消息时的日期和时间）
-- 显示 Token 数等统计信息（默认：开启；描述：显示 Token 数、耗时、字数等）
+- 显示 Token 数等统计信息（默认：详细；可选：关闭、简洁、详细；描述：显示 Token 数、耗时、字数等）
 - 消息导航按钮（默认：关闭；可选：关闭、右、左）
 - 主题（默认：樱花粉；动态颜色默认：关闭）
 - 更多设置
@@ -271,6 +273,7 @@
 	- TTS 仅朗读引用内容（默认：关闭）
 	- TTS 不朗读括号内的内容（默认：关闭）
 	- 生成后自动播放 TTS（默认：关闭）
+	- 语音模式回复时继续聆听（默认：开启）
 
 ### 助手设置（描述：“自定义助手（智能体）设置”）
 #### 基础设定（描述为“设置名称、头像、背景等”）
@@ -455,7 +458,7 @@
 - 只有会话真正落库时才把临时附件提交成 CAS：按内容流式重命名到 `upload/<sha256>`（相同内容复用已有实体），展示名/MIME 随 `commitConversationFiles` 的返回值带出，透传给 `updateAttachmentIndex` 写成最终的 `message` 使用记录，再用提交后的 url 替换消息。
 - 仓储落库前只做守卫：若仍扫到临时目录 url，说明调用方漏了提交，整段丢弃这些附件并记 warning，绝不把临时路径写进数据库。
 - 同一份内容被再次带入时，若登记表里的 MIME 还是空值或 `application/octet-stream`，顺带用本次更具体的来源 MIME 补全。
-- 附件登记信息保存在数据库 `managed_files_cas` 表（一个 sha256 一行）：`id`、`sha256`、`mime_type`、`size_bytes`、`usages`（数据库版本由 30 提升到 100）。`usages` 是 JSON 列表，每项为 `{type, filename, display_name, created_at, details}`：`filename` / `display_name` 是该次使用在旧版（RikkaHub 兼容）布局里对应的 `uuid.ext` 文件名与展示名，`created_at` 是该次使用的时间（`message` 时取消息时间）；`type` 为 `message` 时 `details` 为 `{conversationId, nodeId, messageId}`，`assistant_background` / `assistant_avatar` 时为 `{assistantId}`，`user_avatar` 时为空，`type` 为 `none` 表示这份内容没有任何使用，`details` 为空、`created_at` 记录落盘时间、`display_name` 记录最近一次带入的展示名。旧的 `managed_files` 表已被 `managed_files_cas` 取代。
+- 附件登记信息保存在数据库 `managed_files_cas` 表（一个 sha256 一行）：`id`、`sha256`、`mime_type`、`size_bytes`、`usages`（数据库版本提升到 100）。`usages` 是 JSON 列表，每项为 `{type, filename, display_name, created_at, details}`：`filename` / `display_name` 是该次使用在旧版（RikkaHub 兼容）布局里对应的 `uuid.ext` 文件名与展示名，`created_at` 是该次使用的时间（`message` 时取消息时间）；`type` 为 `message` 时 `details` 为 `{conversationId, nodeId, messageId}`，`assistant_background` / `assistant_avatar` 时为 `{assistantId}`，`user_avatar` 时为空，`type` 为 `none` 表示这份内容没有任何使用，`details` 为空、`created_at` 记录落盘时间、`display_name` 记录最近一次带入的展示名。旧的 `managed_files` 表已被 `managed_files_cas` 取代。
 - 每次设置落盘时若助手头像/聊天背景、用户头像发生变化，就重建这些内容的 `assistant_avatar` / `assistant_background` / `user_avatar` 使用记录；恢复备份后启动时也重建一次（平日启动不重建，设置变化已由落盘路径增量维护）。
 - 启动时 `syncManagedFiles` 对齐磁盘与登记表：`upload` 下文件名不是 64 位小写十六进制 sha256 的（旧布局残留等）会按内容重新计算哈希并重命名为 `upload/<sha256>`（相同内容去重）后再补登记，文件名已是 sha256 的直接按名登记，避免把任意文件名当成内容哈希写进登记表。
 - 一份内容只要还有真实 `message` / 设置类使用就不会保留 `none` 记录；反之只剩一条 `none` 记录。
@@ -472,7 +475,7 @@
 	- 导出普通文件时仍按内容去重：`upload`、`skills`、`fonts`、`media_creation` 中逐字节相同的文件只在 tar 内保留一份数据，其余条目写成指向首份数据的 TAR 硬链接，缩小备份体积。先用文件大小筛选，只有大小相同的文件才计算 SHA-256，大小唯一的文件不做哈希。其中 `upload`、`fonts` 只打包顶层文件，`skills`、`media_creation` 才递归包含子目录。
 	- 备份包内的普通文件条目不保留源文件的 POSIX 权限与属主信息，统一按条目名以普通文件（0644）写入；恢复解包时本来也不回写目标权限。恢复时直接流式解析 TAR。由于 Android 环境不保证支持硬链接，打包时写入的 TAR 硬链接条目会在目标条目落盘后于暂存目录展开成独立副本（复制内容），不再创建硬链接。
 	- 恢复时若存档包含非空 `upload`，会在应用阶段把原 `filesDir/upload` 整体移到 `pending/originals-upload` 备份，再用存档里的 `upload` 整体替换；恢复失败回滚时删掉新目录并把备份放回。存档没有 `upload`（或为空）时不动本地目录。
-	- 导入时先读存档数据库声明的 schema 版本（`PRAGMA user_version`）：旧库（< 100，上游 RikkaHub 为 30）把 `upload` 里的每个文件都按内容重新算 sha256 并重命名为 `upload/<sha256>`（相同内容去重），把消息与设置里的旧文件名改写为 sha256，再把旧 `managed_files` 表转成 `managed_files_cas`；已是 CAS schema（100）的存档完全不对 `upload` 做迁移，文件名与登记表保持原样。
+	- 导入时先读存档数据库声明的 schema 版本（`PRAGMA user_version`）：旧库（< 100）把 `upload` 里的每个文件都按内容重新算 sha256 并重命名为 `upload/<sha256>`（相同内容去重），把消息与设置里的旧文件名改写为 sha256，再把旧 `managed_files` 表转成 `managed_files_cas`；已是 CAS schema（100）的存档完全不对 `upload` 做迁移，文件名与登记表保持原样。
 	- 本地、WebDAV 和 S3 使用相同的新格式。
 
 #### 其它
@@ -488,13 +491,13 @@
 - “备份提醒”的间隔按钮组最前面加入用于关闭提醒的“关”，不再单独显示备份提醒开关；无论是否关闭都显示上次备份时间。
 - 导出备份前先写入最新备份时间，使归档内的设置也包含该时间；导出或上传失败时恢复导出前的时间。
 - 导入完整备份后扫描消息数据库，把图片、文档、视频和音频记录里的附件 url 统一改写成相对 `filesDir` 的落盘路径（`upload/<sha256>`）。设置里的助手头像、聊天背景与用户头像在写入 DataStore 时同样折叠成相对路径。
-- 导入时按存档数据库版本处理附件：仅当版本低于 100（上游 RikkaHub 为 30）时，把旧的 `managed_files` 表转换成 `managed_files_cas`（一份 sha256 一行，使用记录写入 `usages` 并逐条保存旧文件名与展示名），并把消息/设置里 `upload/<uuid.ext>` 的名字按内容 sha256 改写；消息库里记录了真实文件名（目前文档附件才有）时优先用它作为该次使用的展示名。版本已是 100 的存档直接用恢复后的 `managed_files_cas`，不迁移 `upload`。导入后删除旧 `managed_files` 表（带数据的转换始终在恢复阶段完成；App 自身禁止原地升级：运行路径不注册 30→100 迁移，启动读到 30 的旧库会直接报错，`Migration_30_100` 只在恢复存档的暂存库上执行）。旧表转 `managed_files_cas` 的整个转换（建表、改写消息 url、删旧表）在单个 SQLite 事务内完成，中途异常会整体回滚，不留下半转换的库。
+- 导入时按存档数据库版本处理附件：仅当版本低于 100 时，把旧的 `managed_files` 表转换成 `managed_files_cas`（一份 sha256 一行，使用记录写入 `usages` 并逐条保存旧文件名与展示名），并把消息/设置里 `upload/<uuid.ext>` 的名字按内容 sha256 改写；消息库里记录了真实文件名（目前文档附件才有）时优先用它作为该次使用的展示名。版本已是 100 的存档直接用恢复后的 `managed_files_cas`，不迁移 `upload`。导入后删除旧 `managed_files` 表（带数据的转换始终在恢复阶段完成；App 自身禁止原地升级：运行路径不注册从小于 100 的数据库的迁移，启动读到小于 100 的旧库会直接报错，`Migration_30_31`、`Migration_31_100` 只在恢复存档的暂存库上执行）。旧表转 `managed_files_cas` 的整个转换（建表、改写消息 url、删旧表）在单个 SQLite 事务内完成，中途异常会整体回滚，不留下半转换的库。
 - 导入根据文件后缀识别新 `.tar` 与旧 `.zip`，旧 ZIP 备份仍可还原；还原时只读取单个 `rikka_hub.db`，不再合并旧 zip 的 `-wal`/`-shm` 旁路文件。
-- 本地导出额外提供旧 ZIP 兼容格式（移除 Fork 新增的模型价格、排序、显示、上下文缓存、回传思考、本地工具授权、中途思考、自定义字体字重与内置搜索字段；`chatFontFamily` 的 `outfit` 回落为 `serif`；`webDavConfig`/`s3Config`/`uploadS3Config` 的备份项去除 `WORKSPACE`；过滤官方版本无法反序列化的电池和定位本地工具；并标注“兼容 RikkaHub 3.0.0+”）。
+- 本地导出额外提供旧 ZIP 兼容格式（移除 Fork 新增的模型价格、排序、显示（含 `detailedTokenUsage`）、上下文缓存、回传思考、本地工具授权、中途思考、自定义字体字重与内置搜索字段；`chatFontFamily` 的 `outfit` 回落为 `serif`；`webDavConfig`/`s3Config`/`uploadS3Config` 的备份项去除 `WORKSPACE`；过滤官方版本无法反序列化的电池和定位本地工具；并标注“兼容 RikkaHub 3.0.0+”）。
 - 兼容 ZIP 中 `rikka_hub.db` 与 `settings.json` 使用 deflate 5 级压缩，其余附件条目只储存（STORED）不压缩。
 - 兼容 ZIP 只包含名为 `upload` 的附件目录，里面是 `uuid.ext` 形式的真实文件：每份内容按各次消息使用记录（usages 的 `filename`）分别落一份副本，同一附件被使用几次就复制几份；被设置（助手头像/背景、用户头像）引用或完全未被消息引用的内容才用 `filenameBySha` 的基础名落一份。
 - 每条旧的 `managed_files` 行用该次使用的 `display_name`（缺失时退回 `filename`）作展示名。同时把数据库里的 `managed_files_cas` 转回旧 `managed_files` 表（`folder` 固定 `upload`、`relative_path` 用 `upload/<uuid.ext>`、`updated_at` 照抄 `created_at`）。
-- 兼容 ZIP 里数据库声明为上游当前的 schema 版本（`user_version = 30`）：导出前把 `managed_files_cas` 转回 `managed_files`、写回 30、并删除 `room_master_table`，让上游 release 版按自己的 schema 重新校验后导入。
+- 兼容 ZIP 里数据库声明为上游当前的 schema 版本（`user_version = 31`）：导出前把 `managed_files_cas` 转回 `managed_files`、写回 31、并删除 `room_master_table`，让上游 release 版按自己的 schema 重新校验后导入。
 - 兼容 ZIP 面向上游 RikkaHub release 版：导出前把数据库快照里附件 part 的 url 与 `settings.json` 里助手的头像、聊天背景从相对路径展开成上游安装目录下的绝对 `file://` 路径（用当前数据目录前缀 + `me.rerere.rikkahub/files/` 拼出），使上游 release 版导入后能直接读到附件；上游 debug 版（包名带 `.debug` 后缀）无法覆盖。
 - S3 与 WebDAV 仍只导出新的 TAR 格式。
 - Android 端 zstd 使用官方 `zstd-jni` AAR（包含各 Android ABI 原生库），避免普通 JVM JAR 缺少 `.so` 导致导出失败；Release 混淆配置保留 zstd-jni 的 JNI 字段与方法名，避免导出时因字段被重命名而报 `dstPos` 缺失。
@@ -617,7 +620,7 @@
 - “关于”页第二个分组依次包含该 Fork GitHub 链接、该 Fork 的 License 文件链接、RikkaHub GitHub、RikkaHub 官网。
 - “关于”页版本卡片长按按压反馈裁剪在卡片范围内，长按按住时卡片连同反馈一起扩展为四角屏幕圆角（与其它卡片一致）。
 - 关于页底部增加英文修改来源、修改者与 AGPL-3.0 许可声明。
-- 只保留 RikkaHub 3.x 的升级路径：最低支持数据库 schema 版本 30，设置存储不再提供任何迁移。已移除仅用于更早版本升级的数据库 1→30 全部自动/手写迁移、低于 30 的数据库 schema、偏好 V1/V2/V3/V4 迁移、备份 `settings.json` 的迁移工具、旧备份 JSON 迁移，以及它们的测试；启动读到低于 30 的旧库或导入低于 30 的存档会直接报错。
+- 只保留 RikkaHub 3.x 的升级路径：最低支持数据库 schema 版本 30，设置存储不再提供任何迁移。已移除仅用于更早版本升级的数据库 1→30 全部自动/手写迁移、低于 30 的数据库 schema、偏好 V1/V2/V3/V4 迁移、备份 `settings.json` 的迁移工具、旧备份 JSON 迁移，以及它们的测试；导入低于 30 的存档会直接报错。
 
 ## 其它 / 技术相关
 - 修复切换助手后，在空白聊天页发送的第一条消息偶尔被写入上一个助手的问题。

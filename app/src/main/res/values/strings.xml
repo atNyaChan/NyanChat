@@ -237,6 +237,20 @@
   <string name="chat_message_attachment_deleted">Attachment deleted</string>
   <string name="chat_message_cannot_edit_tool_call">Cannot edit messages containing tool calls</string>
   <string name="chat_message_remove_favorite">Remove Favorite</string>
+  <string name="chat_message_usage_cached">Cached</string>
+  <string name="chat_message_usage_cached_short">(%1$s cached)</string>
+  <string name="chat_message_usage_context">Context</string>
+  <string name="chat_message_usage_context_short">%1$s ctx</string>
+  <string name="chat_message_usage_duration">Duration</string>
+  <string name="chat_message_usage_input">Input</string>
+  <string name="chat_message_usage_output">Output</string>
+  <string name="chat_message_usage_speed">Speed</string>
+  <string name="chat_message_usage_step_count">Steps</string>
+  <string name="chat_message_usage_steps">%1$d steps</string>
+  <string name="chat_message_usage_title">Usage</string>
+  <string name="chat_message_usage_total_cached">Total cached</string>
+  <string name="chat_message_usage_total_input">Total input</string>
+  <string name="chat_message_usage_total_output">Total output</string>
   <string name="regenerate">Regenerate</string>
   <string name="regenerate_confirm_message">Are you sure you want to regenerate this message? All messages below this message will be deleted.</string>
   <!-- Chat message tools -->
@@ -333,6 +347,7 @@
   <string name="chat_page_voice_tools_before_resume">Resolve pending tool approvals before resuming voice mode</string>
   <string name="chat_page_voice_transcribing">Finalizing transcription…</string>
   <string name="chat_page_voice_unsupported_asr">This ASR provider does not support server-side speech endpointing. Use OpenAI Realtime, DashScope, or Volcengine.</string>
+  <string name="chat_page_voice_waiting">Waiting for the reply; listening will resume afterward</string>
   <!-- Chat history compression -->
   <string name="chat_page_compress_additional_prompt">Additional Instructions (Optional)</string>
   <string name="chat_page_compress_additional_prompt_hint">Specify what to preserve or focus on</string>
@@ -344,6 +359,9 @@
   <string name="chat_page_compress_context_title">Compress Conversation History</string>
   <string name="chat_page_compress_conversation_changed">The conversation changed during compression. Please try again.</string>
   <string name="chat_page_compress_handle_pending_tools">Handle the pending tool calls before compressing</string>
+  <string name="chat_page_compress_keep_recent">Keep recent messages</string>
+  <string name="chat_page_compress_keep_recent_desc">These messages are not compressed and stay after the summary. 0 compresses everything and reuses the prompt cache best; if the conversation is too long to compress, keep more messages.</string>
+  <string name="chat_page_compress_not_enough_messages">Not enough messages to compress. Reduce the number of messages to keep.</string>
   <string name="chat_page_compress_nothing_to_compress">No new messages to compress since the last summary</string>
   <string name="chat_page_compress_tool_call_response">The model tried to call a tool instead of writing the summary. Please try again.</string>
   <string name="chat_page_compressing">Compressing...</string>
@@ -393,7 +411,7 @@
   <string name="search_picker_title">Search Settings</string>
   <!-- Assistant memory -->
   <string name="assistant_page_memory_auto_dream">Auto dream</string>
-  <string name="assistant_page_memory_auto_dream_desc">Organize memories in the background once a chat pauses</string>
+  <string name="assistant_page_memory_auto_dream_desc">Turn chats into memories in the background once they pause. When off, this only happens when you tap Dream now</string>
   <string name="assistant_page_memory_desc">When memory is enabled, the assistant remembers what you tell it and uses it in later conversations. Memories are organized in the background once a chat pauses. This feature requires the model to support tool calls to work properly</string>
   <string name="assistant_page_memory_dream_failed">Dreaming failed: %s</string>
   <string name="assistant_page_memory_dream_hint">Turns your chats into memories once they pause</string>
@@ -403,6 +421,9 @@
   <string name="assistant_page_memory_dream_removed">removed %s</string>
   <string name="assistant_page_memory_dream_retry">Retry</string>
   <string name="assistant_page_memory_dream_updated">Memory updated: %s</string>
+  <string name="assistant_page_memory_empty">No memories yet</string>
+  <string name="assistant_page_memory_empty_disabled_hint">Memory is off for this assistant. Turn it on to let it remember what you tell it</string>
+  <string name="assistant_page_memory_empty_hint">The assistant will remember what you tell it as you chat. You can also tap + to add one</string>
   <string name="assistant_page_memory_section_areas">Areas</string>
   <string name="assistant_page_memory_section_people">People</string>
   <string name="assistant_page_memory_section_topics">Topics</string>
@@ -1047,12 +1068,16 @@
   <string name="setting_display_page_thinking_mode_collapsed">Collapsed</string>
   <string name="setting_display_page_thinking_mode_expanded">Expanded</string>
   <string name="setting_display_page_thinking_mode_preview">Preview</string>
+  <string name="setting_display_page_token_usage_detailed">Detailed</string>
+  <string name="setting_display_page_token_usage_simple">Simple</string>
   <string name="setting_display_page_tts_only_read_quoted_desc">When enabled, TTS will only read content within quotation marks (including\" \", \' \', “”, ‘’, 「」, 『』)</string>
   <string name="setting_display_page_tts_only_read_quoted_title">TTS Read Quoted Content Only</string>
   <string name="setting_display_page_tts_read_outside_brackets_desc">When enabled, TTS will not read content inside brackets</string>
   <string name="setting_display_page_tts_read_outside_brackets_title">TTS Skip Bracketed Content</string>
   <string name="setting_display_page_use_chat_font_globally_desc">Let NyanChat\'s UI use the chat font too (not just chats)</string>
   <string name="setting_display_page_use_chat_font_globally_title">Use Chat Font Globally</string>
+  <string name="setting_display_page_voice_listen_while_replying_desc">Speech while the model is replying is queued and sent afterward. Turn off to pause the microphone until the reply finishes (and is read aloud), for one-question-one-answer conversations.</string>
+  <string name="setting_display_page_voice_listen_while_replying_title">Keep listening during replies in voice mode</string>
   <string name="setting_display_page_volume_key_scroll_desc">Set the scroll amount when using volume keys to turn pages, suitable for e-ink screens</string>
   <string name="setting_display_page_volume_key_scroll_title">Volume Key Page Scroll</string>
   <!-- Theme settings -->
@@ -1599,19 +1624,40 @@
   <string name="setting_page_web_server_stop">Stop</string>
   <string name="setting_page_web_server_url">URL</string>
   <!-- Statistics -->
+  <string name="stats_page_by_model">By model</string>
+  <string name="stats_page_by_source">By source</string>
+  <string name="stats_page_cache_hit_rate">Cache hit rate</string>
   <string name="stats_page_cached_tokens">Cached Tokens</string>
   <string name="stats_page_dow_fri">Fri</string>
   <string name="stats_page_dow_mon">Mon</string>
   <string name="stats_page_dow_wed">Wed</string>
   <string name="stats_page_heatmap_less">Less</string>
   <string name="stats_page_heatmap_more">More</string>
-  <string name="stats_page_heatmap_title">Message Count Heatmap</string>
+  <string name="stats_page_heatmap_title">Request Count Heatmap</string>
   <string name="stats_page_input_tokens">Input Tokens</string>
   <string name="stats_page_launch_count">App Launch Count</string>
+  <string name="stats_page_no_usage">No token usage in this period</string>
+  <string name="stats_page_other">Other</string>
   <string name="stats_page_output_tokens">Output Tokens</string>
+  <string name="stats_page_range_30d">30 days</string>
+  <string name="stats_page_range_7d">7 days</string>
+  <string name="stats_page_range_90d">90 days</string>
+  <string name="stats_page_range_all">All</string>
+  <string name="stats_page_source_chat">Chat</string>
+  <string name="stats_page_source_compression">Compression</string>
+  <string name="stats_page_source_memory">Memory</string>
+  <string name="stats_page_source_ocr">OCR</string>
+  <string name="stats_page_source_suggestion">Suggestions</string>
+  <string name="stats_page_source_title">Titles</string>
+  <string name="stats_page_source_translation">Translation</string>
   <string name="stats_page_title">Statistics</string>
   <string name="stats_page_total_conversations">Total Conversations</string>
   <string name="stats_page_total_messages">Total Messages</string>
+  <string name="stats_page_unknown_model">Unknown model</string>
+  <string name="stats_page_usage_daily">Daily usage</string>
+  <string name="stats_page_usage_monthly">Monthly usage</string>
+  <string name="stats_page_usage_period_total">Total for this period</string>
+  <string name="stats_page_usage_title">Token usage</string>
   <!-- Debug -->
   <string name="debug_page_crash">Crash</string>
   <string name="debug_page_create_1024_conversation">Create a chat with 1024 messages</string>

@@ -15,6 +15,7 @@ import me.rerere.rikkahub.data.db.dao.MemoryConsolidationDAO
 import me.rerere.rikkahub.data.db.dao.MemoryDAO
 import me.rerere.rikkahub.data.db.dao.MessageNodeDAO
 import me.rerere.rikkahub.data.db.dao.TranslationHistoryDAO
+import me.rerere.rikkahub.data.db.dao.UsageRecordDAO
 import me.rerere.rikkahub.data.db.dao.WorkspaceDAO
 import me.rerere.rikkahub.data.db.entity.ConversationEntity
 import me.rerere.rikkahub.data.db.entity.FavoriteEntity
@@ -28,6 +29,7 @@ import me.rerere.rikkahub.data.db.entity.MemoryConsolidationEntity
 import me.rerere.rikkahub.data.db.entity.MemoryFileEntity
 import me.rerere.rikkahub.data.db.entity.MessageNodeEntity
 import me.rerere.rikkahub.data.db.entity.TranslationHistoryEntity
+import me.rerere.rikkahub.data.db.entity.UsageRecordEntity
 import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
 import me.rerere.rikkahub.utils.JsonInstant
 
@@ -35,7 +37,11 @@ import me.rerere.rikkahub.utils.JsonInstant
  * 应用数据库。
  *
  * 最低支持 schema 版本 30：低于 30 的旧库不再提供迁移链，Room 会直接报错；只有恢复备份时
- * 才由 `AppDatabaseFactory` 注册 30 -> 100 的 [me.rerere.rikkahub.data.db.migrations.Migration_30_100]。
+ * 才由 `AppDatabaseFactory` 注册上游的 30 -> 31 与 31 -> 100 两步
+ * （[me.rerere.rikkahub.data.db.migrations.Migration_30_31]、
+ * [me.rerere.rikkahub.data.db.migrations.Migration_31_100]，后者把附件登记换成 `managed_files_cas`）。
+ * 100 -> 101 的 [me.rerere.rikkahub.data.db.migrations.Migration_100_101]（用量流水表）则总是注册，
+ * 因此从旧存档恢复的完整链路是 30 -> 31 -> 100 -> 101，上游 31 的存档则是 31 -> 100 -> 101。
  */
 @Database(
     entities = [
@@ -52,8 +58,9 @@ import me.rerere.rikkahub.utils.JsonInstant
         MediaCreationNodeEntity::class,
         MediaCreationRecordEntity::class,
         TranslationHistoryEntity::class,
+        UsageRecordEntity::class,
     ],
-    version = 100,
+    version = 101,
 )
 @TypeConverters(TokenUsageConverter::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -78,6 +85,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun mediaCreationDao(): MediaCreationDAO
 
     abstract fun translationHistoryDao(): TranslationHistoryDAO
+
+    abstract fun usageRecordDao(): UsageRecordDAO
 }
 
 object TokenUsageConverter {

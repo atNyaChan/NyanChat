@@ -8,6 +8,7 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
@@ -45,6 +46,9 @@ import org.koin.compose.koinInject
 @Composable
 fun ImagePreviewDialog(
     images: List<String>,
+    initialPage: Int = 0,
+    // 底部操作栏里额外的按钮，参数是当前页
+    actions: @Composable RowScope.(page: Int) -> Unit = {},
     onDismissRequest: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -54,6 +58,7 @@ fun ImagePreviewDialog(
     val scope = rememberCoroutineScope()
     val state = rememberPreviewerState(
         defaultAnimationSpec = tween(180),
+        initialPage = initialPage,
         pageCount = { images.size },
     ) { it }
     var opened by remember { mutableStateOf(false) }
@@ -119,6 +124,7 @@ fun ImagePreviewDialog(
                 ) {
                     Icon(HugeIcons.Download01, null, tint = Color.White)
                 }
+                actions(state.currentPage)
             }
         }
     }

@@ -95,7 +95,7 @@ internal fun FilesPicker(
     chatModel: Model?,
     state: ChatInputState,
     mcpManager: McpManager,
-    onCompressContext: (additionalPrompt: String) -> Job,
+    onCompressContext: (additionalPrompt: String, keepRecentMessages: Int) -> Job,
     onUpdateAssistant: (Assistant) -> Unit,
     onUpdateFollowAssistant: (Boolean) -> Unit,
     onSelectSearch: (mode: SearchMode, serviceIndex: Int?) -> Unit,

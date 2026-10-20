@@ -95,6 +95,7 @@ GROUPS: list[tuple[str, list[str]]] = [
     ("Chat message", [
         r"^chat_message_add_favorite$", r"^chat_message_remove_favorite$",
         r"^chat_message_attachment_deleted$", r"^chat_message_cannot_edit_tool_call$",
+        r"^chat_message_usage_",
         r"^regenerate", r"^chat_generation_",
     ]),
     ("Chat message tools", [

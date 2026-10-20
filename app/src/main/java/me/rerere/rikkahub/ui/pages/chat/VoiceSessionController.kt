@@ -24,7 +24,7 @@ import me.rerere.asr.ASRStatus
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.service.MessageQueuePausedException
 
-enum class VoicePhase { Off, Connecting, Listening, Transcribing, Speaking, Error }
+enum class VoicePhase { Off, Connecting, Listening, Transcribing, Waiting, Speaking, Error }
 
 data class VoiceSessionState(
     val phase: VoicePhase = VoicePhase.Off,
@@ -55,6 +55,7 @@ class VoiceSessionController(
         createAsr: () -> ASRController,
         speak: (suspend (String) -> Unit)?,
         stopSpeaking: () -> Unit,
+        listenWhileReplying: Boolean = true,
     ) {
         if (job?.isCompleted == false) return
         mutableState.value = VoiceSessionState(VoicePhase.Connecting)
@@ -62,7 +63,7 @@ class VoiceSessionController(
             try {
                 stopSpeaking()
                 delay(200)
-                runSession(createAsr, speak)
+                runSession(createAsr, speak, listenWhileReplying)
             } catch (e: Exception) {
                 if (e is CancellationException && !currentCoroutineContext().isActive) throw e
                 mutableState.update {
@@ -84,6 +85,7 @@ class VoiceSessionController(
     private suspend fun runSession(
         createAsr: () -> ASRController,
         speak: (suspend (String) -> Unit)?,
+        listenWhileReplying: Boolean,
     ) = coroutineScope {
         val events = Channel<Event>(Channel.UNLIMITED)
         val submitted = Channel<Deferred<String?>>(Channel.UNLIMITED)
@@ -113,7 +115,10 @@ class VoiceSessionController(
                     delay(300) // Let the loudspeaker's tail decay before opening the microphone.
                     continue
                 }
-                if (capture == null) {
+                // Turn-based mode keeps the microphone closed until every reply has arrived and been spoken.
+                if (capture == null && !listenWhileReplying && state.value.pendingReplies > 0) {
+                    mutableState.update { it.copy(phase = VoicePhase.Waiting) }
+                } else if (capture == null) {
                     mutableState.update { it.copy(phase = VoicePhase.Connecting, transcript = "") }
                     val recorder = createAsr()
                     asr = recorder
@@ -128,7 +133,7 @@ class VoiceSessionController(
                 }
                 when (val event = events.receive()) {
                     is Event.Utterance -> {
-                        capture.join()
+                        capture?.join()
                         capture = null
                         asr = null
                         if (event.text.isNotBlank()) {

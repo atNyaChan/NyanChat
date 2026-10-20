@@ -157,6 +157,8 @@ data class DisplaySetting(
     val showModelName: Boolean = false,
     val showDateTimeInMessage: Boolean = false,
     val showTokenUsage: Boolean = true,
+    // 统计行显示详细内容（token 用量、费用等）；关闭时只显示步数、速度和上下文占用
+    val detailedTokenUsage: Boolean = true,
     val showThinkingContent: Boolean = true,
     val showThinkingContentPreview: Boolean = true,
     val autoCloseThinking: Boolean = true,
@@ -175,6 +177,7 @@ data class DisplaySetting(
     val ttsOnlyReadQuoted: Boolean = false,
     val ttsOnlyReadOutsideBrackets: Boolean = false,
     val autoPlayTTSAfterGeneration: Boolean = false,
+    val voiceModeListenWhileReplying: Boolean = true,
     val pasteLongTextAsFile: Boolean = false,
     val pasteLongTextThreshold: Int = 1000,
     val sendOnEnter: Boolean = false,

@@ -32,7 +32,9 @@ of adding per-screen variants.
   (app/src/main/java/me/rerere/rikkahub/ui/components/ui/ReorderableDrag.kt: 0.95 drag scale plus
   haptic feedback) and disable reordering while a search filter is active.
 - **Settings and forms**: group options with `CardGroup`; on pages that reuse the settings-home large
-  title plus card/list layout, keep 8dp between the title bar and the first item.
+  title plus card/list layout, keep 8dp between the title bar and the first item. The gap below the last
+  card must match the page's left/right inset: with the 8dp outer `contentPadding` plus the 8dp item
+  padding that means 16dp at the bottom, never half of it (the stats page's `LazyColumn` follows this).
 - **Bottom sheets**: always use `BottomSheetDefaults.DragHandle()` with drag-to-dismiss, wrap the
   content height up to 95% of the available height, and use top padding 0dp / bottom 8dp (plus the
   navigation-bar inset). Fixed bottom button rows keep 8dp above and 8dp below, and use
@@ -124,7 +126,7 @@ as an ordinary folder, and never invent a uuid/filename-keyed path for an attach
   (`FilesManager.syncManagedFiles`) or backup must skip `AttachmentCas.isTemporary` files so a
   half-written temp file never leaks into the UI, stats or an archive.
 - **Backup/restore is CAS-aware.** Archives declare a schema version; only pre-`CAS_SCHEMA_VERSION`
-  (100) archives at or above `MIN_SUPPORTED_SCHEMA_VERSION` (30, the upstream schema) are migrated
+  (100) archives at or above `MIN_SUPPORTED_SCHEMA_VERSION` (30 / 31, the upstream schema versions) are migrated
   (`ManagedFilesArchive.normalizeUploadDir` renames `upload` to sha256 and `convertLegacyDatabase`
   converts the old `managed_files` table); older archives are rejected. Never
   re-normalize an archive that is already CAS, and never copy upstream files over our CAS layout.
@@ -136,8 +138,10 @@ as an ordinary folder, and never invent a uuid/filename-keyed path for an attach
 
 ```bash
 ./gradlew assembleDebug          # Build Debug APK
-./gradlew test                   # Run all  JVM tests
+./gradlew test                   # Run all JVM tests
 ./gradlew lint                   # Run Android Lint
+./gradlew spotlessApply          # Format Kotlin files changed relative to origin/master with ktlint
+./gradlew spotlessCheck          # Check formatting without modifying files
 ```
 
 Build configuration is unified across the project: JDK 21 for the project, the Gradle daemon,
@@ -149,8 +153,8 @@ Do not raise `minSdk` or change the Java/Kotlin target per module.
 
 ## Agent Change Workflow
 
-- After any code, resource, or configuration change, the agent must fully read and update
-  `docs/NyanwChanges.md`, recording the change in the appropriate place in the document — do not
+- After any code, resource, or configuration change, the agent MUST **FULLY** READ (and update
+  `docs/NyanwChanges.md` if necessary), recording the change in the appropriate place in the document — do not
   keep appending to the end.
 - After making changes, scan the repository for unwanted code or locale strings and delete them if
   found.

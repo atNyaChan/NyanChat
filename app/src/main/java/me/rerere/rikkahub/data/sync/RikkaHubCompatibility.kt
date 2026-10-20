@@ -29,6 +29,7 @@ internal fun makeRikkaHubCompatible(settings: JsonElement): JsonElement {
             "parseMidThink",
             "defaultFontWeight",
             "boldFontWeight",
+            "detailedTokenUsage",
         )
         // 上游不认识 OUTFIT，回落成它认识的 SERIF
         if ((stripped["chatFontFamily"] as? JsonPrimitive)?.content == "outfit") {

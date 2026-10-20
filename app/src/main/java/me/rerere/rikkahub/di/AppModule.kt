@@ -76,6 +76,7 @@ val appModule = module {
         ChatRequestFactory(
             context = get(),
             providerManager = get(),
+            usageRecorder = get(),
             chatToolFactory = get(),
             memoryRepository = get(),
             templateTransformer = get(),

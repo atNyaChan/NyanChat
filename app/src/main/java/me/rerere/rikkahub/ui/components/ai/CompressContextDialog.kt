@@ -15,6 +15,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -25,13 +26,16 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.ui.AppLoadingIndicator
+import me.rerere.ui.components.OutlinedNumberInput
 
 @Composable
 fun CompressContextDialog(
     onDismiss: () -> Unit,
-    onConfirm: (additionalPrompt: String) -> Job
+    onConfirm: (additionalPrompt: String, keepRecentMessages: Int) -> Job
 ) {
     var additionalPrompt by remember { mutableStateOf("") }
+    // 默认全部压缩，请求前缀与对话一致，缓存命中最好
+    var keepRecentMessages by remember { mutableIntStateOf(0) }
     var currentJob by remember { mutableStateOf<Job?>(null) }
     val isLoading = currentJob?.isActive == true
 
@@ -87,6 +91,20 @@ fun CompressContextDialog(
                         modifier = Modifier.fillMaxWidth(),
                         maxLines = 4,
                     )
+
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        OutlinedNumberInput(
+                            value = keepRecentMessages,
+                            onValueChange = { keepRecentMessages = it.coerceAtLeast(0) },
+                            label = stringResource(R.string.chat_page_compress_keep_recent),
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        Text(
+                            text = stringResource(R.string.chat_page_compress_keep_recent_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
         },
@@ -100,7 +118,7 @@ fun CompressContextDialog(
                 }
             } else {
                 TextButton(onClick = {
-                    currentJob = onConfirm(additionalPrompt)
+                    currentJob = onConfirm(additionalPrompt, keepRecentMessages)
                 }) {
                     Text(stringResource(R.string.common_confirm_action))
                 }

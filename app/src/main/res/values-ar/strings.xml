@@ -237,6 +237,20 @@
   <string name="chat_message_attachment_deleted">حُذف المرفق</string>
   <string name="chat_message_cannot_edit_tool_call">لا يمكن تحرير الرسائل التي تحتوي على استدعاءات أدوات</string>
   <string name="chat_message_remove_favorite">إزالة من المفضلة</string>
+  <string name="chat_message_usage_cached">من المخزّن</string>
+  <string name="chat_message_usage_cached_short">(%1$s مخزّن مؤقتًا)</string>
+  <string name="chat_message_usage_context">السياق</string>
+  <string name="chat_message_usage_context_short">%1$s سياق</string>
+  <string name="chat_message_usage_duration">المدة</string>
+  <string name="chat_message_usage_input">الإدخال</string>
+  <string name="chat_message_usage_output">الإخراج</string>
+  <string name="chat_message_usage_speed">السرعة</string>
+  <string name="chat_message_usage_step_count">الخطوات</string>
+  <string name="chat_message_usage_steps">%1$d خطوات</string>
+  <string name="chat_message_usage_title">الاستخدام</string>
+  <string name="chat_message_usage_total_cached">إجمالي المخزّن</string>
+  <string name="chat_message_usage_total_input">إجمالي الإدخال</string>
+  <string name="chat_message_usage_total_output">إجمالي الإخراج</string>
   <string name="regenerate">إعادة التوليد</string>
   <string name="regenerate_confirm_message">هل أنت متأكد من إعادة توليد هذه الرسالة؟ سيتم حذف جميع الرسائل أسفل هذه الرسالة.</string>
   <!-- Chat message tools -->
@@ -333,6 +347,7 @@
   <string name="chat_page_voice_tools_before_resume">عالج الموافقات المعلّقة على الأدوات قبل استئناف وضع الصوت</string>
   <string name="chat_page_voice_transcribing">جارٍ إنهاء النسخ النصي…</string>
   <string name="chat_page_voice_unsupported_asr">مزوّد ASR هذا لا يدعم تحديد نقاط نهاية الكلام من جانب الخادم. استخدم OpenAI Realtime أو DashScope أو Volcengine.</string>
+  <string name="chat_page_voice_waiting">في انتظار الرد؛ سيستأنف الاستماع بعد ذلك</string>
   <!-- Chat history compression -->
   <string name="chat_page_compress_additional_prompt">تعليمات إضافية (اختياري)</string>
   <string name="chat_page_compress_additional_prompt_hint">حدد ما يجب الحفاظ عليه أو التركيز عليه</string>
@@ -344,6 +359,9 @@
   <string name="chat_page_compress_context_title">ضغط سجل المحادثة</string>
   <string name="chat_page_compress_conversation_changed">تغيّرت المحادثة أثناء الضغط. يرجى المحاولة مرة أخرى.</string>
   <string name="chat_page_compress_handle_pending_tools">تعامل مع استدعاءات الأدوات المعلّقة قبل الضغط</string>
+  <string name="chat_page_compress_keep_recent">الاحتفاظ بالرسائل الأخيرة</string>
+  <string name="chat_page_compress_keep_recent_desc">لا تُضغط هذه الرسائل وتبقى بعد الملخّص. القيمة 0 تضغط كل شيء وتستفيد من ذاكرة التخزين المؤقت للطلب على أفضل وجه؛ إذا كانت المحادثة أطول من أن تُضغط، فاحتفظ برسائل أكثر.</string>
+  <string name="chat_page_compress_not_enough_messages">لا توجد رسائل كافية للضغط. قلّل عدد الرسائل التي تحتفظ بها.</string>
   <string name="chat_page_compress_nothing_to_compress">لا توجد رسائل جديدة لضغطها منذ آخر ملخص</string>
   <string name="chat_page_compress_tool_call_response">حاول النموذج استدعاء أداة بدلاً من كتابة الملخص. يرجى المحاولة مرة أخرى.</string>
   <string name="chat_page_compressing">جارٍ الضغط...</string>
@@ -392,8 +410,8 @@
   <string name="model_list_select_model">اختر النموذج</string>
   <string name="search_picker_title">إعدادات البحث</string>
   <!-- Assistant memory -->
-  <string name="assistant_page_memory_auto_dream">الحلم التلقائي</string>
-  <string name="assistant_page_memory_auto_dream_desc">ينظّم الذكريات في الخلفية عند توقف المحادثة</string>
+  <string name="assistant_page_memory_auto_dream">حلم تلقائي</string>
+  <string name="assistant_page_memory_auto_dream_desc">حوّل المحادثات إلى ذكريات في الخلفية بمجرد توقفها. عند إيقاف هذا الخيار، لا يحدث ذلك إلا عند النقر على «احلم الآن».</string>
   <string name="assistant_page_memory_desc">عند تمكين الذاكرة، يتذكر المساعد ما تخبره به ويستخدمه في المحادثات اللاحقة. يتم تنظيم الذكريات في الخلفية عند توقف المحادثة. تتطلب هذه الميزة دعم النموذج لاستدعاءات الأدوات لكي تعمل بشكل صحيح</string>
   <string name="assistant_page_memory_dream_failed">فشل التنظيم: %s</string>
   <string name="assistant_page_memory_dream_hint">تحوّل محادثاتك إلى ذكريات عند توقفها</string>
@@ -403,6 +421,9 @@
   <string name="assistant_page_memory_dream_removed">تمت إزالة %s</string>
   <string name="assistant_page_memory_dream_retry">إعادة المحاولة</string>
   <string name="assistant_page_memory_dream_updated">تم تحديث الذاكرة: %s</string>
+  <string name="assistant_page_memory_empty">لا توجد ذكريات بعد</string>
+  <string name="assistant_page_memory_empty_disabled_hint">الذاكرة معطّلة لهذا المساعد. فعّلها ليتمكن من تذكر ما تخبره به</string>
+  <string name="assistant_page_memory_empty_hint">سيتذكر المساعد ما تخبره به أثناء الدردشة. يمكنك أيضًا الضغط على + لإضافة ذكرى</string>
   <string name="assistant_page_memory_section_areas">المشاريع</string>
   <string name="assistant_page_memory_section_people">الأشخاص</string>
   <string name="assistant_page_memory_section_topics">المواضيع</string>
@@ -1047,12 +1068,16 @@
   <string name="setting_display_page_thinking_mode_collapsed">مطوي</string>
   <string name="setting_display_page_thinking_mode_expanded">موسّع</string>
   <string name="setting_display_page_thinking_mode_preview">معاينة</string>
+  <string name="setting_display_page_token_usage_detailed">مفصّل</string>
+  <string name="setting_display_page_token_usage_simple">مختصر</string>
   <string name="setting_display_page_tts_only_read_quoted_desc">عند التمكين، سيقرأ TTS المحتوى الواقع بين علامات الاقتباس فقط (بما في ذلك \" \", \' \', “”, ‘’, 「」, 『』)</string>
   <string name="setting_display_page_tts_only_read_quoted_title">قراءة TTS للمحتوى المقتبس فقط</string>
   <string name="setting_display_page_tts_read_outside_brackets_desc">عند التمكين، لن يقرأ TTS المحتوى الموجود داخل الأقواس</string>
   <string name="setting_display_page_tts_read_outside_brackets_title">تخطي TTS للمحتوى بين الأقواس</string>
   <string name="setting_display_page_use_chat_font_globally_desc">دع واجهة NyanChat تستخدم خط الدردشة أيضًا (وليس الدردشات فقط)</string>
   <string name="setting_display_page_use_chat_font_globally_title">استخدام خط الدردشة في كل مكان</string>
+  <string name="setting_display_page_voice_listen_while_replying_desc">يُدرج الكلام الذي يُقال أثناء رد النموذج في قائمة انتظار ويُرسل بعد ذلك. أوقفه لإيقاف الميكروفون مؤقتًا حتى ينتهي الرد (ويُقرأ بصوت عالٍ)، من أجل محادثات سؤال واحد وجواب واحد.</string>
+  <string name="setting_display_page_voice_listen_while_replying_title">متابعة الاستماع أثناء الردود في الوضع الصوتي</string>
   <string name="setting_display_page_volume_key_scroll_desc">تعيين مقدار التمرير عند استخدام مفاتيح الصوت لتقليب الصفحات، مناسب لشاشات الحبر الإلكتروني</string>
   <string name="setting_display_page_volume_key_scroll_title">تمرير الصفحات بمفاتيح الصوت</string>
   <!-- Theme settings -->
@@ -1599,19 +1624,40 @@
   <string name="setting_page_web_server_stop">إيقاف</string>
   <string name="setting_page_web_server_url">URL</string>
   <!-- Statistics -->
+  <string name="stats_page_by_model">حسب النموذج</string>
+  <string name="stats_page_by_source">حسب المصدر</string>
+  <string name="stats_page_cache_hit_rate">معدل إصابة الذاكرة المؤقتة</string>
   <string name="stats_page_cached_tokens">Tokens المخزنة مؤقتًا</string>
   <string name="stats_page_dow_fri">الجمعة</string>
   <string name="stats_page_dow_mon">الاثنين</string>
   <string name="stats_page_dow_wed">الأربعاء</string>
   <string name="stats_page_heatmap_less">أقل</string>
   <string name="stats_page_heatmap_more">أكثر</string>
-  <string name="stats_page_heatmap_title">الخريطة الحرارية لعدد الرسائل</string>
+  <string name="stats_page_heatmap_title">الخريطة الحرارية لعدد الطلبات</string>
   <string name="stats_page_input_tokens">Tokens الإدخال</string>
   <string name="stats_page_launch_count">عدد مرات تشغيل التطبيق</string>
+  <string name="stats_page_no_usage">لا يوجد استخدام لـ Token في هذه الفترة</string>
+  <string name="stats_page_other">أخرى</string>
   <string name="stats_page_output_tokens">Tokens الإخراج</string>
+  <string name="stats_page_range_30d">30 يومًا</string>
+  <string name="stats_page_range_7d">7 أيام</string>
+  <string name="stats_page_range_90d">90 يومًا</string>
+  <string name="stats_page_range_all">الكل</string>
+  <string name="stats_page_source_chat">الدردشة</string>
+  <string name="stats_page_source_compression">الضغط</string>
+  <string name="stats_page_source_memory">ذاكرة</string>
+  <string name="stats_page_source_ocr">OCR</string>
+  <string name="stats_page_source_suggestion">اقتراحات</string>
+  <string name="stats_page_source_title">العناوين</string>
+  <string name="stats_page_source_translation">الترجمة</string>
   <string name="stats_page_title">الإحصائيات</string>
   <string name="stats_page_total_conversations">إجمالي المحادثات</string>
   <string name="stats_page_total_messages">إجمالي الرسائل</string>
+  <string name="stats_page_unknown_model">نموذج غير معروف</string>
+  <string name="stats_page_usage_daily">الاستخدام اليومي</string>
+  <string name="stats_page_usage_monthly">الاستخدام الشهري</string>
+  <string name="stats_page_usage_period_total">إجمالي هذه الفترة</string>
+  <string name="stats_page_usage_title">استخدام Token</string>
   <!-- Debug -->
   <string name="debug_page_crash">تعطّل</string>
   <string name="debug_page_create_1024_conversation">إنشاء محادثة بـ 1024 رسالة</string>

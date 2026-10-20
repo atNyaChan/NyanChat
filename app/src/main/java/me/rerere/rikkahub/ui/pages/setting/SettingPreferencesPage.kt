@@ -46,6 +46,11 @@ fun SettingPreferencesPage(vm: SettingVM = koinViewModel()) {
         displaySetting.messageJumperOnLeft -> MessageJumperMode.LEFT
         else -> MessageJumperMode.RIGHT
     }
+    val tokenUsageDisplayMode = when {
+        !displaySetting.showTokenUsage -> TokenUsageDisplayMode.OFF
+        displaySetting.detailedTokenUsage -> TokenUsageDisplayMode.DETAILED
+        else -> TokenUsageDisplayMode.SIMPLE
+    }
 
     fun updateDisplaySetting(value: DisplaySetting) {
         displaySetting = value
@@ -108,14 +113,25 @@ fun SettingPreferencesPage(vm: SettingVM = koinViewModel()) {
                         supportingContent = { Text(stringResource(R.string.setting_display_page_show_datetime_in_message_desc)) },
                         headlineContent = { Text(stringResource(R.string.setting_display_page_show_datetime_in_message_title)) },
                     )
-                    switchItem(
-                        checked = displaySetting.showTokenUsage,
-                        onCheckedChange = {
-                            updateDisplaySetting(displaySetting.copy(showTokenUsage = it))
-                        },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_show_token_usage_desc)) },
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_show_token_usage_title)) },
-                    )
+                    FormItem(
+                        label = { Text(stringResource(R.string.setting_display_page_show_token_usage_title)) },
+                        description = { Text(stringResource(R.string.setting_display_page_show_token_usage_desc)) },
+                    ) {
+                        ConnectedChoiceButtons(
+                            options = TokenUsageDisplayMode.entries,
+                            selected = tokenUsageDisplayMode,
+                            onSelect = { mode ->
+                                updateDisplaySetting(
+                                    displaySetting.copy(
+                                        showTokenUsage = mode != TokenUsageDisplayMode.OFF,
+                                        detailedTokenUsage = mode == TokenUsageDisplayMode.DETAILED,
+                                    )
+                                )
+                            },
+                        ) { mode, selected ->
+                            ConnectedChoiceLabel(text = stringResource(mode.labelRes), selected = selected)
+                        }
+                    }
                     FormItem(
                         label = { Text(stringResource(R.string.setting_display_page_show_message_jumper_title)) },
                         description = { Text(stringResource(R.string.setting_display_page_show_message_jumper_desc)) },
@@ -149,6 +165,12 @@ fun SettingPreferencesPage(vm: SettingVM = koinViewModel()) {
             }
         }
     }
+}
+
+private enum class TokenUsageDisplayMode(val labelRes: Int) {
+    OFF(R.string.common_off),
+    SIMPLE(R.string.setting_display_page_token_usage_simple),
+    DETAILED(R.string.setting_display_page_token_usage_detailed),
 }
 
 private enum class MessageJumperMode(val labelRes: Int) {

@@ -21,6 +21,7 @@ import me.rerere.rikkahub.data.ai.transformers.AssistantTemplateLoader
 import me.rerere.rikkahub.data.ai.MemoryConsolidationScheduler
 import me.rerere.rikkahub.data.ai.MemoryConsolidator
 import me.rerere.rikkahub.data.ai.TranslationHandler
+import me.rerere.rikkahub.data.ai.UsageRecorder
 import me.rerere.rikkahub.data.ai.ConversationMetaGenerator
 import me.rerere.rikkahub.data.ai.transformers.TemplateTransformer
 import me.rerere.rikkahub.data.remote.RikkaHubAPI
@@ -123,6 +124,14 @@ val dataSourceModule = module {
     }
 
     single {
+        get<AppDatabase>().usageRecordDao()
+    }
+
+    single {
+        UsageRecorder(dao = get(), scope = get<AppScope>())
+    }
+
+    single {
         MessageFtsManager(get(), get<Context>().filesDir)
     }
 
@@ -131,6 +140,7 @@ val dataSourceModule = module {
     single {
         MemoryConsolidator(
             providerManager = get(),
+            usageRecorder = get(),
             memoryRepository = get(),
             conversationRepo = get(),
             consolidationDao = get(),
@@ -148,11 +158,11 @@ val dataSourceModule = module {
     }
 
     single {
-        TranslationHandler(providerManager = get())
+        TranslationHandler(providerManager = get(), usageRecorder = get())
     }
 
     single {
-        ConversationMetaGenerator(context = get(), providerManager = get())
+        ConversationMetaGenerator(context = get(), providerManager = get(), usageRecorder = get())
     }
 
     single<OkHttpClient> {

@@ -67,10 +67,11 @@ class MemoryRepository(private val memoryDAO: MemoryDAO) {
         val to = MemoryFile.normalizePath(toPath) ?: return invalidPath(toPath)
         if (from == to) return writeFile(assistantId, to, content)
         return writeLock.withLock {
-            if (memoryDAO.getFile(assistantId, from) == null) return MemoryWriteResult.Conflict(null)
+            val current = memoryDAO.getFile(assistantId, from)?.toMemoryFile()
+                ?: return MemoryWriteResult.Conflict(null)
             val existing = memoryDAO.getFile(assistantId, to)
             if (existing != null) return MemoryWriteResult.Conflict(existing.toMemoryFile())
-            tooLarge(to, content)?.let { return it }
+            tooLarge(to, content, current.content)?.let { return it }
             memoryDAO.deleteFile(assistantId, from)
             val entity = MemoryFileEntity(
                 assistantId = assistantId,
@@ -162,7 +163,7 @@ class MemoryRepository(private val memoryDAO: MemoryDAO) {
             is Edit.Reject -> return MemoryWriteResult.Rejected(result.reason)
             is Edit.Content -> result.content
         }
-        tooLarge(normalized, content)?.let { return it }
+        tooLarge(normalized, content, current?.content)?.let { return it }
         val entity = MemoryFileEntity(
             assistantId = assistantId,
             path = normalized,
@@ -177,15 +178,20 @@ class MemoryRepository(private val memoryDAO: MemoryDAO) {
         "Invalid path \"$path\". Use an absolute path ending in .md, e.g. /topics/food.md."
     )
 
-    private fun tooLarge(path: String, content: String): MemoryWriteResult.Rejected? =
-        if (content.toByteArray().size > MemoryFile.MAX_BYTES) {
-            MemoryWriteResult.Rejected(
-                "$path would exceed the ${MemoryFile.MAX_BYTES / 1024}KB limit. " +
-                    "Merge duplicates and drop outdated details instead of adding more."
-            )
-        } else {
-            null
-        }
+    // 只拦会让文件变大的超限写入：迁移来的旧记忆可能本来就超限，得允许一点点删小
+    private fun tooLarge(
+        path: String,
+        content: String,
+        current: String?,
+    ): MemoryWriteResult.Rejected? {
+        val size = content.toByteArray().size
+        if (size <= MemoryFile.MAX_BYTES) return null
+        if (size <= (current?.toByteArray()?.size ?: 0)) return null
+        return MemoryWriteResult.Rejected(
+            "$path would exceed the ${MemoryFile.MAX_BYTES / 1024}KB limit. " +
+                "Merge duplicates and drop outdated details instead of adding more."
+        )
+    }
 }
 
 /** 助手读写的记忆库：开启全局记忆后所有助手共用一份 */

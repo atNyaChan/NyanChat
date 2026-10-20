@@ -103,6 +103,7 @@ fun rememberVoiceModeStarter(vm: ChatVM, settings: Settings): () -> Unit {
                     }
                 } else null,
                 stopSpeaking = tts::stop,
+                listenWhileReplying = settings.displaySetting.voiceModeListenWhileReplying,
             )
         }
     }

@@ -22,6 +22,7 @@ import me.rerere.workspace.WorkspaceManager
 import me.rerere.workspace.WorkspaceShellStatus
 import me.rerere.workspace.WorkspaceStorageArea
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import kotlin.uuid.Uuid
@@ -363,6 +364,17 @@ class WorkspaceRepository(
         val workspace = dao.getById(id) ?: error("Workspace not found: $id")
         manager.ensureWorkspace(workspace.root)
         manager.rootfsFileSize(workspace.root, path)
+    }
+
+    /** 按 Rootfs 内绝对路径解析宿主机上的文件, 不存在或不是文件时返回 null */
+    suspend fun resolveRootfsFile(
+        id: String,
+        path: String,
+    ): File? = withContext(Dispatchers.IO) {
+        val workspace = dao.getById(id) ?: return@withContext null
+        runCatching { manager.resolveRootfsFile(workspace.root, path) }
+            .getOrNull()
+            ?.takeIf { it.isFile }
     }
 
     /** Rootfs 内执行命令实际使用的 shell 路径 (/bin/bash 或 /bin/sh) */

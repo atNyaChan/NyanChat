@@ -95,6 +95,7 @@ internal class ResponseApiStreamDecoder : StreamChunkDecoder {
                             initialInput = item["arguments"]?.jsonPrimitive?.contentOrNull ?: "",
                         )
                     }
+                    "function_call_output" -> functionCallOutput(item)
                     "image_generation_call" -> state.startImage(id)
                     "reasoning" -> {
                         state.reasoningMetadata[id] = OpenAIReasoningMetadata(
@@ -129,6 +130,7 @@ internal class ResponseApiStreamDecoder : StreamChunkDecoder {
                         addAll(state.endImage(id))
                     }
                     "function_call" -> state.endTool(state.toolCallIdsByItemId.remove(id) ?: id)
+                    "function_call_output" -> functionCallOutput(item)
                     else -> if (isOpenAIServerToolCall(type)) {
                         val tool = item.toOpenAIServerTool()
                         state.endServerTool(
@@ -181,6 +183,12 @@ internal class ResponseApiStreamDecoder : StreamChunkDecoder {
             ?: payload["call_id"]?.jsonPrimitive?.contentOrNull
             ?: outputIndex?.let { state.toolCallIdsByOutputIndex[it] }
             ?: error("item_id not found")
+
+    // 部分兼容网关会在服务端执行函数工具并下发 function_call_output，需挂到对应工具上，避免客户端重复执行
+    private fun functionCallOutput(item: JsonObject): List<StreamChunk> {
+        val callId = item["call_id"]?.jsonPrimitive?.contentOrNull ?: return emptyList()
+        return state.endTool(callId) + StreamChunk.ToolCallOutput(callId, item.functionCallOutputText())
+    }
 
     // function_call 的 item.id 在规范中是可选的，只有 call_id 必填
     private fun JsonObject.itemIdOrCallId(): String? =
