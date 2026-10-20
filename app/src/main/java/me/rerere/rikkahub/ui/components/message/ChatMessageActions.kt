@@ -342,6 +342,7 @@ fun ChatMessageActionsSheet(
     isFavorite: Boolean = false,
     onToggleFavorite: (() -> Unit)? = null,
     onTranslateRequest: (() -> Unit)? = null,
+    generating: Boolean = false,
     onDismissRequest: () -> Unit
 ) {
     var showDeleteConfirm by remember { mutableStateOf(false) }
@@ -361,7 +362,20 @@ fun ChatMessageActionsSheet(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            val canEdit = !message.containsToolCall
+            val canEditContent = !message.containsToolCall
+            // 生成中不能编辑消息：编辑会建一条新分支并选中它，流式回复却继续写回旧分支
+            val canEdit = canEditContent && !generating
+            // 生成中不能删除消息：流式回复还会往这个节点写内容，删掉会变成一条孤立的新节点
+            val canDelete = !generating
+            // 生成中禁用操作的统一提示：模板里填入被拒绝的动作词
+            val showStopGenerating = { actionRes: Int ->
+                toaster.show(
+                    context.getString(
+                        R.string.chat_page_stop_generation_before_action,
+                        context.getString(actionRes),
+                    )
+                )
+            }
             val actions = buildList {
                 add(
                     MessageSheetAction(
@@ -369,11 +383,15 @@ fun ChatMessageActionsSheet(
                         label = stringResource(R.string.edit),
                         enabled = canEdit,
                     ) {
-                        if (canEdit) {
-                            onDismissRequest()
-                            onEdit()
-                        } else {
-                            toaster.show(context.getString(R.string.chat_message_cannot_edit_tool_call))
+                        when {
+                            canEdit -> {
+                                onDismissRequest()
+                                onEdit()
+                            }
+                            !canEditContent -> toaster.show(
+                                context.getString(R.string.chat_message_cannot_edit_tool_call)
+                            )
+                            else -> showStopGenerating(R.string.edit)
                         }
                     }
                 )
@@ -412,9 +430,18 @@ fun ChatMessageActionsSheet(
                     )
                 }
                 add(
-                    MessageSheetAction(HugeIcons.Delete01, stringResource(R.string.common_delete), destructive = true) {
-                        // 删除还要再确认一次，先让 sheet 留着
-                        showDeleteConfirm = true
+                    MessageSheetAction(
+                        icon = HugeIcons.Delete01,
+                        label = stringResource(R.string.common_delete),
+                        destructive = true,
+                        enabled = canDelete,
+                    ) {
+                        if (canDelete) {
+                            // 删除还要再确认一次，先让 sheet 留着
+                            showDeleteConfirm = true
+                        } else {
+                            showStopGenerating(R.string.common_delete)
+                        }
                     }
                 )
             }
@@ -431,10 +458,11 @@ fun ChatMessageActionsSheet(
                 contentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                 leadingContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
             )
-            // 分支有多条消息时，把前移/后移作为同一 CardGroup 的并排首行
+            // 分支有多条消息时，把前移/后移作为同一 CardGroup 的并排首行；生成中没有可切换的分支
+            // （切换选中分支会让流式回复写进看不见的旧分支）
             val hasBranchNavigation = node.messages.size > 1
-            val canMoveForward = hasBranchNavigation && node.selectIndex > 0
-            val canMoveBackward = hasBranchNavigation && node.selectIndex < node.messages.lastIndex
+            val canMoveForward = hasBranchNavigation && !generating && node.selectIndex > 0
+            val canMoveBackward = hasBranchNavigation && !generating && node.selectIndex < node.messages.lastIndex
             val moveDisabledColors = ListItemDefaults.colors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                 contentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
@@ -448,6 +476,8 @@ fun ChatMessageActionsSheet(
                         item(
                             onClick = if (canMoveForward) {
                                 { onUpdate(node.id) { it.moveCurrentBy(-1) } }
+                            } else if (generating) {
+                                { showStopGenerating(R.string.common_move) }
                             } else null,
                             colors = if (canMoveForward) null else moveDisabledColors,
                             headlineContent = {
@@ -461,6 +491,8 @@ fun ChatMessageActionsSheet(
                         item(
                             onClick = if (canMoveBackward) {
                                 { onUpdate(node.id) { it.moveCurrentBy(1) } }
+                            } else if (generating) {
+                                { showStopGenerating(R.string.common_move) }
                             } else null,
                             colors = if (canMoveBackward) null else moveDisabledColors,
                             headlineContent = {
@@ -490,8 +522,9 @@ fun ChatMessageActionsSheet(
                                 )
                             },
                             colors = when {
-                                action.destructive -> destructiveItemColors
+                                // 禁用项优先（比如生成中仍带 destructive 的删除），统一用 disabled 色
                                 !action.enabled -> disabledItemColors
+                                action.destructive -> destructiveItemColors
                                 else -> null
                             },
                         ) {

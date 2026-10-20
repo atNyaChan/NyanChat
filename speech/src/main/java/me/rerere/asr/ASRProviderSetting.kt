@@ -113,7 +113,7 @@ sealed class ASRProviderSetting {
         val language: String = "auto",
         val sampleRate: Int = 16000,
         // 每多少秒自动 flush 一次当前缓冲区 (上传识别)。设为 0 表示禁用自动分段,
-        // 仅在用户主动 stop() 时整体上传 (注意 MiMo 单次请求 raw 上限约 7.5MB,
+        // 仅在用户主动 stop() 时整体上传 (注意 MiMo 单次请求 raw 上限约 7.5 MiB,
         // 16kHz/16bit/mono 下约 234 秒)。
         val segmentDurationSec: Int = 30,
     ) : ASRProviderSetting() {

@@ -92,6 +92,7 @@ import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.rikkahub.data.repository.FolderRepository
 import me.rerere.rikkahub.utils.wordCount
 import me.rerere.rikkahub.web.BadRequestException
+import me.rerere.rikkahub.web.ConflictException
 import me.rerere.rikkahub.web.NotFoundException
 import java.net.ConnectException
 import java.net.NoRouteToHostException
@@ -357,9 +358,24 @@ class ChatService(
     /**
      * 加载会话后在最新状态上修改并落库。
      * 删除消息或切换分支也可能解除工具审批阻塞，落库后重新检查队列。
+     * [idleActionRes] 不为空时生成中直接抛 ConflictException（文案带上被拒绝的动作）：
+     * 流式回复按节点 id 写回会话，删掉的节点会被下一个事件重新追加到末尾，
+     * 编辑会新建分支并会把选中分支切走，附件索引也会把仍在写的消息当成已移除。
      */
-    private suspend fun mutate(conversationId: Uuid, transform: (Conversation) -> Conversation): Conversation =
+    private suspend fun mutate(
+        conversationId: Uuid,
+        idleActionRes: Int? = null,
+        transform: (Conversation) -> Conversation,
+    ): Conversation =
         withLoadedSession(conversationId) { session ->
+            if (idleActionRes != null && (session.isGenerating || session.state.value.isAwaitingToolApproval)) {
+                throw ConflictException(
+                    context.getString(
+                        R.string.chat_page_stop_generation_before_action,
+                        context.getString(idleActionRes),
+                    )
+                )
+            }
             session.update(transform)
             session.flush().also { dispatchNextQueuedMessage(conversationId) }
         }
@@ -772,7 +788,7 @@ class ChatService(
 
             var finishReason: AgentFinishReason? = null
             // 从构建请求开始（MCP 可能较慢、也可能失败）直到生成结束都要收尾：
-            // 失败的占位消息在 finally 里移除，不会留在会话里
+            // 失败、取消的占位消息在 finally 里移除，不会留在会话里
             try {
                 val turnContext = requestFactory.createContext(settings, conversation)
                 turn = turnContext
@@ -813,8 +829,11 @@ class ChatService(
                 withContext(NonCancellable) {
                     session.processingStatus.value = null
                     session.setGeneratingMessageId(null)
-                    // 可能被取消了，或者意外结束，兜底保存；还没生成出内容的占位消息在这里移除
-                    val finished = session.finishGeneration { dropEmptyPlaceholder(it, placeholderId) }
+                    // 可能被取消了，或者意外结束，兜底保存；失败、取消时还没生成出内容的占位消息在这里移除。
+                    // 正常结束（有 finishReason）说明模型确实返回了，即使返回的是空消息也保留这条助手消息
+                    val finished = session.finishGeneration {
+                        if (finishReason != null) it else dropEmptyPlaceholder(it, placeholderId)
+                    }
                     // 生成结束：取消 Live Update 通知，后台时发送完成通知
                     appEventBus.emit(
                         AppEvent.ChatGenerationEnded(
@@ -862,7 +881,8 @@ class ChatService(
     }
 
     /**
-     * 生成失败、被取消或没有输出时，移除开始生成前插入的助手占位消息（已经有内容时原样返回）。
+     * 生成失败或被取消时，移除开始生成前插入的助手占位消息（已经有内容时原样返回）。
+     * 模型正常结束的回合不经过这里：即使它真的返回了空消息，也保留这条助手消息。
      * 删除后把聊天排序时间同步为现存消息中最新的一条，避免没结果的重新生成把聊天顶到列表最前。
      */
     private fun dropEmptyPlaceholder(conversation: Conversation, placeholderId: Uuid?): Conversation {
@@ -1433,7 +1453,9 @@ class ChatService(
         if (parts.isEmptyInputMessage()) return
         val settings = settingsStore.awaitLoaded()
 
-        mutate(conversationId) { conversation ->
+        // 生成中（含等待工具审批）不允许改写消息：编辑会建新分支并选中它，
+        // 流式回复却继续写回旧分支，回复会落到看不见的分支里
+        mutate(conversationId, idleActionRes = R.string.edit) { conversation ->
             conversation.editMessage(messageId, parts.replaceUserRegexes(settings.getStoredAssistantOf(conversation)))
         }
     }
@@ -1484,7 +1506,8 @@ class ChatService(
         messageId: Uuid,
         failIfMissing: Boolean = true,
     ) {
-        mutate(conversationId) { conversation ->
+        // 生成中（含等待工具审批）不允许删除消息树，UI 只负责提示，规则由这里兜住
+        mutate(conversationId, idleActionRes = R.string.common_delete) { conversation ->
             conversation.deleteMessage(messageId)
                 ?.let { deleted ->
                     // 删除后把聊天排序时间同步为现存消息中最新的一条

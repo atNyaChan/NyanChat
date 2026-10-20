@@ -25,7 +25,7 @@ import me.rerere.rikkahub.web.dto.UploadedFileDto
 import java.io.ByteArrayOutputStream
 import java.io.File
 
-private const val MAX_UPLOAD_FILE_SIZE_BYTES = 20 * 1024 * 1024 // 20 MB
+private const val MAX_UPLOAD_FILE_SIZE_BYTES = 20 * 1024 * 1024 // 20 MiB
 
 fun Route.filesRoutes(
     filesManager: FilesManager,
@@ -223,7 +223,7 @@ private suspend fun readPartBytes(part: PartData.FileItem, maxBytes: Int): ByteA
 
         totalBytes += read
         if (totalBytes > maxBytes) {
-            throw BadRequestException("File too large: max ${maxBytes / (1024 * 1024)} MB")
+            throw BadRequestException("File too large: max ${maxBytes / (1024 * 1024)} MiB")
         }
 
         output.write(buffer, 0, read)

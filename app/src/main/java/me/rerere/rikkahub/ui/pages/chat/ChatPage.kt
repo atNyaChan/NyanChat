@@ -628,11 +628,9 @@ private fun ChatPageContent(
                         }
                     },
                     onDelete = {
-                        if (loadingJob != null) {
-                            vm.showDeleteBlockedWhileGeneratingError()
-                        } else {
-                            vm.deleteMessage(it)
-                        }
+                        // 生成中由 ChatService 拒绝删除并在错误卡片里说明原因；
+                        // 消息菜单会把删除项显示为禁用状态
+                        vm.deleteMessage(it)
                     },
                     onUpdateMessage = { nodeId, update ->
                         vm.updateConversationNode(nodeId, update)

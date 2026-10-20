@@ -42,7 +42,7 @@ import java.util.Collections
 
 private const val TAG = "StepASR"
 
-// 提前在 6MB 触发分段, 与 MiMo 一致, 避免单段过大导致网络传输失败.
+// 提前在 6 MiB 触发分段, 与 MiMo 一致, 避免单段过大导致网络传输失败.
 private const val MAX_SEGMENT_BYTES = 6 * 1024 * 1024
 
 // 最小段长度: 16kHz/16bit/mono 下 100ms = 3200 字节。短于这个长度直接丢弃,

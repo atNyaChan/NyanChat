@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -32,6 +31,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -91,7 +91,6 @@ import me.rerere.hugeicons.stroke.Package01
 import me.rerere.hugeicons.stroke.Settings03
 import me.rerere.hugeicons.stroke.Share01
 import me.rerere.hugeicons.stroke.Tick01
-import me.rerere.hugeicons.stroke.Toolbox
 import me.rerere.hugeicons.stroke.Tools
 import me.rerere.hugeicons.stroke.View
 import me.rerere.hugeicons.stroke.ViewOff
@@ -113,6 +112,7 @@ import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
 import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceLabel
 import me.rerere.rikkahub.ui.components.ui.ConnectedMultiChoiceButtons
 import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.HorizontalPager
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.PagerTab
 import me.rerere.rikkahub.ui.components.ui.PagerTabs
@@ -1188,16 +1188,12 @@ private fun ModelSettingsForm(
     onMigrateModelId: ((Model, Model) -> Unit)? = null,
     onDeleteModel: (() -> Unit)? = null,
 ) {
-    // 内置工具只对部分提供商 API 生效（如 OpenAI 仅 Responses API），均不支持时隐藏整个页签
+    // 内置工具只对部分提供商 API 生效（如 OpenAI 仅 Responses API），均不支持时隐藏整个卡片
     val effectiveProvider = model.providerOverwrite ?: parentProvider
     val supportedTools = effectiveProvider?.supportedBuiltInTools().orEmpty()
-    val showBuiltInToolsTab = supportedTools.isNotEmpty()
     val modelFormTabs = buildList<PagerTab> {
         add(ModelFormTab(HugeIcons.Settings03, R.string.setting_provider_page_basic_settings))
         add(ModelFormTab(HugeIcons.Tools, R.string.setting_provider_page_advanced_settings))
-        if (showBuiltInToolsTab) {
-            add(ModelFormTab(HugeIcons.Toolbox, R.string.setting_page_built_in_tools))
-        }
     }
     val pagerState = rememberPagerState { modelFormTabs.size }
     val settingsStore = koinInject<me.rerere.rikkahub.data.datastore.SettingsStore>()
@@ -1219,12 +1215,6 @@ private fun ModelSettingsForm(
         }
     }
 
-    LaunchedEffect(showBuiltInToolsTab) {
-        if (!showBuiltInToolsTab && pagerState.currentPage > 1) {
-            pagerState.scrollToPage(1)
-        }
-    }
-
     ModelListSheet(
         state = migrationModelListState,
         onSelect = { targetModel ->
@@ -1238,10 +1228,12 @@ private fun ModelSettingsForm(
         val inputModality = ModelRegistry.MODEL_INPUT_MODALITIES.getData(id)
         val outputModality = ModelRegistry.MODEL_OUTPUT_MODALITIES.getData(id)
         val abilities = ModelRegistry.MODEL_ABILITIES.getData(id)
+        // 仅当模型名称仍然跟随模型 ID（未自定义或为空）时同步更新名称
+        val displayNameFollowsId = model.displayName.isBlank() || model.displayName == model.modelId
         onModelChange(
             model.copy(
                 modelId = id,
-                displayName = id,
+                displayName = if (displayNameFollowsId) id else model.displayName,
                 inputModalities = inputModality,
                 outputModalities = outputModality,
                 abilities = abilities
@@ -1496,6 +1488,40 @@ private fun ModelSettingsForm(
                             .padding(vertical = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
+                        // 内置工具只对部分提供商 API 生效，均不支持时不显示该卡片
+                        if (supportedTools.isNotEmpty()) {
+                            CardGroup(
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                item(
+                                    supportingContent = {
+                                        Column(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                                        ) {
+                                            Text(
+                                                text = stringResource(R.string.setting_page_built_in_tools),
+                                                style = MaterialTheme.typography.titleMedium,
+                                            )
+                                            Text(
+                                                text = stringResource(R.string.setting_page_built_in_tools_desc),
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                            BuiltInToolsSwitches(
+                                                tools = model.tools,
+                                                supportedTools = supportedTools,
+                                                onUpdateTools = { tools ->
+                                                    onModelChange(model.copy(tools = tools))
+                                                },
+                                            )
+                                        }
+                                    },
+                                    headlineContent = {},
+                                )
+                            }
+                        }
+
                         if (isEdit && onMigrateModelId != null) {
                             CardGroup(
                                 modifier = Modifier.fillMaxWidth()
@@ -1617,17 +1643,6 @@ private fun ModelSettingsForm(
                             },
                         )
                     }
-                }
-
-                2 -> {
-                    // 内置工具页面
-                    BuiltInToolsSettings(
-                        tools = model.tools,
-                        supportedTools = supportedTools,
-                        onUpdateTools = { tools ->
-                            onModelChange(model.copy(tools = tools))
-                        }
-                    )
                 }
             }
         }
@@ -2148,66 +2163,46 @@ private fun ModelCard(
 }
 
 @Composable
-private fun BuiltInToolsSettings(
+private fun BuiltInToolsSwitches(
     tools: Set<BuiltInTools>,
     supportedTools: Set<BuiltInTools>,
-    onUpdateTools: (Set<BuiltInTools>) -> Unit
+    onUpdateTools: (Set<BuiltInTools>) -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    val availableTools = listOf(
+        BuiltInTools.Search to Pair(
+            stringResource(R.string.setting_page_built_in_tools_search),
+            stringResource(R.string.setting_page_built_in_tools_search_desc)
+        ),
+        BuiltInTools.UrlContext to Pair(
+            stringResource(R.string.setting_page_built_in_tools_url_context),
+            stringResource(R.string.setting_page_built_in_tools_url_context_desc)
+        ),
+        BuiltInTools.ImageGeneration to Pair(
+            stringResource(R.string.setting_page_built_in_tools_image_generation),
+            stringResource(R.string.setting_page_built_in_tools_image_generation_desc)
+        )
+    ).filter { (tool, _) -> tool in supportedTools }
+    // 开关组与所在卡片拉开层次，用页面同款的 surface 背景色
+    val itemColors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface)
+
+    CardGroup(
+        modifier = Modifier.fillMaxWidth(),
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.setting_page_built_in_tools),
-                style = MaterialTheme.typography.titleMedium,
+        availableTools.forEach { (tool, info) ->
+            val (title, description) = info
+            switchItem(
+                checked = tool in tools,
+                onCheckedChange = { checked ->
+                    if (checked) {
+                        onUpdateTools(tools + tool)
+                    } else {
+                        onUpdateTools(tools - tool)
+                    }
+                },
+                colors = itemColors,
+                supportingContent = { Text(description) },
+                headlineContent = { Text(title) },
             )
-            Text(
-                text = stringResource(R.string.setting_page_built_in_tools_desc),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-
-        val availableTools = listOf(
-            BuiltInTools.Search to Pair(
-                stringResource(R.string.setting_page_built_in_tools_search),
-                stringResource(R.string.setting_page_built_in_tools_search_desc)
-            ),
-            BuiltInTools.UrlContext to Pair(
-                stringResource(R.string.setting_page_built_in_tools_url_context),
-                stringResource(R.string.setting_page_built_in_tools_url_context_desc)
-            ),
-            BuiltInTools.ImageGeneration to Pair(
-                stringResource(R.string.setting_page_built_in_tools_image_generation),
-                stringResource(R.string.setting_page_built_in_tools_image_generation_desc)
-            )
-        ).filter { (tool, _) -> tool in supportedTools }
-
-        CardGroup(
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            availableTools.forEach { (tool, info) ->
-                val (title, description) = info
-                switchItem(
-                    checked = tool in tools,
-                    onCheckedChange = { checked ->
-                        if (checked) {
-                            onUpdateTools(tools + tool)
-                        } else {
-                            onUpdateTools(tools - tool)
-                        }
-                    },
-                    supportingContent = { Text(description) },
-                    headlineContent = { Text(title) },
-                )
-            }
         }
     }
 }

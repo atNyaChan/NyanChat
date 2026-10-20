@@ -41,8 +41,8 @@ import java.util.Collections
 
 private const val TAG = "MiMoASR"
 
-// MiMo 官方限制: 单次请求 base64 不超过 10MB ≈ 7.5MB raw。
-// 16kHz / 16bit / mono 下 7.5MB ≈ 234 秒。提前在 6MB 触发自动 flush 留余量。
+// MiMo 官方限制: 单次请求 base64 不超过 10 MiB ≈ 7.5 MiB raw。
+// 16kHz / 16bit / mono 下 7.5 MiB ≈ 234 秒。提前在 6 MiB 触发自动 flush 留余量。
 private const val MAX_SEGMENT_BYTES = 6 * 1024 * 1024
 
 /**

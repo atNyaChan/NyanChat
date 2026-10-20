@@ -84,7 +84,7 @@ class RikkaHubApp : Application() {
         }
         this.createNotificationChannel()
 
-        // set cursor window size to 32MB
+        // set cursor window size to 32 MiB
         DatabaseUtil.setCursorWindowSize(32 * 1024 * 1024)
 
         // install crash handler

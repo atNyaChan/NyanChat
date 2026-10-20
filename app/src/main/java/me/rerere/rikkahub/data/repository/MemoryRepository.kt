@@ -188,7 +188,7 @@ class MemoryRepository(private val memoryDAO: MemoryDAO) {
         if (size <= MemoryFile.MAX_BYTES) return null
         if (size <= (current?.toByteArray()?.size ?: 0)) return null
         return MemoryWriteResult.Rejected(
-            "$path would exceed the ${MemoryFile.MAX_BYTES / 1024}KB limit. " +
+            "$path would exceed the ${MemoryFile.MAX_BYTES / 1024}KiB limit. " +
                 "Merge duplicates and drop outdated details instead of adding more."
         )
     }

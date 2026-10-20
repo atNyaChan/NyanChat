@@ -11,6 +11,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -44,6 +45,7 @@ import me.rerere.rikkahub.service.ChatService
 import me.rerere.rikkahub.service.RequestContextStats
 import me.rerere.rikkahub.ui.hooks.writeStringPreference
 import me.rerere.rikkahub.ui.hooks.ChatInputState
+import me.rerere.rikkahub.web.ApiException
 import java.util.Locale
 import kotlin.uuid.Uuid
 
@@ -245,7 +247,18 @@ class ChatVM(
     fun handleMessageEdit(parts: List<UIMessagePart>, messageId: Uuid) {
         if (parts.isEmptyInputMessage()) return
         viewModelScope.launch {
-            chatService.editMessage(_conversationId, messageId, parts)
+            try {
+                chatService.editMessage(_conversationId, messageId, parts)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: ApiException) {
+                // 生成中编辑被 ChatService 拒绝，用错误卡片说明原因
+                chatService.addError(
+                    error = e,
+                    conversationId = _conversationId,
+                    title = context.getString(R.string.error_title_operation),
+                )
+            }
         }
     }
 
@@ -267,16 +280,19 @@ class ChatVM(
 
     fun deleteMessage(message: UIMessage) {
         viewModelScope.launch {
-            chatService.deleteMessage(_conversationId, message)
+            try {
+                chatService.deleteMessage(_conversationId, message)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: ApiException) {
+                // 生成中删除被 ChatService 拒绝，用错误卡片说明原因
+                chatService.addError(
+                    error = e,
+                    conversationId = _conversationId,
+                    title = context.getString(R.string.error_title_operation),
+                )
+            }
         }
-    }
-
-    fun showDeleteBlockedWhileGeneratingError() {
-        chatService.addError(
-            error = IllegalStateException(context.getString(R.string.chat_page_stop_generation_before_delete)),
-            conversationId = _conversationId,
-            title = context.getString(R.string.error_title_operation)
-        )
     }
 
     fun regenerateAtMessage(message: UIMessage) {

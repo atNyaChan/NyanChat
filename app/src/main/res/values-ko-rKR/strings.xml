@@ -45,6 +45,7 @@
   <string name="common_export">내보내기</string>
   <string name="common_import">가져오기</string>
   <string name="common_install">설치</string>
+  <string name="common_move">이동</string>
   <string name="common_no">아니요</string>
   <string name="common_not_recommended_to_modify">수정하지 않는 것을 권장합니다</string>
   <string name="common_off">꺼짐</string>
@@ -145,7 +146,7 @@
   <string name="chat_page_no_conversations">대화 없음</string>
   <string name="chat_page_scroll_to_bottom">맨 아래로 스크롤</string>
   <string name="chat_page_select_model_first">먼저 모델을 선택하세요</string>
-  <string name="chat_page_stop_generation_before_delete">메시지를 삭제하기 전에 생성을 중지하세요</string>
+  <string name="chat_page_stop_generation_before_action">메시지를 %1$s하기 전에 생성을 중지하세요</string>
   <string name="chat_page_today">오늘</string>
   <string name="chat_page_yesterday">어제</string>
   <string name="use_web_search">웹 검색 사용</string>
@@ -1684,13 +1685,13 @@
   <!-- Debug -->
   <string name="debug_page_crash">크래시</string>
   <string name="debug_page_create_1024_conversation">메시지 1024개로 채팅 만들기</string>
-  <string name="debug_page_create_oversized_conversation">대용량 대화 만들기 (30MB)</string>
+  <string name="debug_page_create_oversized_conversation">대용량 대화 만들기 (30 MiB)</string>
   <string name="debug_page_creating_1024_conversation">메시지 1024개 대화 생성 중…</string>
-  <string name="debug_page_creating_oversized_conversation">30MB 대용량 대화 생성 중…</string>
+  <string name="debug_page_creating_oversized_conversation">30 MiB 대용량 대화 생성 중…</string>
   <string name="debug_page_last_database_save_time">마지막 저장 시간: %1$s</string>
   <string name="debug_page_last_database_save_time_never">마지막 저장 시간: 없음</string>
   <string name="debug_page_messages_conversation_title">메시지 %1$d개 테스트</string>
-  <string name="debug_page_oversized_conversation_title">대용량 대화 테스트 (%1$dMB)</string>
+  <string name="debug_page_oversized_conversation_title">대용량 대화 테스트 (%1$d MiB)</string>
   <string name="debug_page_recalculate_chat_time">채팅 시간 다시 계산</string>
   <string name="debug_page_recalculating_chat_time">채팅 시간 다시 계산 중…</string>
   <string name="debug_page_save_database_now">데이터베이스 즉시 저장</string>

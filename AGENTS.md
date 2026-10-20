@@ -68,7 +68,18 @@ of adding per-screen variants.
   (app/src/main/java/me/rerere/rikkahub/ui/pages/assistant/detail/PropertyEditor.kt) in the provider
   drawer, assistant request settings and model advanced settings; whether a request log is an LLM
   call is decided only by `isLlmRequest(log)`
-  (app/src/main/java/me/rerere/rikkahub/data/ai/RequestInterceptController.kt).
+  (app/src/main/java/me/rerere/rikkahub/data/ai/RequestInterceptController.kt); tabbed pages use the
+  shared `HorizontalPager` wrapper
+  (app/src/main/java/me/rerere/rikkahub/ui/components/ui/HorizontalPager.kt), which forwards to the
+  foundation pager with `overscrollEffect = null` so swiping between pages never stretches — never
+  import `androidx.compose.foundation.pager.HorizontalPager` directly.
+- **File sizes**: whenever a file/content size is displayed (UI text, dialogs, logs, tool output),
+  use binary units (`B`, `KiB`, `MiB`, `GiB`, `TiB`) — never decimal `KB` / `MB` / `GB`. Dynamic
+  sizes go through the shared `Long.fileSizeToString()`
+  (app/src/main/java/me/rerere/rikkahub/utils/StringUtils.kt), which already divides by 1024 and
+  picks the precision; fixed limits/constants render as a whole binary number (e.g. `48KiB`,
+  `20 MiB`) instead of a decimal `KB` / `MB` string. Do not hand-format a size with a decimal
+  divisor.
 - **Feedback**: `LocalToaster` errors open a scrollable, selectable, copyable dialog; success,
   warning and short messages use the Android system Toast. Do not add the old custom colored in-app
   banner.

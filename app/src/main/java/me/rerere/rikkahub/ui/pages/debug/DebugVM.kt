@@ -101,22 +101,22 @@ class DebugVM(
 
     /**
      * 创建一个超大的对话用于测试 CursorWindow 限制
-     * @param sizeMB 目标大小（MB）
+     * @param sizeMiB 目标大小（MiB）
      * @param title 对话标题
      */
-    suspend fun createOversizedConversation(sizeMB: Int = 3, title: String = "Oversized conversation test (${sizeMB}MB)") {
-        val targetSize = sizeMB * 1024 * 1024
+    suspend fun createOversizedConversation(sizeMiB: Int = 3, title: String = "Oversized conversation test (${sizeMiB}MiB)") {
+        val targetSize = sizeMiB * 1024 * 1024
         val messageNodes = mutableListOf<MessageNode>()
         var currentSize = 0
 
         // 生成大量消息直到达到目标大小
         var index = 0
         while (currentSize < targetSize) {
-            // 生成一个包含大量文本的消息（约 100KB 每条）
+            // 生成一个包含大量文本的消息（约 100 KiB 每条）
             val largeText = buildString {
                 repeat(100) {
                     append("This is a long test text used to test the CursorWindow size limit. ")
-                    append("The \"Row too big to fit into CursorWindow\" error usually occurs when a single row exceeds 2MB. ")
+                    append("The \"Row too big to fit into CursorWindow\" error usually occurs when a single row exceeds 2 MiB. ")
                     append("Lorem ipsum dolor sit amet, consectetur adipiscing elit. ")
                     append("Index: $index, Block: $it. ")
                 }
