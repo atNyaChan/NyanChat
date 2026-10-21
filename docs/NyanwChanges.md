@@ -681,9 +681,7 @@
 - 首次安装或设置文件损坏（重置为空）产生空助手列表时自动补回默认助手，当前助手读取另有独立兜底，避免主界面与安全模式在启动阶段循环闪退。
 - 移除未使用的 Google Sans Flex 字体。
 - 删除未使用的反编译工具二进制 `gradle/vineflower.jar`。
-- 删除 `app/src/main/assets/banner/banner-{1,2,3}.png` 三张死资源。
 - 删除未被任何代码引用的 `app/src/main/assets/html/mark.html` 及其加载函数 `buildMarkdownPreviewHtml()`（`MarkdownWeb.kt`），该模板内部从 CDN 加载 mermaid 10.6.1。
-- 聊天消息图片占位图 `placeholder` 与 `placeholder_dark` 由 PNG 改为 WebP（质量 95），资源名不变。
 - `web-ui/copy.ts` 拷贝前端产物时跳过 KaTeX 的 `.woff`/`.ttf` 兜底字体，仅保留 `.woff2`。
 - 在 `androidResources` 中新增 `localeFilters`（en/ar/ja/ko-rKR/ru/zh/zh-rTW），只保留应用实际支持的语言，避免把依赖库的近百种翻译打进未压缩的 `resources.arsc`。
 - web-ui 的 Shiki 高亮不再从 `shiki` 完整入口导入；`code-block.tsx` 改用 `shiki/core` 并只显式引入 catppuccin-latte/mocha 两个主题，从而避免把上游全部 65 个主题 chunk 打进前端产物。
