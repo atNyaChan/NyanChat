@@ -22,9 +22,7 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
-    implementation(libs.material)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.xz)
     implementation("com.github.luben:zstd-jni:1.5.7-4@aar")

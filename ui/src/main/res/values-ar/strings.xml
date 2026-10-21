@@ -20,4 +20,10 @@
   <string name="sketch_dialog_brush_flat">قلم مسطح</string>
   <string name="sketch_dialog_text">نص</string>
   <string name="sketch_dialog_select">تحديد</string>
+  <string name="image_crop_rotate">تدوير</string>
+  <string name="image_crop_reset">إعادة تعيين</string>
+  <string name="image_crop_free">حر</string>
+  <string name="image_crop_original">الأصلي</string>
+  <string name="image_crop_load_failed">تعذّر تحميل الصورة</string>
+  <string name="image_crop_failed">تعذّر قص الصورة</string>
 </resources>

@@ -3,7 +3,6 @@ package me.rerere.rikkahub.ui.components.ui
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.TextAutoSize
@@ -33,7 +32,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,20 +50,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import coil3.compose.AsyncImage
-import kotlinx.coroutines.launch
-import me.rerere.common.android.appTempFolder
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Edit03
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.model.Avatar
 import me.rerere.rikkahub.ui.components.ai.useCropLauncher
+import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.hooks.rememberAvatarShape
 import me.rerere.rikkahub.ui.theme.LocalDarkMode
+import me.rerere.ui.toast.ToastType
 import org.koin.compose.koinInject
-import java.io.File
 
 @Composable
 fun TextAvatar(
@@ -108,53 +104,38 @@ fun UIAvatar(
     onClick: (() -> Unit)? = null
 ) {
     val filesManager: FilesManager = koinInject()
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    // 预览里没有 toaster（LocalToaster 未注入），只有可编辑时才读取
+    val toaster = if (onUpdate != null) LocalToaster.current else null
+    val saveFailedMessage = stringResource(R.string.common_error_save_failed)
     var showPickOption by remember { mutableStateOf(false) }
     var showEmojiPicker by remember { mutableStateOf(false) }
     var showUrlInput by remember { mutableStateOf(false) }
     var urlInput by remember { mutableStateOf("") }
-    var preCropTempFile by remember { mutableStateOf<File?>(null) }
 
-    fun saveAvatarImage(uri: Uri) {
-        scope.launch {
-            val localUri = filesManager.saveUploadFromUri(
-                uri = uri,
-                displayName = filesManager.getFileNameFromUri(uri),
-            )
-            localUri?.let { onUpdate?.invoke(Avatar.Image(it.toString())) }
+    // 裁剪结果在临时目录里，必须在回调返回前（也就是临时文件被删之前）读进 CAS
+    suspend fun saveAvatarImage(uri: Uri) {
+        val localUri = filesManager.saveUploadFromUri(
+            uri = uri,
+            displayName = filesManager.getFileNameFromUri(uri),
+        )
+        if (localUri != null) {
+            onUpdate?.invoke(Avatar.Image(localUri.toString()))
+        } else {
+            toaster?.show(saveFailedMessage, type = ToastType.Error)
         }
     }
 
-    val (_, launchImageCrop) = useCropLauncher(
+    val launchImageCrop = useCropLauncher(
         onCroppedImageReady = { croppedUri ->
             saveAvatarImage(croppedUri)
         },
-        onCleanup = {
-            preCropTempFile?.delete()
-            preCropTempFile = null
-        },
-        aspectRatio = 1f to 1f,
-        freeStyleCropEnabled = false
+        aspectRatio = 1f,
     )
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let { selectedUri ->
-            val tempFile = File(context.appTempFolder, "avatar_pick_${System.currentTimeMillis()}.jpg")
-            runCatching {
-                context.contentResolver.openInputStream(selectedUri)?.use { input ->
-                    tempFile.outputStream().use { output -> input.copyTo(output) }
-                } ?: error("Failed to open input stream for $selectedUri")
-                preCropTempFile?.delete()
-                preCropTempFile = tempFile
-                launchImageCrop(tempFile.toUri())
-            }.onFailure {
-                tempFile.delete()
-                launchImageCrop(selectedUri)
-            }
-        }
+        uri?.let(launchImageCrop)
     }
 
     Box(modifier = modifier.then(Modifier.size(32.dp))) {

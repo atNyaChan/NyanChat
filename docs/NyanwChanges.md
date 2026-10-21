@@ -79,9 +79,9 @@
 - 排序选项“最相关”仅在模糊搜索时出现，非模糊搜索时该项整项不显示，从模糊切回其他模式会自动改为“最新”。
 - 模糊搜索选择并高亮消息中，各空格分段按顺序出现且间隔字符总数最少的一组完整匹配；按相关性排序时优先显示总间隔更少的结果，相同则按消息时间从新到旧。
 - 预览从首段所在行延伸到末段所在行，匹配相隔较远时自动包含中间全部行。
-- 新版搜索统一读写独立的普通表 `message_search_cache`，不扫描消息 JSON，并移除 Jieba 查询与词典资源。旧名 `message_fts` 保留为空的 `simple` FTS5 兼容表，旧版会忽略新缓存表，导回旧版后可手动重建旧索引。仅当没有模型/附件/手动编辑筛选时走该缓存快速路径；叠加任一消息级筛选时改为扫描消息 JSON 在内存中逐条过滤。
+- 新版搜索统一读写独立的普通表 `message_search_cache`，不扫描消息 JSON，并移除 Jieba 查询与词典资源。旧 `message_fts` 的 `simple` FTS5 表随 `simple` 分词器扩展一起删除（`libsimple.so` 不再打包，打开数据库时删除旧表）；导回旧版后旧版会自动重建同名表，因此降级后需要手动重建旧索引。仅当没有模型/附件/手动编辑筛选时走该缓存快速路径；叠加任一消息级筛选时改为扫描消息 JSON 在内存中逐条过滤。
 - 消息搜索缓存写入完整文本，不再将每条消息截断到 10,000 字。
-- 新版打开数据库时若发现旧表存在条目，会先清空旧表，再与页面手动重建共用同一实现，从原始会话及消息记录全量重建新缓存，两个缓存表的旧内容都不会作为重建来源。
+- 新版打开数据库时若发现旧 `message_fts` 表会直接删除；缓存缺 `message_search_cache` 表或 `message_at` 列时与页面手动重建共用同一实现，从原始会话及消息记录全量重建新缓存，旧表内容从不作为重建来源。
 - 侧栏入口与搜索页标题统一复用“搜索消息”文案。
 - 消息搜索在标题同一行显示“xx 个结果”；滚动收起标题与返回键同行后，“xx 个结果”改到“搜索消息”下一行显示。
 - 搜索结果每页 20 条，超过一页时在结果列表上方提供首页、上一页、页码输入、下一页和末页控件。翻页后搜索结果列表自动滚回最前面。
@@ -465,7 +465,7 @@
 - 所有读写 `managed_files_cas.usages` 的删除与清理都与索引更新共用同一互斥锁，避免并发下互相覆盖。
 - 保存/删除会话只加载本次引用到的内容与该会话此前引用过的行；`FilesManager` 在 `usagesMutex` 内维护一份懒加载的 `conversationId -> sha256` 内存索引。
 - `usages` JSON 解析失败时按消息库重建全表索引，重建后仍无法解析的内容保守保留（不删文件、不改写记录）。
-- “存储管理”的设置主页描述固定显示为“{n} 个文件（{n} 个引用），{size} MiB”：文件数按 `upload` 下文件数计，引用数按 `usages` 里真实 `message` 条目数计，大小按 `byte / 1048576` 换算。
+- “存储管理”的设置主页描述固定显示为“{n} 个文件（{n} 个引用），{size} MiB”：文件数按 `upload` 下文件数计，引用数按 `usages` 里所有真实使用记录计（消息附件的 `message` 与设置类的 `assistant_avatar` / `assistant_background` / `user_avatar` 都算，`none` 不算，与每个附件卡片右上角的引用数之和一致），大小按 `byte / 1048576` 换算。
 
 #### 新导出格式
 - 新导出格式改为 `.tar`，文件命名为 `NyanChatBackup-yyyyMMdd-HHmmss.tar`：
@@ -497,7 +497,7 @@
 - 兼容 ZIP 中 `rikka_hub.db` 与 `settings.json` 使用 deflate 5 级压缩，其余附件条目只储存（STORED）不压缩。
 - 兼容 ZIP 只包含名为 `upload` 的附件目录，里面是 `uuid.ext` 形式的真实文件：每份内容按各次消息使用记录（usages 的 `filename`）分别落一份副本，同一附件被使用几次就复制几份；被设置（助手头像/背景、用户头像）引用或完全未被消息引用的内容才用 `filenameBySha` 的基础名落一份。
 - 每条旧的 `managed_files` 行用该次使用的 `display_name`（缺失时退回 `filename`）作展示名。同时把数据库里的 `managed_files_cas` 转回旧 `managed_files` 表（`folder` 固定 `upload`、`relative_path` 用 `upload/<uuid.ext>`、`updated_at` 照抄 `created_at`）。
-- 兼容 ZIP 里数据库声明为上游当前的 schema 版本（`user_version = 32`）：导出前把 `managed_files_cas` 转回 `managed_files`、写回 32、并删除 `room_master_table`，让上游 release 版按自己的 schema 重新校验后导入。
+- 兼容 ZIP 里数据库声明为上游当前的 schema 版本（`user_version = 32`）：导出前把 `managed_files_cas` 转回 `managed_files`、删掉 `message_search_cache`、写回 32、并删除 `room_master_table`，让上游 release 版按自己的 schema 重新校验后导入。
 - 数据库 schema 的 fork/上游版本对应关系与新增版本规则写在 `AGENTS.md` 的 Database Schema and Backup Compatibility 小节：新增上游版本时同步提高 `ManagedFilesArchive.LEGACY_SCHEMA_VERSION`，并补齐上游上一版到新版、新版到 fork 当前版本以及 fork 上一版到当前版本的迁移（当前为 `31 -> 32`、`32 -> 102`、`101 -> 102`）。
 - 兼容 ZIP 面向上游 RikkaHub release 版：导出前把数据库快照里附件 part 的 url 与 `settings.json` 里助手的头像、聊天背景从相对路径展开成上游安装目录下的绝对 `file://` 路径（用当前数据目录前缀 + `me.rerere.rikkahub/files/` 拼出），使上游 release 版导入后能直接读到附件；上游 debug 版（包名带 `.debug` 后缀）无法覆盖。
 - S3 与 WebDAV 仍只导出新的 TAR 格式。
@@ -654,6 +654,7 @@
 - 开始请求前先把助手占位消息写进会话（带会话固定模型的 `modelId`），界面立刻把这条消息显示为“生成中”；agent 循环接着这条消息写，回复沿用它的 id，空占位消息不会发给模型。失败或取消时在收尾阶段移除这条还空着的消息，并把聊天排序时间回退到现存最新消息；模型正常结束时即使真的返回了空消息也保留这条助手消息。
 - 新建的空对话只留在内存里（默认标题为“新聊天”），发出第一条消息或在聊天页改标题/系统提示词后才落库。
 - 更新会话时按节点 ID 比较数据库实体与当前消息树，只删除已移除节点并写入新增或变化节点，不再全删全插全部消息节点。
+- 窗口主题 `Theme.Rikkahub` 的父级由框架的 `android:Theme.Material.Light.NoActionBar` / `android:Theme.Material.NoActionBar` 改回 AppCompat 的 `Theme.AppCompat.Light.NoActionBar` / `Theme.AppCompat.NoActionBar`（窗口背景色不变）：`RouteActivity` 继承 `AppCompatActivity`（用于 `AppCompatDelegate.setApplicationLocales` 的应用内语言切换），而 AppCompat 要求主题派生自 `Theme.AppCompat`，否则启动时抛 `You need to use a Theme.AppCompat theme (or descendant) with this activity.` 并崩溃；这不涉及 Material Components，MDC 的样式与属性资源仍可被 R8 裁掉。
 - `locale-tui-localization` skill 改为手工维护全部 `values*` 字符串资源，不再依赖 Python、uv 或自动翻译服务，并将 `locale-tui-localization` skill 内容精简后并入 `AGENTS.md`；上游后来引入的 `tools/i18n` Bun 翻译工具不并入本 Fork，字符串仍由 agent 按 `AGENTS.md` 的手工本地化流程翻译。
 - 在 `AGENTS.md` 中的“Unified UI Conventions”统一列表卡片、设置分组、底部抽屉、颜色、圆角与反馈约定及构建配置（JDK 21、compileSdk 37.2、targetSdk 37、minSdk 28、Build-Tools 37.0.0）。
 - 国际化约定补充通用操作字符串、各语言资源键顺序对齐与中英相邻空格规则，并要求新增字符串时按功能分组注释落位（不得追加到文件末尾），同步更新各语言文件的相同位置，且必须同步维护 `tools/strings_grouping.py` 中的分组定义。
@@ -680,6 +681,7 @@
 - 清理各网络服务对新版 OkHttp 非空响应体的冗余安全调用、密封类型 `when` 的多余 `else`，并移除低于项目最低 API 28 的废弃 Locale 兼容分支；仍有实际用途的旧 TTS 回调与消息序列化迁移类型继续保留，并仅在对应兼容代码中抑制弃用警告。
 - 首次安装或设置文件损坏（重置为空）产生空助手列表时自动补回默认助手，当前助手读取另有独立兜底，避免主界面与安全模式在启动阶段循环闪退。
 - 移除未使用的 Google Sans Flex 字体。
+- 删除 `app/src/main/jniLibs/{arm64-v8a,x86_64}/libsimple.so`（`wangfenjin/simple` 的 jieba 分词与拼音 FTS5 扩展）以及 `SQLiteConfiguration` 里对它的扩展注册：新版搜索已改用普通表 `message_search_cache`，没人再用 `simple` 分词器；旧 `message_fts` 表在打开数据库（`AppDatabaseFactory`）与校验恢复存档（`DatabaseBackup.normalize`）时删除，避免它让 `PRAGMA integrity_check` 失败。
 - 删除未使用的反编译工具二进制 `gradle/vineflower.jar`。
 - 删除未被任何代码引用的 `app/src/main/assets/html/mark.html` 及其加载函数 `buildMarkdownPreviewHtml()`（`MarkdownWeb.kt`），该模板内部从 CDN 加载 mermaid 10.6.1。
 - web-ui 工作台预览 mermaid 的 CDN 地址由 `https://esm.sh/mermaid@11` 固定为 `https://esm.sh/mermaid@11.16.0`，与 Android 端内置的 `app/src/main/assets/html/mermaid.min.js`（11.16.0）版本统一。

@@ -123,9 +123,6 @@
           android:scheme="nyanchat" />
       </intent-filter>
     </activity>
-    <activity
-      android:name="com.yalantis.ucrop.UCropActivity"
-      android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
     <service
       android:name=".service.ChatGenerationForegroundService"

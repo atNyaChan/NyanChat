@@ -20,4 +20,10 @@
   <string name="sketch_dialog_brush_flat">平頭筆</string>
   <string name="sketch_dialog_text">文字</string>
   <string name="sketch_dialog_select">選擇</string>
+  <string name="image_crop_rotate">旋轉</string>
+  <string name="image_crop_reset">重設</string>
+  <string name="image_crop_free">自由</string>
+  <string name="image_crop_original">原圖</string>
+  <string name="image_crop_load_failed">無法載入圖片</string>
+  <string name="image_crop_failed">無法裁切圖片</string>
 </resources>

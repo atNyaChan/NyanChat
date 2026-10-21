@@ -33,6 +33,10 @@ import java.io.File
 internal object ManagedFilesArchive {
     private const val LEGACY_TABLE = "managed_files"
     private const val CAS_TABLE = "managed_files_cas"
+
+    /** 纯派生的搜索缓存表；兼容 ZIP 导出时删掉以缩小体积。 */
+    private const val SEARCH_CACHE_TABLE = "message_search_cache"
+
     private val ATTACHMENT_TYPES = setOf("image", "document", "video", "audio")
 
     /** 兼容 ZIP 里数据库声明的 schema 版本：上游 RikkaHub 当前版本（32 = SSH 工作区列）。 */
@@ -181,8 +185,8 @@ internal object ManagedFilesArchive {
      * 上游安装目录下的绝对路径。每份内容按 [filenameBySha] 落一份「基础」文件，消息使用记录各自
      * 按 `FileUsage.filename` 落盘（同一内容被多次使用时复制多份）。
      *
-     * 最后把快照声明成上游当前的 schema 版本（[LEGACY_SCHEMA_VERSION]）：改回旧表结构、写
-     * `user_version` 并删掉 `room_master_table`，让上游按自己的 schema 重新校验。
+     * 最后把快照声明成上游当前的 schema 版本（[LEGACY_SCHEMA_VERSION]）：改回旧表结构、删掉纯派生的
+     * `message_search_cache`、写 `user_version` 并删掉 `room_master_table`，让上游按自己的 schema 重新校验。
      */
     fun prepareLegacyExportDatabase(
         databaseFile: File,
@@ -241,6 +245,8 @@ internal object ManagedFilesArchive {
                     insertLegacyRow(database, entry, row)
                 }
                 database.execSQL("DROP TABLE IF EXISTS `$CAS_TABLE`")
+                // 搜索缓存是纯派生数据（可用消息 JSON 重建），旧版用不到，删掉以缩小兼容 ZIP
+                database.execSQL("DROP TABLE IF EXISTS `$SEARCH_CACHE_TABLE`")
                 // 让上游把这份快照当成它自己的 schema 版本重新校验
                 database.execSQL("PRAGMA user_version = $LEGACY_SCHEMA_VERSION")
                 database.execSQL("DROP TABLE IF EXISTS `room_master_table`")

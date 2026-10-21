@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import me.rerere.rikkahub.data.db.fts.dropLegacyMessageFts
 import me.rerere.rikkahub.data.db.fts.rebuildMessageSearchCache
 import me.rerere.rikkahub.data.db.migrations.Migration_100_101
 import me.rerere.rikkahub.data.db.migrations.Migration_101_102
@@ -11,7 +12,7 @@ import me.rerere.rikkahub.data.db.migrations.Migration_30_31
 import me.rerere.rikkahub.data.db.migrations.Migration_31_32
 import me.rerere.rikkahub.data.db.migrations.Migration_32_102
 
-/** Shared schema and extensions for the app and staged backup validation. */
+/** Shared schema and legacy cleanup for the app and staged backup validation. */
 internal object AppDatabaseFactory {
     /**
      * 构建数据库。[allowLegacyMigration] 为 false（App 自身）时不注册上游旧版本的迁移：
@@ -39,6 +40,10 @@ internal object AppDatabaseFactory {
                 override fun onOpen(db: SupportSQLiteDatabase) {
                     db.beginTransaction()
                     try {
+                        // 旧版 `message_fts`（simple 分词器）依赖已移除的 libsimple 扩展，
+                        // 留着会让备份校验的 integrity_check 失败，所以打开数据库时直接删掉；
+                        // 旧版的索引本来也要重建。
+                        dropLegacyMessageFts(db)
                         val cacheTableExists = db.query(
                             "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'message_search_cache'"
                         ).use { it.moveToFirst() }
@@ -98,37 +103,9 @@ internal object AppDatabaseFactory {
                             !hasAnyMessageAt &&
                             db.query("SELECT 1 FROM message_search_cache LIMIT 1").use { it.moveToFirst() }
 
-                        val legacyTableSql = db.query(
-                            "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'message_fts'"
-                        ).use { cursor ->
-                            if (cursor.moveToFirst()) cursor.getString(0) else null
-                        }
-                        val hasLegacyEntries = if (legacyTableSql != null) {
-                            db.query(
-                                "SELECT 1 FROM message_fts LIMIT 1"
-                            ).use { it.moveToFirst() }
-                        } else {
-                            false
-                        }
-
-                        if (legacyTableSql != null) db.execSQL("DROP TABLE message_fts")
-                        db.execSQL(
-                            """
-                            CREATE VIRTUAL TABLE message_fts USING fts5(
-                                text,
-                                node_id UNINDEXED,
-                                message_id UNINDEXED,
-                                conversation_id UNINDEXED,
-                                title UNINDEXED,
-                                update_at UNINDEXED,
-                                tokenize = 'simple'
-                            )
-                            """.trimIndent()
-                        )
-                        if (hasLegacyEntries ||
-                            (cacheTableExists && !cacheHasMessageAt) ||
-                            hasRowsWithoutMessageAt
-                        ) {
+                        // 缺缓存表（例如刚恢复的上游旧库存档）或缺 message_at 列时全量重建；
+                        // 旧表 `message_fts` 里的内容从不作为重建来源。
+                        if (!cacheHasMessageAt || hasRowsWithoutMessageAt) {
                             rebuildMessageSearchCache(db)
                         }
                         db.setTransactionSuccessful()
@@ -137,6 +114,6 @@ internal object AppDatabaseFactory {
                     }
                 }
             })
-            .openHelperFactory(SQLiteConfiguration.openHelperFactory(context))
+            .openHelperFactory(SQLiteConfiguration.openHelperFactory())
             .build()
 }

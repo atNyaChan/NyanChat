@@ -92,6 +92,12 @@ fun FileUsage.isMessageUsage(): Boolean =
 /** 设置类使用记录：助手头像/聊天背景、用户头像。 */
 fun FileUsage.isSettingsUsage(): Boolean = type in FileUsageType.SETTINGS_TYPES
 
+/**
+ * 计入“引用”的使用记录：消息附件与设置类（助手头像/聊天背景、用户头像）。
+ * 存储管理的统计与每个附件卡片上的引用数都用它，`none` 不计入。
+ */
+fun FileUsage.isReferenceUsage(): Boolean = isMessageUsage() || isSettingsUsage()
+
 /** 一组使用记录里时间最晚那条的展示名（临时附件提交成 CAS 时写到 `none` 记录上，输入框也从它读取）。 */
 fun List<FileUsage>.latestDisplayName(): String =
     maxByOrNull { it.createdAt }?.displayName.orEmpty()

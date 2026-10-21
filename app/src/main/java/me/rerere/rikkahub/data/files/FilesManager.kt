@@ -28,6 +28,7 @@ import me.rerere.rikkahub.data.db.entity.decodeUsages
 import me.rerere.rikkahub.data.db.entity.decodeUsagesOrNull
 import me.rerere.rikkahub.data.db.entity.encodeUsages
 import me.rerere.rikkahub.data.db.entity.isMessageUsage
+import me.rerere.rikkahub.data.db.entity.isReferenceUsage
 import me.rerere.rikkahub.data.db.entity.isSettingsUsage
 import me.rerere.rikkahub.data.db.entity.latestDisplayName
 import me.rerere.rikkahub.data.model.Avatar
@@ -909,7 +910,7 @@ class FilesManager(
             ?.filter { it.isFile && !AttachmentCas.isTemporary(it) }
             .orEmpty()
         val references = repository.listAllNow()
-            .sumOf { row -> row.decodeUsages().count { it.isMessageUsage() } }
+            .sumOf { row -> row.decodeUsages().count { it.isReferenceUsage() } }
         CasStorageStats(
             fileCount = files.size,
             referenceCount = references,
@@ -1239,6 +1240,10 @@ data class CasAttachment(
     val hasReferences: Boolean
         get() = usages.any { it.type != FileUsageType.NONE }
 
+    /** 引用数：消息附件与设置类（助手头像/背景、用户头像）使用记录的总数，与存储管理统计一致。 */
+    val usageCount: Int
+        get() = usages.count { it.isReferenceUsage() }
+
     /** 没有任何使用记录（只剩 `none`）。 */
     val isUnused: Boolean
         get() = !hasReferences
@@ -1268,7 +1273,7 @@ data class CasAttachment(
     val sha256Short: String get() = "${sha256.take(6)}...${sha256.takeLast(6)}"
 }
 
-/** “存储管理”统计: [fileCount] 为 `upload` 下的文件数, [referenceCount] 为消息使用记录数。 */
+/** “存储管理”统计: [fileCount] 为 `upload` 下的文件数, [referenceCount] 为消息与设置类使用记录数。 */
 data class CasStorageStats(
     val fileCount: Int,
     val referenceCount: Int,

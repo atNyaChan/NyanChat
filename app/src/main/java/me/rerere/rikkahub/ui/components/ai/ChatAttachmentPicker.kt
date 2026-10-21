@@ -17,7 +17,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.rerere.ai.ui.UIMessagePart
-import me.rerere.common.android.appTempFolder
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.files.FilesManager
@@ -26,7 +25,6 @@ import me.rerere.rikkahub.ui.components.ui.permission.PermissionManager
 import me.rerere.rikkahub.ui.components.ui.permission.rememberPermissionState
 import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.hooks.ChatInputState
-import me.rerere.rikkahub.utils.ImageUtils
 import me.rerere.rikkahub.utils.isAllowedFileType
 import me.rerere.ui.sketch.SketchDialog
 import me.rerere.ui.sketch.SketchResult
@@ -78,7 +76,7 @@ internal fun rememberChatAttachmentPickerActions(
 
     var cameraOutputUri by remember { mutableStateOf<Uri?>(null) }
     var cameraOutputFile by remember { mutableStateOf<File?>(null) }
-    val (_, launchCameraCrop) = useCropLauncher(
+    val launchCameraCrop = useCropLauncher(
         onCroppedImageReady = { croppedUri ->
             addUniqueAttachments(filesManager.createChatFilesByContents(listOf(croppedUri))) {
                 inputState.addImages(it)
@@ -124,46 +122,20 @@ internal fun rememberChatAttachmentPickerActions(
         }
     }
 
-    var preCropTempFile by remember { mutableStateOf<File?>(null) }
-    val (_, launchImageCrop) = useCropLauncher(
+    val launchImageCrop = useCropLauncher(
         onCroppedImageReady = { croppedUri ->
             addUniqueAttachments(filesManager.createChatFilesByContents(listOf(croppedUri))) {
                 inputState.addImages(it)
             }
             onAttachmentAdded()
         },
-        onCleanup = {
-            preCropTempFile?.delete()
-            preCropTempFile = null
-        }
     )
     val imagePickerLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { selectedUris ->
             if (selectedUris.isNotEmpty()) {
                 Log.d("ImagePickButton", "Selected URIs: $selectedUris")
-                if (setting.displaySetting.skipCropImage) {
-                    addUniqueAttachments(filesManager.createChatFilesByContents(selectedUris)) {
-                        inputState.addImages(it)
-                    }
-                    onAttachmentAdded()
-                } else if (selectedUris.size == 1) {
-                    val tempFile = File(context.appTempFolder, "pick_temp_${System.currentTimeMillis()}.jpg")
-                    runCatching {
-                        val source = selectedUris.first()
-                        // HEIF/HEIC（尤其 HDR HEIF）交给 UCrop 前先解码转为 JPEG，规避裁剪解码失败
-                        val converted = ImageUtils.isHeifImage(context, source) &&
-                            ImageUtils.convertHeifToJpeg(context, source, tempFile)
-                        if (!converted) {
-                            context.contentResolver.openInputStream(source)?.use { input ->
-                                tempFile.outputStream().use { output -> input.copyTo(output) }
-                            }
-                        }
-                        preCropTempFile = tempFile
-                        launchImageCrop(tempFile.toUri())
-                    }.onFailure {
-                        Log.e("ImagePickButton", "Failed to copy image to temp, falling back", it)
-                        launchImageCrop(selectedUris.first())
-                    }
+                if (!setting.displaySetting.skipCropImage && selectedUris.size == 1) {
+                    launchImageCrop(selectedUris.first())
                 } else {
                     addUniqueAttachments(filesManager.createChatFilesByContents(selectedUris)) {
                         inputState.addImages(it)

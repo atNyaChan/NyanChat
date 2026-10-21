@@ -3,8 +3,6 @@ package me.rerere.rikkahub.data.sync
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import io.requery.android.database.sqlite.SQLiteDatabase
-import io.requery.android.database.sqlite.SQLiteDatabaseConfiguration
-import me.rerere.rikkahub.data.db.SQLiteConfiguration
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -29,12 +27,9 @@ class DatabaseBackupTest {
     }
 
     private fun open(file: File): SQLiteDatabase = SQLiteDatabase.openDatabase(
-        SQLiteConfiguration.configure(
-            context,
-            SQLiteDatabaseConfiguration(file.path, SQLiteDatabase.CREATE_IF_NECESSARY)
-        ),
+        file.path,
         null,
-        null,
+        SQLiteDatabase.CREATE_IF_NECESSARY,
     )
 
     private fun createWalDatabase(file: File): SQLiteDatabase = open(file).apply {
@@ -50,18 +45,26 @@ class DatabaseBackupTest {
         val source = File(directory, "source")
         val snapshot = File(directory, "snapshot")
         createWalDatabase(source).use {
-            it.execSQL("CREATE VIRTUAL TABLE search USING fts5(text, tokenize='simple')")
+            it.execSQL("CREATE VIRTUAL TABLE search USING fts5(text, tokenize='unicode61')")
             it.execSQL("INSERT INTO search(text) VALUES ('hello backup')")
+            // 旧存档里遗留的 `message_fts`（真实存档用已移除的 `simple` 分词器建表，这里用
+            // 内置分词器模拟表结构）：备份校验前应被删掉。
+            it.execSQL("CREATE VIRTUAL TABLE message_fts USING fts5(text, tokenize='unicode61')")
+            it.execSQL("INSERT INTO message_fts(text) VALUES ('legacy index')")
             DatabaseBackup.createSnapshot(it, snapshot)
             // Subsequent writes must not appear in the already-created snapshot.
             it.execSQL("INSERT INTO messages(text) VALUES ('after snapshot')")
         }
         assertFalse(File(snapshot.path + "-wal").exists())
         assertFalse(File(snapshot.path + "-shm").exists())
-        DatabaseBackup.normalize(context, snapshot)
+        DatabaseBackup.normalize(snapshot)
         open(snapshot).use {
             assertEquals(1L, it.longForQuery("SELECT count(*) FROM messages", null))
             assertEquals(1L, it.longForQuery("SELECT count(*) FROM search WHERE search MATCH 'hello'", null))
+            assertEquals(
+                0L,
+                it.longForQuery("SELECT count(*) FROM sqlite_master WHERE name = 'message_fts'", null),
+            )
         }
     }
 
@@ -70,7 +73,7 @@ class DatabaseBackupTest {
         file.writeText("not a SQLite database")
         var failed = false
         try {
-            DatabaseBackup.normalize(context, file)
+            DatabaseBackup.normalize(file)
         } catch (_: Exception) {
             failed = true
         }

@@ -955,7 +955,7 @@ private fun FileItem(
                                 )
                                 // 一个附件被不止一处引用时, 在跳转键右上角标注引用次数:
                                 // 点击后不会直接跳转, 而是先弹出引用列表供选择
-                                val usageCount = attachment.references.size + attachment.settingsUsages.size
+                                val usageCount = attachment.usageCount
                                 if (usageCount > 1) {
                                     CountBadge(
                                         count = usageCount,

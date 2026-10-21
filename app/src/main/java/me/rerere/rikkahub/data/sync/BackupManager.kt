@@ -452,7 +452,7 @@ class BackupManager(
             // 旧文件名 -> sha256 的映射，仅旧库迁移时非空，用于改写设置里的附件 url
             var oldNameToSha: Map<String, String> = emptyMap()
             if (stagedDatabase.exists()) {
-                DatabaseBackup.normalize(context, stagedDatabase)
+                DatabaseBackup.normalize(stagedDatabase)
                 // 按存档数据库声明的 schema 版本决定是否迁移 upload：
                 // - 低于 30 的旧库不再支持，直接拒绝；
                 // - 旧库（30 ~ 99，上游 RikkaHub 为 30 / 31 / 32）里附件是 `uuid.ext` 文件名、登记在 `managed_files`，
