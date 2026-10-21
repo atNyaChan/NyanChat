@@ -15,9 +15,11 @@ import kotlinx.coroutines.withContext
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.files.FileUtils
-import me.rerere.rikkahub.data.skills.SkillFrontmatterParser
+import me.rerere.rikkahub.data.skills.InvalidSkillDir
 import me.rerere.rikkahub.data.skills.SkillManager
 import me.rerere.rikkahub.data.skills.SkillMetadata
+import me.rerere.rikkahub.data.skills.SkillValidationException
+import me.rerere.rikkahub.data.skills.SkillValidator
 import org.json.JSONArray
 import java.io.ByteArrayInputStream
 import java.net.HttpURLConnection
@@ -34,6 +36,9 @@ class SkillsVM(
     private val _skills = MutableStateFlow<List<SkillMetadata>>(emptyList())
     val skills = _skills.asStateFlow()
 
+    private val _invalidSkillDirs = MutableStateFlow<List<InvalidSkillDir>>(emptyList())
+    val invalidSkillDirs = _invalidSkillDirs.asStateFlow()
+
     init {
         refreshSkills()
         viewModelScope.launch {
@@ -48,7 +53,19 @@ class SkillsVM(
 
     fun refreshSkills() {
         viewModelScope.launch(Dispatchers.IO) {
-            _skills.value = sortSkills(skillManager.listSkills())
+            refreshSkillsInBackground()
+        }
+    }
+
+    private fun refreshSkillsInBackground() {
+        _skills.value = sortSkills(skillManager.listSkills())
+        _invalidSkillDirs.value = skillManager.listInvalidSkillDirs()
+    }
+
+    fun deleteInvalidSkillDir(dirName: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            skillManager.deleteInvalidSkillDir(dirName)
+            refreshSkillsInBackground()
         }
     }
 
@@ -71,7 +88,7 @@ class SkillsVM(
     fun saveSkill(name: String, content: String, onResult: (Boolean) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             val result = skillManager.saveSkill(name, content)
-            _skills.value = sortSkills(skillManager.listSkills())
+            refreshSkillsInBackground()
             withContext(Dispatchers.Main) {
                 onResult(result != null)
             }
@@ -99,7 +116,7 @@ class SkillsVM(
                     importSkillMarkdown(bytes)
                 }
 
-                _skills.value = sortSkills(skillManager.listSkills())
+                refreshSkillsInBackground()
                 withContext(Dispatchers.Main) {
                     onResult(true, importedNames.joinToString())
                 }
@@ -148,12 +165,8 @@ class SkillsVM(
                     return@launch
                 }
 
-                val frontmatter = SkillFrontmatterParser.parse(skillMdBytes.toString(Charsets.UTF_8))
-                val name = frontmatter["name"]
-                if (name.isNullOrBlank()) {
-                    withContext(
-                        Dispatchers.Main
-                    ) { onResult(false, context.getString(R.string.error_skill_missing_name)) }
+                val name = SkillValidator.validate(skillMdBytes.toString(Charsets.UTF_8)).getOrElse {
+                    withContext(Dispatchers.Main) { onResult(false, invalidFormatMessage("SKILL.md", it)) }
                     return@launch
                 }
 
@@ -178,7 +191,7 @@ class SkillsVM(
                     return@launch
                 }
 
-                _skills.value = sortSkills(skillManager.listSkills())
+                refreshSkillsInBackground()
                 withContext(Dispatchers.Main) { onResult(true, name) }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -192,16 +205,16 @@ class SkillsVM(
         }
     }
 
+    private fun invalidFormatMessage(path: String, error: Throwable): String {
+        val reason = (error as? SkillValidationException)?.error
+            ?.let { context.getString(it.messageRes, *it.formatArgs) }
+            ?: error.message.orEmpty()
+        return context.getString(R.string.skills_page_import_error_invalid_format, path, reason)
+    }
+
     private fun importSkillMarkdown(bytes: ByteArray): List<String> {
         val content = bytes.toString(Charsets.UTF_8)
-        val frontmatter = SkillFrontmatterParser.parse(content)
-        val name = frontmatter["name"]?.trim()
-        if (name.isNullOrBlank()) {
-            error(context.getString(R.string.error_skill_missing_name))
-        }
-        if (frontmatter["description"].isNullOrBlank()) {
-            error(context.getString(R.string.error_skill_missing_description))
-        }
+        val name = SkillValidator.validate(content).getOrElse { error(invalidFormatMessage("SKILL.md", it)) }
         val saved =
             skillManager.saveSkill(name, content) ?: error(context.getString(R.string.error_skill_save_check_format))
         return listOf(saved.name)
@@ -239,13 +252,8 @@ class SkillsVM(
         for (skillMdPath in skillMdPaths) {
             val skillContent = files[skillMdPath]?.toString(Charsets.UTF_8)
                 ?: error(context.getString(R.string.error_skill_read_failed, skillMdPath))
-            val frontmatter = SkillFrontmatterParser.parse(skillContent)
-            val name = frontmatter["name"]?.trim()
-            if (name.isNullOrBlank()) {
-                error(context.getString(R.string.error_skill_path_missing_name, skillMdPath))
-            }
-            if (frontmatter["description"].isNullOrBlank()) {
-                error(context.getString(R.string.error_skill_path_missing_description, skillMdPath))
+            val name = SkillValidator.validate(skillContent).getOrElse {
+                error(invalidFormatMessage(skillMdPath, it))
             }
 
             val basePath = skillMdPath.substringBeforeLast('/', missingDelimiterValue = "")

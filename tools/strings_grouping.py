@@ -21,8 +21,8 @@ existing feature simply belongs in that feature's section. New keys must never
 be appended to the end of the file.
 
 Usage (from the repository root):
-    python3 scripts/strings_grouping.py check
-    python3 scripts/strings_grouping.py reorder
+    python3 tools/strings_grouping.py check
+    python3 tools/strings_grouping.py reorder
 """
 
 from __future__ import annotations
@@ -296,7 +296,7 @@ def compute_layout(entries: dict[str, str]) -> list[tuple[str, str]]:
     unmatched = [k for k in entries if k not in assigned]
     if unmatched:
         raise SystemExit(
-            "Keys not covered by any section in scripts/strings_grouping.py:\n  "
+            "Keys not covered by any section in tools/strings_grouping.py:\n  "
             + "\n  ".join(sorted(unmatched))
             + "\nAdd a matching section (or pattern) to GROUPS."
         )
@@ -339,7 +339,7 @@ def check() -> int:
     _, english_order, english_comments = parse(read(os.path.join(RES_DIR, ENGLISH)))
     if english_comments != expected_comments:
         problems.append(
-            "English section comments differ from scripts/strings_grouping.py:\n"
+            "English section comments differ from tools/strings_grouping.py:\n"
             f"  file : {english_comments}\n  script: {expected_comments}"
         )
     if english_order != expected_order:

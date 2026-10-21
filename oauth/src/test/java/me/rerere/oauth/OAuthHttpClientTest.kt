@@ -1,5 +1,6 @@
 package me.rerere.oauth
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.currentTime
@@ -58,8 +59,9 @@ class OAuthHttpClientTest {
             )
         )
 
-        assertEquals("application/x-www-form-urlencoded", request!!.body!!.contentType().toString())
-        assertEquals("grant_type=refresh_token&refresh_token=refresh&client_id=client", request!!.bodyString())
+        val capturedRequest = requireNotNull(request)
+        assertEquals("application/x-www-form-urlencoded", capturedRequest.body!!.contentType().toString())
+        assertEquals("grant_type=refresh_token&refresh_token=refresh&client_id=client", capturedRequest.bodyString())
     }
 
     @Test
@@ -74,9 +76,10 @@ class OAuthHttpClientTest {
             )
         )
 
-        assertEquals("application", request!!.body!!.contentType()!!.type)
-        assertEquals("json", request!!.body!!.contentType()!!.subtype)
-        val body = Json.parseToJsonElement(request!!.bodyString()).jsonObject
+        val capturedRequest = requireNotNull(request)
+        assertEquals("application", capturedRequest.body!!.contentType()!!.type)
+        assertEquals("json", capturedRequest.body!!.contentType()!!.subtype)
+        val body = Json.parseToJsonElement(capturedRequest.bodyString()).jsonObject
         assertEquals("refresh_token", body["grant_type"]!!.jsonPrimitive.content)
         assertEquals("refresh", body["refresh_token"]!!.jsonPrimitive.content)
         assertEquals("client", body["client_id"]!!.jsonPrimitive.content)
@@ -153,6 +156,7 @@ class OAuthHttpClientTest {
         deviceCode = "device",
     )
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `device token polls until authorization completes and slows down on request`() = runTest {
         val requests = mutableListOf<Request>()
