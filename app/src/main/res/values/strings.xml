@@ -1269,6 +1269,7 @@
   <string name="setting_provider_page_models_format">Models (%1$d)</string>
   <string name="setting_provider_page_name">Name</string>
   <string name="setting_provider_page_no_models">No models</string>
+  <string name="setting_provider_page_no_permission">No permission</string>
   <string name="setting_provider_page_no_qr_found">No valid QR code found</string>
   <string name="setting_provider_page_output_modality">Output Modality</string>
   <string name="setting_provider_page_output_price">Output price</string>

@@ -2,6 +2,7 @@ package com.termux.terminal;
 
 import android.annotation.SuppressLint;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 
 import java.io.IOException;
@@ -339,6 +340,12 @@ public final class TerminalSession extends TerminalOutput {
     class MainThreadHandler extends Handler {
 
         final byte[] mReceiveBuffer = new byte[4 * 1024];
+
+        MainThreadHandler() {
+            // All terminal callbacks must run on the main thread, which is also what the deprecated no-arg
+            // Handler() constructor resolved to when the session was created there.
+            super(Looper.getMainLooper());
+        }
 
         @Override
         public void handleMessage(Message msg) {

@@ -1269,6 +1269,7 @@
   <string name="setting_provider_page_models_format">モデル（%1$d）</string>
   <string name="setting_provider_page_name">名前</string>
   <string name="setting_provider_page_no_models">モデルがありません</string>
+  <string name="setting_provider_page_no_permission">権限がありません</string>
   <string name="setting_provider_page_no_qr_found">有効なQRコードが見つかりません</string>
   <string name="setting_provider_page_output_modality">出力モダリティ</string>
   <string name="setting_provider_page_output_price">出力料金</string>

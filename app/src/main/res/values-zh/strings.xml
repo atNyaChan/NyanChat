@@ -1269,6 +1269,7 @@
   <string name="setting_provider_page_models_format">模型（%1$d）</string>
   <string name="setting_provider_page_name">名称</string>
   <string name="setting_provider_page_no_models">暂无模型</string>
+  <string name="setting_provider_page_no_permission">没有权限</string>
   <string name="setting_provider_page_no_qr_found">未找到有效的二维码</string>
   <string name="setting_provider_page_output_modality">输出模态</string>
   <string name="setting_provider_page_output_price">输出价格</string>

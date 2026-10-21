@@ -447,7 +447,6 @@
 - 模型高级设置的“提供商重写”配置底部抽屉改用与“编辑模型提供商”抽屉“配置”页一致的样式，但不含自定义 Header 与额度查询；账号类提供商不提供“提供商重写”。
 - “请求设定”里 Body 值的 JSON 输入框在无解析错误时不再预留 supporting text 占位，使其下边缘到“添加 Body”按钮的间距与 Header 一致；Header 与 Body 各列表项之间的纵向间隔由 8dp 收窄到 4dp。
 - 提供商编辑抽屉在“模型”列表上方新增“自定义 Header”区，复用模型请求设定的自定义 Header 编辑组件（请求头名称输入框提供常用请求头下拉候选）；提供商级请求头优先级最低，会被助手/模型级同名请求头覆盖，并随对话、嵌入、图像、模型列表与额度查询请求一同发送。
-- 提供商导入的扫码入口改为应用内自实现的 CameraX + `zxing-core` 全屏扫码对话框（`QrCodeScannerDialog`）。
 - 添加提供商后的提供商只是草稿，不写入设置：点击“添加”才真正新增，点击“取消”或直接关闭抽屉则不新增；草稿状态的抽屉同时禁用删除按钮。
 
 ### 备份与恢复
@@ -615,7 +614,7 @@
 ## 原版 RikkaHub 相关
 - 应用图标改为由黑白猫脸原图描摹出的矢量资源，同时复用为 Android 主题单色图标、通知图标、默认用户及助手头像、Web 界面 Logo 和聊天图片导出水印。README 使用带柔和投影的白色圆形底板 SVG 版本，使圆形边界在浅色和深色背景下均自然可见，并移除原有 PNG 及兔子图标资源。
 - Release 构建改用 `local.properties` 配置的仓库根目录 `.signing` 发布证书，不再使用 Android Debug 证书；发布身份为 `NyanChat Release`。
-- 发布渠道保持仅 GitHub（Release APK 与每日构建），不引入上游按 `distribution` flavor 区分的 `play` 渠道；构建任务与产物路径仍使用不带渠道的 `assembleRelease` / `bundleRelease`。
+- 发布渠道保持仅 GitHub（Release APK 与每日构建），不引入上游按 `distribution` flavor 区分的 `play` 渠道；构建任务与产物路径仍使用不带渠道的 `assembleRelease` / `bundleRelease`，混淆映射对应为 `app/build/outputs/mapping/release/mapping.txt`。
 - 应用自身的显示名称统一改为 `NyanChat`，包括 Android 应用名、Web 服务、导出图片水印及对外客户端标识，独立的 `RikkaHub` 搜索服务保留原名。deep link scheme 由 `rikkahub` 改为 `nyanchat`。
 - 应用包名改为 `moe.nyanw.nyanchat`，版本字符串自动取构建日期与上游版本号拼接为 `{yyyyMMdd}+{上游版本}`（如 `20261021+3.1.0`）。
 - 完整移除应用内的自动更新以及捐赠功能，以及启动次数达到阈值后自动弹出的捐赠提醒。
@@ -682,8 +681,5 @@
 - 移除未使用的 Google Sans Flex 字体。
 - 删除未使用的反编译工具二进制 `gradle/vineflower.jar`。
 - 删除未被任何代码引用的 `app/src/main/assets/html/mark.html` 及其加载函数 `buildMarkdownPreviewHtml()`（`MarkdownWeb.kt`），该模板内部从 CDN 加载 mermaid 10.6.1。
-- `web-ui/copy.ts` 拷贝前端产物时跳过 KaTeX 的 `.woff`/`.ttf` 兜底字体，仅保留 `.woff2`。
-- 在 `androidResources` 中新增 `localeFilters`（en/ar/ja/ko-rKR/ru/zh/zh-rTW），只保留应用实际支持的语言，避免把依赖库的近百种翻译打进未压缩的 `resources.arsc`。
-- web-ui 的 Shiki 高亮不再从 `shiki` 完整入口导入；`code-block.tsx` 改用 `shiki/core` 并只显式引入 catppuccin-latte/mocha 两个主题，从而避免把上游全部 65 个主题 chunk 打进前端产物。
 - web-ui 工作台预览 mermaid 的 CDN 地址由 `https://esm.sh/mermaid@11` 固定为 `https://esm.sh/mermaid@11.16.0`，与 Android 端内置的 `app/src/main/assets/html/mermaid.min.js`（11.16.0）版本统一。
 - 收藏列表的侧滑删除改用 Material 3 的 `SwipeToDismissBox(onDismiss = ...)` 回调（基于 `settledValue`，仅在真正划出落定时触发，替代已弃用的 `confirmValueChange`），并在触发删除后用 `snapTo(Settled)` 立即把状态收回未滑出位置。

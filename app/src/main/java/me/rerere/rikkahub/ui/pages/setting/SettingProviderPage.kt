@@ -66,7 +66,7 @@ import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
 import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
-import me.rerere.rikkahub.ui.components.ui.QrCodeScannerDialog
+import me.rerere.rikkahub.ui.components.ui.QRCodeScannerDialog
 import me.rerere.rikkahub.ui.components.ui.Tag
 import me.rerere.rikkahub.ui.components.ui.TagType
 import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
@@ -328,31 +328,27 @@ private fun ImportProviderButton(
     }
 
     if (showScanner) {
-        QrCodeScannerDialog(
-            onDismiss = { showScanner = false },
-            onScanned = { content ->
+        QRCodeScannerDialog(
+            onResult = { content ->
                 showScanner = false
-                handleScannedContent(content, onAdd, toaster, context)
-            }
+                handleScannedQRCode(content, onAdd, toaster, context)
+            },
+            onPermissionDenied = {
+                showScanner = false
+                toaster.show(context.getString(R.string.setting_provider_page_no_permission), type = ToastType.Error)
+            },
+            onDismissRequest = { showScanner = false },
         )
     }
 }
 
-private fun handleScannedContent(
+private fun handleScannedQRCode(
     content: String,
     onAdd: (ProviderSetting) -> Unit,
     toaster: me.rerere.rikkahub.ui.context.SystemToaster,
     context: android.content.Context
 ) {
     runCatching {
-        if (content.isBlank()) {
-            toaster.show(
-                context.getString(R.string.setting_provider_page_no_qr_found),
-                type = ToastType.Error
-            )
-            return
-        }
-
         val setting = decodeProviderSetting(content)
         onAdd(setting)
         toaster.show(

@@ -1269,6 +1269,7 @@
   <string name="setting_provider_page_models_format">Модели (%1$d)</string>
   <string name="setting_provider_page_name">Имя</string>
   <string name="setting_provider_page_no_models">Нет моделей</string>
+  <string name="setting_provider_page_no_permission">Нет разрешения</string>
   <string name="setting_provider_page_no_qr_found">Не найдено действительного QR-кода</string>
   <string name="setting_provider_page_output_modality">Формат вывода</string>
   <string name="setting_provider_page_output_price">Цена вывода</string>

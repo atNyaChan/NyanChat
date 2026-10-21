@@ -1269,6 +1269,7 @@
   <string name="setting_provider_page_models_format">النماذج (%1$d)</string>
   <string name="setting_provider_page_name">الاسم</string>
   <string name="setting_provider_page_no_models">لا توجد نماذج</string>
+  <string name="setting_provider_page_no_permission">لا توجد صلاحية</string>
   <string name="setting_provider_page_no_qr_found">لم يتم العثور على رمز QR صالح</string>
   <string name="setting_provider_page_output_modality">وسائط الإخراج</string>
   <string name="setting_provider_page_output_price">سعر الإخراج</string>
