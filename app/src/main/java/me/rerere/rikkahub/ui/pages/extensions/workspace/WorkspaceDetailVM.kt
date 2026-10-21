@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +25,7 @@ import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.workspace.RootfsInstallProgress
 import me.rerere.workspace.RootfsInstallStage
 import me.rerere.workspace.WorkspaceFileEntry
+import me.rerere.workspace.WorkspaceLayout
 import me.rerere.workspace.WorkspaceStorageArea
 
 class WorkspaceDetailVM(
@@ -157,18 +159,23 @@ class WorkspaceDetailVM(
         refresh()
     }
 
+    private var refreshJob: Job? = null
+
     fun refresh() {
-        viewModelScope.launch {
+        // 远程工作区列目录要走网络, 快速切换目录时旧请求可能晚到, 只保留最新一次
+        refreshJob?.cancel()
+        refreshJob = viewModelScope.launch {
             _state.update { it.copy(loading = true, error = null) }
-            runCatching {
-                repository.listFiles(
+            try {
+                val entries = repository.listFiles(
                     id = id,
                     area = state.value.area,
                     path = state.value.path,
                 )
-            }.onSuccess { entries ->
                 _state.update { it.copy(entries = entries, loading = false) }
-            }.onFailure { error ->
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
                 _state.update {
                     it.copy(
                         entries = emptyList(),
@@ -268,7 +275,7 @@ class WorkspaceDetailVM(
     suspend fun resolveImageFile(
         entry: WorkspaceFileEntry,
         area: WorkspaceStorageArea,
-    ): File = repository.resolveFile(id, area, entry.path)
+    ): File? = repository.resolveFile(id, area, entry.path)
 
     fun exportRootfsArchive(
         outputStream: OutputStream,
@@ -397,6 +404,7 @@ class WorkspaceDetailVM(
 
 data class WorkspaceDetailState(
     val workspace: WorkspaceEntity? = null,
+    val layout: WorkspaceLayout? = null,
     val workspaceHasContent: Boolean = false,
     val area: WorkspaceStorageArea = WorkspaceStorageArea.FILES,
     val path: String = "",

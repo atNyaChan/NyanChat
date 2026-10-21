@@ -37,7 +37,9 @@ of adding per-screen variants.
   padding that means 16dp at the bottom, never half of it (the stats page's `LazyColumn` follows this).
 - **Bottom sheets**: always use `BottomSheetDefaults.DragHandle()` with drag-to-dismiss, wrap the
   content height up to 95% of the available height, and use top padding 0dp / bottom 8dp (plus the
-  navigation-bar inset). Fixed bottom button rows keep 8dp above and 8dp below, and use
+  navigation-bar inset). When the sheet contains a `CardGroup`, prefer equal spacing over the uniform
+  bottom gap: the gap below the `CardGroup` matches the left/right inset (e.g. 16dp when the sheet
+  uses 16dp horizontal padding). Fixed bottom button rows keep 8dp above and 8dp below, and use
   "Cancel / Confirm" via `common_confirm_action`. Titles are horizontally centered and use
   `MaterialTheme.typography.headlineSmall`, through the shared `BottomSheetTitle`
   (app/src/main/java/me/rerere/rikkahub/ui/components/ui/SheetContent.kt).
@@ -137,7 +139,7 @@ as an ordinary folder, and never invent a uuid/filename-keyed path for an attach
   (`FilesManager.syncManagedFiles`) or backup must skip `AttachmentCas.isTemporary` files so a
   half-written temp file never leaks into the UI, stats or an archive.
 - **Backup/restore is CAS-aware.** Archives declare a schema version; only pre-`CAS_SCHEMA_VERSION`
-  (100) archives at or above `MIN_SUPPORTED_SCHEMA_VERSION` (30 / 31, the upstream schema versions) are migrated
+  (100) archives at or above `MIN_SUPPORTED_SCHEMA_VERSION` (30 / 31 / 32, the upstream schema versions) are migrated
   (`ManagedFilesArchive.normalizeUploadDir` renames `upload` to sha256 and `convertLegacyDatabase`
   converts the old `managed_files` table); older archives are rejected. Never
   re-normalize an archive that is already CAS, and never copy upstream files over our CAS layout.
@@ -161,6 +163,34 @@ toolchain declarations and CI; `compileSdk` 37.2 (Android SDK Platform 37) and `
 from the `rikkahub.android.library` / `rikkahub.android.library.compose` convention plugins in the
 `build-logic` included build; app-level keep rules live in `app/src/main/keepRules/rikkahub.keep`.
 Do not raise `minSdk` or change the Java/Kotlin target per module.
+
+## Database Schema and Backup Compatibility
+
+The fork's `AppDatabase` version and upstream RikkaHub's schema version are independent: the fork is
+currently at `102`, upstream is at `32`. Both must be kept in sync when a new schema lands.
+
+When adding a new schema version (fork target `N`, matching upstream version `U`):
+
+1. Bump `AppDatabase.version` to `N` and let Room export the new schema JSON.
+2. Add `Migration(previousForkVersion, N)` for the fork's own databases (for example `101 -> 102`).
+3. Add `Migration(previousUpstreamVersion, U)` for upstream archives (for example `31 -> 32`).
+4. Add `Migration(U, N)` bridging the upstream schema to the fork schema (for example `32 -> 102`).
+   Keep it idempotent: legacy archives may already have been partially converted by
+   `ManagedFilesArchive` before Room runs. Attachment URL rewrites and `upload` renames stay in
+   `ManagedFilesArchive.convertLegacyDatabase`, never in a SQL-only migration.
+5. Register fork migrations (`100 -> 101`, `101 -> 102`, ...) unconditionally in `AppDatabaseFactory`;
+   register the upstream chain (`30 -> 31`, `31 -> 32`, `32 -> N`) only under `allowLegacyMigration`,
+   so the app itself still refuses to open an old upstream database in place.
+6. Update `ManagedFilesArchive.LEGACY_SCHEMA_VERSION` to `U`: the compatible ZIP export must declare
+   the same schema version upstream writes. Export converts `managed_files_cas` back to
+   `managed_files`, writes `PRAGMA user_version = U`, and drops `room_master_table`.
+7. Update the migration-chain comments in `AppDatabase`, `AppDatabaseFactory`,
+   `ManagedFilesArchive`, `BackupManager`, and `docs/NyanwChanges.md`.
+
+Example — adding upstream `32` to the fork at `102` requires `LEGACY_SCHEMA_VERSION = 32` plus the
+`31 -> 32`, `32 -> 102`, and `101 -> 102` migrations. Upstream restore chains are
+`30 -> 31 -> 32 -> 102` (or `31 -> 32 -> 102` / `32 -> 102`), while the fork's own databases use
+`100 -> 101 -> 102`.
 
 ## Agent Change Workflow
 
@@ -227,7 +257,13 @@ to port safely in one session, STOP and ask the user before starting.
 - **speech**: Speech module for TTS and ASR implementations
 - **web**: Embedded web server module that provides Ktor server startup function and hosts static frontend build files (
   built from web-ui/ React project)
-- **workspace**: Sandboxed per-workspace file system and shell execution environment exposed to the AI as tools.
+- **workspace**: Per-workspace file system and shell execution environment exposed to the AI as tools. A `WorkspaceBackend`
+  abstracts local PRoot Rootfs (`LocalWorkspaceBackend`) and remote SSH hosts (`SshWorkspaceBackend`); `WorkspaceEntity.type`
+  declares capabilities (rootfs/terminal/localFiles/fileWriteTools).
+- **terminal**: Terminal emulator core taken from termux-app's `terminal-emulator` (package `com.termux.terminal`, kept
+  binary compatible with the `terminal-view` aar). `TerminalSession` runs over a `TerminalTransport`: local PRoot
+  terminals use `LocalPtyTransport`, SSH workspaces use the app's `SshTerminalTransport`. Origin and local changes are
+  listed in terminal/README.md.
 - **mediagen**: Media (image/video) generation SDK with a provider abstraction and built-in providers.
 - **oauth**: OAuth 2.0 authorization helpers (loopback callback server, callback foreground service) used by providers.
 - **build-logic**: Included Gradle build that supplies the shared `rikkahub.android.library` and

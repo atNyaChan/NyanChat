@@ -3,6 +3,7 @@ package me.rerere.rikkahub.ui.pages.extensions.workspace
 import android.content.Context
 import android.util.Log
 import com.termux.terminal.TerminalSession
+import com.termux.terminal.TerminalTransport
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +18,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.rerere.rikkahub.AppScope
+import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
+import me.rerere.rikkahub.data.repository.WorkspaceRepository
+import me.rerere.workspace.WorkspaceManager
 import java.util.concurrent.atomic.AtomicLong
 
 /**
@@ -29,6 +33,8 @@ import java.util.concurrent.atomic.AtomicLong
 class WorkspaceTerminalSessionManager internal constructor(
     context: Context,
     private val appScope: AppScope,
+    private val workspaceManager: WorkspaceManager,
+    private val workspaceRepository: WorkspaceRepository,
 ) {
     private val appContext = context.applicationContext
     private val workspaceStates = MutableStateFlow<Map<String, WorkspaceTerminalTabsState>>(emptyMap())
@@ -40,12 +46,12 @@ class WorkspaceTerminalSessionManager internal constructor(
             .map { states -> states[root] ?: WorkspaceTerminalTabsState() }
             .distinctUntilChanged()
 
-    internal fun ensureSession(root: String, initialCwd: String, shellCompatibilityMode: Boolean) {
-        launchCreateTab(root = root, initialCwd = initialCwd, onlyIfEmpty = true, shellCompatibilityMode = shellCompatibilityMode)
+    internal fun ensureSession(workspace: WorkspaceEntity, initialCwd: String) {
+        launchCreateTab(workspace = workspace, initialCwd = initialCwd, onlyIfEmpty = true)
     }
 
-    internal fun createTab(root: String, initialCwd: String, shellCompatibilityMode: Boolean) {
-        launchCreateTab(root = root, initialCwd = initialCwd, onlyIfEmpty = false, shellCompatibilityMode = shellCompatibilityMode)
+    internal fun createTab(workspace: WorkspaceEntity, initialCwd: String) {
+        launchCreateTab(workspace = workspace, initialCwd = initialCwd, onlyIfEmpty = false)
     }
 
     internal fun selectTab(root: String, tabId: Long) {
@@ -98,13 +104,14 @@ class WorkspaceTerminalSessionManager internal constructor(
         }
     }
 
-    private fun launchCreateTab(root: String, initialCwd: String, onlyIfEmpty: Boolean, shellCompatibilityMode: Boolean) {
+    private fun launchCreateTab(workspace: WorkspaceEntity, initialCwd: String, onlyIfEmpty: Boolean) {
+        val root = workspace.root
         if (root in creationJobs) return
 
         lateinit var job: Job
         job = appScope.launch(start = CoroutineStart.LAZY) {
             try {
-                createTab(root = root, initialCwd = initialCwd, onlyIfEmpty = onlyIfEmpty, shellCompatibilityMode = shellCompatibilityMode)
+                createTab(workspace = workspace, initialCwd = initialCwd, onlyIfEmpty = onlyIfEmpty)
             } finally {
                 creationJobs.remove(root, job)
             }
@@ -113,22 +120,29 @@ class WorkspaceTerminalSessionManager internal constructor(
         job.start()
     }
 
-    private suspend fun createTab(root: String, initialCwd: String, onlyIfEmpty: Boolean, shellCompatibilityMode: Boolean) = withContext(Dispatchers.Main.immediate) {
+    private suspend fun createTab(
+        workspace: WorkspaceEntity,
+        initialCwd: String,
+        onlyIfEmpty: Boolean,
+    ) = withContext(Dispatchers.Main.immediate) {
+        val root = workspace.root
         val initialState = currentState(root)
         if (initialState.isCreating || (onlyIfEmpty && initialState.tabs.isNotEmpty())) {
             return@withContext
         }
         updateState(root) { it.copy(isCreating = true) }
 
-        val prepared = if (initialState.readiness == WorkspaceTerminalReadiness.Ready) {
+        // 不在本机 Rootfs 里运行的终端 (如远程) 无需准备, 连接在会话启动时建立
+        val prepared = if (!workspace.capabilities().rootfs ||
+            initialState.readiness == WorkspaceTerminalReadiness.Ready) {
             true
         } else {
             try {
                 withContext(Dispatchers.IO) {
-                    if (!workspaceRootfsReady(appContext, root)) {
+                    if (!workspaceManager.hasRootfs(root)) {
                         false
                     } else {
-                        prepareWorkspaceTerminalSession(appContext, root)
+                        workspaceManager.prepareTerminal(root, appContext.activeDnsServers())
                         true
                     }
                 }
@@ -159,11 +173,9 @@ class WorkspaceTerminalSessionManager internal constructor(
         )
         val session = runCatching {
             createWorkspaceTerminalSession(
-                context = appContext,
+                transport = terminalTransport(workspace, initialCwd),
                 root = root,
-                initialCwd = initialCwd,
                 client = client,
-                shellCompatibilityMode = shellCompatibilityMode,
             )
         }.onFailure { error ->
             Log.e(TAG, "Failed to create terminal for workspace $root", error)
@@ -190,6 +202,17 @@ class WorkspaceTerminalSessionManager internal constructor(
             )
         }
     }
+
+    private fun terminalTransport(workspace: WorkspaceEntity, initialCwd: String): TerminalTransport =
+        if (workspace.isSsh()) {
+            val settings = workspace.sshSettings() ?: error("SSH workspace config is missing: ${workspace.id}")
+            SshTerminalTransport(address = "${settings.username}@${settings.host}:${settings.port}") { columns, rows ->
+                workspaceRepository.openSshShell(workspace, columns, rows, initialCwd)
+            }
+        } else {
+            workspaceManager.terminalLaunch(workspace.root, workspace.shellCompatibilityMode, initialCwd)?.toTransport()
+                ?: error("Interactive terminal is not supported")
+        }
 
     private fun updateTitle(root: String, tabId: Long, title: String?) {
         val normalizedTitle = title?.trim()?.takeIf { it.isNotEmpty() }

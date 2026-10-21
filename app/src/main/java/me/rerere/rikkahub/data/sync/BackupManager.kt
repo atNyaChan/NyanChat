@@ -312,8 +312,9 @@ class BackupManager(
         tar.putArchiveEntry(TarArchiveEntry(WORKSPACES_ENTRY))
         tar.closeArchiveEntry()
         workspaceRepository.list()
-            // 导出工作区时永远包含所有非空工作区, 不因 shell 被禁用而跳过
-            .filter { workspaceRepository.workspaceHasContent(it.id) }
+            // 导出工作区时永远包含所有非空工作区, 不因 shell 被禁用而跳过;
+            // 远程工作区的文件不在本机, 没有可以导出的内容
+            .filter { it.capabilities().rootfs && workspaceRepository.workspaceHasContent(it.id) }
             .forEach { workspace ->
                 val archive = File.createTempFile("workspace_", ".tar.zst", context.cacheDir)
                 try {
@@ -454,7 +455,7 @@ class BackupManager(
                 DatabaseBackup.normalize(context, stagedDatabase)
                 // 按存档数据库声明的 schema 版本决定是否迁移 upload：
                 // - 低于 30 的旧库不再支持，直接拒绝；
-                // - 旧库（30 ~ 99，上游 RikkaHub 为 30 / 31）里附件是 `uuid.ext` 文件名、登记在 `managed_files`，
+                // - 旧库（30 ~ 99，上游 RikkaHub 为 30 / 31 / 32）里附件是 `uuid.ext` 文件名、登记在 `managed_files`，
                 //   先按内容统一命名成 `upload/<sha256>`（全部重新算哈希），再把旧表转成 `managed_files_cas`；
                 // - 已是 CAS schema（100）的库存的文件名与 `managed_files_cas` 一一对应，完全不动 `upload`。
                 val schemaVersion = ManagedFilesArchive.readSchemaVersion(stagedDatabase)
@@ -472,7 +473,7 @@ class BackupManager(
                     ManagedFilesArchive.convertLegacyDatabase(stagedDatabase, json, oldNameToSha, filesRoot)
                 }
                 // Reject unsupported schemas before publishing; run supported old migrations on the copy.
-                // 恢复存档时才允许 30 -> 31 -> 100 的旧库迁移（App 自身读到 30 / 31 会直接报错）。
+                // 恢复存档时才允许上游旧库迁移（App 自身读到 30 / 31 / 32 会直接报错）。
                 val room = AppDatabaseFactory.create(
                     context,
                     stagedDatabase.absolutePath,

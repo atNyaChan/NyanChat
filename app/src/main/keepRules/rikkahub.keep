@@ -39,3 +39,13 @@
 
 # zstd-jni resolves its native methods and fields by their original names.
 -keep class com.github.luben.zstd.** { *; }
+
+# JSch loads its cipher, key exchange and compression implementations by class name from its config.
+-keep class com.jcraft.jsch.** { *; }
+
+# JSch's optional integrations (ssh-agent via JNA / junixsocket, logging bridges, GSSAPI) are unused on Android.
+-dontwarn com.sun.jna.**
+-dontwarn org.newsclub.net.unix.**
+-dontwarn org.slf4j.**
+-dontwarn org.apache.logging.log4j.**
+-dontwarn org.ietf.jgss.**

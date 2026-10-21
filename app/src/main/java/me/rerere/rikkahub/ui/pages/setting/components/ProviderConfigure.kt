@@ -594,15 +594,16 @@ private fun ProviderConfigureAccount(
     val credential = provider.credential
 
     CardGroup {
-        FormItem(
-            label = { Text(stringResource(R.string.setting_provider_page_name)) },
-        ) {
+        item(headlineContent = {
             OutlinedTextField(
                 value = provider.name,
                 onValueChange = { onEdit(provider.copyProvider(name = it)) },
                 modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.setting_provider_page_name)) },
+                textStyle = MaterialTheme.typography.bodyLarge,
+                singleLine = true,
             )
-        }
+        })
     }
 
     CardGroup(title = { Text(stringResource(R.string.setting_provider_page_account)) }) {

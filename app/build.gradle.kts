@@ -99,7 +99,6 @@ android {
         }
         jniLibs {
             useLegacyPackaging = true
-            pickFirsts += "lib/*/libtermux.so"
         }
     }
     tasks.withType<KotlinCompile>().configureEach {
@@ -164,7 +163,10 @@ dependencies {
     implementation(libs.androidx.browser)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.profileinstaller)
-    implementation(libs.termux.terminal.view)
+    implementation(libs.termux.terminal.view) {
+        // terminal-emulator 由仓库内的 :terminal 模块提供, 不再引入上游 aar
+        exclude(group = "com.termux.termux-app", module = "terminal-emulator")
+    }
     implementation(libs.guava.listenablefuture)
 
     // Compose
@@ -309,6 +311,7 @@ dependencies {
     implementation(project(":material3"))
     implementation(project(":ui"))
     implementation(project(":workspace"))
+    implementation(project(":terminal"))
     implementation(project(":oauth"))
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
     implementation(kotlin("reflect"))

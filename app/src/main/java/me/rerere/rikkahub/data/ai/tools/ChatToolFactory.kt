@@ -101,8 +101,11 @@ class ChatToolFactory(
                 )
             }
         }
-        // 过长的输出存成文件让模型用 shell 按需读取；没有 shell 时模型读不到文件，只能原样返回
-        return if (tools.none { it.name == SHELL_TOOL_NAME }) tools else tools.map(::withOutputTruncation)
+        // 过长的输出存成文件让模型用 shell 按需读取；没有 shell 时模型读不到文件，只能原样返回。
+        // 文件放在本机, 只有本地 Rootfs 挂了 /tool_outputs, 远程工作区同样读不到
+        val canReadToolOutputs = tools.any { it.name == SHELL_TOOL_NAME } &&
+            assistant.workspaceId?.let { workspaceRepository.getById(it.toString()) }?.capabilities()?.rootfs == true
+        return if (canReadToolOutputs) tools.map(::withOutputTruncation) else tools
     }
 
     private fun withOutputTruncation(tool: Tool): Tool {

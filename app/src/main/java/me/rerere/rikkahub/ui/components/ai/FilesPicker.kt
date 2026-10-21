@@ -77,7 +77,6 @@ import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.hooks.ChatInputState
 import me.rerere.rikkahub.utils.formatContextLength
 import me.rerere.rikkahub.utils.formatNumber
-import me.rerere.workspace.WorkspaceShellStatus
 import org.koin.compose.koinInject
 import kotlin.uuid.Uuid
 
@@ -397,6 +396,7 @@ internal fun FilesPicker(
     if (showCwdSheet && boundWorkspace != null) {
         WorkspaceCwdPickerSheet(
             workspaceId = boundWorkspace.id,
+            workspaceDir = boundWorkspace.workspaceDir(),
             currentCwd = conversation.workspaceCwd,
             onSelectCwd = { newCwd ->
                 onUpdateWorkspaceCwd(newCwd)
@@ -460,7 +460,7 @@ private fun CardGroupScope.workspaceItems(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 if (boundWorkspace != null) {
-                    if (boundWorkspace.shellStatus == WorkspaceShellStatus.READY.name) {
+                    if (boundWorkspace.supportsTerminal()) {
                         IconButton(onClick = { onNavigateToTerminal(boundWorkspace.id) }) {
                             Icon(
                                 imageVector = HugeIcons.ComputerTerminal01,
@@ -491,7 +491,7 @@ private fun CardGroupScope.workspaceItems(
         item(
             trailingContent = {
                 Text(
-                    text = conversation.workspaceCwd ?: "/workspace",
+                    text = conversation.workspaceCwd ?: boundWorkspace.workspaceDir(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

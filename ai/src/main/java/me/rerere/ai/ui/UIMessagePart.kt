@@ -188,7 +188,10 @@ sealed class UIMessagePart {
         val input: String,
         val output: List<UIMessagePart> = emptyList(),
         val approvalState: ToolApprovalState = ToolApprovalState.Auto,
-        override var metadata: JsonObject? = null
+        override var metadata: JsonObject? = null,
+        // 本地执行的起止时间，只统计真正运行工具的耗时；拒绝、问答和旧消息都为空
+        val startedAt: Instant? = null,
+        val finishedAt: Instant? = null,
     ) : UIMessagePart() {
         /** Whether the tool has been executed (has output) */
         val isExecuted: Boolean get() = output.isNotEmpty()
@@ -212,6 +215,8 @@ sealed class UIMessagePart {
                 output = output + other.output,
                 approvalState = approvalState,
                 metadata = if (other.metadata != null) other.metadata else metadata,
+                startedAt = startedAt,
+                finishedAt = finishedAt,
             )
         }
     }

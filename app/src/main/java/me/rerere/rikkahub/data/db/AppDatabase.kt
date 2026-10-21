@@ -37,11 +37,14 @@ import me.rerere.rikkahub.utils.JsonInstant
  * 应用数据库。
  *
  * 最低支持 schema 版本 30：低于 30 的旧库不再提供迁移链，Room 会直接报错；只有恢复备份时
- * 才由 `AppDatabaseFactory` 注册上游的 30 -> 31 与 31 -> 100 两步
- * （[me.rerere.rikkahub.data.db.migrations.Migration_30_31]、
- * [me.rerere.rikkahub.data.db.migrations.Migration_31_100]，后者把附件登记换成 `managed_files_cas`）。
- * 100 -> 101 的 [me.rerere.rikkahub.data.db.migrations.Migration_100_101]（用量流水表）则总是注册，
- * 因此从旧存档恢复的完整链路是 30 -> 31 -> 100 -> 101，上游 31 的存档则是 31 -> 100 -> 101。
+ * 才由 `AppDatabaseFactory` 注册上游的迁移链
+ * （[me.rerere.rikkahub.data.db.migrations.Migration_30_31] 补用量流水表、
+ * [me.rerere.rikkahub.data.db.migrations.Migration_31_32] 补 SSH 工作区列、
+ * [me.rerere.rikkahub.data.db.migrations.Migration_32_102] 把附件登记换成 `managed_files_cas`）。
+ * 100 -> 101 的 [me.rerere.rikkahub.data.db.migrations.Migration_100_101]（用量流水表）与
+ * 101 -> 102 的 [me.rerere.rikkahub.data.db.migrations.Migration_101_102]（SSH 工作区列）则总是注册。
+ * 因此从旧存档恢复的完整链路是 30 -> 31 -> 32 -> 102，上游 32 的存档直接走 32 -> 102，
+ * 本 fork 自己的库则走 100 -> 101 -> 102。
  */
 @Database(
     entities = [
@@ -60,7 +63,7 @@ import me.rerere.rikkahub.utils.JsonInstant
         TranslationHistoryEntity::class,
         UsageRecordEntity::class,
     ],
-    version = 101,
+    version = 102,
 )
 @TypeConverters(TokenUsageConverter::class)
 abstract class AppDatabase : RoomDatabase() {
