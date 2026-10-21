@@ -208,9 +208,9 @@ private fun MemorySettingsTab(
         if (consolidation != null) {
             MemoryConsolidationSection(
                 status = consolidation,
-                autoDreamEnabled = assistant.enableAutoDream,
+                autoDreamEnabled = assistant.autoConsolidateMemory,
                 onAutoDreamChange = {
-                    onUpdateAssistant(assistant.copy(enableAutoDream = it))
+                    onUpdateAssistant(assistant.copy(autoConsolidateMemory = it))
                 },
                 onOrganize = onOrganizeMemory,
             )
