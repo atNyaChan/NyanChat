@@ -91,7 +91,7 @@ android {
     androidResources {
         generateLocaleConfig = true
         // 仅保留应用实际支持的语言，避免把依赖库的近百种翻译打进未压缩的 resources.arsc。
-        localeFilters.addAll(listOf("en", "ar", "ja", "ko-rKR", "ru", "zh", "zh-rTW"))
+        localeFilters.addAll(listOf("en", "ar", "de", "ja", "ko-rKR", "ru", "zh", "zh-rTW"))
     }
     packaging {
         dex {

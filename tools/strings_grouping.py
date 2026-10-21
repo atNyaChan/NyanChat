@@ -247,8 +247,8 @@ GROUPS: list[tuple[str, list[str]]] = [
 # --------------------------------------------------------------------------- #
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RES_DIR = os.path.join(REPO_ROOT, "app", "src", "main", "res")
-LOCALES = ["values", "values-ar", "values-ja", "values-ko-rKR", "values-ru", "values-zh",
-           "values-zh-rTW"]
+LOCALES = ["values", "values-ar", "values-de", "values-ja", "values-ko-rKR", "values-ru",
+           "values-zh", "values-zh-rTW"]
 ENGLISH = "values/strings.xml"
 
 STRING_RE = re.compile(r'\s*<string name="([^"]+)"')

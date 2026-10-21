@@ -350,6 +350,72 @@ to port safely in one session, STOP and ask the user before starting.
   around 「」『』“”‘’ quotes and their contents.
 - If the user does not explicitly request localization, prioritize implementing functionality without considering
   localization. (e.g `Text("Hello world")`)
+- Existing locales: `values-ar`, `values-de`, `values-ja`, `values-ko-rKR`, `values-ru`, `values-zh`,
+  `values-zh-rTW`, for `app` as well as `oauth`, `search` and `ui`.
+
+### Adding a New Language
+
+A new locale is a hand-translated, key-for-key change. Never copy an upstream/other fork locale file over
+ours and never machine-translate a whole file: our key set and many English texts differ from upstream, so a
+copied file is missing our fork-only keys and mistranslates keys whose English we rewrote.
+
+1. For every module that ships translations (`app`, `search`, `oauth`, `ui` — check each
+   `*/src/main/res/values/strings.xml`), create `values-<code>/strings.xml` with exactly our key set.
+2. Hand-translate every key. An upstream (or other fork) locale file may be used as a first draft for keys
+   that exist in both, but first diff the English text of that same key: when our English string differs
+   (wording, placeholders, branding such as `NyanChat`, removed or added features) rewrite the translation
+   from our English text instead of keeping theirs. Every fork-only key must be translated from scratch.
+3. Register the locale everywhere it is listed:
+   - `app/build.gradle.kts`: add the code to `androidResources.localeFilters`. Because
+     `generateLocaleConfig = true`, this both packages the resources and feeds the generated
+     `locale-config`; a locale missing here is never shipped even though the files exist.
+   - `tools/strings_grouping.py`: add `values-<code>` to `LOCALES`, then run
+     `python3 tools/strings_grouping.py reorder` (mirrors the sections/key order onto the new file) and
+     `check`.
+   - `AppLanguage` (`app/src/main/java/me/rerere/rikkahub/ui/pages/setting/SettingPreferencesUIPage.kt`):
+     append an entry with the locale tag and the language's own endonym, e.g.
+     `GERMAN("de", label = "🇩🇪 Deutsch")`, so the in-app language picker offers it.
+4. Keep placeholders, escapes (`\'`, `\"`, `\n`, `\u0020`), markup and formatting identical to the English
+   source, and follow that language's typography and terminology (Chinese spacing/quote rules above; for
+   German the glossary in “German (`values-de`) Terminology” below). Keep `SKILL.md`, file names, URLs and
+   brand/product names (`NyanChat`, `RikkaHub`, provider names) untranslated.
+5. Verify: identical key sets per module, no unescaped `'`/`"`, matching printf placeholders, XML parses, and
+   `grep` the repository for other locale lists (`localeFilters`, `LOCALES`) so the new language is
+   selectable, packaged and layout-checked.
+
+### German (`values-de`) Terminology
+
+German strings must follow this glossary in `app`, `search`, `oauth` and `ui`; it keeps wording stable across
+the whole UI and comes from the upstream German commit.
+
+| English | German |
+| --- | --- |
+| you (the user) | `du` — informal, never `Sie`; use the matching verb form (`Klicke`, `Wähle`, `Lege`, `Lass`) |
+| prompt | `Prompt` (plural `Prompts`), never `Eingabeaufforderung` |
+| system prompt | `Systemprompt` |
+| context | `Kontext` |
+| model | `Modell` |
+| provider | `Anbieter` |
+| assistant | `Assistent` |
+| agent | `Agent` |
+| tool | `Tool` |
+| reasoning | `Reasoning` |
+| thinking | `Denken` |
+| workspace | `Arbeitsbereich` |
+| skill | `Skill` (plural `Skills`) |
+| memory | `Erinnerung` (plural `Erinnerungen`), never `Speicher` |
+| dreaming | `Träumen` (name of the background memory-consolidation feature) |
+| lorebook | `Lorebook` |
+| settings | `Einstellungen` |
+
+- Related fixed wording: chat = `Chat`, conversation = `Unterhaltung`, message = `Nachricht`, folder =
+  `Ordner`, extension = `Erweiterung`, mode injection = `Modus-Injektion`, quick message =
+  `Schnellnachricht`; `TTS`/`ASR`/`API`/`MCP`/`SSH`/`Rootfs` stay as acronyms/technical terms.
+- Tool descriptions start with `Lass die KI …` (mirrors the English “Let AI …” of the tool rows).
+- Typography: quotes `„…“`, decimal comma (`0,5–2,0`), binary size units (`MiB`) as everywhere else. Do not
+  translate file names, URLs, `SKILL.md` or brand/product names.
+- New German keys follow this glossary first; when a neighbouring German string contradicts it, keep the
+  neighbour's wording only if the glossary has no entry for that term.
 
 ### Manual Localization Workflow
 

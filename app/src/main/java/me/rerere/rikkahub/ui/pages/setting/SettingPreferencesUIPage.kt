@@ -1395,6 +1395,7 @@ internal enum class AppLanguage(val tag: String, val labelRes: Int? = null, val 
     KOREAN("ko-KR", label = "🇰🇷 한국어"),
     RUSSIAN("ru", label = "🇷🇺 Русский"),
     ARABIC("ar", label = "🇸🇦 العربية"),
+    GERMAN("de", label = "🇩🇪 Deutsch"),
 }
 
 @Composable
