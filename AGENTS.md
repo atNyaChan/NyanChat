@@ -284,7 +284,9 @@ to port safely in one session, STOP and ask the user before starting.
   MCP servers, workspace, skills) taken from the assistant; from then on chat-page changes to those settings stay on
   the conversation, and code should read them through `Settings.getAssistantOf(conversation)` /
   `Settings.getChatModelOf(conversation)` instead of the assistant directly. A fork-only `followAssistant` flag on that
-  snapshot makes a conversation follow the live assistant settings instead. (
+  snapshot makes a conversation follow the live assistant settings instead; the assistant's fork-only
+  `conversationSettingsMode` can force all conversations to follow the assistant (`OFF`), force all to stay
+  independent (`ON`), or defer to each conversation's `followAssistant` flag (`PER_CONVERSATION`). (
   app/src/main/java/me/rerere/rikkahub/data/model/Conversation.kt,
   app/src/main/java/me/rerere/rikkahub/data/model/ConversationConfig.kt)
 

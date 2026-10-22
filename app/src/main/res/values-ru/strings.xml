@@ -39,6 +39,8 @@
   <string name="common_close">Закрыть</string>
   <string name="common_confirm_action">Подтвердить</string>
   <string name="common_delete">Удалить</string>
+  <string name="common_disable_all">Отключить все</string>
+  <string name="common_enable_all">Включить все</string>
   <string name="common_error">Ошибка</string>
   <string name="common_error_save_failed">Не удалось сохранить</string>
   <string name="common_error_unknown">Неизвестная ошибка</string>
@@ -50,6 +52,7 @@
   <string name="common_not_recommended_to_modify">Менять не рекомендуется</string>
   <string name="common_off">Выключено</string>
   <string name="common_ok">ОК</string>
+  <string name="common_on">Включено</string>
   <string name="common_rename">Переименовать</string>
   <string name="common_save">Сохранить</string>
   <string name="common_search">Поиск</string>
@@ -136,8 +139,6 @@
   <string name="chat_page_export_markdown">Markdown</string>
   <string name="chat_page_export_share_via">Поделиться через</string>
   <string name="chat_page_export_success">Экспортировано в %1$s</string>
-  <string name="chat_page_follow_assistant_settings">Настройки диалога следуют за ассистентом</string>
-  <string name="chat_page_follow_assistant_settings_help">При включении: чат-модель, уровень рассуждений, тип поиска, MCP, рабочая область, навыки, внедрения режимов и лорбуки следуют изменениям настроек ассистента.</string>
   <string name="chat_page_menu_ai_translator">AI-переводчик</string>
   <string name="chat_page_menu_image_generation">Генерация изображений</string>
   <string name="chat_page_message_count">%d сообщений</string>
@@ -148,6 +149,8 @@
   <string name="chat_page_select_model_first">Сначала выберите модель</string>
   <string name="chat_page_stop_generation_before_action">Сначала остановите генерацию, затем можно %1$s сообщения</string>
   <string name="chat_page_today">Сегодня</string>
+  <string name="chat_page_use_independent_conversation_settings">Использовать независимые настройки диалога</string>
+  <string name="chat_page_use_independent_conversation_settings_help">При включении: чат-модель, уровень рассуждений, тип поиска, MCP, рабочая область, навыки, внедрения режимов и лорбуки каждого диалога не будут меняться при изменении настроек ассистента.</string>
   <string name="chat_page_yesterday">Вчера</string>
   <string name="use_web_search">Веб-поиск</string>
   <!-- Chat history and favorites -->
@@ -483,6 +486,7 @@
   <string name="assistant_page_context_message_limit_desc">Ограничивает количество последних сообщений, отправляемых модели.</string>
   <string name="assistant_page_context_message_limit_placeholder">Без ограничений</string>
   <string name="assistant_page_context_message_limit_warning">Кеш промпта аннулируется при каждом сокращении контекста. Чем больше лимит, тем реже сокращается контекст.</string>
+  <string name="assistant_page_conversation_independent_settings_dialog_title">Текущее состояние переключателей диалогов</string>
   <string name="assistant_page_copy_assistant">Копировать ассистента</string>
   <string name="assistant_page_copy_existing">Копировать существующего ассистента</string>
   <string name="assistant_page_copy_memories_confirm">Также скопировать память этого ассистента?</string>
@@ -584,6 +588,8 @@
   <string name="assistant_page_use_assistant_avatar">Использовать аватар ассистента</string>
   <string name="assistant_page_use_assistant_avatar_desc">Использовать аватар и имя ассистента вместо аватара и имени модели в чатах</string>
   <string name="assistant_page_use_default">Использовать значение по умолчанию</string>
+  <string name="assistant_page_use_independent_conversation_settings_desc">При включении чат-модель, уровень рассуждений, тип поиска, MCP, рабочая область, навыки, внедрения режимов и лорбуки каждого диалога не будут меняться при изменении настроек ассистента.</string>
+  <string name="assistant_page_use_independent_conversation_settings_per_conversation">Для каждого диалога</string>
   <string name="assistant_page_web_search_desc">Позволяет ассистенту выполнять поиск в интернете</string>
   <string name="assistant_page_workspace">Рабочая область</string>
   <string name="assistant_page_workspace_desc">После привязки Agent может использовать файлы и возможности sandbox этого рабочего пространства.</string>

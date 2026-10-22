@@ -39,6 +39,8 @@
   <string name="common_close">Close</string>
   <string name="common_confirm_action">Confirm</string>
   <string name="common_delete">Delete</string>
+  <string name="common_disable_all">Disable all</string>
+  <string name="common_enable_all">Enable all</string>
   <string name="common_error">Error</string>
   <string name="common_error_save_failed">Save failed</string>
   <string name="common_error_unknown">Unknown error</string>
@@ -50,6 +52,7 @@
   <string name="common_not_recommended_to_modify">Not recommended to modify</string>
   <string name="common_off">Off</string>
   <string name="common_ok">OK</string>
+  <string name="common_on">On</string>
   <string name="common_rename">Rename</string>
   <string name="common_save">Save</string>
   <string name="common_search">Search</string>
@@ -136,8 +139,6 @@
   <string name="chat_page_export_markdown">Markdown</string>
   <string name="chat_page_export_share_via">Share via</string>
   <string name="chat_page_export_success">Exported to %1$s</string>
-  <string name="chat_page_follow_assistant_settings">Conversation settings follow assistant</string>
-  <string name="chat_page_follow_assistant_settings_help">When enabled: the chat model, reasoning level, search type, MCP, workspace, skills, mode injections, and lorebooks all follow changes to the assistant settings.</string>
   <string name="chat_page_menu_ai_translator">AI Translator</string>
   <string name="chat_page_menu_image_generation">Image Generation</string>
   <string name="chat_page_message_count">%d messages</string>
@@ -148,6 +149,8 @@
   <string name="chat_page_select_model_first">Please select a model first</string>
   <string name="chat_page_stop_generation_before_action">Stop generating first, then you can %1$s messages</string>
   <string name="chat_page_today">Today</string>
+  <string name="chat_page_use_independent_conversation_settings">Use independent conversation settings</string>
+  <string name="chat_page_use_independent_conversation_settings_help">When enabled: the chat model, reasoning level, search type, MCP, workspace, skills, mode injections, and lorebooks of each conversation will not change with changes to the assistant settings.</string>
   <string name="chat_page_yesterday">Yesterday</string>
   <string name="use_web_search">Web Search</string>
   <!-- Chat history and favorites -->
@@ -483,6 +486,7 @@
   <string name="assistant_page_context_message_limit_desc">Limits the number of recent messages sent to the model</string>
   <string name="assistant_page_context_message_limit_placeholder">Unlimited</string>
   <string name="assistant_page_context_message_limit_warning">The prompt cache is invalidated each time the context is trimmed. A larger limit means less frequent trimming.</string>
+  <string name="assistant_page_conversation_independent_settings_dialog_title">Current conversation switch status</string>
   <string name="assistant_page_copy_assistant">Copy Assistant</string>
   <string name="assistant_page_copy_existing">Copy existing assistant</string>
   <string name="assistant_page_copy_memories_confirm">Also copy this assistant\'s memories?</string>
@@ -584,6 +588,8 @@
   <string name="assistant_page_use_assistant_avatar">Use Assistant Avatar</string>
   <string name="assistant_page_use_assistant_avatar_desc">Use assistant avatar and name instead of model avatar and name in chats</string>
   <string name="assistant_page_use_default">Use default value</string>
+  <string name="assistant_page_use_independent_conversation_settings_desc">When enabled, the chat model, reasoning level, search type, MCP, workspace, skills, mode injections, and lorebooks of each conversation will not change with changes to the assistant settings.</string>
+  <string name="assistant_page_use_independent_conversation_settings_per_conversation">Per conversation</string>
   <string name="assistant_page_web_search_desc">Allow the assistant to perform web searches</string>
   <string name="assistant_page_workspace">Workspace</string>
   <string name="assistant_page_workspace_desc">After binding, the Agent can use this workspace\'s files and sandbox capabilities</string>

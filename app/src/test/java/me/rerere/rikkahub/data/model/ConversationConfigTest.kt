@@ -214,8 +214,13 @@ class ConversationConfigTest {
 
     @Test
     fun `following assistant ignores the snapshot and reads live settings`() {
-        val bound = conversation().bindConfig(settings()).setFollowAssistant(settings(), true)
-        val changed = assistant.copy(chatModelId = modelB.id, reasoningLevel = ReasoningLevel.OFF)
+        val perConversation = assistant.copy(
+            conversationSettingsMode = ConversationSettingsMode.PER_CONVERSATION,
+        )
+        val bound = conversation(perConversation)
+            .bindConfig(settings(perConversation))
+            .setFollowAssistant(settings(perConversation), true)
+        val changed = perConversation.copy(chatModelId = modelB.id, reasoningLevel = ReasoningLevel.OFF)
 
         val resolved = settings(changed).getAssistantOf(bound)
 
@@ -224,9 +229,36 @@ class ConversationConfigTest {
     }
 
     @Test
+    fun `assistant off forces conversations to follow live settings`() {
+        val off = assistant.copy(conversationSettingsMode = ConversationSettingsMode.OFF)
+        val bound = conversation(off).bindConfig(settings(off))
+        val changed = off.copy(reasoningLevel = ReasoningLevel.OFF)
+
+        assertTrue(bound.config?.followAssistant == true)
+        assertEquals(ReasoningLevel.OFF, settings(changed).getAssistantOf(bound).reasoningLevel)
+    }
+
+    @Test
+    fun `assistant on keeps conversations independent even when they followed before`() {
+        val on = assistant.copy(conversationSettingsMode = ConversationSettingsMode.ON)
+        val bound = conversation(on)
+            .bindConfig(settings(on))
+            .setFollowAssistant(settings(on), true)
+        val changed = on.copy(reasoningLevel = ReasoningLevel.OFF)
+
+        assertTrue(bound.config?.followAssistant == true)
+        assertEquals(ReasoningLevel.HIGH, settings(changed).getAssistantOf(bound).reasoningLevel)
+    }
+
+    @Test
     fun `turning off follow re-snapshots the assistant`() {
-        val bound = conversation().bindConfig(settings()).setFollowAssistant(settings(), true)
-        val changed = assistant.copy(reasoningLevel = ReasoningLevel.OFF, useBuiltInSearch = false)
+        val perConversation = assistant.copy(
+            conversationSettingsMode = ConversationSettingsMode.PER_CONVERSATION,
+        )
+        val bound = conversation(perConversation)
+            .bindConfig(settings(perConversation))
+            .setFollowAssistant(settings(perConversation), true)
+        val changed = perConversation.copy(reasoningLevel = ReasoningLevel.OFF, useBuiltInSearch = false)
 
         val frozen = bound.setFollowAssistant(settings(changed), false)
 

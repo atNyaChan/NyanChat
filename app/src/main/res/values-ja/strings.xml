@@ -39,6 +39,8 @@
   <string name="common_close">閉じる</string>
   <string name="common_confirm_action">確認</string>
   <string name="common_delete">削除</string>
+  <string name="common_disable_all">すべて無効化</string>
+  <string name="common_enable_all">すべて有効化</string>
   <string name="common_error">エラー</string>
   <string name="common_error_save_failed">保存に失敗しました</string>
   <string name="common_error_unknown">不明なエラー</string>
@@ -50,6 +52,7 @@
   <string name="common_not_recommended_to_modify">変更しないことをお勧めします</string>
   <string name="common_off">オフ</string>
   <string name="common_ok">OK</string>
+  <string name="common_on">オン</string>
   <string name="common_rename">名前を変更</string>
   <string name="common_save">保存</string>
   <string name="common_search">検索</string>
@@ -136,8 +139,6 @@
   <string name="chat_page_export_markdown">Markdown</string>
   <string name="chat_page_export_share_via">共有方法</string>
   <string name="chat_page_export_success">%1$sにエクスポートしました</string>
-  <string name="chat_page_follow_assistant_settings">会話設定をアシスタントに従わせる</string>
-  <string name="chat_page_follow_assistant_settings_help">有効にすると：チャットモデル、思考レベル、検索タイプ、MCP、ワークスペース、スキル、モードインジェクション、ロアブックスがすべてアシスタント設定の変更に追従します。</string>
   <string name="chat_page_menu_ai_translator">AI翻訳</string>
   <string name="chat_page_menu_image_generation">画像生成</string>
   <string name="chat_page_message_count">%d件のメッセージ</string>
@@ -148,6 +149,8 @@
   <string name="chat_page_select_model_first">先にモデルを選択してください</string>
   <string name="chat_page_stop_generation_before_action">メッセージを%1$sする前に生成を停止してください</string>
   <string name="chat_page_today">今日</string>
+  <string name="chat_page_use_independent_conversation_settings">独立した会話設定を使用</string>
+  <string name="chat_page_use_independent_conversation_settings_help">有効にすると：各会話のチャットモデル、思考レベル、検索タイプ、MCP、ワークスペース、スキル、モードインジェクション、ロアブックスはアシスタント設定の変更に追従しません。</string>
   <string name="chat_page_yesterday">昨日</string>
   <string name="use_web_search">ウェブ検索を</string>
   <!-- Chat history and favorites -->
@@ -483,6 +486,7 @@
   <string name="assistant_page_context_message_limit_desc">モデルに送信する最近のメッセージ数を制限します。</string>
   <string name="assistant_page_context_message_limit_placeholder">無制限</string>
   <string name="assistant_page_context_message_limit_warning">コンテキストが切り詰められるたびにプロンプトキャッシュが無効になります。上限が大きいほど切り詰めの頻度は下がります。</string>
+  <string name="assistant_page_conversation_independent_settings_dialog_title">現在の会話スイッチ状態</string>
   <string name="assistant_page_copy_assistant">アシスタントをコピー</string>
   <string name="assistant_page_copy_existing">既存のアシスタントをコピー</string>
   <string name="assistant_page_copy_memories_confirm">このアシスタントの記憶もコピーしますか？</string>
@@ -584,6 +588,8 @@
   <string name="assistant_page_use_assistant_avatar">アシスタントアバターを使用</string>
   <string name="assistant_page_use_assistant_avatar_desc">チャットでモデルアバターと名前ではなくアシスタントアバターと名前を使用</string>
   <string name="assistant_page_use_default">デフォルト値を使用</string>
+  <string name="assistant_page_use_independent_conversation_settings_desc">有効にすると、各会話のチャットモデル、思考レベル、検索タイプ、MCP、ワークスペース、スキル、モードインジェクション、ロアブックスはアシスタント設定の変更に追従しません。</string>
+  <string name="assistant_page_use_independent_conversation_settings_per_conversation">会話ごとに設定</string>
   <string name="assistant_page_web_search_desc">アシスタントがウェブ検索を実行できるようにします</string>
   <string name="assistant_page_workspace">ワークスペース</string>
   <string name="assistant_page_workspace_desc">バインド後、エージェントはこのワークスペースのファイルとサンドボックス機能を使用できます</string>

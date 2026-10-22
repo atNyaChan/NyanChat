@@ -57,7 +57,17 @@ data class Assistant(
     val enableTimeReminder: Boolean = false, // 时间间隔提醒注入
     val timeReminderIntervalMinutes: Int = 60, // 时间提醒间隔（分钟，至少 1 分钟）
     val allowConversationSystemPrompt: Boolean = false, // 允许对话单独重写 system prompt
+    // fork：对话是否使用独立设置。PER_CONVERSATION 时由会话自身的 followAssistant 决定
+    val conversationSettingsMode: ConversationSettingsMode = ConversationSettingsMode.ON,
 )
+
+/** fork：助手级的“使用独立对话设置”选项。 */
+@Serializable
+enum class ConversationSettingsMode {
+    OFF, // 所有对话跟随助手
+    PER_CONVERSATION, // 每个对话单独选择
+    ON, // 所有对话都使用独立设置
+}
 
 @Serializable
 enum class ContextCache {

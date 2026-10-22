@@ -39,6 +39,8 @@
   <string name="common_close">닫기</string>
   <string name="common_confirm_action">확인</string>
   <string name="common_delete">삭제</string>
+  <string name="common_disable_all">모두 끄기</string>
+  <string name="common_enable_all">모두 켜기</string>
   <string name="common_error">오류</string>
   <string name="common_error_save_failed">저장에 실패했습니다</string>
   <string name="common_error_unknown">알 수 없는 오류</string>
@@ -50,6 +52,7 @@
   <string name="common_not_recommended_to_modify">수정하지 않는 것을 권장합니다</string>
   <string name="common_off">꺼짐</string>
   <string name="common_ok">확인</string>
+  <string name="common_on">켜짐</string>
   <string name="common_rename">이름 변경</string>
   <string name="common_save">저장</string>
   <string name="common_search">검색</string>
@@ -136,8 +139,6 @@
   <string name="chat_page_export_markdown">Markdown</string>
   <string name="chat_page_export_share_via">공유 방법</string>
   <string name="chat_page_export_success">%1$s(으)로 내보내기 완료</string>
-  <string name="chat_page_follow_assistant_settings">대화 설정이 어시스턴트 설정 따르기</string>
-  <string name="chat_page_follow_assistant_settings_help">활성화하면: 채팅 모델, 사고 수준, 검색 유형, MCP, 작업 공간, 스킬, 모드 주입, 로어북이 모두 어시스턴트 설정 변경을 따릅니다.</string>
   <string name="chat_page_menu_ai_translator">AI 번역기</string>
   <string name="chat_page_menu_image_generation">이미지 생성</string>
   <string name="chat_page_message_count">%d개 메시지</string>
@@ -148,6 +149,8 @@
   <string name="chat_page_select_model_first">먼저 모델을 선택하세요</string>
   <string name="chat_page_stop_generation_before_action">메시지를 %1$s하기 전에 생성을 중지하세요</string>
   <string name="chat_page_today">오늘</string>
+  <string name="chat_page_use_independent_conversation_settings">독립 대화 설정 사용</string>
+  <string name="chat_page_use_independent_conversation_settings_help">활성화하면: 각 대화의 채팅 모델, 사고 수준, 검색 유형, MCP, 작업 공간, 스킬, 모드 주입, 로어북이 어시스턴트 설정 변경을 따르지 않습니다.</string>
   <string name="chat_page_yesterday">어제</string>
   <string name="use_web_search">웹 검색 사용</string>
   <!-- Chat history and favorites -->
@@ -483,6 +486,7 @@
   <string name="assistant_page_context_message_limit_desc">모델로 전송되는 최근 메시지 수를 제한합니다.</string>
   <string name="assistant_page_context_message_limit_placeholder">제한 없음</string>
   <string name="assistant_page_context_message_limit_warning">컨텍스트가 정리될 때마다 프롬프트 캐시가 무효화됩니다. 제한 값이 클수록 정리 빈도가 줄어듭니다.</string>
+  <string name="assistant_page_conversation_independent_settings_dialog_title">현재 대화 스위치 상태</string>
   <string name="assistant_page_copy_assistant">어시스턴트 복사</string>
   <string name="assistant_page_copy_existing">기존 어시스턴트 복사</string>
   <string name="assistant_page_copy_memories_confirm">이 어시스턴트의 기억도 함께 복사할까요?</string>
@@ -584,6 +588,8 @@
   <string name="assistant_page_use_assistant_avatar">어시스턴트 아바타 사용</string>
   <string name="assistant_page_use_assistant_avatar_desc">채팅에서 어시스턴트 아바타 및 이름을 모델의 것 대신 사용</string>
   <string name="assistant_page_use_default">기본값 사용</string>
+  <string name="assistant_page_use_independent_conversation_settings_desc">활성화하면 각 대화의 채팅 모델, 사고 수준, 검색 유형, MCP, 작업 공간, 스킬, 모드 주입, 로어북이 어시스턴트 설정 변경을 따르지 않습니다.</string>
+  <string name="assistant_page_use_independent_conversation_settings_per_conversation">대화별 설정</string>
   <string name="assistant_page_web_search_desc">어시스턴트가 웹 검색을 수행할 수 있도록 합니다</string>
   <string name="assistant_page_workspace">작업 공간</string>
   <string name="assistant_page_workspace_desc">바인딩 후, 에이전트는 이 작업 공간의 파일 및 샌드박스 기능을 사용할 수 있습니다.</string>

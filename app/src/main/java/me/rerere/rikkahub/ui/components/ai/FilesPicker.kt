@@ -65,6 +65,7 @@ import me.rerere.rikkahub.data.datastore.findProvider
 import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.Conversation
+import me.rerere.rikkahub.data.model.ConversationSettingsMode
 import me.rerere.rikkahub.data.model.lastContextTokens
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.rikkahub.ui.components.ui.ExtensionSelector
@@ -191,25 +192,27 @@ internal fun FilesPicker(
                 )
             }
 
-            switchItem(
-                checked = conversation.config?.followAssistant ?: false,
-                onCheckedChange = onUpdateFollowAssistant,
-                headlineContent = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        Text(stringResource(R.string.chat_page_follow_assistant_settings))
-                        IconButton(onClick = { showFollowAssistantHelp = true }) {
-                            Icon(
-                                imageVector = HugeIcons.HelpCircle,
-                                contentDescription = stringResource(R.string.chat_page_follow_assistant_settings_help),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
+            if (assistant.conversationSettingsMode == ConversationSettingsMode.PER_CONVERSATION) {
+                switchItem(
+                    checked = conversation.config?.followAssistant != true,
+                    onCheckedChange = { independent -> onUpdateFollowAssistant(!independent) },
+                    headlineContent = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            Text(stringResource(R.string.chat_page_use_independent_conversation_settings))
+                            IconButton(onClick = { showFollowAssistantHelp = true }) {
+                                Icon(
+                                    imageVector = HugeIcons.HelpCircle,
+                                    contentDescription = stringResource(R.string.chat_page_use_independent_conversation_settings_help),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                         }
-                    }
-                },
-            )
+                    },
+                )
+            }
 
             switchItem(
                 checked = assistant.includeHistoryReasoning,
@@ -415,13 +418,13 @@ internal fun FilesPicker(
         )
     }
 
-    // 对话设置跟随助手说明
+    // 使用独立对话设置说明
     if (showFollowAssistantHelp) {
         AlertDialog(
             onDismissRequest = { showFollowAssistantHelp = false },
             containerColor = MaterialTheme.colorScheme.surface,
-            title = { Text(stringResource(R.string.chat_page_follow_assistant_settings)) },
-            text = { Text(stringResource(R.string.chat_page_follow_assistant_settings_help)) },
+            title = { Text(stringResource(R.string.chat_page_use_independent_conversation_settings)) },
+            text = { Text(stringResource(R.string.chat_page_use_independent_conversation_settings_help)) },
             confirmButton = {
                 TextButton(onClick = { showFollowAssistantHelp = false }) {
                     Text(stringResource(R.string.common_ok))

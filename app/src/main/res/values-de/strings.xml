@@ -39,6 +39,8 @@
   <string name="common_close">Schließen</string>
   <string name="common_confirm_action">Bestätigen</string>
   <string name="common_delete">Löschen</string>
+  <string name="common_disable_all">Alle deaktivieren</string>
+  <string name="common_enable_all">Alle aktivieren</string>
   <string name="common_error">Fehler</string>
   <string name="common_error_save_failed">Speichern fehlgeschlagen</string>
   <string name="common_error_unknown">Unbekannter Fehler</string>
@@ -50,6 +52,7 @@
   <string name="common_not_recommended_to_modify">Änderung nicht empfohlen</string>
   <string name="common_off">Aus</string>
   <string name="common_ok">OK</string>
+  <string name="common_on">Ein</string>
   <string name="common_rename">Umbenennen</string>
   <string name="common_save">Speichern</string>
   <string name="common_search">Suchen</string>
@@ -136,8 +139,6 @@
   <string name="chat_page_export_markdown">Markdown</string>
   <string name="chat_page_export_share_via">Teilen über</string>
   <string name="chat_page_export_success">Exportiert nach %1$s</string>
-  <string name="chat_page_follow_assistant_settings">Unterhaltungseinstellungen folgen dem Assistenten</string>
-  <string name="chat_page_follow_assistant_settings_help">Wenn aktiviert, folgen Chat-Modell, Reasoning-Stufe, Suchtyp, MCP, Arbeitsbereich, Skills, Modus-Injektionen und Lorebooks allen Änderungen an den Assistenten-Einstellungen.</string>
   <string name="chat_page_menu_ai_translator">KI-Übersetzer</string>
   <string name="chat_page_menu_image_generation">Bildgenerierung</string>
   <string name="chat_page_message_count">%d Nachrichten</string>
@@ -148,6 +149,8 @@
   <string name="chat_page_select_model_first">Bitte wähle zuerst ein Modell</string>
   <string name="chat_page_stop_generation_before_action">Stoppe zuerst die Generierung, danach ist %1$s möglich</string>
   <string name="chat_page_today">Heute</string>
+  <string name="chat_page_use_independent_conversation_settings">Unabhängige Unterhaltungseinstellungen verwenden</string>
+  <string name="chat_page_use_independent_conversation_settings_help">Wenn aktiviert: Chat-Modell, Reasoning-Stufe, Suchtyp, MCP, Arbeitsbereich, Skills, Modus-Injektionen und Lorebooks jeder Unterhaltung ändern sich nicht mit den Einstellungen des Assistenten.</string>
   <string name="chat_page_yesterday">Gestern</string>
   <string name="use_web_search">Websuche</string>
   <!-- Chat history and favorites -->
@@ -483,6 +486,7 @@
   <string name="assistant_page_context_message_limit_desc">Begrenzt die Anzahl der zuletzt an das Modell gesendeten Nachrichten</string>
   <string name="assistant_page_context_message_limit_placeholder">Unbegrenzt</string>
   <string name="assistant_page_context_message_limit_warning">Der Prompt-Cache wird ungültig, sobald der Kontext gekürzt wird. Ein größeres Limit bedeutet selteneres Kürzen.</string>
+  <string name="assistant_page_conversation_independent_settings_dialog_title">Aktueller Status der Unterhaltungsschalter</string>
   <string name="assistant_page_copy_assistant">Assistent kopieren</string>
   <string name="assistant_page_copy_existing">Vorhandenen Assistenten kopieren</string>
   <string name="assistant_page_copy_memories_confirm">Auch die Erinnerungen dieses Assistenten kopieren?</string>
@@ -584,6 +588,8 @@
   <string name="assistant_page_use_assistant_avatar">Assistenten-Avatar verwenden</string>
   <string name="assistant_page_use_assistant_avatar_desc">Verwende in Chats den Avatar und Namen des Assistenten anstelle des Modell-Avatars und -Namens</string>
   <string name="assistant_page_use_default">Standardwert verwenden</string>
+  <string name="assistant_page_use_independent_conversation_settings_desc">Wenn aktiviert, ändern sich Chat-Modell, Reasoning-Stufe, Suchtyp, MCP, Arbeitsbereich, Skills, Modus-Injektionen und Lorebooks jeder Unterhaltung nicht mit den Einstellungen des Assistenten.</string>
+  <string name="assistant_page_use_independent_conversation_settings_per_conversation">Pro Unterhaltung</string>
   <string name="assistant_page_web_search_desc">Erlaube dem Assistenten, Websuchen durchzuführen</string>
   <string name="assistant_page_workspace">Arbeitsbereich</string>
   <string name="assistant_page_workspace_desc">Nach dem Binden kann der Agent die Dateien und Sandbox-Funktionen dieses Arbeitsbereichs nutzen</string>

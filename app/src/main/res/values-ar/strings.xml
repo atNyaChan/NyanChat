@@ -39,6 +39,8 @@
   <string name="common_close">إغلاق</string>
   <string name="common_confirm_action">تأكيد</string>
   <string name="common_delete">حذف</string>
+  <string name="common_disable_all">تعطيل الكل</string>
+  <string name="common_enable_all">تفعيل الكل</string>
   <string name="common_error">خطأ</string>
   <string name="common_error_save_failed">فشل الحفظ</string>
   <string name="common_error_unknown">خطأ غير معروف</string>
@@ -50,6 +52,7 @@
   <string name="common_not_recommended_to_modify">يُفضّل عدم التعديل</string>
   <string name="common_off">إيقاف</string>
   <string name="common_ok">موافق</string>
+  <string name="common_on">تشغيل</string>
   <string name="common_rename">إعادة تسمية</string>
   <string name="common_save">حفظ</string>
   <string name="common_search">بحث</string>
@@ -136,8 +139,6 @@
   <string name="chat_page_export_markdown">Markdown</string>
   <string name="chat_page_export_share_via">مشاركة عبر</string>
   <string name="chat_page_export_success">تم التصدير إلى %1$s</string>
-  <string name="chat_page_follow_assistant_settings">إعدادات المحادثة تتبع المساعد</string>
-  <string name="chat_page_follow_assistant_settings_help">عند التفعيل: يتبع نموذج الدردشة ومستوى التفكير ونوع البحث وMCP ومساحة العمل والمهارات وحقن الأوضاع وكتب المعرفة تغييرات إعدادات المساعد.</string>
   <string name="chat_page_menu_ai_translator">مترجم الذكاء الاصطناعي</string>
   <string name="chat_page_menu_image_generation">توليد الصور</string>
   <string name="chat_page_message_count">%d رسالة</string>
@@ -148,6 +149,8 @@
   <string name="chat_page_select_model_first">يُرجى اختيار نموذج أولًا</string>
   <string name="chat_page_stop_generation_before_action">أوقف الإنشاء أولاً، ثم يمكنك %1$s الرسائل</string>
   <string name="chat_page_today">اليوم</string>
+  <string name="chat_page_use_independent_conversation_settings">استخدام إعدادات محادثة مستقلة</string>
+  <string name="chat_page_use_independent_conversation_settings_help">عند التفعيل: لن يتغير نموذج الدردشة ومستوى التفكير ونوع البحث وMCP ومساحة العمل والمهارات وحقن الأوضاع وكتب المعرفة لكل محادثة مع تغيّر إعدادات المساعد.</string>
   <string name="chat_page_yesterday">أمس</string>
   <string name="use_web_search">البحث في الويب</string>
   <!-- Chat history and favorites -->
@@ -483,6 +486,7 @@
   <string name="assistant_page_context_message_limit_desc">يحدّ من عدد الرسائل الأخيرة المرسلة إلى النموذج</string>
   <string name="assistant_page_context_message_limit_placeholder">غير محدود</string>
   <string name="assistant_page_context_message_limit_warning">تُبطَل ذاكرة التخزين المؤقت للمطالبات في كل مرة يُقتطع فيها السياق. الحد الأكبر يعني اقتطاعًا أقل تكرارًا.</string>
+  <string name="assistant_page_conversation_independent_settings_dialog_title">حالة مفاتيح المحادثات الحالية</string>
   <string name="assistant_page_copy_assistant">نسخ المساعد</string>
   <string name="assistant_page_copy_existing">نسخ مساعد موجود</string>
   <string name="assistant_page_copy_memories_confirm">هل تريد أيضًا نسخ ذكريات هذا المساعد؟</string>
@@ -584,6 +588,8 @@
   <string name="assistant_page_use_assistant_avatar">استخدام الصورة الرمزية للمساعد</string>
   <string name="assistant_page_use_assistant_avatar_desc">استخدم صورة واسم المساعد بدلاً من صورة واسم النموذج في المحادثات</string>
   <string name="assistant_page_use_default">استخدام القيمة الافتراضية</string>
+  <string name="assistant_page_use_independent_conversation_settings_desc">عند التفعيل، لن يتغير نموذج الدردشة ومستوى التفكير ونوع البحث وMCP ومساحة العمل والمهارات وحقن الأوضاع وكتب المعرفة لكل محادثة مع تغيّر إعدادات المساعد.</string>
+  <string name="assistant_page_use_independent_conversation_settings_per_conversation">لكل محادثة</string>
   <string name="assistant_page_web_search_desc">السماح للمساعد بإجراء عمليات بحث على الويب</string>
   <string name="assistant_page_workspace">مساحة العمل</string>
   <string name="assistant_page_workspace_desc">بعد الربط، يمكن للوكيل استخدام ملفات مساحة العمل هذه وقدرات البيئة المعزولة</string>

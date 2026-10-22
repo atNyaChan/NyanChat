@@ -82,6 +82,7 @@ import me.rerere.rikkahub.data.model.replaceUserRegexes
 import me.rerere.rikkahub.data.model.selectBranch
 import me.rerere.rikkahub.data.model.setFollowAssistant
 import me.rerere.rikkahub.data.model.toMessageNode
+import me.rerere.rikkahub.data.model.usesIndependentConversationSettings
 import me.rerere.rikkahub.data.model.withAssistantUpdate
 import me.rerere.rikkahub.data.model.withNodeFavorite
 import me.rerere.rikkahub.data.model.withToolApproval
@@ -1138,8 +1139,7 @@ class ChatService(
     ) {
         withLoadedSession(conversationId) { session ->
             val conversation = session.state.value
-            val config = conversation.config
-            if (config != null && !config.followAssistant) {
+            if (settingsStore.awaitLoaded().usesIndependentConversationSettings(conversation)) {
                 session.updateMetadata(
                     transform = {
                         it.copy(

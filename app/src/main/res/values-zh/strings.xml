@@ -39,6 +39,8 @@
   <string name="common_close">关闭</string>
   <string name="common_confirm_action">确认</string>
   <string name="common_delete">删除</string>
+  <string name="common_disable_all">全部关闭</string>
+  <string name="common_enable_all">全部开启</string>
   <string name="common_error">错误</string>
   <string name="common_error_save_failed">保存失败</string>
   <string name="common_error_unknown">未知错误</string>
@@ -49,7 +51,8 @@
   <string name="common_no">不要</string>
   <string name="common_not_recommended_to_modify">不建议修改</string>
   <string name="common_off">关闭</string>
-  <string name="common_ok">确定</string>
+  <string name="common_ok">好</string>
+  <string name="common_on">开启</string>
   <string name="common_rename">重命名</string>
   <string name="common_save">保存</string>
   <string name="common_search">搜索</string>
@@ -136,8 +139,6 @@
   <string name="chat_page_export_markdown">Markdown</string>
   <string name="chat_page_export_share_via">分享方式</string>
   <string name="chat_page_export_success">已导出为%1$s</string>
-  <string name="chat_page_follow_assistant_settings">对话设置跟随助手</string>
-  <string name="chat_page_follow_assistant_settings_help">开启后：聊天模型、思考级别、搜索类型、MCP、工作区、技能开关、模式注入开关、世界书开关都会随助手设置的变化而变化。</string>
   <string name="chat_page_menu_ai_translator">AI 翻译</string>
   <string name="chat_page_menu_image_generation">图像生成</string>
   <string name="chat_page_message_count">%d 条消息</string>
@@ -148,6 +149,8 @@
   <string name="chat_page_select_model_first">请先选择模型</string>
   <string name="chat_page_stop_generation_before_action">请先停止生成再%1$s消息</string>
   <string name="chat_page_today">今天</string>
+  <string name="chat_page_use_independent_conversation_settings">使用独立对话设置</string>
+  <string name="chat_page_use_independent_conversation_settings_help">开启后：各个对话的聊天模型、思考级别、搜索类型、MCP、工作区、技能开关、模式注入开关、世界书开关都不会随助手设置的变化而变化。</string>
   <string name="chat_page_yesterday">昨天</string>
   <string name="use_web_search">网络搜索</string>
   <!-- Chat history and favorites -->
@@ -483,6 +486,7 @@
   <string name="assistant_page_context_message_limit_desc">限制发送给模型的最近消息数量</string>
   <string name="assistant_page_context_message_limit_placeholder">无限制</string>
   <string name="assistant_page_context_message_limit_warning">会在每次截断上下文时使提示词缓存失效，上限越大，截断越少。</string>
+  <string name="assistant_page_conversation_independent_settings_dialog_title">当前对话开关设置情况</string>
   <string name="assistant_page_copy_assistant">复制助手</string>
   <string name="assistant_page_copy_existing">复制已有助手</string>
   <string name="assistant_page_copy_memories_confirm">是否同时复制该助手的记忆</string>
@@ -584,6 +588,8 @@
   <string name="assistant_page_use_assistant_avatar">使用助手头像</string>
   <string name="assistant_page_use_assistant_avatar_desc">在聊天中使用助手头像和名字而不是模型头像和名字</string>
   <string name="assistant_page_use_default">使用默认值</string>
+  <string name="assistant_page_use_independent_conversation_settings_desc">开启后，各个对话的聊天模型、思考级别、搜索类型、MCP、工作区、技能开关、模式注入开关、世界书开关都不会随助手设置的变化而变化</string>
+  <string name="assistant_page_use_independent_conversation_settings_per_conversation">分别设置</string>
   <string name="assistant_page_web_search_desc">让助手可以进行网络搜索</string>
   <string name="assistant_page_workspace">工作区</string>
   <string name="assistant_page_workspace_desc">绑定后，Agent 可以使用此工作区的文件和沙盒功能</string>

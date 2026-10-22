@@ -3,6 +3,7 @@ package me.rerere.rikkahub.ui.pages.assistant.detail
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Add01
 import me.rerere.hugeicons.stroke.ArrowDown01
+import me.rerere.hugeicons.stroke.ArrowRight01
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.Refresh03
 import me.rerere.hugeicons.stroke.Tick01
@@ -19,18 +20,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Card
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -38,8 +43,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -58,6 +65,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -81,12 +89,16 @@ import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.AssistantAffectScope
 import me.rerere.rikkahub.data.model.AssistantRegex
+import me.rerere.rikkahub.data.model.Conversation
+import me.rerere.rikkahub.data.model.ConversationSettingsMode
 import me.rerere.rikkahub.data.model.toMessageNode
 import me.rerere.rikkahub.ui.components.message.ChatMessage
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceLabel
+import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.switchItem
-import me.rerere.rikkahub.ui.components.ui.FormItem
 import me.rerere.rikkahub.ui.components.ui.rememberCardGroupItemShape
 import me.rerere.rikkahub.ui.components.ui.ExtensionSelector
 import me.rerere.rikkahub.ui.components.ui.Select
@@ -119,6 +131,7 @@ fun AssistantPromptPage(id: String) {
     )
     val assistant by vm.assistant.collectAsStateWithLifecycle()
     val settings by vm.settings.collectAsStateWithLifecycle()
+    val conversations by vm.conversations.collectAsStateWithLifecycle()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
@@ -141,7 +154,11 @@ fun AssistantPromptPage(id: String) {
             innerPadding = innerPadding,
             assistant = assistant,
             settings = settings,
-            onUpdate = { vm.update(it) }
+            conversations = conversations,
+            onUpdate = { vm.update(it) },
+            onConversationSettingsModeChange = vm::updateConversationSettingsMode,
+            onConversationIndependentChange = vm::setConversationIndependent,
+            onAllConversationsIndependentChange = vm::setAllConversationsIndependent,
         )
     }
 }
@@ -151,7 +168,11 @@ private fun AssistantPromptContent(
     innerPadding: PaddingValues,
     assistant: Assistant,
     settings: Settings,
-    onUpdate: (Assistant) -> Unit
+    conversations: List<Conversation>,
+    onUpdate: (Assistant) -> Unit,
+    onConversationSettingsModeChange: (ConversationSettingsMode) -> Unit,
+    onConversationIndependentChange: (Uuid, Boolean) -> Unit,
+    onAllConversationsIndependentChange: (Boolean) -> Unit,
 ) {
     val context = LocalContext.current
     val navController = LocalNavController.current
@@ -159,6 +180,7 @@ private fun AssistantPromptContent(
     var pendingPresetDeleteIndex by remember { mutableStateOf<Int?>(null) }
     var pendingRegexDeleteIndex by remember { mutableStateOf<Int?>(null) }
     var expandedRegexIds by remember { mutableStateOf(emptySet<Uuid>()) }
+    var showConversationSettingsDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -237,6 +259,52 @@ private fun AssistantPromptContent(
                 },
                 headlineContent = {
                     Text(stringResource(R.string.assistant_page_allow_conversation_system_prompt))
+                },
+            )
+            item(
+                onClick = if (assistant.conversationSettingsMode == ConversationSettingsMode.PER_CONVERSATION) {
+                    { showConversationSettingsDialog = true }
+                } else null,
+                headlineContent = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(2.dp),
+                        ) {
+                            Text(stringResource(R.string.chat_page_use_independent_conversation_settings))
+                            Text(
+                                text = stringResource(R.string.assistant_page_use_independent_conversation_settings_desc),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        if (assistant.conversationSettingsMode == ConversationSettingsMode.PER_CONVERSATION) {
+                            Icon(HugeIcons.ArrowRight01, null)
+                        }
+                    }
+                },
+                supportingContent = {
+                    ConnectedChoiceButtons(
+                        options = ConversationSettingsMode.entries,
+                        selected = assistant.conversationSettingsMode,
+                        onSelect = onConversationSettingsModeChange,
+                        modifier = Modifier.padding(top = 8.dp),
+                    ) { mode, selected ->
+                        ConnectedChoiceLabel(
+                            text = stringResource(
+                                when (mode) {
+                                    ConversationSettingsMode.OFF -> R.string.common_off
+                                    ConversationSettingsMode.PER_CONVERSATION ->
+                                        R.string.assistant_page_use_independent_conversation_settings_per_conversation
+                                    ConversationSettingsMode.ON -> R.string.common_on
+                                }
+                            ),
+                            selected = selected,
+                        )
+                    }
                 },
             )
         }
@@ -580,6 +648,15 @@ private fun AssistantPromptContent(
         }
     }
 
+    if (showConversationSettingsDialog) {
+        ConversationSettingsDialog(
+            conversations = conversations,
+            onSetConversationIndependent = onConversationIndependentChange,
+            onSetAllConversationsIndependent = onAllConversationsIndependentChange,
+            onDismiss = { showConversationSettingsDialog = false },
+        )
+    }
+
     DeleteItemDialog(
         show = pendingPresetDeleteIndex != null,
         type = stringResource(R.string.delete_type_preset_message),
@@ -610,6 +687,126 @@ private fun AssistantPromptContent(
         },
         onDismiss = { pendingRegexDeleteIndex = null },
     )
+}
+
+@Composable
+private fun ConversationSettingsDialog(
+    conversations: List<Conversation>,
+    onSetConversationIndependent: (Uuid, Boolean) -> Unit,
+    onSetAllConversationsIndependent: (Boolean) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val independent = conversations.filter { it.config?.followAssistant != true }
+    val following = conversations.filter { it.config?.followAssistant == true }
+    val maxHeight = LocalWindowInfo.current.containerDpSize.height * 0.8f
+
+    BasicAlertDialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = rememberScreenEdgeCornerShape(),
+            color = MaterialTheme.colorScheme.surface,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = maxHeight)
+                    .padding(
+                        start = 24.dp,
+                        top = 24.dp,
+                        end = 24.dp,
+                        bottom = 16.dp,
+                    ),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.assistant_page_conversation_independent_settings_dialog_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+                CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        TextButton(
+                            onClick = { onSetAllConversationsIndependent(false) },
+                            modifier = Modifier.heightIn(min = 32.dp),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                        ) {
+                            Text(stringResource(R.string.common_disable_all))
+                        }
+                        TextButton(
+                            onClick = { onSetAllConversationsIndependent(true) },
+                            modifier = Modifier.heightIn(min = 32.dp),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                        ) {
+                            Text(stringResource(R.string.common_enable_all))
+                        }
+                    }
+                }
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f, fill = false)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    independent.forEach { conversation ->
+                        ConversationSettingsItem(
+                            conversation = conversation,
+                            independent = true,
+                            onSetConversationIndependent = onSetConversationIndependent,
+                        )
+                    }
+                    if (independent.isNotEmpty() && following.isNotEmpty()) {
+                        HorizontalDivider()
+                    }
+                    following.forEach { conversation ->
+                        ConversationSettingsItem(
+                            conversation = conversation,
+                            independent = false,
+                            onSetConversationIndependent = onSetConversationIndependent,
+                        )
+                    }
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text(stringResource(R.string.common_ok))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ConversationSettingsItem(
+    conversation: Conversation,
+    independent: Boolean,
+    onSetConversationIndependent: (Uuid, Boolean) -> Unit,
+) {
+    OutlinedItemCard(
+        onClick = { onSetConversationIndependent(conversation.id, !independent) },
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = conversation.title.ifBlank { stringResource(R.string.conversation_untitled) },
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            Switch(
+                checked = independent,
+                onCheckedChange = { onSetConversationIndependent(conversation.id, it) },
+            )
+        }
+    }
 }
 
 @Composable

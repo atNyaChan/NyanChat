@@ -17,7 +17,8 @@ import kotlin.uuid.Uuid
  * 模式注入和 Lorebook 同样随会话固定，沿用 [Conversation.modeInjectionIds] 与 [Conversation.lorebookIds]。
  *
  * fork 追加了 [followAssistant]：开启时该会话不使用本快照，而是实时跟随助手设置。
- * 该字段是 fork 私有的，上游不认识，但解码时 `ignoreUnknownKeys` 会忽略它，因此不影响上游读取本会话。
+ * 助手的 `conversationSettingsMode` 可全局覆盖该开关（关闭=全部跟随，开启=全部独立）。
+ * 这两个字段是 fork 私有的，上游不认识，但解码时 `ignoreUnknownKeys` 会忽略它们，因此不影响上游读取本会话。
  */
 @Serializable
 data class ConversationConfig(
@@ -52,10 +53,23 @@ private fun Assistant.withConversationConfig(config: ConversationConfig) = copy(
     enabledSkills = config.enabledSkills,
 )
 
+private fun Assistant.effectiveFollowAssistant(conversation: Conversation): Boolean =
+    when (conversationSettingsMode) {
+        ConversationSettingsMode.OFF -> true
+        ConversationSettingsMode.ON -> false
+        ConversationSettingsMode.PER_CONVERSATION -> conversation.config?.followAssistant ?: false
+    }
+
+/** fork：该会话当前是否使用独立设置（助手级选择优先于会话自身的开关）。 */
+fun Settings.usesIndependentConversationSettings(conversation: Conversation): Boolean {
+    if (conversation.config == null) return false
+    return !getStoredAssistantOf(conversation).effectiveFollowAssistant(conversation)
+}
+
 /** 会话视角下的助手：会话开始后，会话持有的字段覆盖助手自身的值；开启跟随时忽略快照。 */
 fun Assistant.withConversation(conversation: Conversation): Assistant {
     val config = conversation.config ?: return this
-    if (config.followAssistant) return this
+    if (effectiveFollowAssistant(conversation)) return this
     return withConversationConfig(config).copy(
         modeInjectionIds = conversation.modeInjectionIds,
         lorebookIds = conversation.lorebookIds,
@@ -66,10 +80,11 @@ fun Assistant.withConversation(conversation: Conversation): Assistant {
 fun Conversation.withAssistantUpdate(updated: Assistant, settings: Settings): Conversation {
     val previous = settings.getAssistantOf(this)
     val config = config
+    val stored = settings.getStoredAssistantOf(this)
     val conversation = when {
         config == null -> this
         // 跟随助手时快照不参与，改动全部写回助手
-        config.followAssistant -> this
+        stored.effectiveFollowAssistant(this) -> this
         else -> copy(
             config = updated.toConversationConfig(),
             modeInjectionIds = updated.modeInjectionIds,
@@ -84,7 +99,7 @@ fun Conversation.withAssistantUpdate(updated: Assistant, settings: Settings): Co
 fun Assistant.withoutConversationFields(conversation: Conversation, stored: Assistant): Assistant {
     val config = conversation.config
     // 未开始或跟随助手的会话，改动全部写回助手
-    if (config == null || config.followAssistant) return this
+    if (config == null || stored.effectiveFollowAssistant(conversation)) return this
     return withConversationConfig(stored.toConversationConfig()).copy(
         modeInjectionIds = stored.modeInjectionIds,
         lorebookIds = stored.lorebookIds,
@@ -100,7 +115,7 @@ fun Settings.getAssistantOf(conversation: Conversation): Assistant {
     val assistant = getStoredAssistantOf(conversation).withConversation(conversation)
     val config = conversation.config ?: return assistant
     // 跟随助手时直接使用助手自身的设置
-    if (config.followAssistant) return assistant
+    if (assistant.effectiveFollowAssistant(conversation)) return assistant
     // 助手自身的失效引用在读取设置时已清理，会话上固定的这份在这里滤掉
     return assistant.copy(
         mcpServers = assistant.mcpServers.filterTo(mutableSetOf()) { id -> mcpServers.any { it.id == id } },
@@ -112,9 +127,10 @@ fun Settings.getAssistantOf(conversation: Conversation): Assistant {
 
 /** 会话使用的聊天模型；跟随助手或配置缺失时以助手为准。 */
 fun Settings.getChatModelOf(conversation: Conversation): Model? {
-    val assistantModel = findModelById(getStoredAssistantOf(conversation).chatModelId ?: chatModelId)
+    val assistant = getStoredAssistantOf(conversation)
+    val assistantModel = findModelById(assistant.chatModelId ?: chatModelId)
     val config = conversation.config ?: return assistantModel
-    if (config.followAssistant) return assistantModel
+    if (assistant.effectiveFollowAssistant(conversation)) return assistantModel
     // 固定的模型被删除后退回助手当前的模型
     return findModelById(config.chatModelId) ?: assistantModel
 }
@@ -132,7 +148,10 @@ fun Conversation.bindConfig(settings: Settings): Conversation {
     }
     val assistant = settings.getAssistantOf(this)
     return copy(
-        config = assistant.toConversationConfig().copy(chatModelId = model?.id),
+        config = assistant.toConversationConfig().copy(
+            chatModelId = model?.id,
+            followAssistant = assistant.conversationSettingsMode == ConversationSettingsMode.OFF,
+        ),
         // 旧版本允许会话单独绑定注入，这类会话保留自己的绑定
         modeInjectionIds = modeInjectionIds.ifEmpty { assistant.modeInjectionIds },
         lorebookIds = lorebookIds.ifEmpty { assistant.lorebookIds },

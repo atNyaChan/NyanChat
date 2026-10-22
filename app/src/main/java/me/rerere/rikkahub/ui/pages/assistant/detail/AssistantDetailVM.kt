@@ -23,7 +23,11 @@ import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.Avatar
+import me.rerere.rikkahub.data.model.Conversation
+import me.rerere.rikkahub.data.model.ConversationSettingsMode
 import me.rerere.rikkahub.data.model.Tag
+import me.rerere.rikkahub.data.model.setFollowAssistant
+import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.rikkahub.data.repository.MemoryRepository
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.rikkahub.data.skills.SkillManager
@@ -41,6 +45,7 @@ class AssistantDetailVM(
     private val filesManager: FilesManager,
     private val skillManager: SkillManager,
     private val workspaceRepository: WorkspaceRepository,
+    private val conversationRepository: ConversationRepository,
 ) : ViewModel() {
     private val assistantId = Uuid.parse(id)
 
@@ -117,6 +122,15 @@ class AssistantDetailVM(
 
     val workspaces: StateFlow<List<WorkspaceEntity>> = workspaceRepository
         .listFlow()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = emptyList(),
+        )
+
+    val conversations: StateFlow<List<Conversation>> = conversationRepository
+        .getConversationsOfAssistant(assistantId)
+        .map { list -> list.sortedByDescending { it.updateAt } }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -203,6 +217,66 @@ class AssistantDetailVM(
                 checkAvatarDelete(old = old, new = assistant) // 删除旧头像
                 checkBackgroundDelete(old = old, new = assistant) // 删除旧背景
             }
+        }
+    }
+
+    /** 切换助手级的“使用独立对话设置”；非“分别设置”时同步所有会话的开关。 */
+    fun updateConversationSettingsMode(mode: ConversationSettingsMode) {
+        viewModelScope.launch {
+            val settings = settingsStore.awaitLoaded()
+            settingsStore.update { current ->
+                current.copy(
+                    assistants = current.assistants.map {
+                        if (it.id == assistantId) it.copy(conversationSettingsMode = mode) else it
+                    }
+                )
+            }
+            if (mode != ConversationSettingsMode.PER_CONVERSATION) {
+                setConversationsIndependent(
+                    conversations = conversations.value,
+                    settings = settings,
+                    independent = mode == ConversationSettingsMode.ON,
+                )
+            }
+        }
+    }
+
+    /** 单独切换某个会话是否使用独立设置。 */
+    fun setConversationIndependent(conversationId: Uuid, independent: Boolean) {
+        viewModelScope.launch {
+            val settings = settingsStore.awaitLoaded()
+            val conversation = conversations.value.find { it.id == conversationId }
+                ?: conversationRepository.getConversationById(conversationId)
+                ?: return@launch
+            conversationRepository.updateConversationConfig(
+                conversation.setFollowAssistant(settings, !independent)
+            )
+        }
+    }
+
+    /** 批量切换当前助手下所有会话是否使用独立设置。 */
+    fun setAllConversationsIndependent(independent: Boolean) {
+        viewModelScope.launch {
+            setConversationsIndependent(
+                conversations = conversations.value,
+                settings = settingsStore.awaitLoaded(),
+                independent = independent,
+            )
+        }
+    }
+
+    // 只改动状态不同的会话，避免把已经独立的会话重新拍成助手当前设置
+    private suspend fun setConversationsIndependent(
+        conversations: List<Conversation>,
+        settings: Settings,
+        independent: Boolean,
+    ) {
+        conversations.forEach { conversation ->
+            val currentlyIndependent = conversation.config?.followAssistant != true
+            if (currentlyIndependent == independent) return@forEach
+            conversationRepository.updateConversationConfig(
+                conversation.setFollowAssistant(settings, !independent)
+            )
         }
     }
 
