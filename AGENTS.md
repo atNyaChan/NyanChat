@@ -163,6 +163,7 @@ as an ordinary folder, and never invent a uuid/filename-keyed path for an attach
 ./gradlew lint                   # Run Android Lint
 ./gradlew spotlessApply          # Format all Kotlin files with ktlint (-PspotlessRatchet=<ref> limits to files changed since that ref)
 ./gradlew spotlessCheck          # Check formatting without modifying files
+git apply ./app/baselineprofile/mock-provider.patch && ./gradlew :app:generateReleaseBaselineProfile && git apply-reverse ./app/baselineprofile/mock-provider.patch # Generate Profile
 ```
 
 Build configuration is unified across the project: JDK 21 for the project, the Gradle daemon,
