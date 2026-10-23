@@ -18,6 +18,60 @@ fun DisplaySetting.effectiveBackgroundEffectType(): BackgroundEffectType? =
     if (enableBlurEffect) backgroundEffectType else null
 
 /**
+ * 背景效果设置的四档选择：关闭、仅标题栏、模糊、玻璃。
+ *
+ * 仅用于设置项与界面判断，不参与持久化；持久化仍沿用
+ * [DisplaySetting.enableBlurEffect]、[DisplaySetting.backgroundEffectType]
+ * 和 [DisplaySetting.enableTitleBarScrim]，因此 [BackgroundEffectType] 的枚举键不变。
+ */
+enum class BackgroundEffectSelection {
+    OFF,
+    TITLE_BAR_ONLY,
+    BLUR,
+    GLASS,
+}
+
+/**
+ * 当前选择项。[DisplaySetting.enableTitleBarScrim] 区分关闭与仅标题栏：
+ * 两者都不使用模糊/玻璃，仅标题栏还会保留标题栏遮罩。
+ */
+fun DisplaySetting.effectiveBackgroundEffectSelection(): BackgroundEffectSelection = when {
+    enableBlurEffect -> when (backgroundEffectType) {
+        BackgroundEffectType.BLUR -> BackgroundEffectSelection.BLUR
+        BackgroundEffectType.GLASS -> BackgroundEffectSelection.GLASS
+    }
+
+    enableTitleBarScrim -> BackgroundEffectSelection.TITLE_BAR_ONLY
+    else -> BackgroundEffectSelection.OFF
+}
+
+/** 按选择项写回设置；只有“关闭”会同时移除标题栏遮罩。 */
+fun DisplaySetting.withBackgroundEffectSelection(selection: BackgroundEffectSelection): DisplaySetting =
+    when (selection) {
+        BackgroundEffectSelection.OFF -> copy(
+            enableBlurEffect = false,
+            enableTitleBarScrim = false,
+        )
+
+        BackgroundEffectSelection.TITLE_BAR_ONLY -> copy(
+            enableBlurEffect = false,
+            enableTitleBarScrim = true,
+        )
+
+        BackgroundEffectSelection.BLUR -> copy(
+            enableBlurEffect = true,
+            enableTitleBarScrim = true,
+            backgroundEffectType = BackgroundEffectType.BLUR,
+        )
+
+        BackgroundEffectSelection.GLASS -> copy(
+            enableBlurEffect = true,
+            enableTitleBarScrim = true,
+            backgroundEffectType = BackgroundEffectType.GLASS,
+        )
+    }
+
+/**
  * 过滤 HTTP 请求头值中 OkHttp 不允许的字符（非 ASCII 与控制字符）。
  * User-Agent 等自定义请求头直接交给 OkHttp 会抛出 IllegalArgumentException，
  * 输入框和设置规整都要用它过滤。

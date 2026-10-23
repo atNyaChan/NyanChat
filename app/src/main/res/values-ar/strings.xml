@@ -1075,6 +1075,7 @@
   <string name="setting_display_page_auto_play_tts_title">تشغيل TTS تلقائيًا بعد الإنشاء</string>
   <string name="setting_display_page_background_effect_blur">تمويه</string>
   <string name="setting_display_page_background_effect_glass">زجاجي</string>
+  <string name="setting_display_page_background_effect_title_bar">شريط العنوان فقط</string>
   <string name="setting_display_page_bold_font_weight_desc">تعيين وزن النص العريض. النطاق: 100 - 900، اتركه فارغًا لاستخدام الافتراضي.</string>
   <string name="setting_display_page_bold_font_weight_title">وزن الخط العريض</string>
   <string name="setting_display_page_bubble_opacity_title">عتامة الفقاعة</string>
@@ -1248,7 +1249,6 @@
   <string name="setting_provider_page_embedding_model">التضمين</string>
   <string name="setting_provider_page_enable">تفعيل</string>
   <string name="setting_provider_page_enabled">مفعّل</string>
-  <string name="setting_provider_page_filter_example">مثال: gpt-6</string>
   <string name="setting_provider_page_filter_placeholder">أدخل اسم النموذج للتصفية</string>
   <string name="setting_provider_page_grok_disclaimer">يستخدم اشتراك SuperGrok الخاص بك عبر تسجيل الدخول كما في Grok CLI. ميزة تجريبية: قد تغيّر xAI هذا أو تقيّده في أي وقت.</string>
   <string name="setting_provider_page_image">صورة</string>
@@ -1273,7 +1273,7 @@
   <string name="setting_provider_page_model_display_name">الاسم المعروض للنموذج</string>
   <string name="setting_provider_page_model_display_name_placeholder">مثال: GPT-3.5، للعرض في واجهة المستخدم</string>
   <string name="setting_provider_page_model_id">معرّف النموذج</string>
-  <string name="setting_provider_page_model_id_placeholder">مثال: gpt-3.5-turbo</string>
+  <string name="setting_provider_page_model_id_placeholder">مثال: deepseek-v4.1-flash-1017</string>
   <string name="setting_provider_page_model_name">اسم النموذج</string>
   <string name="setting_provider_page_model_type">نوع النموذج</string>
   <string name="setting_provider_page_models_format">النماذج (%1$d)</string>

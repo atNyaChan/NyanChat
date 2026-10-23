@@ -44,6 +44,7 @@
 - 缩短思考块内文字与思考块下边缘的间距。
 - 记住思考块的展开/收起状态：思考块滚出屏幕被列表回收后再滚回来，仍保持原来的展开状态。
 - 思考/工具时间线的连线的最后一步下方仍保留向下连线，并距容器底部 16dp 收尾。
+- 只有块内仅含单个思考步骤时，思考标题行才在折叠时使用自适应宽度；块内出现多个步骤（多个思考、思考与工具混合、多个工具）时所有步骤标题行一律全宽。
 
 ### 空白消息
 - 允许发送仅包含空格等空白字符的消息。真正的空字符串仍不能作为单独消息发送。
@@ -154,7 +155,7 @@
 - 输入框的放大图标改为 Agora 同款的展开/收起输入框，不再弹出单独的编辑界面。
 - 展开的输入框处于编辑历史消息状态时，退出编辑（发送或点击“编辑中”卡片的取消键）会自动收起输入框。
 - 聊天图片预览改用图片库的 `ImagePreviewer`：单击图片或向下拖动图片即可退出预览，保留双指缩放、双击缩放与左右翻页。
-- “模糊/玻璃效果”改为下拉框，可选关闭、模糊、玻璃。开启后主页面标题栏、输入栏和侧栏共用 `chatInputHaze` 使用对应效果。模糊/玻璃效果下侧栏保持圆角。
+- “模糊/玻璃效果”改为连接式按钮组，可选关闭、仅标题栏、模糊、玻璃（默认仅标题栏）。持久化沿用 `enableBlurEffect` 与 `backgroundEffectType`，并新增 `enableTitleBarScrim` 区分“关闭”与“仅标题栏”：两者都不使用模糊/玻璃，“仅标题栏”保留标题栏的顶部渐隐遮罩。选择模糊或玻璃后主页面标题栏、输入栏和侧栏共用 `chatInputHaze` 使用对应效果，模糊/玻璃效果下侧栏保持圆角。选择“关闭”时移除标题栏遮罩，列表恢复顶部内边距，消息不再滚到标题栏下面（与加入该遮罩前一致）。
 - 分享面板第一行并排选择 Markdown 或图片，第二行统一设置是否保留思考，底部使用一个导出按钮，“导出格式”标题改用大号标题样式。
 - 助手消息的翻译入口移入三点操作面板，位于“编辑”下方、“分享”上方。
 - 消息分支存在多条消息时，三点操作面板第一行加入“向前移动/向后移动”，把当前选中的分支消息在列表里前移/后移一位；已在第一条时禁用“前移”，已在最后一条时禁用“后移”。
@@ -244,7 +245,7 @@
 	- 音量键翻页（默认：关闭；可选：关闭、25%、50%、75%、100%）
 	- 粘贴长文本为文件（默认：留空，即关闭）
 - “界面设置”分组
-	- 模糊/玻璃效果（默认：关闭；可选：关闭、模糊、玻璃；描述：为主页的 UI 元素加上模糊或玻璃效果）
+	- 模糊/玻璃效果（默认：仅标题栏；可选：关闭、仅标题栏、模糊、玻璃；描述：为主页的 UI 元素加上模糊或玻璃效果）
 	- 引号内文字高亮（默认：关闭）
 	- 显示助手消息气泡（默认：关闭）
 	- 气泡不透明度（默认：100%）
@@ -414,7 +415,7 @@
 - 模型提供商配置中“Response API”开关下方始终显示“可能不兼容”灰色小字提示（不再弹出 toast）；官方 OpenAI、DeepSeek（`api.deepseek.com`）与 OpenRouter（`openrouter.ai`）地址不显示该提示。
 - 与上游不同，提供商创建后仍允许在配置页切换类型（OpenAI / Claude / Google）；编辑已有提供商时，类型选择卡片下方以灰色小字标注共用的“不建议修改”（新建提供商与模型的“提供商重写”不显示），切换类型仍会按原有逻辑转换地址与密钥。
 - 切换类型时会按新提供商的 `supportedBuiltInTools()` 关闭其 API 不支持的内置工具（与导入存档时同一套清理，模型级“提供商重写”优先），避免留下开了却不会发送的开关。
-- 模型搜索/筛选输入框的示例文案由“GPT-3.5”改为“gpt-6”。
+- 模型搜索/筛选输入框的示例文案改为 `deepseek-v4.1-flash-1017`，并与新增/编辑模型抽屉“基本设置”页签的模型 ID 占位符共用同一个字符串。
 - 模型能力注册表新增 Claude Fable 5 系列（`CLAUDE_FABLE_5`）：模型 ID 含 `claude`、`fable`、`5`（如 `claude-fable-5`、`claude-fable-5.1`）时自动启用文字+图片输入（视觉）以及工具与推理能力；并加入 `CLAUDE_SERIES` 分组。
 - 模型能力注册表移除 Gemini 2.0 Flash（`GEMINI_20_FLASH`）。
 - 模型能力注册表移除 Claude 4（`CLAUDE_4`）：`claude-4-*` 与 `claude-*-4`（Sonnet/Opus 4）不再被识别为内置模型能力。
@@ -499,7 +500,7 @@
 - 导入完整备份后扫描消息数据库，把图片、文档、视频和音频记录里的附件 url 统一改写成相对 `filesDir` 的落盘路径（`upload/<sha256>`）。设置里的助手头像、聊天背景与用户头像在写入 DataStore 时同样折叠成相对路径。
 - 导入时按存档数据库版本处理附件：仅当版本低于 100 时，把旧的 `managed_files` 表转换成 `managed_files_cas`（一份 sha256 一行，使用记录写入 `usages` 并逐条保存旧文件名与展示名），并把消息/设置里 `upload/<uuid.ext>` 的名字按内容 sha256 改写；消息库里记录了真实文件名（目前文档附件才有）时优先用它作为该次使用的展示名。版本已是 100 及以上的存档直接用恢复后的 `managed_files_cas`，不迁移 `upload`。导入后删除旧 `managed_files` 表（带数据的转换始终在恢复阶段完成；App 自身禁止原地升级：运行路径不注册上游旧版本的迁移，启动读到小于 100 的上游旧库会直接报错，`Migration_30_31`、`Migration_31_32`、`Migration_32_102` 只在恢复存档的暂存库上执行）。旧表转 `managed_files_cas` 的整个转换（建表、改写消息 url、删旧表）在单个 SQLite 事务内完成，中途异常会整体回滚，不留下半转换的库。
 - 导入根据文件后缀识别新 `.tar` 与旧 `.zip`，旧 ZIP 备份仍可还原；还原时只读取单个 `rikka_hub.db`，不再合并旧 zip 的 `-wal`/`-shm` 旁路文件。
-- 本地导出额外提供旧 ZIP 兼容格式（移除 Fork 新增的模型价格、排序、显示（含 `detailedTokenUsage`）、上下文缓存、回传思考、本地工具授权、中途思考、自定义字体字重与内置搜索字段；`chatFontFamily` 的 `outfit` 回落为 `serif`；`webDavConfig`/`s3Config`/`uploadS3Config` 的备份项去除 `WORKSPACE`；过滤官方版本无法反序列化的电池和定位本地工具；并标注“兼容 RikkaHub 3.1.0+”）。
+- 本地导出额外提供旧 ZIP 兼容格式（移除 Fork 新增的模型价格、排序、显示（含 `detailedTokenUsage`、`enableTitleBarScrim`）、上下文缓存、回传思考、本地工具授权、中途思考、自定义字体字重与内置搜索字段；`chatFontFamily` 的 `outfit` 回落为 `serif`；`webDavConfig`/`s3Config`/`uploadS3Config` 的备份项去除 `WORKSPACE`；过滤官方版本无法反序列化的电池和定位本地工具；并标注“兼容 RikkaHub 3.1.0+”）。
 - 兼容 ZIP 中 `rikka_hub.db` 与 `settings.json` 使用 deflate 5 级压缩，其余附件条目只储存（STORED）不压缩。
 - 兼容 ZIP 只包含名为 `upload` 的附件目录，里面是 `uuid.ext` 形式的真实文件：每份内容按各次消息使用记录（usages 的 `filename`）分别落一份副本，同一附件被使用几次就复制几份；被设置（助手头像/背景、用户头像）引用或完全未被消息引用的内容才用 `filenameBySha` 的基础名落一份。
 - 每条旧的 `managed_files` 行用该次使用的 `display_name`（缺失时退回 `filename`）作展示名。同时把数据库里的 `managed_files_cas` 转回旧 `managed_files` 表（`folder` 固定 `upload`、`relative_path` 用 `upload/<uuid.ext>`、`updated_at` 照抄 `created_at`）。
@@ -696,3 +697,4 @@
 - 删除未使用的反编译工具二进制 `gradle/vineflower.jar`。
 - web-ui 工作台预览 mermaid 的 CDN 地址由 `https://esm.sh/mermaid@11` 固定为 `https://esm.sh/mermaid@11.16.0`，与 Android 端内置的 `app/src/main/assets/html/mermaid.min.js`（11.16.0）版本统一。
 - 收藏列表的侧滑删除改用 Material 3 的 `SwipeToDismissBox(onDismiss = ...)` 回调（基于 `settledValue`，仅在真正划出落定时触发，替代已弃用的 `confirmValueChange`），并在触发删除后用 `snapTo(Settled)` 立即把状态收回未滑出位置。
+- Haze 2.0.1 的玻璃效果 API 全部标记为实验性（`ExperimentalHazeApi`），在 `ChatInputHaze.kt` 用文件级 `@file:OptIn` 集中抑制，避免 `chromaMultiplier` 等调用反复产生 “Experimental Haze API” 编译警告。

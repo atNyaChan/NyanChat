@@ -22,6 +22,7 @@ internal fun makeRikkaHubCompatible(settings: JsonElement): JsonElement {
 
     val displaySetting = (compatibleRoot["displaySetting"] as? JsonObject)?.let { display ->
         val stripped = display - setOf(
+            "enableTitleBarScrim",
             "enableCodeLigatures",
             "useChatFontGlobally",
             "screenCornerAdaptation",

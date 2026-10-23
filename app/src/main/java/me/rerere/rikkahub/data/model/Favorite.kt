@@ -14,7 +14,7 @@ enum class FavoriteType(val value: String) {
 
     // Keep old value for compatibility with existing data.
     @SerialName("message")
-    MESSAGE("message");
+    MESSAGE("message")
 }
 
 @Serializable

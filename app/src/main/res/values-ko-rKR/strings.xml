@@ -1075,6 +1075,7 @@
   <string name="setting_display_page_auto_play_tts_title">생성 후 TTS 자동 재생</string>
   <string name="setting_display_page_background_effect_blur">블러</string>
   <string name="setting_display_page_background_effect_glass">글래스</string>
+  <string name="setting_display_page_background_effect_title_bar">제목 표시줄만</string>
   <string name="setting_display_page_bold_font_weight_desc">굵은 글꼴의 두께를 설정합니다. 범위: 100 - 900, 비워 두면 기본값을 사용합니다.</string>
   <string name="setting_display_page_bold_font_weight_title">굵은 글꼴 두께</string>
   <string name="setting_display_page_bubble_opacity_title">버블 불투명도</string>
@@ -1248,7 +1249,6 @@
   <string name="setting_provider_page_embedding_model">임베딩</string>
   <string name="setting_provider_page_enable">활성화</string>
   <string name="setting_provider_page_enabled">활성화됨</string>
-  <string name="setting_provider_page_filter_example">예: gpt-6</string>
   <string name="setting_provider_page_filter_placeholder">모델 이름 입력하여 필터링</string>
   <string name="setting_provider_page_grok_disclaimer">Grok CLI처럼 로그인하여 SuperGrok 구독을 사용합니다. 실험적 기능: xAI는 언제든지 이를 변경하거나 제한할 수 있습니다.</string>
   <string name="setting_provider_page_image">이미지</string>
@@ -1273,7 +1273,7 @@
   <string name="setting_provider_page_model_display_name">모델 표시 이름</string>
   <string name="setting_provider_page_model_display_name_placeholder">예: GPT-3.5, UI 표시용</string>
   <string name="setting_provider_page_model_id">모델 ID</string>
-  <string name="setting_provider_page_model_id_placeholder">예: gpt-3.5-turbo</string>
+  <string name="setting_provider_page_model_id_placeholder">예: deepseek-v4.1-flash-1017</string>
   <string name="setting_provider_page_model_name">모델 이름</string>
   <string name="setting_provider_page_model_type">모델 유형</string>
   <string name="setting_provider_page_models_format">모델 (%1$d)</string>

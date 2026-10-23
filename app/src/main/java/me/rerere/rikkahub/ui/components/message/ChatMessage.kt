@@ -61,7 +61,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
-import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.core.content.FileProvider
@@ -349,7 +348,8 @@ private fun MessagePartsBlock(
         when (block) {
             is MessagePartBlock.ThinkingBlock -> {
                 if (block.steps.isNotEmpty()) {
-                    val isReasoningOnlyBlock = block.steps.fastAll { it is ThinkingStep.ReasoningStep }
+                    // 只有单个思考步骤时标题行才自适应宽度；块内存在多个步骤（多个思考、思考与工具混合、多个工具）时标题行全部全宽
+                    val isSingleReasoningBlock = block.steps.size == 1 && block.steps.single() is ThinkingStep.ReasoningStep
                     ChainOfThought(
                         modifier = Modifier.animateContentSize(),
                         steps = block.steps,
@@ -365,7 +365,7 @@ private fun MessagePartsBlock(
                                         model = model,
                                         assistant = assistant,
                                         messageEdited = messageEdited,
-                                        collapsedAdaptiveWidth = isReasoningOnlyBlock,
+                                        collapsedAdaptiveWidth = isSingleReasoningBlock,
                                     )
                                 }
                             }

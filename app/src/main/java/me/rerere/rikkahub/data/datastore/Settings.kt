@@ -189,6 +189,8 @@ data class DisplaySetting(
     val enableLatexRendering: Boolean = true,
     val enableQuoteHighlight: Boolean = false,
     val enableBlurEffect: Boolean = false,
+    // 不使用模糊/玻璃时是否保留标题栏遮罩：用于区分“仅标题栏”与“关闭”
+    val enableTitleBarScrim: Boolean = true,
     val backgroundEffectType: BackgroundEffectType = BackgroundEffectType.BLUR,
     val chatFontFamily: ChatFontFamily = ChatFontFamily.DEFAULT,
     val chatCustomFontPath: String = "",

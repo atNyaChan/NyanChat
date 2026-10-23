@@ -604,7 +604,7 @@ private fun ModelsHeaderRow(
             modifier = Modifier.padding(start = 4.dp, top = 8.dp, bottom = 8.dp),
         )
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(0.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(
@@ -1149,7 +1149,7 @@ private fun ModelPickerSheet(
                 label = { Text(stringResource(R.string.setting_provider_page_filter_placeholder)) },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = {
-                    Text(stringResource(R.string.setting_provider_page_filter_example))
+                    Text(stringResource(R.string.setting_provider_page_model_id_placeholder))
                 },
             )
         }

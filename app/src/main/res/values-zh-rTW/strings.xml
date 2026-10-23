@@ -1075,6 +1075,7 @@
   <string name="setting_display_page_auto_play_tts_title">產生後自動播放 TTS</string>
   <string name="setting_display_page_background_effect_blur">模糊</string>
   <string name="setting_display_page_background_effect_glass">玻璃</string>
+  <string name="setting_display_page_background_effect_title_bar">僅標題列</string>
   <string name="setting_display_page_bold_font_weight_desc">設定加粗字體的字重。範圍：100 - 900，留空則使用預設值。</string>
   <string name="setting_display_page_bold_font_weight_title">加粗字體字重</string>
   <string name="setting_display_page_bubble_opacity_title">氣泡透明度</string>
@@ -1248,7 +1249,6 @@
   <string name="setting_provider_page_embedding_model">嵌入</string>
   <string name="setting_provider_page_enable">啟用</string>
   <string name="setting_provider_page_enabled">啟用</string>
-  <string name="setting_provider_page_filter_example">例如：gpt-6</string>
   <string name="setting_provider_page_filter_placeholder">輸入模型名稱篩選</string>
   <string name="setting_provider_page_grok_disclaimer">以 Grok CLI 的方式登入，使用你的 SuperGrok 訂閱。實驗性功能：xAI 可能隨時變更或限制此功能。</string>
   <string name="setting_provider_page_image">圖片</string>
@@ -1273,7 +1273,7 @@
   <string name="setting_provider_page_model_display_name">模型顯示名稱</string>
   <string name="setting_provider_page_model_display_name_placeholder">例如：GPT-3.5, 用於 UI 顯示</string>
   <string name="setting_provider_page_model_id">模型 ID</string>
-  <string name="setting_provider_page_model_id_placeholder">例如：gpt-3.5-turbo</string>
+  <string name="setting_provider_page_model_id_placeholder">例如：deepseek-v4.1-flash-1017</string>
   <string name="setting_provider_page_model_name">模型名稱</string>
   <string name="setting_provider_page_model_type">模型類型</string>
   <string name="setting_provider_page_models_format">模型（%1$d）</string>

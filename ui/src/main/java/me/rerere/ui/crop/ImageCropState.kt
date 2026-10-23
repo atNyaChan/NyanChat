@@ -59,7 +59,7 @@ internal enum class CropHandle(
     Left(left = true),
     Top(top = true),
     Right(right = true),
-    Bottom(bottom = true);
+    Bottom(bottom = true)
 }
 
 /**

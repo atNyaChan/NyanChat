@@ -1075,6 +1075,7 @@
   <string name="setting_display_page_auto_play_tts_title">Auto-play TTS After Generation</string>
   <string name="setting_display_page_background_effect_blur">Blur</string>
   <string name="setting_display_page_background_effect_glass">Glass</string>
+  <string name="setting_display_page_background_effect_title_bar">Title bar only</string>
   <string name="setting_display_page_bold_font_weight_desc">Set the font weight of bold text. Range: 100 - 900, leave blank to use the default.</string>
   <string name="setting_display_page_bold_font_weight_title">Bold Font Weight</string>
   <string name="setting_display_page_bubble_opacity_title">Bubble Opacity</string>
@@ -1248,7 +1249,6 @@
   <string name="setting_provider_page_embedding_model">Embedding</string>
   <string name="setting_provider_page_enable">Enable</string>
   <string name="setting_provider_page_enabled">Enabled</string>
-  <string name="setting_provider_page_filter_example">e.g.: gpt-6</string>
   <string name="setting_provider_page_filter_placeholder">Enter model name to filter</string>
   <string name="setting_provider_page_grok_disclaimer">Uses your SuperGrok subscription by signing in like the Grok CLI. Experimental: xAI may change or restrict this at any time.</string>
   <string name="setting_provider_page_image">Image</string>
@@ -1273,7 +1273,7 @@
   <string name="setting_provider_page_model_display_name">Model Display Name</string>
   <string name="setting_provider_page_model_display_name_placeholder">e.g.: GPT-3.5, for UI display</string>
   <string name="setting_provider_page_model_id">Model ID</string>
-  <string name="setting_provider_page_model_id_placeholder">e.g.: gpt-3.5-turbo</string>
+  <string name="setting_provider_page_model_id_placeholder">e.g.: deepseek-v4.1-flash-1017</string>
   <string name="setting_provider_page_model_name">Model Name</string>
   <string name="setting_provider_page_model_type">Model Type</string>
   <string name="setting_provider_page_models_format">Models (%1$d)</string>

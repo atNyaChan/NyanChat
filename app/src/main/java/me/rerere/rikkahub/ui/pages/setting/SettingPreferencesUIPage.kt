@@ -75,11 +75,12 @@ import me.rerere.hugeicons.stroke.View
 import me.rerere.hugeicons.stroke.ViewOff
 import me.rerere.rikkahub.BuildConfig
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.data.datastore.BackgroundEffectSelection
 import me.rerere.rikkahub.data.datastore.ChatFontFamily
-import me.rerere.rikkahub.data.datastore.BackgroundEffectType
 import me.rerere.rikkahub.data.datastore.DisplaySetting
-import me.rerere.rikkahub.data.datastore.effectiveBackgroundEffectType
+import me.rerere.rikkahub.data.datastore.effectiveBackgroundEffectSelection
 import me.rerere.rikkahub.data.datastore.filterHeaderValueChars
+import me.rerere.rikkahub.data.datastore.withBackgroundEffectSelection
 import me.rerere.rikkahub.data.datastore.ScreenCornerAdaptation
 import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.files.FileUtils
@@ -531,22 +532,18 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                         description = { Text(stringResource(R.string.setting_display_page_enable_blur_effect_desc)) },
                     ) {
                         ConnectedChoiceButtons(
-                            options = listOf(null, BackgroundEffectType.BLUR, BackgroundEffectType.GLASS),
-                            selected = displaySetting.effectiveBackgroundEffectType(),
+                            options = BackgroundEffectSelection.entries,
+                            selected = displaySetting.effectiveBackgroundEffectSelection(),
                             onSelect = { selected ->
-                                updateDisplaySetting(
-                                    displaySetting.copy(
-                                        enableBlurEffect = selected != null,
-                                        backgroundEffectType = selected ?: BackgroundEffectType.BLUR,
-                                    )
-                                )
+                                updateDisplaySetting(displaySetting.withBackgroundEffectSelection(selected))
                             },
                         ) { selected, isSelected ->
                             ConnectedChoiceLabel(
                                 text = when (selected) {
-                                    null -> stringResource(R.string.common_off)
-                                    BackgroundEffectType.BLUR -> stringResource(R.string.setting_display_page_background_effect_blur)
-                                    BackgroundEffectType.GLASS -> stringResource(R.string.setting_display_page_background_effect_glass)
+                                    BackgroundEffectSelection.OFF -> stringResource(R.string.common_off)
+                                    BackgroundEffectSelection.TITLE_BAR_ONLY -> stringResource(R.string.setting_display_page_background_effect_title_bar)
+                                    BackgroundEffectSelection.BLUR -> stringResource(R.string.setting_display_page_background_effect_blur)
+                                    BackgroundEffectSelection.GLASS -> stringResource(R.string.setting_display_page_background_effect_glass)
                                 },
                                 selected = isSelected,
                             )

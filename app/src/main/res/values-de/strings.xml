@@ -1075,6 +1075,7 @@
   <string name="setting_display_page_auto_play_tts_title">TTS nach Generierung automatisch abspielen</string>
   <string name="setting_display_page_background_effect_blur">Unschärfe</string>
   <string name="setting_display_page_background_effect_glass">Glas</string>
+  <string name="setting_display_page_background_effect_title_bar">Nur Titelleiste</string>
   <string name="setting_display_page_bold_font_weight_desc">Schriftstärke von fettem Text festlegen. Bereich: 100 - 900, leer lassen, um den Standardwert zu verwenden.</string>
   <string name="setting_display_page_bold_font_weight_title">Schriftstärke fett</string>
   <string name="setting_display_page_bubble_opacity_title">Blasendeckkraft</string>
@@ -1248,7 +1249,6 @@
   <string name="setting_provider_page_embedding_model">Embedding</string>
   <string name="setting_provider_page_enable">Aktivieren</string>
   <string name="setting_provider_page_enabled">Aktiviert</string>
-  <string name="setting_provider_page_filter_example">z. B.: gpt-6</string>
   <string name="setting_provider_page_filter_placeholder">Modellnamen zum Filtern eingeben</string>
   <string name="setting_provider_page_grok_disclaimer">Verwendet dein SuperGrok-Abo, indem du dich wie bei der Grok CLI anmeldest. Experimentell: xAI kann dies jederzeit ändern oder einschränken.</string>
   <string name="setting_provider_page_image">Bild</string>
@@ -1273,7 +1273,7 @@
   <string name="setting_provider_page_model_display_name">Modell-Anzeigename</string>
   <string name="setting_provider_page_model_display_name_placeholder">z. B.: GPT-3.5, zur Anzeige in der UI</string>
   <string name="setting_provider_page_model_id">Modell-ID</string>
-  <string name="setting_provider_page_model_id_placeholder">z. B.: gpt-3.5-turbo</string>
+  <string name="setting_provider_page_model_id_placeholder">z. B.: deepseek-v4.1-flash-1017</string>
   <string name="setting_provider_page_model_name">Modellname</string>
   <string name="setting_provider_page_model_type">Modelltyp</string>
   <string name="setting_provider_page_models_format">Modelle (%1$d)</string>

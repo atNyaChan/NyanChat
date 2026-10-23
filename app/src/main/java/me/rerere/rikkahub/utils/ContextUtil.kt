@@ -10,7 +10,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.media.MediaScannerConnection
-
 import android.os.Build
 import android.os.Environment
 import android.os.Process
@@ -22,7 +21,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import me.rerere.rikkahub.ui.context.SystemToaster
-
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream

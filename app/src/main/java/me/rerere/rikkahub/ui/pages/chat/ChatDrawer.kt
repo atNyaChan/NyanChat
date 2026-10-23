@@ -72,6 +72,7 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.datastore.ConversationSortOrder
 import me.rerere.rikkahub.data.datastore.Settings
+import me.rerere.rikkahub.data.datastore.effectiveBackgroundEffectType
 import me.rerere.rikkahub.data.datastore.getCurrentAssistant
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.Conversation
@@ -208,13 +209,14 @@ fun ChatDrawerContent(
         topEnd = drawerEndCorner,
         bottomEnd = drawerEndCorner,
     )
+    val hasBackgroundEffect = settings.displaySetting.effectiveBackgroundEffectType() != null
 
     ModalDrawerSheet(
         modifier = Modifier
             .fillMaxWidth(0.9f)
             .then(
                 // 先裁剪出圆角，再绘制背景效果，否则模糊会溢出圆角、把侧栏画成直角。
-                if (settings.displaySetting.enableBlurEffect) {
+                if (hasBackgroundEffect) {
                     Modifier.clip(drawerShape)
                 } else {
                     Modifier
@@ -228,7 +230,7 @@ fun ChatDrawerContent(
                     shape = drawerShape,
                 )
             ),
-        drawerContainerColor = if (settings.displaySetting.enableBlurEffect) {
+        drawerContainerColor = if (hasBackgroundEffect) {
             Color.Transparent
         } else {
             MaterialTheme.colorScheme.surface

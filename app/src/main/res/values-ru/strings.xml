@@ -1075,6 +1075,7 @@
   <string name="setting_display_page_auto_play_tts_title">Автовоспроизведение TTS после генерации</string>
   <string name="setting_display_page_background_effect_blur">Размытие</string>
   <string name="setting_display_page_background_effect_glass">Стекло</string>
+  <string name="setting_display_page_background_effect_title_bar">Только панель заголовка</string>
   <string name="setting_display_page_bold_font_weight_desc">Установить вес жирного шрифта. Диапазон: 100 - 900, оставьте пустым для значения по умолчанию.</string>
   <string name="setting_display_page_bold_font_weight_title">Вес жирного шрифта</string>
   <string name="setting_display_page_bubble_opacity_title">Прозрачность пузырьков</string>
@@ -1248,7 +1249,6 @@
   <string name="setting_provider_page_embedding_model">Встраивание</string>
   <string name="setting_provider_page_enable">Включить</string>
   <string name="setting_provider_page_enabled">Включено</string>
-  <string name="setting_provider_page_filter_example">например: gpt-6</string>
   <string name="setting_provider_page_filter_placeholder">Введите название модели для фильтрации</string>
   <string name="setting_provider_page_grok_disclaimer">Использует вашу подписку SuperGrok, выполняя вход так же, как в Grok CLI. Экспериментально: xAI может в любое время изменить или ограничить эту функцию.</string>
   <string name="setting_provider_page_image">Изображение</string>
@@ -1273,7 +1273,7 @@
   <string name="setting_provider_page_model_display_name">Отображаемое имя модели</string>
   <string name="setting_provider_page_model_display_name_placeholder">например: GPT-3.5, для отображения в интерфейсе</string>
   <string name="setting_provider_page_model_id">ID модели</string>
-  <string name="setting_provider_page_model_id_placeholder">например: gpt-3.5-turbo</string>
+  <string name="setting_provider_page_model_id_placeholder">например: deepseek-v4.1-flash-1017</string>
   <string name="setting_provider_page_model_name">Название модели</string>
   <string name="setting_provider_page_model_type">Тип модели</string>
   <string name="setting_provider_page_models_format">Модели (%1$d)</string>
