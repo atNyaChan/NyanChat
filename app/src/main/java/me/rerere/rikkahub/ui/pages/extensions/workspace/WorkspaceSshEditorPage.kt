@@ -24,9 +24,6 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -59,6 +56,8 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.AppLoadingIndicator
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceLabel
 import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalSettings
@@ -184,21 +183,21 @@ fun WorkspaceSshEditorPage(id: String?) {
             item {
                 CardGroup(title = { Text(stringResource(R.string.workspace_ssh_editor_auth)) }) {
                     FormItem(label = { Text(stringResource(R.string.workspace_ssh_editor_auth_method)) }) {
-                        val options = listOf(
-                            SshAuthType.PASSWORD to stringResource(R.string.workspace_ssh_editor_password),
-                            SshAuthType.PRIVATE_KEY to stringResource(R.string.workspace_ssh_editor_private_key),
-                        )
-                        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                            options.forEachIndexed { index, (type, label) ->
-                                SegmentedButton(
-                                    enabled = editable,
-                                    selected = state.authType == type,
-                                    onClick = { vm.update { it.copy(authType = type) } },
-                                    shape = SegmentedButtonDefaults.itemShape(index, options.size),
-                                ) {
-                                    Text(label)
-                                }
-                            }
+                        ConnectedChoiceButtons(
+                            options = listOf(SshAuthType.PASSWORD, SshAuthType.PRIVATE_KEY),
+                            selected = state.authType,
+                            onSelect = { type -> vm.update { it.copy(authType = type) } },
+                            enabled = editable,
+                        ) { type, selected ->
+                            ConnectedChoiceLabel(
+                                text = stringResource(
+                                    when (type) {
+                                        SshAuthType.PASSWORD -> R.string.workspace_ssh_editor_password
+                                        SshAuthType.PRIVATE_KEY -> R.string.workspace_ssh_editor_private_key
+                                    }
+                                ),
+                                selected = selected,
+                            )
                         }
                     }
                     when (state.authType) {
@@ -213,45 +212,48 @@ fun WorkspaceSshEditorPage(id: String?) {
                         })
 
                         SshAuthType.PRIVATE_KEY -> {
-                            FormItem(
-                                label = { Text(stringResource(R.string.workspace_ssh_editor_private_key)) },
-                                description = { Text(stringResource(R.string.workspace_ssh_editor_private_key_desc)) },
-                            ) {
-                                OutlinedTextField(
-                                    enabled = editable,
-                                    value = state.privateKey,
-                                    onValueChange = { value -> vm.update { it.copy(privateKey = value) } },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    placeholder = {
-                                        Text(
-                                            if (state.hasSavedPrivateKey) {
-                                                stringResource(R.string.workspace_ssh_editor_saved_keep)
-                                            } else {
-                                                "-----BEGIN OPENSSH PRIVATE KEY-----"
-                                            }
-                                        )
-                                    },
-                                    textStyle = MaterialTheme.typography.bodySmall.copy(
-                                        fontFamily = FontFamily.Monospace,
-                                        fontFeatureSettings = codeFontFeatureSettings,
-                                    ),
-                                    minLines = 3,
-                                    maxLines = 8,
-                                )
-                                FilledTonalButton(
-                                    enabled = editable,
-                                    onClick = { privateKeyPicker.launch(arrayOf("*/*")) },
-                                    modifier = Modifier.fillMaxWidth(),
-                                ) {
-                                    Icon(
-                                        HugeIcons.FileImport,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(ButtonDefaults.IconSize),
+                            item(headlineContent = {
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    OutlinedTextField(
+                                        enabled = editable,
+                                        value = state.privateKey,
+                                        onValueChange = { value -> vm.update { it.copy(privateKey = value) } },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        label = { Text(stringResource(R.string.workspace_ssh_editor_private_key)) },
+                                        supportingText = {
+                                            Text(stringResource(R.string.workspace_ssh_editor_private_key_desc))
+                                        },
+                                        placeholder = {
+                                            Text(
+                                                if (state.hasSavedPrivateKey) {
+                                                    stringResource(R.string.workspace_ssh_editor_saved_keep)
+                                                } else {
+                                                    "-----BEGIN OPENSSH PRIVATE KEY-----"
+                                                }
+                                            )
+                                        },
+                                        textStyle = MaterialTheme.typography.bodySmall.copy(
+                                            fontFamily = FontFamily.Monospace,
+                                            fontFeatureSettings = codeFontFeatureSettings,
+                                        ),
+                                        minLines = 3,
+                                        maxLines = 8,
                                     )
-                                    Spacer(Modifier.width(ButtonDefaults.IconSpacing))
-                                    Text(stringResource(R.string.workspace_ssh_editor_import_key))
+                                    FilledTonalButton(
+                                        enabled = editable,
+                                        onClick = { privateKeyPicker.launch(arrayOf("*/*")) },
+                                        modifier = Modifier.fillMaxWidth(),
+                                    ) {
+                                        Icon(
+                                            HugeIcons.FileImport,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(ButtonDefaults.IconSize),
+                                        )
+                                        Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+                                        Text(stringResource(R.string.workspace_ssh_editor_import_key))
+                                    }
                                 }
-                            }
+                            })
                             item(headlineContent = {
                                 SecretTextField(
                                     enabled = editable,
@@ -268,10 +270,7 @@ fun WorkspaceSshEditorPage(id: String?) {
 
             item {
                 CardGroup(title = { Text(stringResource(R.string.workspace_ssh_editor_working_dir)) }) {
-                    FormItem(
-                        label = { Text(stringResource(R.string.workspace_ssh_editor_remote_dir)) },
-                        description = { Text(stringResource(R.string.workspace_ssh_editor_remote_dir_desc)) },
-                    ) {
+                    item(headlineContent = {
                         OutlinedTextField(
                             enabled = editable,
                             value = state.remoteDir,
@@ -280,8 +279,10 @@ fun WorkspaceSshEditorPage(id: String?) {
                             placeholder = { Text("/home/user/project") },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                            label = { Text(stringResource(R.string.workspace_ssh_editor_remote_dir)) },
+                            supportingText = { Text(stringResource(R.string.workspace_ssh_editor_remote_dir_desc)) },
                         )
-                    }
+                    })
                 }
             }
 

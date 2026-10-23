@@ -1377,9 +1377,12 @@
   <string name="search_detail_custom_url">自定义网址</string>
   <string name="search_detail_depth">深度</string>
   <string name="search_detail_engines">引擎</string>
+  <string name="search_detail_include_answer">包含回答</string>
+  <string name="search_detail_include_answer_desc">让 Tavily 在搜索结果之外一并生成答案摘要</string>
   <string name="search_detail_language">语言</string>
   <string name="search_detail_max_tokens">最大令牌数</string>
   <string name="search_detail_max_tokens_per_page">每页最大 Token 数</string>
+  <string name="search_detail_mode">模式</string>
   <string name="search_detail_model">型号</string>
   <string name="search_detail_name">名称</string>
   <string name="search_detail_password">密码</string>
@@ -1522,8 +1525,7 @@
   <string name="setting_asr_page_default_name">ASR</string>
   <string name="setting_asr_page_delete_provider">删除 ASR 提供商</string>
   <string name="setting_asr_page_edit_provider">编辑 ASR 提供商</string>
-  <string name="setting_page_asr_milliseconds">毫秒</string>
-  <string name="setting_page_asr_silence_duration">静音判停时长</string>
+  <string name="setting_page_asr_silence_duration">静音判停时长（毫秒）</string>
   <string name="setting_page_asr_silence_duration_desc">连续静音达到此时长后结束一句话，推荐 800–1000 毫秒。</string>
   <string name="speech_tab_asr">语音识别</string>
   <!-- File settings -->

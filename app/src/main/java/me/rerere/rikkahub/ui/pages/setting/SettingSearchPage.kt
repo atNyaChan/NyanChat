@@ -319,20 +319,17 @@ internal fun CommonOptions(
     CardGroup(
         modifier = modifier.fillMaxWidth(),
     ) {
-        FormItem(
-            label = {
-                Text(stringResource(R.string.setting_page_search_result_size))
-            }
-        ) {
+        item(headlineContent = {
             OutlinedNumberInput(
                 value = commonOptions.resultSize,
                 onValueChange = {
                     commonOptions = commonOptions.copy(resultSize = it)
                     onUpdate(commonOptions)
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                label = stringResource(R.string.setting_page_search_result_size),
             )
-        }
+        })
 
         if (settings.searchServices.isNotEmpty()) {
             FormItem(

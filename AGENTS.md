@@ -35,6 +35,14 @@ of adding per-screen variants.
   title plus card/list layout, keep 8dp between the title bar and the first item. The gap below the last
   card must match the page's left/right inset: with the 8dp outer `contentPadding` plus the 8dp item
   padding that means 16dp at the bottom, never half of it (the stats page's `LazyColumn` follows this).
+  A setting with two to four choices renders as a "label + choice buttons" `CardGroup` item via the
+  shared `ConnectedChoiceButtons` / `ConnectedChoiceLabel`
+  (app/src/main/java/me/rerere/rikkahub/ui/components/ui/ConnectedChoiceButtons.kt), never
+  `SegmentedButton` / `SingleChoiceSegmentedButtonRow`.
+  A text input is one `CardGroup` item whose `headlineContent` is the input itself, with the field name in
+  the input's own `label` and the old `description` in `supportingText` — never a `FormItem` that puts the
+  title above the input. `FormItem` stays for rows whose content is not a single input (sliders, switches,
+  choice rows, chip rows, lists).
 - **Bottom sheets**: always use `BottomSheetDefaults.DragHandle()` with drag-to-dismiss, wrap the
   content height up to 95% of the available height, and use top padding 0dp / bottom 8dp (plus the
   navigation-bar inset). When the sheet contains a `CardGroup`, prefer equal spacing over the uniform
@@ -194,11 +202,21 @@ Example — adding upstream `32` to the fork at `102` requires `LEGACY_SCHEMA_VE
 
 ## Agent Change Workflow
 
-- After any code, resource, or configuration change, the agent MUST **FULLY** READ (and update
-  `docs/NyanwChanges.md` if necessary), recording the change in the appropriate place in the document — do not
-  keep appending to the end.
+- After any code, resource, or configuration change, read `docs/NyanwChanges.md` **FULLY** (never just
+  grep it) and record the change in the appropriate place in the document — do not keep appending to
+  the end. The user also edits this file at any time: if an entry you expect there is reworded,
+  reverted or missing, the user did it on purpose — never re-apply it or add it back.
 - After making changes, scan the repository for unwanted code or locale strings and delete them if
-  found.
+  found. `python3 tools/scan_deadcode.py` is the static scanner for this: it reports unreferenced Kotlin
+  declarations and whole files, unused imports, unreferenced `strings.xml` keys (all locales are
+  checked against `values/`), orphan `res/` files and values entries, dead enum entries, and
+  `web-ui` modules that no other module imports. It prints one section per check, exits `1` when it
+  finds anything and `0` when clean, and `--only <check,...>` limits the run (valid names:
+  `declarations`, `files`, `imports`, `strings`, `res`, `enums`, `web`). Review every finding before
+  deleting it: the script already filters IDE `@Preview`s, `@SerialName`/`@Serializable` DTO members,
+  Room `@TypeConverter`/`@Entity` members and iterated enums, but a public library API or an entry
+  point may still be intentionally unused. Re-run the script after the cleanup until only
+  intentional items remain.
 - The agent must NOT run Gradle, Android Studio, `pnpm`, or any other build, test, or Lint commands on its own. After
   completing changes and static checks, leave compilation and runtime verification to the user.
 - Do NOT commit anything until the user has manually compiled and verified the changes; never commit
@@ -240,7 +258,8 @@ The entire sync lands as ONE merge commit. If the range is too large
 to port safely in one session, STOP and ask the user before starting.
 
 ### NyanwChanges.md
-- Only record things that actually differ from upstream in the appropriate place in the document.
+- Only record things that actually differ from upstream in the appropriate place in the document;
+  never re-apply entries the user reworded, reverted or removed.
 - Do NOT open a separate "sync upstream" section in `docs/NyanwChanges.md`; ported upstream changes
   are recorded only in the merge commit message.
 

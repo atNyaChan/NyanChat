@@ -1377,9 +1377,12 @@
   <string name="search_detail_custom_url">Benutzerdefinierte URL</string>
   <string name="search_detail_depth">Tiefe</string>
   <string name="search_detail_engines">Suchmaschinen</string>
+  <string name="search_detail_include_answer">Antwort einschließen</string>
+  <string name="search_detail_include_answer_desc">Lass Tavily zusammen mit den Suchergebnissen eine Antwortzusammenfassung erzeugen</string>
   <string name="search_detail_language">Sprache</string>
   <string name="search_detail_max_tokens">Max. Tokens</string>
   <string name="search_detail_max_tokens_per_page">Max. Tokens / Seite</string>
+  <string name="search_detail_mode">Modus</string>
   <string name="search_detail_model">Modell</string>
   <string name="search_detail_name">Name</string>
   <string name="search_detail_password">Passwort</string>
@@ -1522,8 +1525,7 @@
   <string name="setting_asr_page_default_name">ASR</string>
   <string name="setting_asr_page_delete_provider">ASR-Anbieter löschen</string>
   <string name="setting_asr_page_edit_provider">ASR-Anbieter bearbeiten</string>
-  <string name="setting_page_asr_milliseconds">Millisekunden</string>
-  <string name="setting_page_asr_silence_duration">Stilledauer bis zum Sprachende</string>
+  <string name="setting_page_asr_silence_duration">Stilledauer bis zum Sprachende (ms)</string>
   <string name="setting_page_asr_silence_duration_desc">Beende die Äußerung nach dieser Dauer anhaltender Stille. Empfohlen: 800–1000 ms.</string>
   <string name="speech_tab_asr">Spracherkennung</string>
   <!-- File settings -->

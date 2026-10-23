@@ -160,6 +160,7 @@ fun <T> SelectTextField(
     readOnly: Boolean = false,
     label: @Composable (() -> Unit)? = null,
     placeholder: @Composable (() -> Unit)? = null,
+    supportingText: @Composable (() -> Unit)? = null,
     optionToString: @Composable (T) -> String = { it.toString() },
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -173,6 +174,7 @@ fun <T> SelectTextField(
             readOnly = readOnly,
             label = label,
             placeholder = placeholder,
+            supportingText = supportingText,
             modifier = Modifier
                 .fillMaxWidth()
                 .onGloballyPositioned { anchorWidth = it.size.width },

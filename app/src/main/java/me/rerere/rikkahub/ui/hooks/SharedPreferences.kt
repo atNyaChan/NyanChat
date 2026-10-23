@@ -79,12 +79,6 @@ fun Context.readStringPreference(key: String, defaultValue: String? = null): Str
     return getSharedPreferences("rikkahub.preferences", Context.MODE_PRIVATE).getString(key, defaultValue)
 }
 
-fun Context.writeBooleanPreference(key: String, value: Boolean) {
-    getSharedPreferences("rikkahub.preferences", Context.MODE_PRIVATE).edit {
-        putBoolean(key, value)
-    }
-}
-
 fun Context.readBooleanPreference(key: String, defaultValue: Boolean = false): Boolean {
     return getSharedPreferences("rikkahub.preferences", Context.MODE_PRIVATE).getBoolean(key, defaultValue)
 }

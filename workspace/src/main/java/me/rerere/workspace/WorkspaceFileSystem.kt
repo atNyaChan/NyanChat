@@ -94,29 +94,6 @@ class WorkspaceFileSystem(
         }
     }
 
-    fun move(root: File, source: String, target: String, overwrite: Boolean = false): WorkspaceFileEntry {
-        require(source.isNotBlank() && source != ".") { "Refusing to move workspace root" }
-        // 软链接本身也是可移动/可覆盖的条目,同样不能跟随
-        val sourceFile = resolvePathNoFollow(root, source)
-        val targetFile = resolvePathNoFollow(root, target)
-        require(sourceFile.exists() || Files.isSymbolicLink(sourceFile.toPath())) {
-            "Source does not exist: $source"
-        }
-        if (targetFile.exists() || Files.isSymbolicLink(targetFile.toPath())) {
-            require(overwrite) { "Target already exists: $target" }
-            if (!Files.isSymbolicLink(targetFile.toPath()) && targetFile.isDirectory) {
-                targetFile.deleteRecursively()
-            } else {
-                targetFile.delete()
-            }
-        }
-        targetFile.parentFile?.mkdirs()
-        require(sourceFile.renameTo(targetFile)) {
-            "Failed to move $source to $target"
-        }
-        return targetFile.toEntry(root)
-    }
-
     fun glob(root: File, pattern: String, path: String = ""): List<WorkspaceFileEntry> {
         require(pattern.isNotBlank()) { "Glob pattern is required" }
         val start = resolvePath(root, path)

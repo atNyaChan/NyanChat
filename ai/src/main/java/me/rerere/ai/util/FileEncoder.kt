@@ -11,13 +11,6 @@ import me.rerere.ai.ui.UIMessagePart
 import java.io.ByteArrayOutputStream
 import java.io.File
 
-private val supportedTypes = setOf(
-    "image/jpeg",
-    "image/png",
-    "image/gif",
-    "image/webp",
-)
-
 data class EncodedImage(
     val base64: String,
     val mimeType: String

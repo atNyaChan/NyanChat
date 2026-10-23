@@ -2,19 +2,15 @@ package me.rerere.rikkahub.ui.components.ai
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
-import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,16 +18,11 @@ import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.ListItemColors
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,107 +44,7 @@ import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.ui.components.ui.CardGroupScope
 import me.rerere.rikkahub.ui.components.ui.Tag
 import me.rerere.rikkahub.ui.components.ui.TagType
-import me.rerere.ui.components.ToggleSurface
 import org.koin.compose.koinInject
-
-@Composable
-fun McpPickerButton(
-    assistant: Assistant,
-    servers: List<McpServerConfig>,
-    mcpManager: McpManager,
-    modifier: Modifier = Modifier,
-    onUpdateAssistant: (Assistant) -> Unit
-) {
-    var showMcpPicker by remember { mutableStateOf(false) }
-    val status by mcpManager.syncingStatus.collectAsStateWithLifecycle()
-    val loading = status.values.any { it == McpStatus.Connecting }
-    val enabledServers = servers.fastFilter {
-        it.commonOptions.enable && assistant.mcpServers.contains(it.id)
-    }
-    ToggleSurface(
-        modifier = modifier,
-        checked = assistant.mcpServers.isNotEmpty(),
-        onClick = {
-            showMcpPicker = true
-        }
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(vertical = 8.dp, horizontal = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Box(
-                modifier = Modifier.size(24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                if (loading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp)
-                    )
-                } else {
-                    BadgedBox(
-                        badge = {
-                            if (enabledServers.isNotEmpty()) {
-                                Badge(
-                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
-                                ) {
-                                    Text(text = enabledServers.size.toString())
-                                }
-                            }
-                        }
-                    ) {
-                        Icon(
-                            imageVector = HugeIcons.McpServer,
-                            contentDescription = stringResource(R.string.mcp_picker_title),
-                        )
-                    }
-
-                }
-            }
-        }
-    }
-    if (showMcpPicker) {
-        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
-            onDismissRequest = { showMcpPicker = false },
-            sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .bottomSheetMaxHeight()
-                    .padding(horizontal = 16.dp).padding(bottom = 8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                BottomSheetTitle(text = stringResource(id = R.string.mcp_picker_title))
-                AnimatedVisibility(loading) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    ) {
-                        LinearWavyProgressIndicator()
-                        Text(
-                            text = stringResource(id = R.string.mcp_picker_syncing),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                }
-                McpPicker(
-                    assistant = assistant,
-                    servers = servers,
-                    onUpdateAssistant = {
-                        onUpdateAssistant(it)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f, fill = false)
-                )
-            }
-        }
-    }
-}
 
 fun CardGroupScope.mcpItem(
     assistant: Assistant,

@@ -1377,9 +1377,12 @@
   <string name="search_detail_custom_url">Custom URL</string>
   <string name="search_detail_depth">Depth</string>
   <string name="search_detail_engines">Engines</string>
+  <string name="search_detail_include_answer">Include Answer</string>
+  <string name="search_detail_include_answer_desc">Let Tavily generate an answer summary alongside the search results</string>
   <string name="search_detail_language">Language</string>
   <string name="search_detail_max_tokens">Max Tokens</string>
   <string name="search_detail_max_tokens_per_page">Max Tokens / Page</string>
+  <string name="search_detail_mode">Mode</string>
   <string name="search_detail_model">Model</string>
   <string name="search_detail_name">Name</string>
   <string name="search_detail_password">Password</string>
@@ -1522,8 +1525,7 @@
   <string name="setting_asr_page_default_name">ASR</string>
   <string name="setting_asr_page_delete_provider">Delete ASR Provider</string>
   <string name="setting_asr_page_edit_provider">Edit ASR Provider</string>
-  <string name="setting_page_asr_milliseconds">Milliseconds</string>
-  <string name="setting_page_asr_silence_duration">End-of-speech silence duration</string>
+  <string name="setting_page_asr_silence_duration">End-of-speech silence duration (ms)</string>
   <string name="setting_page_asr_silence_duration_desc">End the utterance after this duration of continuous silence. Recommended: 800–1000 ms.</string>
   <string name="speech_tab_asr">Speech Recognition</string>
   <!-- File settings -->

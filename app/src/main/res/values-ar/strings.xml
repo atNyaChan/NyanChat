@@ -1377,9 +1377,12 @@
   <string name="search_detail_custom_url">URL مخصص</string>
   <string name="search_detail_depth">العمق</string>
   <string name="search_detail_engines">المحركات</string>
+  <string name="search_detail_include_answer">تضمين الإجابة</string>
+  <string name="search_detail_include_answer_desc">اسمح لـ Tavily بإنشاء ملخص للإجابة إلى جانب نتائج البحث</string>
   <string name="search_detail_language">اللغة</string>
   <string name="search_detail_max_tokens">الحد الأقصى لعدد Tokens</string>
   <string name="search_detail_max_tokens_per_page">الحد الأقصى من Tokens / الصفحة</string>
+  <string name="search_detail_mode">الوضع</string>
   <string name="search_detail_model">النموذج</string>
   <string name="search_detail_name">الاسم</string>
   <string name="search_detail_password">كلمة المرور</string>
@@ -1522,8 +1525,7 @@
   <string name="setting_asr_page_default_name">ASR</string>
   <string name="setting_asr_page_delete_provider">حذف مزوّد ASR</string>
   <string name="setting_asr_page_edit_provider">تعديل مزوّد ASR</string>
-  <string name="setting_page_asr_milliseconds">مللي ثانية</string>
-  <string name="setting_page_asr_silence_duration">مدة الصمت عند نهاية الكلام</string>
+  <string name="setting_page_asr_silence_duration">مدة الصمت عند نهاية الكلام (مللي ثانية)</string>
   <string name="setting_page_asr_silence_duration_desc">أنهِ الكلام بعد هذه المدة من الصمت المتواصل. الموصى به: 800–1000 مللي ثانية.</string>
   <string name="speech_tab_asr">التعرف على الكلام</string>
   <!-- File settings -->

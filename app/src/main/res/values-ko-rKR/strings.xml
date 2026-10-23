@@ -1377,9 +1377,12 @@
   <string name="search_detail_custom_url">사용자 지정 URL</string>
   <string name="search_detail_depth">깊이</string>
   <string name="search_detail_engines">엔진</string>
+  <string name="search_detail_include_answer">답변 포함</string>
+  <string name="search_detail_include_answer_desc">Tavily가 검색 결과와 함께 답변 요약을 생성하도록 합니다</string>
   <string name="search_detail_language">언어</string>
   <string name="search_detail_max_tokens">최대 토큰</string>
   <string name="search_detail_max_tokens_per_page">페이지당 최대 토큰</string>
+  <string name="search_detail_mode">모드</string>
   <string name="search_detail_model">모델</string>
   <string name="search_detail_name">이름</string>
   <string name="search_detail_password">비밀번호</string>
@@ -1522,8 +1525,7 @@
   <string name="setting_asr_page_default_name">ASR</string>
   <string name="setting_asr_page_delete_provider">ASR 공급자 삭제</string>
   <string name="setting_asr_page_edit_provider">ASR 공급자 편집</string>
-  <string name="setting_page_asr_milliseconds">밀리초</string>
-  <string name="setting_page_asr_silence_duration">발화 종료 무음 시간</string>
+  <string name="setting_page_asr_silence_duration">발화 종료 무음 시간 (밀리초)</string>
   <string name="setting_page_asr_silence_duration_desc">이 시간 동안 연속 무음이 지속되면 발화를 종료합니다. 권장: 800–1000 ms.</string>
   <string name="speech_tab_asr">음성 인식</string>
   <!-- File settings -->

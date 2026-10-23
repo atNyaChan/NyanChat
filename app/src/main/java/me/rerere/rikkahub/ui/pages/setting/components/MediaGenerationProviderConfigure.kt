@@ -95,7 +95,7 @@ fun MediaGenerationProviderConfigure(
         modifier = modifier.verticalScroll(rememberScrollState())
     ) {
         CardGroup(modifier = Modifier.fillMaxWidth()) {
-            FormItem(label = { Text(stringResource(R.string.setting_media_page_provider_type)) }) {
+            item(headlineContent = {
                 SelectTextField(
                     value = setting.typeName,
                     options = MediaGenerationProviderSetting.Types,
@@ -103,19 +103,20 @@ fun MediaGenerationProviderConfigure(
                     modifier = Modifier.fillMaxWidth(),
                     optionToString = { providerClass -> mediaProviderTypeName(providerClass) },
                     onOptionSelected = { providerClass -> onValueChange(setting.switchTo(providerClass)) },
+                    label = { Text(stringResource(R.string.setting_media_page_provider_type)) },
                 )
-            }
+            })
 
-            FormItem(label = {}) {
+            item(headlineContent = {
                 OutlinedTextField(
                     value = setting.name,
                     onValueChange = { onValueChange(setting.copyProvider(name = it)) },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text(stringResource(R.string.setting_media_page_provider_name)) }
                 )
-            }
+            })
 
-            FormItem(label = {}) {
+            item(headlineContent = {
                 var passwordVisible by remember { mutableStateOf(false) }
                 OutlinedTextField(
                     value = setting.apiKey,
@@ -136,36 +137,29 @@ fun MediaGenerationProviderConfigure(
                         }
                     }
                 )
-            }
+            })
 
-            FormItem(label = {}) {
+            item(headlineContent = {
                 OutlinedTextField(
                     value = setting.baseUrl,
                     onValueChange = { onValueChange(setting.copyProvider(baseUrl = it.trim())) },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Base URL") }
                 )
-            }
+            })
 
             if (setting is MediaGenerationProviderSetting.Aliyun) {
-                FormItem(
-                    label = {},
-                    description = {
-                        Text(
-                            stringResource(
-                                R.string.setting_media_page_workspace_id_desc,
-                                MediaGenerationProviderSetting.Aliyun.WORKSPACE_PLACEHOLDER,
-                            )
-                        )
-                    }
-                ) {
+                item(headlineContent = {
                     OutlinedTextField(
                         value = setting.workspaceId,
                         onValueChange = { onValueChange(setting.copy(workspaceId = it.trim())) },
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text(stringResource(R.string.setting_media_page_workspace_id)) }
+                        label = { Text(stringResource(R.string.setting_media_page_workspace_id)) },
+                        supportingText = {
+                            Text( stringResource( R.string.setting_media_page_workspace_id_desc, MediaGenerationProviderSetting.Aliyun.WORKSPACE_PLACEHOLDER, ) )
+                        },
                     )
-                }
+                })
             }
         }
 
@@ -173,37 +167,39 @@ fun MediaGenerationProviderConfigure(
             title = { Text(stringResource(R.string.setting_media_page_models)) },
         ) {
             models.forEach { model ->
-                FormItem(label = {}) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        OutlinedTextField(
-                            value = model.modelId,
-                            onValueChange = { value ->
-                                updateModels(models.map { if (it.id == model.id) model.copy(modelId = value.trim()) else it })
-                            },
-                            modifier = Modifier.weight(1f),
-                            label = { Text(stringResource(R.string.setting_media_page_model_id)) },
-                            singleLine = true
-                        )
-                        IconButton(onClick = { updateModels(models.filter { it.id != model.id }) }) {
-                            Icon(HugeIcons.Delete01, stringResource(R.string.common_delete))
+                item(headlineContent = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            OutlinedTextField(
+                                value = model.modelId,
+                                onValueChange = { value ->
+                                    updateModels(models.map { if (it.id == model.id) model.copy(modelId = value.trim()) else it })
+                                },
+                                modifier = Modifier.weight(1f),
+                                label = { Text(stringResource(R.string.setting_media_page_model_id)) },
+                                singleLine = true
+                            )
+                            IconButton(onClick = { updateModels(models.filter { it.id != model.id }) }) {
+                                Icon(HugeIcons.Delete01, stringResource(R.string.common_delete))
+                            }
+                        }
+                        // 只支持一种类型的厂商不需要选择
+                        if (kinds.size > 1) {
+                            ConnectedChoiceButtons(
+                                options = kinds,
+                                selected = model.kind,
+                                onSelect = { kind ->
+                                    updateModels(models.map { if (it.id == model.id) model.copy(kind = kind) else it })
+                                },
+                            ) { kind, selected ->
+                                ConnectedChoiceLabel(text = kind.label, selected = selected)
+                            }
                         }
                     }
-                    // 只支持一种类型的厂商不需要选择
-                    if (kinds.size > 1) {
-                        ConnectedChoiceButtons(
-                            options = kinds,
-                            selected = model.kind,
-                            onSelect = { kind ->
-                                updateModels(models.map { if (it.id == model.id) model.copy(kind = kind) else it })
-                            },
-                        ) { kind, selected ->
-                            ConnectedChoiceLabel(text = kind.label, selected = selected)
-                        }
-                    }
-                }
+                })
             }
 
             item(

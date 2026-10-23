@@ -1377,9 +1377,12 @@
   <string name="search_detail_custom_url">カスタムURL</string>
   <string name="search_detail_depth">深度</string>
   <string name="search_detail_engines">エンジン</string>
+  <string name="search_detail_include_answer">回答を含める</string>
+  <string name="search_detail_include_answer_desc">Tavily に検索結果と合わせて回答の要約を生成させます</string>
   <string name="search_detail_language">言語</string>
   <string name="search_detail_max_tokens">最大トークン数</string>
   <string name="search_detail_max_tokens_per_page">1ページあたりの最大トークン数</string>
+  <string name="search_detail_mode">モード</string>
   <string name="search_detail_model">モデル</string>
   <string name="search_detail_name">名前</string>
   <string name="search_detail_password">パスワード</string>
@@ -1522,8 +1525,7 @@
   <string name="setting_asr_page_default_name">ASR</string>
   <string name="setting_asr_page_delete_provider">ASRプロバイダーを削除</string>
   <string name="setting_asr_page_edit_provider">ASRプロバイダーを編集</string>
-  <string name="setting_page_asr_milliseconds">ミリ秒</string>
-  <string name="setting_page_asr_silence_duration">発話終了の無音時間</string>
+  <string name="setting_page_asr_silence_duration">発話終了の無音時間（ミリ秒）</string>
   <string name="setting_page_asr_silence_duration_desc">無音がこの時間続いたら発話を終了します。推奨: 800〜1000 ms。</string>
   <string name="speech_tab_asr">音声認識</string>
   <!-- File settings -->

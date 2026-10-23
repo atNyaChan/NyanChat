@@ -34,8 +34,6 @@ data class McpOAuthState(
     val refreshToken: String? = null,
     val expiresAt: Long = 0L, // epoch millis, 0 表示未知/不过期
 ) {
-    val isAuthorized: Boolean get() = !accessToken.isNullOrBlank()
-
     // 脱敏 toString，避免 client_secret / token 随 config 打印到日志
     override fun toString(): String =
         "McpOAuthState(enabled=$enabled, clientId=$clientId, clientSecret=${clientSecret.masked()}, " +

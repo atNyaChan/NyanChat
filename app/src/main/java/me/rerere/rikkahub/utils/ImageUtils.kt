@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 package me.rerere.rikkahub.utils
 
 import android.content.Context
@@ -186,50 +184,6 @@ object ImageUtils {
     }
 
     /**
-     * 安全地回收Bitmap内存
-     *
-     * @param bitmap 要回收的bitmap
-     */
-    fun recycleBitmapSafely(bitmap: Bitmap?) {
-        bitmap?.let {
-            if (!it.isRecycled) {
-                it.recycle()
-            }
-        }
-    }
-
-    /**
-     * 获取图片的基本信息（不加载到内存）
-     *
-     * @param context Android上下文
-     * @param uri 图片URI
-     * @return ImageInfo包含宽度、高度、MIME类型等信息
-     */
-    fun getImageInfo(context: Context, uri: Uri): ImageInfo? {
-        return runCatching {
-            val options = BitmapFactory.Options().apply {
-                inJustDecodeBounds = true
-            }
-
-            context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                BitmapFactory.decodeStream(inputStream, null, options)
-            }
-
-            if (options.outWidth > 0 && options.outHeight > 0) {
-                ImageInfo(
-                    width = options.outWidth,
-                    height = options.outHeight,
-                    mimeType = options.outMimeType
-                )
-            } else {
-                null
-            }
-        }.onFailure {
-            it.printStackTrace()
-        }.getOrNull()
-    }
-
-    /**
      * 获取酒馆角色卡中的角色元数据（如果存在）
      *
      * @param context Android上下文
@@ -256,10 +210,4 @@ object ImageUtils {
         val regex = Regex("""\[chara:\s*(.+?)]""")
         return Result.success(regex.find(value)?.groupValues?.get(1) ?: error("No character data found"))
     }
-
-    data class ImageInfo(
-        val width: Int,
-        val height: Int,
-        val mimeType: String?
-    )
 }

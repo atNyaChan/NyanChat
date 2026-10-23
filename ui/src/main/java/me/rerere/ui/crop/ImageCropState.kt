@@ -60,8 +60,6 @@ internal enum class CropHandle(
     Top(top = true),
     Right(right = true),
     Bottom(bottom = true);
-
-    val isCorner: Boolean get() = (left || right) && (top || bottom)
 }
 
 /**

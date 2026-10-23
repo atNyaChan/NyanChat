@@ -38,24 +38,6 @@ enum class PermissionStatus {
     DeniedPermanently
 }
 
-/**
- * 权限请求结果
- */
-data class PermissionResult(
-    val permission: String,
-    val status: PermissionStatus,
-    val isGranted: Boolean = status == PermissionStatus.Granted
-)
-
-/**
- * 多个权限的请求结果
- */
-data class MultiplePermissionResult(
-    val results: Map<String, PermissionResult>,
-    val allGranted: Boolean = results.values.all { it.isGranted },
-    val allRequiredGranted: Boolean
-)
-
 val PermissionCamera = PermissionInfo(
     permission = Manifest.permission.CAMERA,
     displayName = { Text(stringResource(R.string.permission_camera)) },

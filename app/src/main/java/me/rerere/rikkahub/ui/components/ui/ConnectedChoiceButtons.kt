@@ -46,6 +46,7 @@ fun <T> ConnectedChoiceButtons(
     // 未选中按钮的底色，要和所在容器的底色拉开
     containerColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
     minHeight: Dp = 48.dp,
+    enabled: Boolean = true,
     content: @Composable (option: T, selected: Boolean) -> Unit,
 ) {
     ConnectedButtons(
@@ -57,6 +58,7 @@ fun <T> ConnectedChoiceButtons(
         modifier = modifier.selectableGroup(),
         containerColor = containerColor,
         minHeight = minHeight,
+        enabled = enabled,
         content = content,
     )
 }
@@ -82,6 +84,7 @@ fun <T> ConnectedMultiChoiceButtons(
         modifier = modifier,
         containerColor = containerColor,
         minHeight = minHeight,
+        enabled = true,
         content = content,
     )
 }
@@ -96,6 +99,7 @@ private fun <T> ConnectedButtons(
     modifier: Modifier,
     containerColor: Color,
     minHeight: Dp,
+    enabled: Boolean,
     content: @Composable (option: T, selected: Boolean) -> Unit,
 ) {
     Row(
@@ -111,6 +115,7 @@ private fun <T> ConnectedButtons(
             ToggleButton(
                 checked = selected,
                 onCheckedChange = { onClick(option, selected) },
+                enabled = enabled,
                 modifier = Modifier
                     .weight(weight)
                     .heightIn(min = minHeight)

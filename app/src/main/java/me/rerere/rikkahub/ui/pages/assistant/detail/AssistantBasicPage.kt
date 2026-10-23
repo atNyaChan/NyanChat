@@ -31,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
@@ -173,9 +172,7 @@ internal fun AssistantBasicContent(
         }
 
         CardGroup {
-            FormItem(
-                label = {},
-            ) {
+            item(headlineContent = {
                 OutlinedTextField(
                     value = assistant.name,
                     onValueChange = {
@@ -188,7 +185,7 @@ internal fun AssistantBasicContent(
                     label = { Text(stringResource(R.string.assistant_page_name)) },
                     modifier = Modifier.fillMaxWidth()
                 )
-            }
+            })
             FormItem(
                 label = {
                     Text(stringResource(R.string.assistant_page_tags))
@@ -221,62 +218,59 @@ internal fun AssistantBasicContent(
                 },
             )
 
-            FormItem(
-                label = {
-                    Text(stringResource(R.string.assistant_page_context_message_limit))
-                },
-                description = {
-                    Text(stringResource(R.string.assistant_page_context_message_limit_desc))
-                },
-            ) {
-                var contextMessageLimitInput by remember(assistant.id) {
-                    mutableStateOf(
-                        assistant.contextMessageLimit.takeIf { it > 0 }?.toString().orEmpty()
-                    )
-                }
-                OutlinedTextField(
-                    value = contextMessageLimitInput,
-                    onValueChange = { value ->
-                        if (value.isEmpty()) {
-                            contextMessageLimitInput = ""
-                            onUpdate(assistant.copy(contextMessageLimit = 0))
-                        } else if (value.all(Char::isDigit)) {
-                            value.toIntOrNull()?.let { limit ->
-                                if (limit > 0) {
-                                    contextMessageLimitInput = value
-                                    onUpdate(assistant.copy(contextMessageLimit = limit))
+            item(headlineContent = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    var contextMessageLimitInput by remember(assistant.id) {
+                        mutableStateOf(
+                            assistant.contextMessageLimit.takeIf { it > 0 }?.toString().orEmpty()
+                        )
+                    }
+                    OutlinedTextField(
+                        value = contextMessageLimitInput,
+                        onValueChange = { value ->
+                            if (value.isEmpty()) {
+                                contextMessageLimitInput = ""
+                                onUpdate(assistant.copy(contextMessageLimit = 0))
+                            } else if (value.all(Char::isDigit)) {
+                                value.toIntOrNull()?.let { limit ->
+                                    if (limit > 0) {
+                                        contextMessageLimitInput = value
+                                        onUpdate(assistant.copy(contextMessageLimit = limit))
+                                    }
                                 }
                             }
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onFocusChanged { focusState ->
-                            if (!focusState.isFocused) {
-                                val limit = contextMessageLimitInput
-                                    .toIntOrNull()
-                                    ?: 0
-                                contextMessageLimitInput = limit
-                                    .takeIf { it > 0 }
-                                    ?.toString()
-                                    .orEmpty()
-                                onUpdate(assistant.copy(contextMessageLimit = limit))
-                            }
                         },
-                    placeholder = {
-                        Text(stringResource(R.string.assistant_page_context_message_limit_placeholder))
-                    },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                )
-                if (assistant.contextMessageLimit > 0) {
-                    Text(
-                        text = stringResource(R.string.assistant_page_context_message_limit_warning),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { focusState ->
+                                if (!focusState.isFocused) {
+                                    val limit = contextMessageLimitInput
+                                        .toIntOrNull()
+                                        ?: 0
+                                    contextMessageLimitInput = limit
+                                        .takeIf { it > 0 }
+                                        ?.toString()
+                                        .orEmpty()
+                                    onUpdate(assistant.copy(contextMessageLimit = limit))
+                                }
+                            },
+                        placeholder = {
+                            Text(stringResource(R.string.assistant_page_context_message_limit_placeholder))
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true,
+                        label = { Text(stringResource(R.string.assistant_page_context_message_limit)) },
+                        supportingText = { Text(stringResource(R.string.assistant_page_context_message_limit_desc)) },
                     )
+                    if (assistant.contextMessageLimit > 0) {
+                        Text(
+                            text = stringResource(R.string.assistant_page_context_message_limit_warning),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
                 }
-            }
+            })
         }
 
         CardGroup {
@@ -472,19 +466,7 @@ internal fun AssistantBasicContent(
                     )
                 },
             )
-            FormItem(
-                label = {
-                    Text(stringResource(R.string.assistant_page_temperature))
-                },
-                description = {
-                    Text(
-                        text = buildAnnotatedString {
-                            append(stringResource(R.string.assistant_page_temperature_warning).trimEnd('。', '.'))
-                            append(stringResource(R.string.assistant_page_temperature_range_hint))
-                        }
-                    )
-                },
-            ) {
+            item(headlineContent = {
                 var temperatureInput by remember(assistant.id) {
                     mutableStateOf(assistant.temperature?.toString().orEmpty())
                 }
@@ -509,21 +491,18 @@ internal fun AssistantBasicContent(
                     placeholder = { Text(stringResource(R.string.assistant_page_use_default)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
+                    label = { Text(stringResource(R.string.assistant_page_temperature)) },
+                    supportingText = {
+                        Text(
+                            text = buildAnnotatedString {
+                                append(stringResource(R.string.assistant_page_temperature_warning).trimEnd('。', '.'))
+                                append(stringResource(R.string.assistant_page_temperature_range_hint))
+                            }
+                        )
+                    },
                 )
-            }
-            FormItem(
-                label = {
-                    Text(stringResource(R.string.assistant_page_top_p))
-                },
-                description = {
-                    Text(
-                        text = buildAnnotatedString {
-                            append(stringResource(R.string.assistant_page_top_p_warning).trimEnd('。', '.'))
-                            append(stringResource(R.string.assistant_page_top_p_range_hint))
-                        }
-                    )
-                },
-            ) {
+            })
+            item(headlineContent = {
                 var topPInput by remember(assistant.id) {
                     mutableStateOf(assistant.topP?.toString().orEmpty())
                 }
@@ -548,16 +527,18 @@ internal fun AssistantBasicContent(
                     placeholder = { Text(stringResource(R.string.assistant_page_use_default)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
+                    label = { Text(stringResource(R.string.assistant_page_top_p)) },
+                    supportingText = {
+                        Text(
+                            text = buildAnnotatedString {
+                                append(stringResource(R.string.assistant_page_top_p_warning).trimEnd('。', '.'))
+                                append(stringResource(R.string.assistant_page_top_p_range_hint))
+                            }
+                        )
+                    },
                 )
-            }
-            FormItem(
-                label = {
-                    Text(stringResource(R.string.assistant_page_max_tokens))
-                },
-                description = {
-                    Text(stringResource(R.string.assistant_page_max_tokens_desc))
-                }
-            ) {
+            })
+            item(headlineContent = {
                 OutlinedTextField(
                     value = assistant.maxTokens?.toString() ?: "",
                     onValueChange = { text ->
@@ -577,9 +558,11 @@ internal fun AssistantBasicContent(
                     singleLine = true,
                     placeholder = {
                         Text(stringResource(R.string.assistant_page_max_tokens_no_limit))
-                    }
+                    },
+                    label = { Text(stringResource(R.string.assistant_page_max_tokens)) },
+                    supportingText = { Text(stringResource(R.string.assistant_page_max_tokens_desc)) },
                 )
-            }
+            })
             }
             CustomRequestProperties(
                 headers = assistant.customHeaders,

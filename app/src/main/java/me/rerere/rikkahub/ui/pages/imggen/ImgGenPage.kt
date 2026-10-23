@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.pager.PagerState
@@ -105,6 +104,7 @@ import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.ui.components.ai.ModelSelector
 import me.rerere.rikkahub.ui.components.ui.AppLoadingIndicator
 import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
+import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.FormItem
@@ -909,15 +909,16 @@ private fun SettingsBottomSheet(
         ) {
             BottomSheetTitle(text = stringResource(R.string.imggen_page_settings_title))
 
-            FormItem(
-                label = { Text(stringResource(R.string.imggen_page_generation_count)) },
-                description = { Text(stringResource(R.string.imggen_page_generation_count_desc)) }
-            ) {
-                OutlinedNumberInput(
-                    value = numberOfImages,
-                    onValueChange = vm::updateNumberOfImages,
-                    modifier = Modifier.width(120.dp)
-                )
+            CardGroup {
+                item(headlineContent = {
+                    OutlinedNumberInput(
+                        value = numberOfImages,
+                        onValueChange = vm::updateNumberOfImages,
+                        modifier = Modifier.fillMaxWidth(),
+                        label = stringResource(R.string.imggen_page_generation_count),
+                        supportingText = { Text(stringResource(R.string.imggen_page_generation_count_desc)) },
+                    )
+                })
             }
 
             FormItem(

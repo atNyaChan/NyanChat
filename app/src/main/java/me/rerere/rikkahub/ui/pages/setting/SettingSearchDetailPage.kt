@@ -2,7 +2,6 @@ package me.rerere.rikkahub.ui.pages.setting
 
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Delete01
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,22 +11,18 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,15 +37,18 @@ import me.rerere.highlight.LocalCodeHighlighter
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.richtext.HighlightCodeVisualTransformation
-import me.rerere.rikkahub.ui.components.ui.FormItem
+import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.CardGroupScope
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceLabel
 import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
+import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.ui.theme.LocalDarkMode
 import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
-import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.utils.plus
 import me.rerere.search.DoubaoSearchMode
 import me.rerere.search.SearchService
@@ -120,36 +118,24 @@ fun SettingSearchDetailPage(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item("config") {
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = CustomColors.listItemColors.containerColor
-                    ),
-                    shape = rememberScreenEdgeCornerShape(),
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .animateContentSize()
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.setting_page_search_config),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-
-                        SearchServiceOptionsEditor(
-                            options = options,
-                            onUpdateOptions = { save(it) }
-                        )
-
-                        ProvideTextStyle(MaterialTheme.typography.labelMedium) {
-                            SearchService.getService(options).Description()
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Bing 没有任何配置项，不显示分组标题也不加卡片组，只留一行灰色说明
+                    if (options !is SearchServiceOptions.BingLocalOptions) {
+                        CardGroup(
+                            title = {
+                                Text(stringResource(R.string.setting_page_search_config))
+                            },
+                        ) {
+                            SearchServiceOptionsEditor(
+                                options = options,
+                                onUpdateOptions = { save(it) }
+                            )
                         }
                     }
+
+                    SearchServiceDescription(options = options)
                 }
             }
-
         }
     }
     DeleteConfirmDialog(
@@ -167,9 +153,25 @@ fun SettingSearchDetailPage(
     )
 }
 
-@Suppress("UNCHECKED_CAST")
+/** 服务说明，作为卡片组下方的灰色小字 */
 @Composable
-private fun SearchServiceOptionsEditor(
+private fun SearchServiceDescription(
+    options: SearchServiceOptions,
+    modifier: Modifier = Modifier,
+) {
+    ProvideTextStyle(MaterialTheme.typography.bodySmall) {
+        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurfaceVariant) {
+            Column(
+                modifier = modifier.padding(horizontal = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                SearchService.getService(options).Description()
+            }
+        }
+    }
+}
+
+private fun CardGroupScope.SearchServiceOptionsEditor(
     options: SearchServiceOptions,
     onUpdateOptions: (SearchServiceOptions) -> Unit
 ) {
@@ -235,725 +237,401 @@ private fun SearchServiceOptionsEditor(
     }
 }
 
+// 每个配置项独立一张卡片；文本项的字段名用 OutlinedTextField 自己的 label
+private fun CardGroupScope.textItem(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: @Composable () -> Unit,
+    placeholder: (@Composable () -> Unit)? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    singleLine: Boolean = true,
+    minLines: Int = 1,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
+) {
+    item(headlineContent = {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            label = label,
+            placeholder = placeholder,
+            keyboardOptions = keyboardOptions,
+            singleLine = singleLine,
+            minLines = minLines,
+            maxLines = maxLines,
+            textStyle = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.fillMaxWidth(),
+        )
+    })
+}
+
+// 带代码高亮的脚本输入框，等宽字体与连字跟随设置
 @Composable
-internal fun DoubaoOptions(
+private fun CodeTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: @Composable () -> Unit,
+    minLines: Int,
+    maxLines: Int,
+    placeholder: (@Composable () -> Unit)? = null,
+    supportingText: (@Composable () -> Unit)? = null,
+) {
+    val highlighter = LocalCodeHighlighter.current
+    val darkMode = LocalDarkMode.current
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = label,
+        placeholder = placeholder,
+        supportingText = supportingText,
+        minLines = minLines,
+        maxLines = maxLines,
+        visualTransformation = HighlightCodeVisualTransformation(
+            language = "javascript",
+            highlighter = highlighter,
+            darkMode = darkMode,
+        ),
+        textStyle = MaterialTheme.typography.bodySmall.merge(
+            fontFamily = JetbrainsMono,
+            fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+        ),
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
+
+// 选项型配置项：标题在上，连接式单选按钮组在下（与设置里的颜色模式一致）
+private fun <T> CardGroupScope.choiceItem(
+    label: @Composable () -> Unit,
+    options: List<T>,
+    selected: T,
+    onSelect: (T) -> Unit,
+    optionLabel: (T) -> String,
+) {
+    FormItem(
+        label = label,
+        content = {
+            ConnectedChoiceButtons(
+                options = options,
+                selected = selected,
+                onSelect = onSelect,
+            ) { option, isSelected ->
+                ConnectedChoiceLabel(text = optionLabel(option), selected = isSelected)
+            }
+        },
+    )
+}
+
+private fun CardGroupScope.DoubaoOptions(
     options: SearchServiceOptions.DoubaoOptions,
     onUpdateOptions: (SearchServiceOptions.DoubaoOptions) -> Unit
 ) {
-    FormItem(label = { Text(stringResource(R.string.search_detail_api_key)) }) {
-        OutlinedTextField(
-            value = options.apiKey,
-            onValueChange = { onUpdateOptions(options.copy(apiKey = it)) },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+    ApiKeyItem(options.apiKey) { onUpdateOptions(options.copy(apiKey = it)) }
 
-    FormItem(label = { Text("Mode") }) {
-        val modes = DoubaoSearchMode.entries
-        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-            modes.forEachIndexed { index, mode ->
-                SegmentedButton(
-                    shape = SegmentedButtonDefaults.itemShape(index, modes.size),
-                    onClick = { onUpdateOptions(options.copy(mode = mode)) },
-                    selected = options.mode == mode
-                ) {
-                    Text(mode.name.lowercase().replaceFirstChar(Char::uppercase))
-                }
-            }
-        }
-    }
+    choiceItem(
+        label = { Text(stringResource(R.string.search_detail_mode)) },
+        options = DoubaoSearchMode.entries,
+        selected = options.mode,
+        onSelect = { onUpdateOptions(options.copy(mode = it)) },
+        optionLabel = { mode -> mode.name.lowercase().replaceFirstChar { it.uppercase() } },
+    )
 }
 
-@Composable
-internal fun TavilyOptions(
+private fun CardGroupScope.TavilyOptions(
     options: SearchServiceOptions.TavilyOptions,
     onUpdateOptions: (SearchServiceOptions.TavilyOptions) -> Unit
 ) {
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_api_key))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.apiKey,
-            onValueChange = {
-                onUpdateOptions(options.copy(apiKey = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+    ApiKeyItem(options.apiKey) { onUpdateOptions(options.copy(apiKey = it)) }
 
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_depth))
-        }
-    ) {
-        val depthOptions = listOf("basic", "advanced")
-        SingleChoiceSegmentedButtonRow(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            depthOptions.forEachIndexed { index, depth ->
-                SegmentedButton(
-                    shape = SegmentedButtonDefaults.itemShape(index = index, count = depthOptions.size),
-                    onClick = {
-                        onUpdateOptions(options.copy(depth = depth))
-                    },
-                    selected = options.depth == depth
-                ) {
-                    Text(depth.replaceFirstChar { it.uppercase() })
-                }
-            }
-        }
-    }
+    choiceItem(
+        label = { Text(stringResource(R.string.search_detail_depth)) },
+        options = listOf("basic", "advanced"),
+        selected = options.depth,
+        onSelect = { onUpdateOptions(options.copy(depth = it)) },
+        optionLabel = { value -> value.replaceFirstChar { it.uppercase() } },
+    )
 
-    FormItem(
-        label = {
-            Text("Include Answer")
+    switchItem(
+        checked = options.includeAnswer,
+        onCheckedChange = { onUpdateOptions(options.copy(includeAnswer = it)) },
+        headlineContent = {
+            Text(stringResource(R.string.search_detail_include_answer))
         },
-        description = {
-            Text("Let Tavily generate an answer summary alongside the search results")
+        supportingContent = {
+            Text(stringResource(R.string.search_detail_include_answer_desc))
         },
-        tail = {
-            Switch(
-                checked = options.includeAnswer,
-                onCheckedChange = { checked ->
-                    onUpdateOptions(options.copy(includeAnswer = checked))
-                }
-            )
-        }
     )
 }
 
-@Composable
-internal fun ExaOptions(
+private fun CardGroupScope.ExaOptions(
     options: SearchServiceOptions.ExaOptions,
     onUpdateOptions: (SearchServiceOptions.ExaOptions) -> Unit
 ) {
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_api_key))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.apiKey,
-            onValueChange = {
-                onUpdateOptions(options.copy(apiKey = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+    ApiKeyItem(options.apiKey) { onUpdateOptions(options.copy(apiKey = it)) }
 }
 
-@Composable
-internal fun ZhipuOptions(
+private fun CardGroupScope.ZhipuOptions(
     options: SearchServiceOptions.ZhipuOptions,
     onUpdateOptions: (SearchServiceOptions.ZhipuOptions) -> Unit
 ) {
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_api_key))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.apiKey,
-            onValueChange = {
-                onUpdateOptions(options.copy(apiKey = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+    ApiKeyItem(options.apiKey) { onUpdateOptions(options.copy(apiKey = it)) }
 }
 
-@Composable
-internal fun SearXNGOptions(
+private fun CardGroupScope.SearXNGOptions(
     options: SearchServiceOptions.SearXNGOptions,
     onUpdateOptions: (SearchServiceOptions.SearXNGOptions) -> Unit
 ) {
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_api_url))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.url,
-            onValueChange = {
-                onUpdateOptions(options.copy(url = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+    textItem(
+        value = options.url,
+        onValueChange = { onUpdateOptions(options.copy(url = it)) },
+        label = { Text(stringResource(R.string.search_detail_api_url)) },
+    )
 
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_engines))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.engines,
-            onValueChange = {
-                onUpdateOptions(options.copy(engines = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+    textItem(
+        value = options.engines,
+        onValueChange = { onUpdateOptions(options.copy(engines = it)) },
+        label = { Text(stringResource(R.string.search_detail_engines)) },
+    )
 
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_language))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.language,
-            onValueChange = {
-                onUpdateOptions(options.copy(language = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+    textItem(
+        value = options.language,
+        onValueChange = { onUpdateOptions(options.copy(language = it)) },
+        label = { Text(stringResource(R.string.search_detail_language)) },
+    )
 
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_username))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.username,
-            onValueChange = {
-                onUpdateOptions(options.copy(username = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+    textItem(
+        value = options.username,
+        onValueChange = { onUpdateOptions(options.copy(username = it)) },
+        label = { Text(stringResource(R.string.search_detail_username)) },
+    )
 
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_password))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.password,
-            onValueChange = {
-                onUpdateOptions(options.copy(password = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-}
-
-@Composable
-internal fun SearchLinkUpOptions(
-    options: SearchServiceOptions.LinkUpOptions,
-    onUpdateOptions: (SearchServiceOptions.LinkUpOptions) -> Unit
-) {
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_api_key))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.apiKey,
-            onValueChange = {
-                onUpdateOptions(options.copy(apiKey = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_depth))
-        }
-    ) {
-        val depthOptions = listOf("standard", "deep")
-        SingleChoiceSegmentedButtonRow(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            depthOptions.forEachIndexed { index, depth ->
-                SegmentedButton(
-                    shape = SegmentedButtonDefaults.itemShape(index = index, count = depthOptions.size),
-                    onClick = {
-                        onUpdateOptions(options.copy(depth = depth))
-                    },
-                    selected = options.depth == depth
-                ) {
-                    Text(depth.replaceFirstChar { it.uppercase() })
-                }
-            }
-        }
-    }
-}
-
-@Composable
-internal fun BraveOptions(
-    options: SearchServiceOptions.BraveOptions,
-    onUpdateOptions: (SearchServiceOptions.BraveOptions) -> Unit
-) {
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_api_key))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.apiKey,
-            onValueChange = {
-                onUpdateOptions(options.copy(apiKey = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-}
-
-@Composable
-internal fun SerperOptions(
-    options: SearchServiceOptions.SerperOptions,
-    onUpdateOptions: (SearchServiceOptions.SerperOptions) -> Unit
-) {
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_api_key))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.apiKey,
-            onValueChange = {
-                onUpdateOptions(options.copy(apiKey = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-}
-
-@Composable
-internal fun DeepSeekOptions(
-    options: SearchServiceOptions.DeepSeekOptions,
-    onUpdateOptions: (SearchServiceOptions.DeepSeekOptions) -> Unit
-) {
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_api_key))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.apiKey,
-            onValueChange = {
-                onUpdateOptions(options.copy(apiKey = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-}
-
-@Composable
-internal fun MetasoOptions(
-    options: SearchServiceOptions.MetasoOptions,
-    onUpdateOptions: (SearchServiceOptions.MetasoOptions) -> Unit
-) {
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_api_key))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.apiKey,
-            onValueChange = {
-                onUpdateOptions(options.copy(apiKey = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-}
-
-@Composable
-internal fun OllamaOptions(
-    options: SearchServiceOptions.OllamaOptions,
-    onUpdateOptions: (SearchServiceOptions.OllamaOptions) -> Unit
-) {
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_api_key))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.apiKey,
-            onValueChange = {
-                onUpdateOptions(options.copy(apiKey = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-}
-
-@Composable
-internal fun PerplexityOptions(
-    options: SearchServiceOptions.PerplexityOptions,
-    onUpdateOptions: (SearchServiceOptions.PerplexityOptions) -> Unit
-) {
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_api_key))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.apiKey,
-            onValueChange = {
-                onUpdateOptions(options.copy(apiKey = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_max_tokens))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.maxTokens?.takeIf { it > 0 }?.toString() ?: "",
-            onValueChange = { value ->
-                onUpdateOptions(options.copy(maxTokens = value.toIntOrNull()))
-            },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-    }
-
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_max_tokens_per_page))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.maxTokensPerPage?.takeIf { it > 0 }?.toString() ?: "",
-            onValueChange = { value ->
-                onUpdateOptions(options.copy(maxTokensPerPage = value.toIntOrNull()))
-            },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-    }
-}
-
-@Composable
-internal fun FirecrawlOptions(
-    options: SearchServiceOptions.FirecrawlOptions,
-    onUpdateOptions: (SearchServiceOptions.FirecrawlOptions) -> Unit
-) {
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_api_key))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.apiKey,
-            onValueChange = {
-                onUpdateOptions(options.copy(apiKey = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-}
-
-@Composable
-internal fun JinaOptions(
-    options: SearchServiceOptions.JinaOptions,
-    onUpdateOptions: (SearchServiceOptions.JinaOptions) -> Unit
-) {
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_api_key))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.apiKey,
-            onValueChange = {
-                onUpdateOptions(options.copy(apiKey = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_search_url))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.searchUrl,
-            onValueChange = {
-                onUpdateOptions(options.copy(searchUrl = it.trim()))
-            },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = {
-                Text("https://s.jina.ai/")
-            }
-        )
-    }
-
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_scrape_url))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.scrapeUrl,
-            onValueChange = {
-                onUpdateOptions(options.copy(scrapeUrl = it.trim()))
-            },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = {
-                Text("https://r.jina.ai/")
-            }
-        )
-    }
-}
-
-@Composable
-internal fun BochaOptions(
-    options: SearchServiceOptions.BochaOptions,
-    onUpdateOptions: (SearchServiceOptions.BochaOptions) -> Unit
-) {
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_api_key))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.apiKey,
-            onValueChange = {
-                onUpdateOptions(options.copy(apiKey = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-
-    FormItem(
-        onClick = { onUpdateOptions(options.copy(summary = !options.summary)) },
-        label = {
-            Text(stringResource(R.string.search_detail_summary))
-        },
-        description = {
-            Text(stringResource(R.string.search_detail_summary_desc))
-        },
-        tail = {
-            Switch(
-                checked = options.summary,
-                onCheckedChange = { checked ->
-                    onUpdateOptions(options.copy(summary = checked))
-                }
-            )
-        }
+    textItem(
+        value = options.password,
+        onValueChange = { onUpdateOptions(options.copy(password = it)) },
+        label = { Text(stringResource(R.string.search_detail_password)) },
     )
 }
 
-@Composable
-internal fun RikkaHubOptions(
+private fun CardGroupScope.SearchLinkUpOptions(
+    options: SearchServiceOptions.LinkUpOptions,
+    onUpdateOptions: (SearchServiceOptions.LinkUpOptions) -> Unit
+) {
+    ApiKeyItem(options.apiKey) { onUpdateOptions(options.copy(apiKey = it)) }
+
+    choiceItem(
+        label = { Text(stringResource(R.string.search_detail_depth)) },
+        options = listOf("standard", "deep"),
+        selected = options.depth,
+        onSelect = { onUpdateOptions(options.copy(depth = it)) },
+        optionLabel = { value -> value.replaceFirstChar { it.uppercase() } },
+    )
+}
+
+private fun CardGroupScope.BraveOptions(
+    options: SearchServiceOptions.BraveOptions,
+    onUpdateOptions: (SearchServiceOptions.BraveOptions) -> Unit
+) {
+    ApiKeyItem(options.apiKey) { onUpdateOptions(options.copy(apiKey = it)) }
+}
+
+private fun CardGroupScope.SerperOptions(
+    options: SearchServiceOptions.SerperOptions,
+    onUpdateOptions: (SearchServiceOptions.SerperOptions) -> Unit
+) {
+    ApiKeyItem(options.apiKey) { onUpdateOptions(options.copy(apiKey = it)) }
+}
+
+private fun CardGroupScope.DeepSeekOptions(
+    options: SearchServiceOptions.DeepSeekOptions,
+    onUpdateOptions: (SearchServiceOptions.DeepSeekOptions) -> Unit
+) {
+    ApiKeyItem(options.apiKey) { onUpdateOptions(options.copy(apiKey = it)) }
+}
+
+private fun CardGroupScope.MetasoOptions(
+    options: SearchServiceOptions.MetasoOptions,
+    onUpdateOptions: (SearchServiceOptions.MetasoOptions) -> Unit
+) {
+    ApiKeyItem(options.apiKey) { onUpdateOptions(options.copy(apiKey = it)) }
+}
+
+private fun CardGroupScope.OllamaOptions(
+    options: SearchServiceOptions.OllamaOptions,
+    onUpdateOptions: (SearchServiceOptions.OllamaOptions) -> Unit
+) {
+    ApiKeyItem(options.apiKey) { onUpdateOptions(options.copy(apiKey = it)) }
+}
+
+private fun CardGroupScope.PerplexityOptions(
+    options: SearchServiceOptions.PerplexityOptions,
+    onUpdateOptions: (SearchServiceOptions.PerplexityOptions) -> Unit
+) {
+    ApiKeyItem(options.apiKey) { onUpdateOptions(options.copy(apiKey = it)) }
+
+    textItem(
+        value = options.maxTokens?.takeIf { it > 0 }?.toString() ?: "",
+        onValueChange = { onUpdateOptions(options.copy(maxTokens = it.toIntOrNull())) },
+        label = { Text(stringResource(R.string.search_detail_max_tokens)) },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+    )
+
+    textItem(
+        value = options.maxTokensPerPage?.takeIf { it > 0 }?.toString() ?: "",
+        onValueChange = { onUpdateOptions(options.copy(maxTokensPerPage = it.toIntOrNull())) },
+        label = { Text(stringResource(R.string.search_detail_max_tokens_per_page)) },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+    )
+}
+
+private fun CardGroupScope.FirecrawlOptions(
+    options: SearchServiceOptions.FirecrawlOptions,
+    onUpdateOptions: (SearchServiceOptions.FirecrawlOptions) -> Unit
+) {
+    ApiKeyItem(options.apiKey) { onUpdateOptions(options.copy(apiKey = it)) }
+}
+
+private fun CardGroupScope.JinaOptions(
+    options: SearchServiceOptions.JinaOptions,
+    onUpdateOptions: (SearchServiceOptions.JinaOptions) -> Unit
+) {
+    ApiKeyItem(options.apiKey) { onUpdateOptions(options.copy(apiKey = it)) }
+
+    textItem(
+        value = options.searchUrl,
+        onValueChange = { onUpdateOptions(options.copy(searchUrl = it.trim())) },
+        label = { Text(stringResource(R.string.search_detail_search_url)) },
+        placeholder = { Text("https://s.jina.ai/") },
+    )
+
+    textItem(
+        value = options.scrapeUrl,
+        onValueChange = { onUpdateOptions(options.copy(scrapeUrl = it.trim())) },
+        label = { Text(stringResource(R.string.search_detail_scrape_url)) },
+        placeholder = { Text("https://r.jina.ai/") },
+    )
+}
+
+private fun CardGroupScope.BochaOptions(
+    options: SearchServiceOptions.BochaOptions,
+    onUpdateOptions: (SearchServiceOptions.BochaOptions) -> Unit
+) {
+    ApiKeyItem(options.apiKey) { onUpdateOptions(options.copy(apiKey = it)) }
+
+    switchItem(
+        checked = options.summary,
+        onCheckedChange = { onUpdateOptions(options.copy(summary = it)) },
+        headlineContent = {
+            Text(stringResource(R.string.search_detail_summary))
+        },
+        supportingContent = {
+            Text(stringResource(R.string.search_detail_summary_desc))
+        },
+    )
+}
+
+private fun CardGroupScope.RikkaHubOptions(
     options: SearchServiceOptions.RikkaHubOptions,
     onUpdateOptions: (SearchServiceOptions.RikkaHubOptions) -> Unit
 ) {
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_api_key))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.apiKey,
-            onValueChange = {
-                onUpdateOptions(options.copy(apiKey = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+    ApiKeyItem(options.apiKey) { onUpdateOptions(options.copy(apiKey = it)) }
 
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_depth))
-        }
-    ) {
-        val depthOptions = listOf("standard", "deep")
-        SingleChoiceSegmentedButtonRow(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            depthOptions.forEachIndexed { index, depth ->
-                SegmentedButton(
-                    shape = SegmentedButtonDefaults.itemShape(index = index, count = depthOptions.size),
-                    onClick = {
-                        onUpdateOptions(options.copy(depth = depth))
-                    },
-                    selected = options.depth == depth
-                ) {
-                    Text(depth.replaceFirstChar { it.uppercase() })
-                }
-            }
-        }
-    }
+    choiceItem(
+        label = { Text(stringResource(R.string.search_detail_depth)) },
+        options = listOf("standard", "deep"),
+        selected = options.depth,
+        onSelect = { onUpdateOptions(options.copy(depth = it)) },
+        optionLabel = { value -> value.replaceFirstChar { it.uppercase() } },
+    )
 }
 
-@Composable
-internal fun TinyfishOptions(
+private fun CardGroupScope.TinyfishOptions(
     options: SearchServiceOptions.TinyfishOptions,
     onUpdateOptions: (SearchServiceOptions.TinyfishOptions) -> Unit
 ) {
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_api_key))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.apiKey,
-            onValueChange = {
-                onUpdateOptions(options.copy(apiKey = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+    ApiKeyItem(options.apiKey) { onUpdateOptions(options.copy(apiKey = it)) }
 }
 
-@Composable
-internal fun GrokOptions(
+private fun CardGroupScope.GrokOptions(
     options: SearchServiceOptions.GrokOptions,
     onUpdateOptions: (SearchServiceOptions.GrokOptions) -> Unit
 ) {
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_api_key))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.apiKey,
-            onValueChange = {
-                onUpdateOptions(options.copy(apiKey = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+    ApiKeyItem(options.apiKey) { onUpdateOptions(options.copy(apiKey = it)) }
 
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_model))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.model,
-            onValueChange = {
-                onUpdateOptions(options.copy(model = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+    textItem(
+        value = options.model,
+        onValueChange = { onUpdateOptions(options.copy(model = it)) },
+        label = { Text(stringResource(R.string.search_detail_model)) },
+    )
 
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_custom_url))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.customUrl,
-            onValueChange = {
-                onUpdateOptions(options.copy(customUrl = it))
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+    textItem(
+        value = options.customUrl,
+        onValueChange = { onUpdateOptions(options.copy(customUrl = it)) },
+        label = { Text(stringResource(R.string.search_detail_custom_url)) },
+    )
 
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_system_prompt))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.systemPrompt,
-            onValueChange = {
-                onUpdateOptions(options.copy(systemPrompt = it))
-            },
-            minLines = 3,
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+    textItem(
+        value = options.systemPrompt,
+        onValueChange = { onUpdateOptions(options.copy(systemPrompt = it)) },
+        label = { Text(stringResource(R.string.search_detail_system_prompt)) },
+        singleLine = false,
+        minLines = 3,
+    )
 }
 
-@Composable
-internal fun CustomJsOptions(
+private fun CardGroupScope.CustomJsOptions(
     options: SearchServiceOptions.CustomJsOptions,
     onUpdateOptions: (SearchServiceOptions.CustomJsOptions) -> Unit
 ) {
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_name))
-        }
-    ) {
-        OutlinedTextField(
-            value = options.name,
-            onValueChange = {
-                onUpdateOptions(options.copy(name = it))
-            },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text(stringResource(R.string.search_detail_custom_search_placeholder)) }
-        )
-    }
+    textItem(
+        value = options.name,
+        onValueChange = { onUpdateOptions(options.copy(name = it)) },
+        label = { Text(stringResource(R.string.search_detail_name)) },
+        placeholder = { Text(stringResource(R.string.search_detail_custom_search_placeholder)) },
+    )
 
-    val highlighter = LocalCodeHighlighter.current
-    val darkMode = LocalDarkMode.current
-
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_search_script))
-        }
-    ) {
-        OutlinedTextField(
+    item(headlineContent = {
+        CodeTextField(
             value = options.searchScript,
-            onValueChange = {
-                onUpdateOptions(options.copy(searchScript = it))
-            },
-            modifier = Modifier.fillMaxWidth(),
+            onValueChange = { onUpdateOptions(options.copy(searchScript = it)) },
+            label = { Text(stringResource(R.string.search_detail_search_script)) },
             minLines = 8,
             maxLines = 20,
-            visualTransformation = HighlightCodeVisualTransformation(
-                language = "javascript",
-                highlighter = highlighter,
-                darkMode = darkMode
-            ),
-            textStyle = MaterialTheme.typography.bodySmall.merge(
-                fontFamily = JetbrainsMono,
-                fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
-            ),
         )
-    }
+    })
 
-    FormItem(
-        label = {
-            Text(stringResource(R.string.search_detail_scrape_script))
-        },
-        description = {
-            Text(stringResource(R.string.search_detail_scrape_script_desc))
-        }
-    ) {
-        OutlinedTextField(
+    item(headlineContent = {
+        val codeStyle = MaterialTheme.typography.bodySmall.merge(
+            fontFamily = JetbrainsMono,
+            fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+        )
+        CodeTextField(
             value = options.scrapeScript,
-            onValueChange = {
-                onUpdateOptions(options.copy(scrapeScript = it))
-            },
-            modifier = Modifier.fillMaxWidth(),
+            onValueChange = { onUpdateOptions(options.copy(scrapeScript = it)) },
+            label = { Text(stringResource(R.string.search_detail_scrape_script)) },
             minLines = 4,
             maxLines = 20,
+            supportingText = {
+                Text(stringResource(R.string.search_detail_scrape_script_desc))
+            },
             placeholder = {
                 Text(
                     text = SearchServiceOptions.CustomJsOptions.DEFAULT_SCRAPE_SCRIPT.trimIndent(),
-                    style = MaterialTheme.typography.bodySmall.merge(
-                        fontFamily = JetbrainsMono,
-                        fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
-                    ),
+                    style = codeStyle,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 )
             },
-            visualTransformation = HighlightCodeVisualTransformation(
-                language = "javascript",
-                highlighter = highlighter,
-                darkMode = darkMode
-            ),
-            textStyle = MaterialTheme.typography.bodySmall.merge(
-                fontFamily = JetbrainsMono,
-                fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
-            ),
         )
-    }
+    })
+}
+
+// 所有 API Key 配置项长得一样，只需要内容和一个更新回调
+private fun CardGroupScope.ApiKeyItem(
+    apiKey: String,
+    onUpdate: (String) -> Unit,
+) {
+    textItem(
+        value = apiKey,
+        onValueChange = onUpdate,
+        label = { Text(stringResource(R.string.search_detail_api_key)) },
+        singleLine = false,
+        maxLines = 3,
+    )
 }

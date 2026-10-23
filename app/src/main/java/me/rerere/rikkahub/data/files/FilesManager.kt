@@ -993,14 +993,6 @@ class FilesManager(
         return file
     }
 
-    fun listImageFiles(): List<File> {
-        val imagesDir = getImagesDir()
-        return imagesDir.listFiles()
-            ?.filter { it.isFile && it.extension.lowercase() in listOf("png", "jpg", "jpeg", "webp") }
-            ?.toList()
-            ?: emptyList()
-    }
-
     @OptIn(ExperimentalEncodingApi::class)
     suspend fun saveMessageImage(activityContext: Context, image: String) = withContext(Dispatchers.IO) {
         val activity = requireNotNull(activityContext.getActivity()) { "Activity not found" }

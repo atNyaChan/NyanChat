@@ -111,18 +111,6 @@ object Logging {
         }
     }
 
-    fun getRecentLogs(): List<LogEntry> {
-        synchronized(recentLogs) {
-            return recentLogs.toList()
-        }
-    }
-
-    fun getTextLogs(): List<LogEntry.TextLog> {
-        synchronized(recentLogs) {
-            return recentLogs.filterIsInstance<LogEntry.TextLog>()
-        }
-    }
-
     fun getRequestLogs(): List<LogEntry.RequestLog> {
         synchronized(recentLogs) {
             return recentLogs.filterIsInstance<LogEntry.RequestLog>()

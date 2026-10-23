@@ -371,7 +371,7 @@ private fun MemoryFileEditor(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         CardGroup {
-            FormItem(label = {}) {
+            item(headlineContent = {
                 OutlinedTextField(
                     value = path,
                     onValueChange = onPathChange,
@@ -386,8 +386,8 @@ private fun MemoryFileEditor(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
-            }
-            FormItem(label = {}) {
+            })
+            item(headlineContent = {
                 OutlinedTextField(
                     value = title,
                     onValueChange = onTitleChange,
@@ -396,15 +396,15 @@ private fun MemoryFileEditor(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
-            }
-            FormItem(label = {}) {
+            })
+            item(headlineContent = {
                 OutlinedTextField(
                     value = description,
                     onValueChange = onDescriptionChange,
                     label = { Text(stringResource(R.string.memory_file_page_summary)) },
                     modifier = Modifier.fillMaxWidth(),
                 )
-            }
+            })
             FormItem(
                 label = { Text(stringResource(R.string.memory_file_page_aliases)) },
             ) {
@@ -447,7 +447,7 @@ private fun MemoryFileEditor(
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
-            FormItem(label = {}) {
+            item(headlineContent = {
                 OutlinedTextField(
                     value = body,
                     onValueChange = onBodyChange,
@@ -461,7 +461,7 @@ private fun MemoryFileEditor(
                     minLines = 3,
                     modifier = Modifier.fillMaxWidth(),
                 )
-            }
+            })
         }
     }
 }

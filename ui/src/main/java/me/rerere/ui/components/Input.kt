@@ -4,9 +4,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +19,7 @@ fun <T : Number> OutlinedNumberInput(
     onValueChange: (T) -> Unit,
     modifier: Modifier = Modifier,
     label: String = "",
+    supportingText: (@Composable () -> Unit)? = null,
     colors: TextFieldColors = OutlinedTextFieldDefaults.colors()
 ) {
     var textFieldValue by remember(value) { mutableStateOf(value.toString()) }
@@ -45,42 +44,7 @@ fun <T : Number> OutlinedNumberInput(
             }
         },
         label = { Text(label) },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        isError = !textFieldValue.isValidNumberInput(),
-        colors = colors
-    )
-}
-
-@Composable
-fun <T : Number> NumberInput(
-    value: T,
-    onValueChange: (T) -> Unit,
-    modifier: Modifier = Modifier,
-    label: String = "",
-    colors: TextFieldColors = TextFieldDefaults.colors()
-) {
-    var textFieldValue by remember(value) { mutableStateOf(value.toString()) }
-    TextField(
-        modifier = modifier,
-        value = textFieldValue,
-        onValueChange = { newValue ->
-            textFieldValue = newValue
-            if (textFieldValue.isValidNumberInput()) {
-                try {
-                    @Suppress("UNCHECKED_CAST")
-                    val newVal = when (value) {
-                        is Int -> newValue.toInt() as T
-                        is Float -> newValue.toFloat() as T
-                        is Double -> newValue.toDouble() as T
-                        else -> throw IllegalArgumentException("Unsupported number type")
-                    }
-                    onValueChange(newVal)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        },
-        label = { Text(label) },
+        supportingText = supportingText,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         isError = !textFieldValue.isValidNumberInput(),
         colors = colors

@@ -18,9 +18,6 @@ interface FavoriteDAO {
     @Query("SELECT * FROM favorites WHERE type = :type ORDER BY created_at DESC")
     fun listByType(type: String): Flow<List<FavoriteEntity>>
 
-    @Query("SELECT ref_key FROM favorites WHERE type = :type")
-    suspend fun getRefKeysByType(type: String): List<String>
-
     @Query(
         "SELECT substr(ref_key, length('node:' || :conversationId || ':') + 1) FROM favorites WHERE ref_key LIKE 'node:' || :conversationId || ':%'"
     )

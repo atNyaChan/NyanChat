@@ -1377,9 +1377,12 @@
   <string name="search_detail_custom_url">Пользовательский URL</string>
   <string name="search_detail_depth">Глубина</string>
   <string name="search_detail_engines">Двигатели</string>
+  <string name="search_detail_include_answer">Включить ответ</string>
+  <string name="search_detail_include_answer_desc">Разрешить Tavily вместе с результатами поиска создавать сводку ответа</string>
   <string name="search_detail_language">Язык</string>
   <string name="search_detail_max_tokens">Макс. токенов</string>
   <string name="search_detail_max_tokens_per_page">Макс. токенов на страницу</string>
+  <string name="search_detail_mode">Режим</string>
   <string name="search_detail_model">Модель</string>
   <string name="search_detail_name">Имя</string>
   <string name="search_detail_password">Пароль</string>
@@ -1522,8 +1525,7 @@
   <string name="setting_asr_page_default_name">ASR</string>
   <string name="setting_asr_page_delete_provider">Удалить поставщика ASR</string>
   <string name="setting_asr_page_edit_provider">Изменить поставщика ASR</string>
-  <string name="setting_page_asr_milliseconds">мс</string>
-  <string name="setting_page_asr_silence_duration">Длительность паузы окончания высказывания</string>
+  <string name="setting_page_asr_silence_duration">Длительность паузы окончания высказывания (мс)</string>
   <string name="setting_page_asr_silence_duration_desc">Высказывание завершается после непрерывной паузы указанной длительности. Рекомендуется: 800–1000 мс.</string>
   <string name="speech_tab_asr">Распознавание речи</string>
   <!-- File settings -->

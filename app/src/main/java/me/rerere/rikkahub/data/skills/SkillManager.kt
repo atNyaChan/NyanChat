@@ -90,18 +90,6 @@ class SkillManager(
         dir.deleteRecursively()
     }
 
-    fun readSkillBody(skillName: String): String? {
-        val skillFile = resolveSkillDir(skillName)?.resolve("SKILL.md") ?: return null
-        if (!skillFile.exists()) return null
-        return SkillFrontmatterParser.extractBody(skillFile.readText())
-    }
-
-    fun readSkillContent(skillName: String): String? {
-        val skillFile = resolveSkillDir(skillName)?.resolve("SKILL.md") ?: return null
-        if (!skillFile.exists()) return null
-        return skillFile.readText()
-    }
-
     // 跳过隐藏目录，如原子写入残留的 .<name>.staging.N.tmp
     private fun skillDirsIn(root: File): List<File> =
         root.listFiles()?.filter { it.isDirectory && !it.name.startsWith(".") }.orEmpty()

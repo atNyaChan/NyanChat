@@ -44,10 +44,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SheetValue
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -84,6 +81,8 @@ import me.rerere.rikkahub.ui.components.ai.rememberModelListState
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceLabel
 import me.rerere.rikkahub.ui.components.ui.MessageSearchResultCard
 import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
@@ -449,43 +448,34 @@ private fun SearchConditionsDialog(
                         SearchSectionLabel(stringResource(R.string.search_page_match_label))
                     },
                     content = {
-                        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                            MessageSearchMode.entries.forEachIndexed { index, mode ->
-                                SegmentedButton(
-                                    selected = conditions.mode == mode,
-                                    onClick = {
-                                        onConditionsChange(
-                                            conditions.copy(
-                                                mode = mode,
-                                                sort = if (mode != MessageSearchMode.FUZZY &&
-                                                    conditions.sort == MessageSearchSort.RELEVANCE
-                                                ) {
-                                                    MessageSearchSort.NEWEST_FIRST
-                                                } else {
-                                                    conditions.sort
-                                                },
-                                            )
-                                        )
-                                    },
-                                    shape = SegmentedButtonDefaults.itemShape(
-                                        index = index,
-                                        count = MessageSearchMode.entries.size,
-                                    ),
-                                    modifier = Modifier.weight(1f),
-                                ) {
-                                    Text(
-                                        text = stringResource(
-                                            when (mode) {
-                                                MessageSearchMode.TITLE_ONLY -> R.string.search_page_mode_title
-                                                MessageSearchMode.EXACT -> R.string.search_page_mode_exact
-                                                MessageSearchMode.FUZZY -> R.string.search_page_mode_fuzzy
-                                            }
-                                        ),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
+                        ConnectedChoiceButtons(
+                            options = MessageSearchMode.entries,
+                            selected = conditions.mode,
+                            onSelect = { mode ->
+                                onConditionsChange(
+                                    conditions.copy(
+                                        mode = mode,
+                                        sort = if (mode != MessageSearchMode.FUZZY &&
+                                            conditions.sort == MessageSearchSort.RELEVANCE
+                                        ) {
+                                            MessageSearchSort.NEWEST_FIRST
+                                        } else {
+                                            conditions.sort
+                                        },
                                     )
-                                }
-                            }
+                                )
+                            },
+                        ) { mode, selected ->
+                            ConnectedChoiceLabel(
+                                text = stringResource(
+                                    when (mode) {
+                                        MessageSearchMode.TITLE_ONLY -> R.string.search_page_mode_title
+                                        MessageSearchMode.EXACT -> R.string.search_page_mode_exact
+                                        MessageSearchMode.FUZZY -> R.string.search_page_mode_fuzzy
+                                    }
+                                ),
+                                selected = selected,
+                            )
                         }
                     },
                 )
@@ -501,30 +491,21 @@ private fun SearchConditionsDialog(
                                 add(MessageSearchSort.RELEVANCE)
                             }
                         }
-                        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                            sortOptions.forEachIndexed { index, sort ->
-                                SegmentedButton(
-                                    selected = conditions.sort == sort,
-                                    onClick = { onConditionsChange(conditions.copy(sort = sort)) },
-                                    shape = SegmentedButtonDefaults.itemShape(
-                                        index = index,
-                                        count = sortOptions.size,
-                                    ),
-                                    modifier = Modifier.weight(1f),
-                                ) {
-                                    Text(
-                                        text = stringResource(
-                                            when (sort) {
-                                                MessageSearchSort.RELEVANCE -> R.string.search_page_sort_relevance
-                                                MessageSearchSort.NEWEST_FIRST -> R.string.search_page_sort_newest
-                                                MessageSearchSort.OLDEST_FIRST -> R.string.search_page_sort_oldest
-                                            }
-                                        ),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                }
-                            }
+                        ConnectedChoiceButtons(
+                            options = sortOptions,
+                            selected = conditions.sort,
+                            onSelect = { sort -> onConditionsChange(conditions.copy(sort = sort)) },
+                        ) { sort, selected ->
+                            ConnectedChoiceLabel(
+                                text = stringResource(
+                                    when (sort) {
+                                        MessageSearchSort.RELEVANCE -> R.string.search_page_sort_relevance
+                                        MessageSearchSort.NEWEST_FIRST -> R.string.search_page_sort_newest
+                                        MessageSearchSort.OLDEST_FIRST -> R.string.search_page_sort_oldest
+                                    }
+                                ),
+                                selected = selected,
+                            )
                         }
                     },
                 )
@@ -533,31 +514,22 @@ private fun SearchConditionsDialog(
                         SearchSectionLabel(stringResource(R.string.search_page_scope_label))
                     },
                     content = {
-                        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                            SearchScope.entries.forEachIndexed { index, scope ->
-                                SegmentedButton(
-                                    selected = conditions.scope == scope,
-                                    onClick = { onConditionsChange(conditions.copy(scope = scope)) },
-                                    shape = SegmentedButtonDefaults.itemShape(
-                                        index = index,
-                                        count = SearchScope.entries.size,
-                                    ),
-                                    modifier = Modifier.weight(1f),
-                                ) {
-                                    Text(
-                                        text = stringResource(
-                                            when (scope) {
-                                                SearchScope.ALL_ASSISTANTS ->
-                                                    R.string.search_page_scope_all_assistants
-                                                SearchScope.CURRENT_ASSISTANT ->
-                                                    R.string.search_page_scope_current_assistant
-                                            }
-                                        ),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                }
-                            }
+                        ConnectedChoiceButtons(
+                            options = SearchScope.entries,
+                            selected = conditions.scope,
+                            onSelect = { scope -> onConditionsChange(conditions.copy(scope = scope)) },
+                        ) { scope, selected ->
+                            ConnectedChoiceLabel(
+                                text = stringResource(
+                                    when (scope) {
+                                        SearchScope.ALL_ASSISTANTS ->
+                                            R.string.search_page_scope_all_assistants
+                                        SearchScope.CURRENT_ASSISTANT ->
+                                            R.string.search_page_scope_current_assistant
+                                    }
+                                ),
+                                selected = selected,
+                            )
                         }
                     },
                 )

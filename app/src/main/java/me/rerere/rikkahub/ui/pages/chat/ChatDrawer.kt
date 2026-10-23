@@ -49,7 +49,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
@@ -441,6 +440,7 @@ fun ChatDrawerContent(
                             value = editedTitle,
                             onValueChange = { editedTitle = it },
                             singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     },
                     confirmButton = {

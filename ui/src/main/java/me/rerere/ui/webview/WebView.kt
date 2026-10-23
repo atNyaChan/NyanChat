@@ -278,16 +278,6 @@ class WebViewState(
         content = WebContent.Url(url, additionalHttpHeaders)
     }
 
-    fun loadData(
-        data: String,
-        baseUrl: String? = null,
-        encoding: String = "utf-8",
-        mimeType: String? = null,
-        historyUrl: String? = null
-    ) {
-        content = WebContent.Data(data, baseUrl, encoding, mimeType, historyUrl)
-    }
-
     // --- Navigation Methods ---
     fun goBack() {
         webView?.goBack()

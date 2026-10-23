@@ -14,7 +14,6 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.isSuccess
 import io.ktor.util.cio.readChannel
 import io.ktor.utils.io.jvm.javaio.toInputStream
-import io.ktor.utils.io.readAvailable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.xmlpull.v1.XmlPullParser
@@ -283,20 +282,6 @@ class S3Client(
 
             val xmlBody = response.bodyAsText()
             parseListObjectsResponse(xmlBody)
-        }
-    }
-
-    suspend fun objectExists(key: String): Boolean {
-        return headObject(key).isSuccess
-    }
-
-    fun getPublicUrl(key: String): String {
-        val path = "/${key.trimStart('/')}"
-        return if (config.pathStyle) {
-            "${config.endpoint.trimEnd('/')}/${config.bucket}$path"
-        } else {
-            val scheme = if (config.isHttps) "https://" else "http://"
-            "$scheme${config.bucket}.${config.host}$path"
         }
     }
 

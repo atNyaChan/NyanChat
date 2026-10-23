@@ -246,9 +246,6 @@ class WorkspaceManager(
         return fileSystem.delete(location.rootDir, location.relativePath, recursive)
     }
 
-    fun moveFile(root: String, source: String, target: String, overwrite: Boolean = false): WorkspaceFileEntry =
-        fileSystem.move(filesDir(root), source, target, overwrite)
-
     fun glob(root: String, pattern: String, path: String = ""): List<WorkspaceFileEntry> =
         fileSystem.glob(filesDir(root), pattern, path)
 

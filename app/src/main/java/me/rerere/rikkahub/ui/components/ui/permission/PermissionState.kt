@@ -139,38 +139,6 @@ class PermissionState internal constructor(
     }
 
     /**
-     * 请求特定权限
-     */
-    fun requestPermission(permission: String) {
-        val permissionInfo = permissions.find { it.permission == permission } ?: return
-        val status = permissionStates[permission] ?: return
-
-        if (status == PermissionStatus.Granted) return
-
-        when (status) {
-            PermissionStatus.Denied -> {
-                if (activity.shouldShowRequestPermissionRationale(permission)) {
-                    // 显示权限说明对话框
-                    currentRationalePermissions = listOf(permissionInfo)
-                    showRationaleDialog = true
-                } else {
-                    // 直接请求权限
-                    singlePermissionLauncher?.launch(permission)
-                }
-            }
-            PermissionStatus.DeniedPermanently -> {
-                // 永久拒绝，显示说明对话框并引导到设置
-                currentRationalePermissions = listOf(permissionInfo)
-                showRationaleDialog = true
-            }
-            else -> {
-                // NotRequested 状态，直接请求权限
-                singlePermissionLauncher?.launch(permission)
-            }
-        }
-    }
-
-    /**
      * 从权限说明对话框继续请求权限
      */
     fun proceedFromRationale() {
@@ -287,24 +255,5 @@ class PermissionState internal constructor(
      */
     internal fun handleSinglePermissionResult(permission: String, granted: Boolean) {
         handlePermissionResult(mapOf(permission to granted))
-    }
-
-    /**
-     * 获取权限结果
-     */
-    fun getPermissionResults(): MultiplePermissionResult {
-        val results = permissions.associate { permissionInfo ->
-            val status = permissionStates[permissionInfo.permission] ?: PermissionStatus.NotRequested
-            permissionInfo.permission to PermissionResult(
-                permission = permissionInfo.permission,
-                status = status
-            )
-        }
-
-        return MultiplePermissionResult(
-            results = results,
-            allRequiredGranted = permissions.filter { it.required }
-                .all { permissionStates[it.permission] == PermissionStatus.Granted }
-        )
     }
 }

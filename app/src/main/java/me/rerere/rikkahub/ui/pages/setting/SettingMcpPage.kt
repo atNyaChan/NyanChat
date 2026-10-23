@@ -42,10 +42,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SheetValue
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -100,6 +97,8 @@ import me.rerere.rikkahub.data.ai.mcp.McpTool
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceLabel
 import me.rerere.rikkahub.ui.components.ui.HorizontalPager
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.PagerTab
@@ -628,43 +627,38 @@ private fun McpCommonOptionsConfigure(
                 is McpServerConfig.SseTransportServer -> 1
             }
 
-            SingleChoiceSegmentedButtonRow(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                transportTypes.forEachIndexed { index, type ->
-                    SegmentedButton(
-                        shape = SegmentedButtonDefaults.itemShape(index, transportTypes.size),
-                        onClick = {
-                            if (index != currentTypeIndex) {
-                                val newConfig = when (index) {
-                                    0 -> McpServerConfig.StreamableHTTPServer(
-                                        id = config.id,
-                                        commonOptions = config.commonOptions,
-                                        url = when (config) {
-                                            is McpServerConfig.SseTransportServer -> config.url
-                                            is McpServerConfig.StreamableHTTPServer -> config.url
-                                        }
-                                    )
-
-                                    1 -> McpServerConfig.SseTransportServer(
-                                        id = config.id,
-                                        commonOptions = config.commonOptions,
-                                        url = when (config) {
-                                            is McpServerConfig.SseTransportServer -> config.url
-                                            is McpServerConfig.StreamableHTTPServer -> config.url
-                                        }
-                                    )
-
-                                    else -> config
+            ConnectedChoiceButtons(
+                options = transportTypes,
+                selected = transportTypes[currentTypeIndex],
+                onSelect = { type ->
+                    val index = transportTypes.indexOf(type)
+                    if (index != currentTypeIndex) {
+                        val newConfig = when (index) {
+                            0 -> McpServerConfig.StreamableHTTPServer(
+                                id = config.id,
+                                commonOptions = config.commonOptions,
+                                url = when (config) {
+                                    is McpServerConfig.SseTransportServer -> config.url
+                                    is McpServerConfig.StreamableHTTPServer -> config.url
                                 }
-                                update(newConfig)
-                            }
-                        },
-                        selected = index == currentTypeIndex
-                    ) {
-                        Text(type)
+                            )
+
+                            1 -> McpServerConfig.SseTransportServer(
+                                id = config.id,
+                                commonOptions = config.commonOptions,
+                                url = when (config) {
+                                    is McpServerConfig.SseTransportServer -> config.url
+                                    is McpServerConfig.StreamableHTTPServer -> config.url
+                                }
+                            )
+
+                            else -> config
+                        }
+                        update(newConfig)
                     }
-                }
+                },
+            ) { type, selected ->
+                ConnectedChoiceLabel(text = type, selected = selected)
             }
         }
 

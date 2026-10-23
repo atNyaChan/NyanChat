@@ -367,6 +367,9 @@
 ### 搜索服务（描述：“配置搜索服务提供商”）
 - 搜索服务主页右上角在新增按钮左侧提供三点入口，进入与提供商详情页同款样式的“通用搜索设置”页面；原主页通用选项移入该页，并将结果数量与“测试搜索”合并为一个 `CardGroup`。
 - “测试搜索”从各提供商详情页移至通用搜索设置；测试前可从下拉框选择已配置的搜索提供商，测试结果在固定区域内滚动。
+- 搜索提供商详情页的“配置”标题样式改为 `CardGroup` 的 title，全部配置项移入一个 `CardGroup`，每个配置项独立成一张卡片；服务说明改为 CardGroup 下方的灰色小字。
+- 提供商详情页的文本配置项统一为只放一个 `OutlinedTextField` 的卡片，字段名使用输入框自带的 `label`（不再用“上方标题 + 输入框”的 `FormItem`），API Key 与多行字段最多 3 行；`Perplexity` 的令牌数保留数字键盘，`Custom JS` 的两个脚本框保留 JS 高亮、等宽字体与连字设置。
+- `Bing` 详情页没有任何配置项，因此不显示“配置”标题也不使用 `CardGroup`，只显示一行灰色说明小字。
 
 ### 工作区
 - “文件”页从顶栏打开终端时，以当前浏览目录作为终端初始目录。
@@ -630,6 +633,10 @@
 ## 其它 / 技术相关
 - 修复切换助手后，在空白聊天页发送的第一条消息偶尔被写入上一个助手的问题。
 - 所有 Material 3 `CardGroup` 的外侧圆角和页面级卡片、弹窗等大型容器按屏幕物理圆角和页面边距适配，包括搜索提供商配置、翻译、统计、图像生成、助手提示词、工作区基础信息及设置警告卡片；通用全屏编辑器的文本输入区仅顶部圆角参与适配（可由设置控制）。所有已接入适配的组件在禁用、旧系统或无法读取物理圆角时统一回退为 28dp，选择“直角”时统一使用 4dp。消息气泡、单个思考块、连续思考/工具块、公共描边列表卡片、文件等条目卡片保留原始 shape。
+- 全项目的分段按钮（`SegmentedButton` / `SingleChoiceSegmentedButtonRow`）全部统一改用连接式单选按钮组 `ConnectedChoiceButtons` / `ConnectedChoiceLabel`，并记入 `AGENTS.md`。
+- 全项目“上方标题 + 输入框”的 `FormItem` 统一改为卡片内只放输入框、字段名用输入框自带 `label`、原描述改用 `supportingText` 的形式，并记入 `AGENTS.md`；`FormItem` 只保留给内容不是单个输入框的行（滑杆、开关、选项按钮组、chips、列表等，如记忆文件编辑页的“别名”行）。
+- 火山引擎 ASR 的静音判停时长把原输入框内的“毫秒”单位并入字段名（改为“静音判停时长（毫秒）”）；OpenAI Realtime ASR 的“提示”输入框不再强制最小两行。
+- 文本输入框统一铺满可用宽度：图像生成设置的“生成数量”由 120dp 改为全宽，侧栏“编辑标题”弹窗的标题输入框补上 `fillMaxWidth()`。
 - 统一全部 `AlertDialog` / `BasicAlertDialog` 的背景色为 `MaterialTheme.colorScheme.surface`。
 - 全部可滚动页面（含聊天页消息列表）启用拉伸（stretch）回弹：`CustomColors` 提供的 `LocalOverscrollFactory` 由禁用（`null`）改为平台拉伸效果。但是关闭所有页签 pager 的水平翻页的 overscroll 拉伸。
 - 文件大小统一改用二进制单位（B/KiB/MiB/GiB/TiB），不再使用 KB/MB/GB/TB（换算仍为除以 1024），并在 `AGENTS.md` 的“Unified UI Conventions”中新增文件大小必须使用二进制单位、动态大小统一走 `Long.fileSizeToString()` 的约定。
@@ -680,12 +687,12 @@
 - 根构建脚本的 Spotless 取消 `ratchetFrom("origin/master")` 默认值，改为默认对整个仓库执行 ktlint 格式化；需要只格式化相对某个 ref 有改动的文件时传 `-PspotlessRatchet=<ref>`，`.kt` target 另可用 `-PspotlessTarget=<glob>` 临时收窄到某个目录（`*.gradle.kts` 不受该参数影响）。
 - `app/baselineprofile` 生成器在发送消息后不再只做一次 20 秒等待，而是在等待回复结尾标记期间持续把聊天消息列表翻到底部：长回复超过一屏后聊天列表的自动跟随会在气泡底边离开视口时停止，原实现会因结尾标记停在屏幕外而误报回复未渲染。
 - 在 `app` 的 `packaging` 中显式设置 `dex { useLegacyPackaging = true }`（与已有的 `jniLibs { useLegacyPackaging = true }` 一致），让 dex 继续以 deflate 压缩进 APK。因为 `minSdk` 提升到 28 后，AGP 的 `DexPackagingOptionsImpl` 默认 `useLegacyPackaging = (minSdk < 28)` 变为 false，会把 `classes*.dex` 以不压缩（STORED）方式存入 APK，使 release APK 由约 34MB 涨到约 47MB、debug APK 约翻倍；该默认与内容无关，只影响 zip 压缩方式和安装时的 dex2oat。
+- 移除已发现的死代码，并新增 `tools/scan_deadcode.py` 作为死代码静态检查脚本：一次遍历全仓库建立词频索引，报告未被引用的 Kotlin 声明与整文件、未使用的 import、未引用的字符串资源、孤儿 `res/` 文件与 values 条目、未被引用的枚举项，以及 web-ui 中无人 import 的模块；`--only` 可只跑指定检查，有发现时退出码为 1。`AGENTS.md` 的 Agent Change Workflow 记录其用法。
 - 清理 Firebase 移除后的残留引用：删除 `AGENTS.md` 中关于 `google-services.json` 的过时说明，删除 CI workflow 中写入 `google-services.json` 的步骤。
 - 清理各网络服务对新版 OkHttp 非空响应体的冗余安全调用、密封类型 `when` 的多余 `else`，并移除低于项目最低 API 28 的废弃 Locale 兼容分支；仍有实际用途的旧 TTS 回调与消息序列化迁移类型继续保留，并仅在对应兼容代码中抑制弃用警告。
 - 首次安装或设置文件损坏（重置为空）产生空助手列表时自动补回默认助手，当前助手读取另有独立兜底，避免主界面与安全模式在启动阶段循环闪退。
 - 移除未使用的 Google Sans Flex 字体。
 - 删除 `app/src/main/jniLibs/{arm64-v8a,x86_64}/libsimple.so`（`wangfenjin/simple` 的 jieba 分词与拼音 FTS5 扩展）以及 `SQLiteConfiguration` 里对它的扩展注册：新版搜索已改用普通表 `message_search_cache`，没人再用 `simple` 分词器；旧 `message_fts` 表在打开数据库（`AppDatabaseFactory`）与校验恢复存档（`DatabaseBackup.normalize`）时删除，避免它让 `PRAGMA integrity_check` 失败。
 - 删除未使用的反编译工具二进制 `gradle/vineflower.jar`。
-- 删除未被任何代码引用的 `app/src/main/assets/html/mark.html` 及其加载函数 `buildMarkdownPreviewHtml()`（`MarkdownWeb.kt`），该模板内部从 CDN 加载 mermaid 10.6.1。
 - web-ui 工作台预览 mermaid 的 CDN 地址由 `https://esm.sh/mermaid@11` 固定为 `https://esm.sh/mermaid@11.16.0`，与 Android 端内置的 `app/src/main/assets/html/mermaid.min.js`（11.16.0）版本统一。
 - 收藏列表的侧滑删除改用 Material 3 的 `SwipeToDismissBox(onDismiss = ...)` 回调（基于 `settledValue`，仅在真正划出落定时触发，替代已弃用的 `confirmValueChange`），并在触发删除后用 `snapTo(Settled)` 立即把状态收回未滑出位置。

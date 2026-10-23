@@ -280,19 +280,3 @@ fun extractContextForMatching(
         .takeLast(scanDepth)
         .joinToString("\n") { it.toText() }
 }
-
-/**
- * 获取所有被触发的注入，按优先级排序
- *
- * @param injections 所有注入规则
- * @param context 上下文文本
- * @return 被触发的注入列表，按优先级降序排列
- */
-fun getTriggeredInjections(
-    injections: List<PromptInjection.RegexInjection>,
-    context: String
-): List<PromptInjection.RegexInjection> {
-    return injections
-        .filter { it.isTriggered(context) }
-        .sortedByDescending { it.priority }
-}

@@ -14,7 +14,6 @@ import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.data.model.Avatar
 import me.rerere.rikkahub.data.repository.ConversationRepository
 import me.rerere.rikkahub.data.repository.MemoryRepository
-import me.rerere.rikkahub.data.repository.memoryId
 import me.rerere.rikkahub.service.ChatService
 import kotlin.uuid.Uuid
 
@@ -75,8 +74,6 @@ class AssistantVM(
             filesManager.deleteChatFiles(uris)
         }
     }
-
-    fun getMemories(assistant: Assistant) = memoryRepository.getFilesFlow(assistant.memoryId)
 
     fun copyMemories(fromAssistantId: String, toAssistantId: String) {
         viewModelScope.launch {

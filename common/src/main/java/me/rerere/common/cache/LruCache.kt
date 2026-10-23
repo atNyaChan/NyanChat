@@ -105,8 +105,6 @@ class LruCache<K, V>(
     }
 
     fun size(): Int = lock.withLock { map.size }
-
-    fun keysInMemory(): Set<K> = lock.withLock { map.filterValues { !it.isExpired(now()) }.keys.toSet() }
 }
 
 private fun now(): Long = System.currentTimeMillis()

@@ -15,10 +15,6 @@ enum class FavoriteType(val value: String) {
     // Keep old value for compatibility with existing data.
     @SerialName("message")
     MESSAGE("message");
-
-    companion object {
-        fun fromValue(value: String): FavoriteType? = entries.firstOrNull { it.value == value }
-    }
 }
 
 @Serializable
