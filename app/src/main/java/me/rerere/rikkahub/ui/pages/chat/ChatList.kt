@@ -103,6 +103,7 @@ import me.rerere.rikkahub.data.model.MessageNode
 import me.rerere.rikkahub.data.model.withConversation
 import me.rerere.rikkahub.service.ChatError
 import me.rerere.rikkahub.ui.components.message.ChatMessage
+import me.rerere.rikkahub.ui.components.message.StreamingStatsSnapshot
 import me.rerere.rikkahub.ui.components.ui.ErrorCardsDisplay
 import me.rerere.ui.components.ListSelectableItem
 import me.rerere.rikkahub.ui.components.ui.AppLoadingIndicator
@@ -125,6 +126,7 @@ fun ChatList(
     state: LazyListState,
     loading: Boolean,
     generatingMessageId: Uuid? = null,
+    statsSnapshot: StreamingStatsSnapshot? = null,
     processingStatus: String? = null,
     previewMode: Boolean,
     settings: Settings,
@@ -171,6 +173,7 @@ fun ChatList(
                 state = state,
                 loading = loading,
                 generatingMessageId = generatingMessageId,
+                statsSnapshot = statsSnapshot,
                 processingStatus = processingStatus,
                 settings = settings,
                 hazeState = hazeState,
@@ -223,6 +226,7 @@ private fun ChatListNormal(
     state: LazyListState,
     loading: Boolean,
     generatingMessageId: Uuid? = null,
+    statsSnapshot: StreamingStatsSnapshot? = null,
     processingStatus: String? = null,
     settings: Settings,
     hazeState: HazeState,
@@ -390,6 +394,7 @@ private fun ChatListNormal(
                                 ?: node.currentMessage.snapshotModel(),
                             assistant = assistant,
                             loading = loading && node.currentMessage.id == generatingMessageId,
+                            statsSnapshot = statsSnapshot?.takeIf { it.message.id == node.currentMessage.id },
                             generating = loading,
                             onRegenerate = {
                                 onRegenerate(node.currentMessage)

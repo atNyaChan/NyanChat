@@ -29,10 +29,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,8 +42,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.datetime.toJavaLocalDateTime
 import me.rerere.ai.core.TokenUsage
@@ -72,9 +68,24 @@ import java.time.Duration
 import java.time.LocalDateTime
 
 /**
+ * 生成中的统计快照，由 `ChatVM.streamingStats` 每 0.1s 在后台线程推送一次。
+ *
+ * @param message 该时刻的生成中消息（词数、token 用量都取自它）
+ * @param liveGenerationMillis 按时钟外推的生成耗时：`generationTimeMs` 只在收到 chunk 时才重算，
+ * 两次 chunk 之间会冻住，外推后耗时/速度才能在没 chunk 时也继续走表
+ * @param elapsedMillis 从消息创建到快照时刻的总耗时
+ */
+data class StreamingStatsSnapshot(
+    val message: UIMessage,
+    val liveGenerationMillis: Long?,
+    val elapsedMillis: Long,
+)
+
+/**
  * 显示消息的技术统计信息（如 token 使用量）
  *
  * 简洁模式只显示步数、速度、上下文占用，点开看详情；详细模式显示本轮的全部统计。
+ * 生成中传入的 [stats] 是每 0.1s 推送一次的统计快照，所以统计不会跟随每个流式 chunk 重算。
  */
 @Composable
 fun ChatMessageNerdLine(
@@ -84,6 +95,7 @@ fun ChatMessageNerdLine(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
     round: Int? = null,
+    stats: StreamingStatsSnapshot? = null,
 ) {
     if (!LocalSettings.current.displaySetting.showTokenUsage) return
     if (LocalSettings.current.displaySetting.detailedTokenUsage) {
@@ -94,6 +106,7 @@ fun ChatMessageNerdLine(
             modifier = modifier,
             color = color,
             round = round,
+            stats = stats,
         )
     } else {
         ConciseNerdLine(message = message, modifier = modifier, color = color)
@@ -111,6 +124,7 @@ private fun DetailedNerdLine(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
     round: Int? = null,
+    stats: StreamingStatsSnapshot? = null,
 ) {
     val settings = LocalSettings.current.displaySetting
     var expanded by remember(message.id) { mutableStateOf(false) }
@@ -118,36 +132,7 @@ private fun DetailedNerdLine(
     val usage = message.usage
     // 旧消息没有记录生成耗时，退回用创建到完成的总时长估算
     val generationMillis = message.generationTimeMs
-    val latestMessage by rememberUpdatedState(message)
-    val wordCount by produceState(
-        initialValue = message.wordCount(includeReasoning = true),
-        key1 = message.id,
-        key2 = loading,
-    ) {
-        if (loading) {
-            while (isActive) {
-                value = latestMessage.wordCount(includeReasoning = true)
-                delay(100)
-            }
-        } else {
-            value = latestMessage.wordCount(includeReasoning = true)
-        }
-    }
-    val elapsedMillis by produceState(
-        initialValue = message.elapsedMillis(loading),
-        key1 = message.createdAt,
-        key2 = message.finishedAt,
-        key3 = loading,
-    ) {
-        if (loading) {
-            while (isActive) {
-                value = latestMessage.elapsedMillis(loading = true)
-                delay(100)
-            }
-        } else {
-            value = latestMessage.elapsedMillis(loading = false)
-        }
-    }
+    val wordCount = remember(message) { message.wordCount(includeReasoning = true) }
 
     ProvideTextStyle(MaterialTheme.typography.labelSmall.copy(color = color)) {
         CompositionLocalProvider(LocalContentColor provides color) {
@@ -161,7 +146,13 @@ private fun DetailedNerdLine(
                     .padding(horizontal = 4.dp, vertical = 2.dp)
             ) {
                 if (settings.showTokenUsage) {
-                    val statsMillis = generationMillis ?: elapsedMillis
+                    // 生成中用每 0.1s 推送的快照（含按时钟外推的生成耗时），没 chunk 时耗时/速度也会继续走；
+                    // 生成结束后换回最终的 generationTimeMs，保持“不含首 token 延迟与工具等待”的口径。
+                    val statsMillis = if (loading) {
+                        stats?.liveGenerationMillis ?: stats?.elapsedMillis ?: message.elapsedMillis(loading = true)
+                    } else {
+                        generationMillis ?: stats?.elapsedMillis ?: message.elapsedMillis(loading = false)
+                    }
                     val seconds = statsMillis / 1000f
                     val cost = if (!loading && usage != null) calculateCost(usage, model) else null
                     val manuallyEdited = !loading && message.modelId == null
@@ -248,7 +239,8 @@ private fun DetailedNerdLine(
                         }
                     }
 
-                    if (!loading && message.modelId != null && usage != null) {
+                    // 生成中只要 provider 返回了 usage 就先显示这行，费用仍在生成结束后才显示
+                    if (message.modelId != null && usage != null) {
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             itemVerticalAlignment = Alignment.CenterVertically,
@@ -282,7 +274,15 @@ private fun DetailedNerdLine(
                                         modifier = Modifier.size(12.dp),
                                     )
                                 },
-                                content = { CountText(usage.completionTokens, expanded, " token") },
+                                content = {
+                                    if (loading) {
+                                        Text(text = "(~")
+                                        CountText(usage.completionTokens, expanded, " token")
+                                        Text(text = ")")
+                                    } else {
+                                        CountText(usage.completionTokens, expanded, " token")
+                                    }
+                                },
                             )
                             if (statsTimeValid && statsMillis >= 150) {
                                 val tokensPerSecond = usage.completionTokens.toFloat() / statsMillis * 1000

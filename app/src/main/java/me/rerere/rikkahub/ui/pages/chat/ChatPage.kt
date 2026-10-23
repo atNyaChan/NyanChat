@@ -453,6 +453,8 @@ private fun ChatPageContent(
     val folderRepository: FolderRepository = koinInject()
     var previewMode by rememberSaveable { mutableStateOf(false) }
     val generatingMessageId by vm.generatingMessageId.collectAsStateWithLifecycle()
+    // 生成中的统计快照：每 0.1s 推送一次，不跟随每个流式 chunk 重算
+    val statsSnapshot by vm.streamingStats.collectAsStateWithLifecycle()
     val folders by folderRepository.getFoldersOfAssistant(assistant.id)
         .collectAsStateWithLifecycle(initialValue = emptyList())
     val folderName = remember(conversation.folderId, folders) {
@@ -606,6 +608,7 @@ private fun ChatPageContent(
                     state = chatListState,
                     loading = loadingJob != null,
                     generatingMessageId = generatingMessageId,
+                    statsSnapshot = statsSnapshot,
                     processingStatus = processingStatus,
                     previewMode = previewMode,
                     settings = setting,

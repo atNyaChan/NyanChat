@@ -2,6 +2,7 @@ package me.rerere.rikkahub.ui.pages.chat
 
 import android.app.Application
 import android.content.Context
+import android.os.SystemClock
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -12,15 +13,21 @@ import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.datetime.toJavaLocalDateTime
 import me.rerere.ai.provider.BuiltInTools
 import me.rerere.ai.provider.Model
 import me.rerere.ai.ui.UIMessage
@@ -43,13 +50,20 @@ import me.rerere.rikkahub.service.ChatError
 import me.rerere.rikkahub.service.ChatErrorSolution
 import me.rerere.rikkahub.service.ChatService
 import me.rerere.rikkahub.service.RequestContextStats
-import me.rerere.rikkahub.ui.hooks.writeStringPreference
+import me.rerere.rikkahub.ui.components.message.StreamingStatsSnapshot
 import me.rerere.rikkahub.ui.hooks.ChatInputState
+import me.rerere.rikkahub.ui.hooks.writeStringPreference
 import me.rerere.rikkahub.web.ApiException
+import java.time.Duration
+import java.time.LocalDateTime
 import java.util.Locale
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.Uuid
 
 private const val TAG = "ChatVM"
+
+// 生成中统计快照的推送间隔
+private val STATS_SAMPLE_INTERVAL = 100.milliseconds
 
 class ChatVM(
     id: String,
@@ -86,6 +100,62 @@ class ChatVM(
         chatService
             .getGeneratingMessageIdFlow(_conversationId)
             .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    /**
+     * 生成中的统计快照，固定每 0.1s 推送一次。
+     *
+     * 流式回复时每个 chunk 都会产生一条新的 [UIMessage]，统计信息不应该跟着每个 chunk 重算／重排；
+     * 而 `generationTimeMs` 只在收到 chunk 时才重算，两次 chunk 之间会冻住，所以这里在后台线程按
+     * 固定节奏把「消息 + 按时钟外推的生成耗时 + 墙钟耗时」打包推送，界面只负责渲染。
+     * 不能用 `Flow.sample`：它的定时器跟着收集者（主线程）走，流式渲染压满主线程会丢掉错过的周期。
+     * 生成结束后发 null，界面回退到使用最终消息。
+     */
+    val streamingStats: StateFlow<StreamingStatsSnapshot?> = run {
+        val output = MutableStateFlow<StreamingStatsSnapshot?>(null)
+        // 生成中消息 + 它最近一次变化（chunk 到达）的时刻；成对读写，避免两个协程之间共享可变字段
+        val latest = MutableStateFlow<Pair<UIMessage?, Long>>(null to 0L)
+        viewModelScope.launch(Dispatchers.Default) {
+            launch {
+                combine(conversation, generatingMessageId, conversationJob) { conversation, generatingId, job ->
+                    // 只在确实有生成任务时给快照；生成结束立即发 null，界面切回最终消息
+                    if (job == null) {
+                        null
+                    } else {
+                        // generatingMessageId 在占位消息被正式回复替换的瞬间可能还没对齐，
+                        // 对不上时退回最后一条消息，由调用方按消息 id 过滤
+                        conversation.messageNodes
+                            .firstOrNull { it.currentMessage.id == generatingId }
+                            ?.currentMessage
+                            ?: conversation.messageNodes.lastOrNull()?.currentMessage
+                    }
+                }.collect { message ->
+                    // 同一个消息对象重复发射不算内容变化，否则外推的生成耗时会一直被打回原值
+                    if (latest.value.first !== message) {
+                        latest.value = message to SystemClock.elapsedRealtime()
+                    }
+                }
+            }
+            while (isActive) {
+                val (message, changedAt) = latest.value
+                val now = SystemClock.elapsedRealtime()
+                output.value = message?.let {
+                    StreamingStatsSnapshot(
+                        message = it,
+                        // generationTimeMs 只统计到最近一个 chunk 为止，两次 chunk 之间按时钟继续走表
+                        liveGenerationMillis = it.generationTimeMs?.let { millis ->
+                            millis + (now - changedAt).coerceAtLeast(0)
+                        },
+                        elapsedMillis = Duration.between(
+                            it.createdAt.toJavaLocalDateTime(),
+                            LocalDateTime.now(),
+                        ).toMillis().coerceAtLeast(0),
+                    )
+                }
+                delay(STATS_SAMPLE_INTERVAL)
+            }
+        }
+        output.asStateFlow()
+    }
 
     val translatingMessageIds: StateFlow<Set<Uuid>> = chatService.translatingMessages
         .map { translating ->

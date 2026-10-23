@@ -116,6 +116,8 @@ fun ChatMessage(
     modifier: Modifier = Modifier,
     loading: Boolean = false,
     generating: Boolean = false,
+    // 生成中每 0.1s 推送一次的统计快照（由 ChatVM 提供），为空时直接用当前消息
+    statsSnapshot: StreamingStatsSnapshot? = null,
     model: Model? = null,
     assistant: Assistant? = null,
     lastMessage: Boolean = false,
@@ -244,11 +246,13 @@ fun ChatMessage(
 
         ProvideTextStyle(textStyle) {
             if (message.role == MessageRole.ASSISTANT && showNerdLine) {
+                // 统计信息使用 0.1s 推送的快照，不跟随每个流式 chunk 重算
                 ChatMessageNerdLine(
-                    message = message,
+                    message = statsSnapshot?.message ?: message,
                     loading = loading,
                     model = model,
                     round = round,
+                    stats = statsSnapshot,
                 )
             }
         }

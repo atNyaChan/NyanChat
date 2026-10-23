@@ -60,9 +60,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -369,6 +373,15 @@ private fun SearchConditionsDialog(
 ) {
     var modelMenuExpanded by remember { mutableStateOf(false) }
     var deletedModelsExpanded by remember { mutableStateOf(false) }
+    val queryFocusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    // 搜索条件抽屉一出现就把焦点放到“搜索文本”输入框并弹出键盘。
+    LaunchedEffect(Unit) {
+        withFrameNanos { }
+        queryFocusRequester.requestFocus()
+        keyboardController?.show()
+    }
 
     val codeFontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings
     val selectedModelIsDeleted = conditions.selectedDeletedModelId != null
@@ -424,7 +437,9 @@ private fun SearchConditionsDialog(
                             value = conditions.query,
                             onValueChange = { onConditionsChange(conditions.copy(query = it)) },
                             label = { Text(stringResource(R.string.search_page_query_label)) },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .focusRequester(queryFocusRequester),
                             singleLine = true,
                         )
                     },
