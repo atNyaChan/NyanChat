@@ -60,9 +60,12 @@ internal object AppDatabaseFactory {
                                 found
                             }
                         if (cacheTableExists && !cacheHasMessageAt) {
-                            // Additive migration keeps the legacy update_at column so older builds can still read the cache.
+                            // 旧缓存缺少 message_at 列时补列；下面会用重建补上消息时间，
+                            // 同表的 title / update_at 两列已不再写入与读取（搜索时联表从 conversationentity 取），
+                            // 保留只是为了既有缓存表不用迁移。
                             db.execSQL("ALTER TABLE message_search_cache ADD COLUMN message_at TEXT")
                         }
+                        // title / update_at 是早期版本写入的会话标题与更新时间，现在不再写入也不再读取，列本身保留
                         db.execSQL(
                             """
                             CREATE TABLE IF NOT EXISTS message_search_cache(
@@ -88,12 +91,8 @@ internal object AppDatabaseFactory {
                             ON message_search_cache(message_at)
                             """.trimIndent()
                         )
-                        db.execSQL(
-                            """
-                            CREATE INDEX IF NOT EXISTS index_message_search_cache_update_at
-                            ON message_search_cache(update_at)
-                            """.trimIndent()
-                        )
+                        // update_at 已不再参与读取与排序，旧库留下的这索引只会拖慢写入
+                        db.execSQL("DROP INDEX IF EXISTS index_message_search_cache_update_at")
 
                         // 旧版重建索引时不会写 message_at，若整表 message_at 全为空则静默重建补上消息时间。
                         val hasAnyMessageAt = cacheHasMessageAt &&

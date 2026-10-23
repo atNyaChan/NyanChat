@@ -1056,6 +1056,10 @@
   <string name="setting_page_preferences_network_proxy_list_desc">تعيين الخادم الوسيط المستخدم عند إرسال الطلبات</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">تعيين ترويسة User-Agent المستخدمة في الطلبات</string>
+<string name="setting_page_preferences_notification_floating_window">نافذة عائمة في الخلفية</string>
+<string name="setting_page_preferences_notification_floating_window_desc">عند مغادرتك التطبيق بينما لا يزال الذكاء الاصطناعي يردّ، اعرض أيقونة عائمة. انقر عليها للتحقق من التقدم وتأكيد استدعاءات الأدوات والرد بسرعة</string>
+<string name="setting_page_preferences_notification_overlay_permission">منح إذن العرض فوق التطبيقات</string>
+<string name="setting_page_preferences_notification_overlay_permission_desc">لن تظهر النافذة العائمة دون هذا الإذن</string>
   <string name="setting_page_providers_desc">تكوين مزوّدي خدمة LLM</string>
   <string name="setting_page_search_service_desc">تكوين مزوّدي خدمة البحث</string>
   <string name="setting_page_system_settings">إعدادات النظام</string>
@@ -1566,11 +1570,24 @@
   <string name="setting_media_page_workspace_id">معرّف مساحة العمل</string>
   <string name="setting_media_page_workspace_id_desc">يستبدل %1$s في عنوان URL الأساسي. اتركه فارغًا إذا لم يكن لعنوان URL عنصر نائب.</string>
   <!-- Notification settings -->
-  <string name="setting_display_page_notification_message_generated">تفعيل الإشعار بعد إنشاء الرسالة</string>
+  <string name="setting_display_page_notification_message_generated">إرسال الإشعار بعد إنشاء الرسالة</string>
   <string name="setting_display_page_notification_message_generated_desc">إرسال إشعارات عند إنشاء الرسائل عندما لا يكون التطبيق في المقدمة</string>
   <string name="setting_notification_mode_after_generation">بعد الإنشاء</string>
   <string name="setting_notification_mode_realtime">في الوقت الفعلي</string>
   <!-- Notifications -->
+<string name="floating_chat_answer">إجابة</string>
+<string name="floating_chat_ask_user">لدى الذكاء الاصطناعي سؤال لك</string>
+<string name="floating_chat_close">إغلاق النافذة العائمة</string>
+<string name="floating_chat_collapse">طيّ</string>
+<string name="floating_chat_open_conversation">فتح المحادثة</string>
+<string name="floating_chat_reply_placeholder">رد سريع…</string>
+<string name="floating_chat_reply_queued_placeholder">سيُرسَل ردك عند انتهاء هذا الدور</string>
+<string name="floating_chat_status_awaiting_answer">بانتظار إجابتك</string>
+<string name="floating_chat_status_awaiting_approval">في انتظار تأكيد استدعاء الأداة</string>
+<string name="floating_chat_status_done">اكتمل الرد</string>
+<string name="floating_chat_status_failed">فشل التوليد</string>
+<string name="floating_chat_status_idle">خامل</string>
+<string name="floating_chat_tool_request">يريد استدعاء الأداة: %1$s</string>
   <string name="media_creation_notification_image_failed">فشل توليد الصورة</string>
   <string name="media_creation_notification_image_succeeded">اكتمل توليد الصورة</string>
   <string name="media_creation_notification_running">جارٍ توليد %1$d من المهام</string>

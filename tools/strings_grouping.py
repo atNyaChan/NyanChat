@@ -206,10 +206,11 @@ GROUPS: list[tuple[str, list[str]]] = [
     ("Notification settings", [
         r"^setting_display_page_notification_message_generated",
         r"^setting_notification_",
+        r"^setting_page_preferences_notification_",
     ]),
     ("Notifications", [
         r"^notification_channel_", r"^notification_live_", r"^notification_web_",
-        r"^media_creation_notification_",
+        r"^media_creation_notification_", r"^floating_chat_",
     ]),
 
     # ---------------- Data ----------------

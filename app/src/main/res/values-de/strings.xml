@@ -1056,6 +1056,10 @@
   <string name="setting_page_preferences_network_proxy_list_desc">Lege den Proxyserver fest, der beim Senden von Anfragen verwendet wird</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">Lege den User-Agent-Header fest, der in Anfragen verwendet wird</string>
+<string name="setting_page_preferences_notification_floating_window">Schwebefenster im Hintergrund</string>
+<string name="setting_page_preferences_notification_floating_window_desc">Wenn du die App verlässt, während die KI noch antwortet, wird ein schwebendes Symbol eingeblendet. Tippe darauf, um den Fortschritt zu prüfen, Tool-Aufrufe zu bestätigen und schnell zu antworten</string>
+<string name="setting_page_preferences_notification_overlay_permission">Overlay-Berechtigung erteilen</string>
+<string name="setting_page_preferences_notification_overlay_permission_desc">Ohne diese Berechtigung wird das schwebende Fenster nicht angezeigt.</string>
   <string name="setting_page_providers_desc">LLM-Dienstanbieter konfigurieren</string>
   <string name="setting_page_search_service_desc">Suchdienstanbieter konfigurieren</string>
   <string name="setting_page_system_settings">Systemeinstellungen</string>
@@ -1566,11 +1570,24 @@
   <string name="setting_media_page_workspace_id">Arbeitsbereichs-ID</string>
   <string name="setting_media_page_workspace_id_desc">Ersetzt %1$s in der Basis-URL. Lasse das Feld leer, wenn die URL keinen Platzhalter enthält.</string>
   <!-- Notification settings -->
-  <string name="setting_display_page_notification_message_generated">Benachrichtigung nach generierter Nachricht aktivieren</string>
+  <string name="setting_display_page_notification_message_generated">Benachrichtigung nach generierter Nachricht senden</string>
   <string name="setting_display_page_notification_message_generated_desc">Benachrichtigungen senden, wenn Nachrichten generiert werden, während die App nicht im Vordergrund ist</string>
   <string name="setting_notification_mode_after_generation">Nach der Generierung</string>
   <string name="setting_notification_mode_realtime">Echtzeit</string>
   <!-- Notifications -->
+<string name="floating_chat_answer">Antworten</string>
+<string name="floating_chat_ask_user">Die KI hat eine Frage an dich</string>
+<string name="floating_chat_close">Schwebendes Fenster schließen</string>
+<string name="floating_chat_collapse">Einklappen</string>
+<string name="floating_chat_open_conversation">Unterhaltung öffnen</string>
+<string name="floating_chat_reply_placeholder">Schnellantwort…</string>
+<string name="floating_chat_reply_queued_placeholder">Deine Antwort wird gesendet, sobald diese Runde endet</string>
+<string name="floating_chat_status_awaiting_answer">Warte auf deine Antwort</string>
+<string name="floating_chat_status_awaiting_approval">Warten auf Bestätigung des Tool-Aufrufs</string>
+<string name="floating_chat_status_done">Antwort abgeschlossen</string>
+<string name="floating_chat_status_failed">Generierung fehlgeschlagen</string>
+<string name="floating_chat_status_idle">Inaktiv</string>
+<string name="floating_chat_tool_request">Möchte Tool aufrufen: %1$s</string>
   <string name="media_creation_notification_image_failed">Bildgenerierung fehlgeschlagen</string>
   <string name="media_creation_notification_image_succeeded">Bildgenerierung abgeschlossen</string>
   <string name="media_creation_notification_running">%1$d Aufgaben werden generiert</string>

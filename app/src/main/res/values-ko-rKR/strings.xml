@@ -1056,6 +1056,10 @@
   <string name="setting_page_preferences_network_proxy_list_desc">요청 전송 시 사용할 프록시 서버를 설정합니다</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">요청 시 사용하는 User Agent 헤더 설정</string>
+<string name="setting_page_preferences_notification_floating_window">백그라운드 플로팅 창</string>
+<string name="setting_page_preferences_notification_floating_window_desc">AI가 응답 중일 때 앱을 나가면 플로팅 아이콘이 표시됩니다. 아이콘을 탭하면 진행 상황을 확인하고 도구 호출을 승인하며 빠르게 답장할 수 있습니다</string>
+<string name="setting_page_preferences_notification_overlay_permission">오버레이 권한 부여</string>
+<string name="setting_page_preferences_notification_overlay_permission_desc">이 권한이 없으면 플로팅 창이 나타나지 않습니다</string>
   <string name="setting_page_providers_desc">LLM 서비스 제공업체 구성</string>
   <string name="setting_page_search_service_desc">검색 서비스 제공자 구성</string>
   <string name="setting_page_system_settings">시스템 설정</string>
@@ -1566,11 +1570,24 @@
   <string name="setting_media_page_workspace_id">워크스페이스 ID</string>
   <string name="setting_media_page_workspace_id_desc">Base URL의 %1$s를 대체합니다. URL에 플레이스홀더가 없으면 비워 두세요.</string>
   <!-- Notification settings -->
-  <string name="setting_display_page_notification_message_generated">메시지 생성 완료 알림 활성화</string>
+  <string name="setting_display_page_notification_message_generated">메시지 생성 후 알림 보내기</string>
   <string name="setting_display_page_notification_message_generated_desc">앱이 전경에 없을 때 메시지를 생성하면 알림을 보냅니다</string>
   <string name="setting_notification_mode_after_generation">생성 후</string>
   <string name="setting_notification_mode_realtime">실시간</string>
   <!-- Notifications -->
+<string name="floating_chat_answer">답변</string>
+<string name="floating_chat_ask_user">AI가 질문이 있습니다</string>
+<string name="floating_chat_close">플로팅 창 닫기</string>
+<string name="floating_chat_collapse">접기</string>
+<string name="floating_chat_open_conversation">대화 열기</string>
+<string name="floating_chat_reply_placeholder">빠른 답장…</string>
+<string name="floating_chat_reply_queued_placeholder">이 턴이 끝나면 답장이 전송됩니다</string>
+<string name="floating_chat_status_awaiting_answer">답변을 기다리는 중</string>
+<string name="floating_chat_status_awaiting_approval">도구 호출 확인 대기 중</string>
+<string name="floating_chat_status_done">답변 완료</string>
+<string name="floating_chat_status_failed">생성 실패</string>
+<string name="floating_chat_status_idle">대기 중</string>
+<string name="floating_chat_tool_request">도구 호출 요청: %1$s</string>
   <string name="media_creation_notification_image_failed">이미지 생성 실패</string>
   <string name="media_creation_notification_image_succeeded">이미지 생성 완료</string>
   <string name="media_creation_notification_running">%1$d개 작업 생성 중</string>

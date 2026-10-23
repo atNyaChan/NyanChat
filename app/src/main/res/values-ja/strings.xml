@@ -1056,6 +1056,10 @@
   <string name="setting_page_preferences_network_proxy_list_desc">リクエスト送信時に使用するプロキシサーバーを設定します</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">リクエスト時に使用するUser Agentヘッダーを設定</string>
+<string name="setting_page_preferences_notification_floating_window">バックグラウンドのフローティングウィンドウ</string>
+<string name="setting_page_preferences_notification_floating_window_desc">AIが返信中にアプリを離れると、フローティングアイコンが表示されます。タップすると進行状況を確認し、ツール呼び出しを確認してすばやく返信できます</string>
+<string name="setting_page_preferences_notification_overlay_permission">オーバーレイ権限を許可</string>
+<string name="setting_page_preferences_notification_overlay_permission_desc">この権限がないとフローティングウィンドウは表示されません</string>
   <string name="setting_page_providers_desc">LLM サービスプロバイダーを設定</string>
   <string name="setting_page_search_service_desc">検索サービスのプロバイダーを設定</string>
   <string name="setting_page_system_settings">システム設定</string>
@@ -1566,11 +1570,24 @@
   <string name="setting_media_page_workspace_id">ワークスペースID</string>
   <string name="setting_media_page_workspace_id_desc">Base URL 内の %1$s を置き換えます。URL にプレースホルダーがない場合は空のままにします。</string>
   <!-- Notification settings -->
-  <string name="setting_display_page_notification_message_generated">メッセージ生成後に通知を有効にする</string>
+  <string name="setting_display_page_notification_message_generated">メッセージ生成後に通知を送信</string>
   <string name="setting_display_page_notification_message_generated_desc">アプリがフォアグラウンドにない状態でメッセージを生成するときに通知を送信します</string>
   <string name="setting_notification_mode_after_generation">生成後</string>
   <string name="setting_notification_mode_realtime">リアルタイム</string>
   <!-- Notifications -->
+<string name="floating_chat_answer">回答</string>
+<string name="floating_chat_ask_user">AIから質問があります</string>
+<string name="floating_chat_close">フローティングウィンドウを閉じる</string>
+<string name="floating_chat_collapse">折りたたむ</string>
+<string name="floating_chat_open_conversation">会話を開く</string>
+<string name="floating_chat_reply_placeholder">クイック返信…</string>
+<string name="floating_chat_reply_queued_placeholder">このターンが終了すると返信が送信されます</string>
+<string name="floating_chat_status_awaiting_answer">回答をお待ちしています</string>
+<string name="floating_chat_status_awaiting_approval">ツール呼び出しの確認待ち</string>
+<string name="floating_chat_status_done">返信完了</string>
+<string name="floating_chat_status_failed">生成に失敗しました</string>
+<string name="floating_chat_status_idle">待機中</string>
+<string name="floating_chat_tool_request">ツールを呼び出そうとしています: %1$s</string>
   <string name="media_creation_notification_image_failed">画像生成に失敗しました</string>
   <string name="media_creation_notification_image_succeeded">画像生成が完了しました</string>
   <string name="media_creation_notification_running">%1$d件のタスクが生成中</string>

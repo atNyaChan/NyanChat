@@ -30,6 +30,7 @@ import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.files.AttachmentCas
 import me.rerere.rikkahub.data.files.FileFolders
 import me.rerere.rikkahub.data.files.FilesManager
+import me.rerere.rikkahub.data.remote.ModelsDevUpdater
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.rikkahub.data.skills.SkillManager
 import me.rerere.rikkahub.data.sync.BackupManager
@@ -115,6 +116,9 @@ class RikkaHubApp : Application() {
 
         // Extract builtin skills from assets after install/update
         extractBuiltinSkills()
+
+        // Load models.dev data for model capability matching, then refresh it in background
+        updateModelsDev()
 
         // Start WebServer if enabled in settings
         startWebServerIfEnabled()
@@ -241,6 +245,12 @@ class RikkaHubApp : Application() {
     private fun extractBuiltinSkills() {
         get<AppScope>().launch(Dispatchers.IO) {
             get<SkillManager>().ensureBuiltinSkillsExtracted()
+        }
+    }
+
+    private fun updateModelsDev() {
+        get<AppScope>().launch {
+            get<ModelsDevUpdater>().start()
         }
     }
 

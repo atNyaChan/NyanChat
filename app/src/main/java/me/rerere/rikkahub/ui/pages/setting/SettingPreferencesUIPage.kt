@@ -1,9 +1,11 @@
 package me.rerere.rikkahub.ui.pages.setting
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -56,7 +58,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.core.os.LocaleListCompat
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.ui.toast.ToastType
 import kotlinx.coroutines.Dispatchers
@@ -174,6 +178,19 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
         },
     )
     PermissionManager(permissionState = permissionState)
+
+    var canDrawOverlays by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
+    // 从系统设置页授权回来后刷新
+    LifecycleResumeEffect(Unit) {
+        canDrawOverlays = Settings.canDrawOverlays(context)
+        onPauseOrDispose {}
+    }
+
+    fun requestOverlayPermission() {
+        context.startActivity(
+            Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, "package:${context.packageName}".toUri())
+        )
+    }
 
     fun updateDisplaySetting(setting: DisplaySetting) {
         displaySetting = setting
@@ -389,6 +406,27 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                         supportingContent = { Text(stringResource(R.string.setting_display_page_parse_mid_think_desc)) },
                         headlineContent = { Text(stringResource(R.string.setting_display_page_parse_mid_think_title)) },
                     )
+                    switchItem(
+                        checked = displaySetting.enableFloatingChatWindow,
+                        onCheckedChange = {
+                            if (it && !canDrawOverlays) requestOverlayPermission()
+                            updateDisplaySetting(displaySetting.copy(enableFloatingChatWindow = it))
+                        },
+                        supportingContent = {
+                            Text(stringResource(R.string.setting_page_preferences_notification_floating_window_desc))
+                        },
+                        headlineContent = { Text(stringResource(R.string.setting_page_preferences_notification_floating_window)) },
+                    )
+                    if (displaySetting.enableFloatingChatWindow && !canDrawOverlays) {
+                        item(
+                            onClick = ::requestOverlayPermission,
+                            headlineContent = { Text(stringResource(R.string.setting_page_preferences_notification_overlay_permission)) },
+                            supportingContent = { Text(stringResource(R.string.setting_page_preferences_notification_overlay_permission_desc)) },
+                            trailingContent = {
+                                Icon(HugeIcons.ArrowRight01, contentDescription = null)
+                            },
+                        )
+                    }
                     FormItem(
                         label = { Text(stringResource(R.string.setting_display_page_notification_message_generated)) },
                         description = { Text(stringResource(R.string.setting_display_page_notification_message_generated_desc)) },

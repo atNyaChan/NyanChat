@@ -205,6 +205,8 @@ class ConversationSession(
             }
         }
         processingStatus.value = null
+        replyMessageId.value = null
+        generationStartedAt.value = null
     }
 
     // 失败和取消也必须保存已收到的内容，且保存完成前不能释放生成任务。
@@ -234,6 +236,13 @@ class ConversationSession(
 
     // 处理状态（如 OCR 识别中）
     val processingStatus = MutableStateFlow<String?>(null)
+
+    // 最近一轮正在写的助手消息，这一轮还没有输出时为空。重新生成较早的消息时它不在会话末尾，
+    // 生成期间那个节点还可能被切到别的分支，只能按 id 找；生成结束后保留，后台悬浮窗靠它继续展示这一轮的回复。
+    val replyMessageId = MutableStateFlow<Uuid?>(null)
+
+    // 最近一次生成任务开始的时间，用来认出这一轮报的错。在任务启动前同步记下，任务里报的错不会早于它
+    val generationStartedAt = MutableStateFlow<Long?>(null)
 
     // 当前正在生成的助手消息 id（fork）。界面据此判断哪条消息处于“生成中”，不能依赖 finishedAt，
     // 因为多轮工具调用每一轮都会写入 finishedAt，而手动编辑的消息则始终没有 finishedAt。
@@ -267,6 +276,7 @@ class ConversationSession(
     @Synchronized
     fun setJob(job: Job?, cancelPrevious: Boolean = true) {
         val previous = _generationJob.value
+        if (job != null) generationStartedAt.value = System.currentTimeMillis()
         _generationJob.value = job
         if (cancelPrevious) previous?.cancel()
         if (job != null) activeJobs.add(job)

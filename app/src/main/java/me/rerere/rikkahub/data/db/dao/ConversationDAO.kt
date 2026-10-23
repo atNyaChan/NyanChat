@@ -21,6 +21,9 @@ interface ConversationDAO {
     @Query("SELECT * FROM conversationentity WHERE assistant_id = :assistantId ORDER BY is_pinned DESC, update_at DESC")
     fun getConversationsOfAssistant(assistantId: String): Flow<List<ConversationEntity>>
 
+    @Query("SELECT title FROM conversationentity WHERE assistant_id = :assistantId")
+    suspend fun getTitlesOfAssistant(assistantId: String): List<String>
+
     @Query(
         "SELECT id, assistant_id as assistantId, title, is_pinned as isPinned, create_at as createAt, update_at as updateAt, folder_id as folderId FROM conversationentity WHERE assistant_id = :assistantId ORDER BY is_pinned DESC, update_at DESC"
     )

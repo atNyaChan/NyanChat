@@ -2,6 +2,7 @@ package me.rerere.rikkahub.data.db.fts
 
 import androidx.core.net.toFile
 import androidx.core.net.toUri
+import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -75,43 +76,58 @@ data class MessageSearchRequest(
         get() = modelId != null || manuallyEdited || attachmentState != null
 }
 
+private class IndexedMessage(val rowid: Long, val nodeId: String, val text: String)
+
 class MessageFtsManager(private val database: AppDatabase, private val filesDir: File) {
 
     private val db get() = database.openHelper.writableDatabase
 
-    suspend fun indexConversation(conversation: Conversation) = withContext(Dispatchers.IO) {
+    /**
+     * 增量更新会话的索引：只重写新增或内容变了的消息，删掉已不存在的消息。
+     * 每次保存会话都会调用，长会话里大部分消息没变，不必整份删掉重新写。
+     * 标题与会话更新时间不入索引，搜索时联表从 conversationentity 读取。
+     */
+    suspend fun indexConversation(conversation: Conversation) = database.withTransaction {
         val conversationId = conversation.id.toString()
-        db.execSQL("DELETE FROM message_search_cache WHERE conversation_id = ?", arrayOf(conversationId))
+        val indexed = HashMap<String, IndexedMessage>()
+        val stale = mutableListOf<Long>()
+        db.query(
+            "SELECT rowid, node_id, message_id, text FROM message_search_cache WHERE conversation_id = ?",
+            arrayOf(conversationId),
+        ).use {
+            while (it.moveToNext()) {
+                val row = IndexedMessage(it.getLong(0), it.getString(1), it.getString(3))
+                if (indexed.putIfAbsent(it.getString(2), row) != null) stale.add(row.rowid)
+            }
+        }
         conversation.messageNodes.forEach { node ->
+            val nodeId = node.id.toString()
             node.messages.forEach { message ->
                 val text = message.extractFtsText()
+                val existing = indexed.remove(message.id.toString())
+                if (existing != null && existing.nodeId == nodeId && existing.text == text) return@forEach
+                existing?.let { stale.add(it.rowid) }
                 if (text.isNotBlank()) {
                     db.execSQL(
                         """
-                        INSERT INTO message_search_cache(
-                            text, node_id, message_id, conversation_id, title, message_at, update_at
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                        INSERT INTO message_search_cache(text, node_id, message_id, conversation_id, message_at)
+                        VALUES (?, ?, ?, ?, ?)
                         """.trimIndent(),
                         arrayOf(
                             text,
-                            node.id.toString(),
+                            nodeId,
                             message.id.toString(),
                             conversationId,
-                            conversation.title,
                             message.createdAtInstant().toEpochMilli().toString(),
-                            conversation.updateAt.toEpochMilli().toString(),
                         )
                     )
                 }
             }
         }
-    }
-
-    suspend fun updateTitle(conversationId: String, title: String) = withContext(Dispatchers.IO) {
-        db.execSQL(
-            "UPDATE message_search_cache SET title = ? WHERE conversation_id = ?",
-            arrayOf(title, conversationId),
-        )
+        indexed.values.forEach { stale.add(it.rowid) }
+        stale.forEach { rowid ->
+            db.execSQL("DELETE FROM message_search_cache WHERE rowid = ?", arrayOf(rowid))
+        }
     }
 
     suspend fun deleteConversation(conversationId: String) = withContext(Dispatchers.IO) {
@@ -168,14 +184,14 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
         val terms = keyword.split(Regex("\\s+")).filter(String::isNotEmpty)
         if (terms.isEmpty()) return emptyList()
         // 若缓存由旧版写入（无 message_at），退回该会话的更新时间。
-        val timeExpression = "COALESCE(msc.message_at, msc.update_at)"
+        val timeExpression = "COALESCE(msc.message_at, c.update_at)"
         val orderBy = when (sort) {
             MessageSearchSort.RELEVANCE, MessageSearchSort.NEWEST_FIRST -> "$timeExpression DESC"
             MessageSearchSort.OLDEST_FIRST -> "$timeExpression ASC"
         }
         val cursor = db.query(
             """
-            SELECT msc.node_id, msc.message_id, msc.conversation_id, msc.title, $timeExpression, msc.text,
+            SELECT msc.node_id, msc.message_id, msc.conversation_id, c.title, $timeExpression, msc.text,
                    c.assistant_id, f.name
             FROM message_search_cache msc
             JOIN conversationentity c ON c.id = msc.conversation_id
@@ -449,16 +465,16 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
         val direction = if (sort == MessageSearchSort.OLDEST_FIRST) "ASC" else "DESC"
         // 仅匹配标题时每个会话只保留一行，时间沿用该会话的更新时间（忽略消息时间）；
         // 消息级结果若缓存由旧版写入（无 message_at），退回该会话的更新时间。
-        val timeColumn = if (titleOnly) "msc.update_at" else "COALESCE(msc.message_at, msc.update_at)"
+        val timeColumn = if (titleOnly) "c.update_at" else "COALESCE(msc.message_at, c.update_at)"
         val groupBy = if (titleOnly) "GROUP BY msc.conversation_id" else ""
         val cursor = db.query(
             """
-            SELECT msc.node_id, msc.message_id, msc.conversation_id, msc.title, $timeColumn, msc.text,
+            SELECT msc.node_id, msc.message_id, msc.conversation_id, c.title, $timeColumn, msc.text,
                    c.assistant_id, f.name
             FROM message_search_cache msc
             JOIN conversationentity c ON c.id = msc.conversation_id
             LEFT JOIN conversation_folder f ON f.id = c.folder_id
-            WHERE instr(${if (titleOnly) "msc.title" else "msc.text"}, ?) > 0
+            WHERE instr(${if (titleOnly) "c.title" else "msc.text"}, ?) > 0
             ${assistantFilter(assistantIds)}
             $groupBy
             ORDER BY $timeColumn $direction
@@ -632,11 +648,9 @@ private fun UIMessage.createdAtInstant(): Instant =
 
 internal fun rebuildMessageSearchCache(db: SupportSQLiteDatabase) {
     db.execSQL("DELETE FROM message_search_cache")
-    db.query("SELECT id, title, update_at FROM conversationentity").use { conversations ->
+    db.query("SELECT id FROM conversationentity").use { conversations ->
         while (conversations.moveToNext()) {
             val conversationId = conversations.getString(0)
-            val title = conversations.getString(1)
-            val updateAt = conversations.getLong(2).toString()
             db.query(
                 """
                 SELECT id, messages
@@ -655,17 +669,15 @@ internal fun rebuildMessageSearchCache(db: SupportSQLiteDatabase) {
                             db.execSQL(
                                 """
                                 INSERT INTO message_search_cache(
-                                    text, node_id, message_id, conversation_id, title, message_at, update_at
-                                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                                    text, node_id, message_id, conversation_id, message_at
+                                ) VALUES (?, ?, ?, ?, ?)
                                 """.trimIndent(),
                                 arrayOf(
                                     text,
                                     nodeId,
                                     message.id.toString(),
                                     conversationId,
-                                    title,
                                     message.createdAtInstant().toEpochMilli().toString(),
-                                    updateAt,
                                 ),
                             )
                         }

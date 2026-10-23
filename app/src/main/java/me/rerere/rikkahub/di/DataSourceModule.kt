@@ -30,6 +30,7 @@ import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.db.AppDatabase
 import me.rerere.rikkahub.data.db.AppDatabaseFactory
 import me.rerere.rikkahub.data.db.fts.MessageFtsManager
+import me.rerere.rikkahub.data.remote.ModelsDevUpdater
 import me.rerere.rikkahub.data.remote.RemoteFileStore
 import me.rerere.rikkahub.data.remote.RikkaHubAPI
 import me.rerere.rikkahub.data.remote.SettingsProxyAuthenticator
@@ -239,6 +240,10 @@ val dataSourceModule = module {
             })
             .build()
         client.also { SearchService.init(it, get()) }
+    }
+
+    single {
+        ModelsDevUpdater(context = get(), client = get())
     }
 
     single {

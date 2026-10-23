@@ -85,6 +85,9 @@ class ConversationRepository(
         }
     }
 
+    suspend fun getTitlesOfAssistant(assistantId: Uuid): Set<String> =
+        conversationDAO.getTitlesOfAssistant(assistantId.toString()).toSet()
+
     fun getConversationsOfAssistant(assistantId: Uuid): Flow<List<Conversation>> {
         return conversationDAO
             .getConversationsOfAssistant(assistantId.toString())
@@ -601,7 +604,6 @@ class ConversationRepository(
 
     suspend fun updateTitle(conversationId: Uuid, title: String) {
         conversationDAO.updateTitle(conversationId.toString(), title)
-        messageFtsManager.updateTitle(conversationId.toString(), title)
     }
 
     suspend fun updateCustomSystemPrompt(conversationId: Uuid, customSystemPrompt: String?) {

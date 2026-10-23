@@ -1056,6 +1056,10 @@
   <string name="setting_page_preferences_network_proxy_list_desc">设置发送请求时使用的代理服务器</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">设置请求时使用的 User Agent 头</string>
+<string name="setting_page_preferences_notification_floating_window">后台悬浮窗</string>
+<string name="setting_page_preferences_notification_floating_window_desc">切到后台时 AI 还在回复，显示一个悬浮图标，点开可查看进度、确认工具调用和快速回复</string>
+<string name="setting_page_preferences_notification_overlay_permission">授予悬浮窗权限</string>
+<string name="setting_page_preferences_notification_overlay_permission_desc">没有权限时不会显示悬浮窗</string>
   <string name="setting_page_providers_desc">配置 LLM 服务提供商</string>
   <string name="setting_page_search_service_desc">配置搜索服务提供商</string>
   <string name="setting_page_system_settings">系统设置</string>
@@ -1566,11 +1570,24 @@
   <string name="setting_media_page_workspace_id">业务空间 ID</string>
   <string name="setting_media_page_workspace_id_desc">替换 Base URL 里的 %1$s，地址不含占位符时可以留空</string>
   <!-- Notification settings -->
-  <string name="setting_display_page_notification_message_generated">生成消息后启用通知</string>
+  <string name="setting_display_page_notification_message_generated">生成消息后发送通知</string>
   <string name="setting_display_page_notification_message_generated_desc">应用不在前台生成消息时发送通知</string>
   <string name="setting_notification_mode_after_generation">生成后</string>
   <string name="setting_notification_mode_realtime">实时</string>
   <!-- Notifications -->
+<string name="floating_chat_answer">去回答</string>
+<string name="floating_chat_ask_user">AI 有问题需要你回答</string>
+<string name="floating_chat_close">关闭悬浮窗</string>
+<string name="floating_chat_collapse">收起</string>
+<string name="floating_chat_open_conversation">打开对话</string>
+<string name="floating_chat_reply_placeholder">快速回复…</string>
+<string name="floating_chat_reply_queued_placeholder">回复将在本轮结束后发送</string>
+<string name="floating_chat_status_awaiting_answer">等待你回答问题</string>
+<string name="floating_chat_status_awaiting_approval">等待确认工具调用</string>
+<string name="floating_chat_status_done">回复完成</string>
+<string name="floating_chat_status_failed">生成失败</string>
+<string name="floating_chat_status_idle">空闲</string>
+<string name="floating_chat_tool_request">请求调用工具：%1$s</string>
   <string name="media_creation_notification_image_failed">图像生成失败</string>
   <string name="media_creation_notification_image_succeeded">图像生成完成</string>
   <string name="media_creation_notification_running">%1$d 个任务正在生成</string>

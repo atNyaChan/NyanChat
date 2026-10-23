@@ -1056,6 +1056,10 @@
   <string name="setting_page_preferences_network_proxy_list_desc">Set the proxy server used when sending requests</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">Set the User-Agent header used in requests</string>
+<string name="setting_page_preferences_notification_floating_window">Background floating window</string>
+<string name="setting_page_preferences_notification_floating_window_desc">When you leave the app while the AI is still replying, show a floating icon. Tap it to check progress, confirm tool calls and reply quickly</string>
+<string name="setting_page_preferences_notification_overlay_permission">Grant overlay permission</string>
+<string name="setting_page_preferences_notification_overlay_permission_desc">The floating window will not appear without this permission</string>
   <string name="setting_page_providers_desc">Configure LLM service providers</string>
   <string name="setting_page_search_service_desc">Configure search service providers</string>
   <string name="setting_page_system_settings">System Settings</string>
@@ -1566,11 +1570,24 @@
   <string name="setting_media_page_workspace_id">Workspace ID</string>
   <string name="setting_media_page_workspace_id_desc">Replaces %1$s in the Base URL. Leave it empty if the URL has no placeholder.</string>
   <!-- Notification settings -->
-  <string name="setting_display_page_notification_message_generated">Enable notification after message generated</string>
+  <string name="setting_display_page_notification_message_generated">Send notification after message generated</string>
   <string name="setting_display_page_notification_message_generated_desc">Send notifications when messages are generated while the app is not in the foreground</string>
   <string name="setting_notification_mode_after_generation">After generation</string>
   <string name="setting_notification_mode_realtime">Real-time</string>
   <!-- Notifications -->
+<string name="floating_chat_answer">Answer</string>
+<string name="floating_chat_ask_user">The AI has a question for you</string>
+<string name="floating_chat_close">Close floating window</string>
+<string name="floating_chat_collapse">Collapse</string>
+<string name="floating_chat_open_conversation">Open conversation</string>
+<string name="floating_chat_reply_placeholder">Quick reply…</string>
+<string name="floating_chat_reply_queued_placeholder">Your reply will be sent when this turn ends</string>
+<string name="floating_chat_status_awaiting_answer">Waiting for your answer</string>
+<string name="floating_chat_status_awaiting_approval">Waiting for tool call confirmation</string>
+<string name="floating_chat_status_done">Reply finished</string>
+<string name="floating_chat_status_failed">Generation failed</string>
+<string name="floating_chat_status_idle">Idle</string>
+<string name="floating_chat_tool_request">Wants to call tool: %1$s</string>
   <string name="media_creation_notification_image_failed">Image generation failed</string>
   <string name="media_creation_notification_image_succeeded">Image generation completed</string>
   <string name="media_creation_notification_running">%1$d tasks generating</string>

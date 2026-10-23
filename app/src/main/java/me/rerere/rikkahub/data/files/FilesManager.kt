@@ -1333,4 +1333,7 @@ object FileFolders {
     const val FONTS = "fonts"
     const val TOOL_OUTPUTS = "tool_outputs"
     const val MEDIA_CREATION = "media_creation"
+
+    /** models.dev 模型能力数据的本地缓存目录。 */
+    const val MODELS_DEV = "models_dev"
 }

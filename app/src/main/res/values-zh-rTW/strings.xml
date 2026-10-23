@@ -1056,6 +1056,10 @@
   <string name="setting_page_preferences_network_proxy_list_desc">設定傳送請求時使用的代理伺服器</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">設定請求時使用的 User Agent 標頭</string>
+<string name="setting_page_preferences_notification_floating_window">背景懸浮視窗</string>
+<string name="setting_page_preferences_notification_floating_window_desc">當你離開應用程式而 AI 仍在回覆時，顯示懸浮圖示。點擊即可查看進度、確認工具呼叫並快速回覆</string>
+<string name="setting_page_preferences_notification_overlay_permission">授予懸浮視窗權限</string>
+<string name="setting_page_preferences_notification_overlay_permission_desc">沒有此權限，懸浮視窗將不會顯示</string>
   <string name="setting_page_providers_desc">設定 LLM 服務提供者</string>
   <string name="setting_page_search_service_desc">設定搜尋服務提供者</string>
   <string name="setting_page_system_settings">系統設定</string>
@@ -1566,11 +1570,24 @@
   <string name="setting_media_page_workspace_id">Workspace ID</string>
   <string name="setting_media_page_workspace_id_desc">取代 Base URL 中的 %1$s。若 URL 沒有佔位符，請留空。</string>
   <!-- Notification settings -->
-  <string name="setting_display_page_notification_message_generated">在訊息產生後啟用通知</string>
+  <string name="setting_display_page_notification_message_generated">訊息產生後傳送通知</string>
   <string name="setting_display_page_notification_message_generated_desc">應用程式不在前景產生訊息時傳送通知</string>
   <string name="setting_notification_mode_after_generation">產生後</string>
   <string name="setting_notification_mode_realtime">即時</string>
   <!-- Notifications -->
+<string name="floating_chat_answer">去回答</string>
+<string name="floating_chat_ask_user">AI 有問題想問你</string>
+<string name="floating_chat_close">關閉懸浮視窗</string>
+<string name="floating_chat_collapse">收合</string>
+<string name="floating_chat_open_conversation">開啟對話</string>
+<string name="floating_chat_reply_placeholder">快速回覆…</string>
+<string name="floating_chat_reply_queued_placeholder">本回合結束後將傳送你的回覆</string>
+<string name="floating_chat_status_awaiting_answer">等待你回答問題</string>
+<string name="floating_chat_status_awaiting_approval">等待工具呼叫確認</string>
+<string name="floating_chat_status_done">回覆完成</string>
+<string name="floating_chat_status_failed">生成失敗</string>
+<string name="floating_chat_status_idle">閒置</string>
+<string name="floating_chat_tool_request">想要呼叫工具：%1$s</string>
   <string name="media_creation_notification_image_failed">圖像生成失敗</string>
   <string name="media_creation_notification_image_succeeded">圖像生成完成</string>
   <string name="media_creation_notification_running">%1$d 個任務生成中</string>

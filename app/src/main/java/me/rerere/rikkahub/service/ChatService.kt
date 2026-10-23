@@ -271,6 +271,12 @@ class ChatService(
     fun getProcessingStatusFlow(conversationId: Uuid): StateFlow<String?> =
         sessionManager.getProcessingStatusFlow(conversationId)
 
+    fun getReplyMessageIdFlow(conversationId: Uuid): StateFlow<Uuid?> =
+        sessionManager.getReplyMessageIdFlow(conversationId)
+
+    fun getGenerationStartedAtFlow(conversationId: Uuid): StateFlow<Long?> =
+        sessionManager.getGenerationStartedAtFlow(conversationId)
+
     fun getConversationJobs(): Flow<Map<Uuid, Job?>> = sessionManager.getConversationJobs()
 
     private fun launchGenerationJob(
@@ -522,6 +528,8 @@ class ChatService(
 
     private fun sendQueuedMessage(session: ConversationSession, queued: QueuedMessage): Job {
         val conversationId = session.id
+        // 新消息开始初始化前就清掉旧回复，初始化失败或任务启动前取消也不能留下旧预览。
+        session.replyMessageId.value = null
         val job = launchGenerationJob(
             conversationId = conversationId,
             keepAliveInBackground = queued.answer,
@@ -656,6 +664,7 @@ class ChatService(
             val job = launchGenerationJob(conversationId = conversationId) {
                 try {
                     previousJob?.join()
+                    session.replyMessageId.value = null
                     ensureInitialized(session)
                     val node = session.state.value.getMessageNodeByMessageId(messageId)
                         ?: return@launchGenerationJob
@@ -744,6 +753,8 @@ class ChatService(
      */
     private suspend fun runTurn(session: ConversationSession, regenerateNodeId: Uuid? = null): TurnResult {
         val conversationId = session.id
+        // 先清理上一轮状态；确定历史后，仅为真正的续写恢复消息 ID。
+        session.replyMessageId.value = null
         // 生成开始前失败时通知只用来取消 Live Update，用不到发送者名称
         var senderName = ""
         // 本次生成的助手消息：新回复先放一条空占位消息，续跑时就是已有的那条
@@ -792,6 +803,9 @@ class ChatService(
                 history + placeholder
             }
             session.setGeneratingMessageId(placeholderId ?: history.last().id)
+            // 接着上一条助手消息写时就是它，否则是本轮新建的占位消息；要在 createContext 之前换掉，
+            // 它会挂起也可能失败，期间或失败后不能还指着上一轮的回复
+            session.replyMessageId.value = if (continuing) history.last().id else placeholderId
 
             var finishReason: AgentFinishReason? = null
             // 从构建请求开始（MCP 可能较慢、也可能失败）直到生成结束都要收尾：
@@ -813,6 +827,7 @@ class ChatService(
                             // 生成过程中只有网络重试的提示会留着，收到新内容说明重试已经成功
                             session.processingStatus.value = null
                             session.setGeneratingMessageId(event.message.id)
+                            session.replyMessageId.value = event.message.id
                             session.update { it.upsertMessage(replyNodeId, event.message) }
                             // 通知等边缘副作用由 ChatNotificationManager 消费；
                             // tryEmit 不挂起，事件丢失只影响单次通知更新，不能反压生成链
@@ -1471,10 +1486,7 @@ class ChatService(
         messageId: Uuid
     ): Conversation {
         val source = withLoadedSession(conversationId) { it.state.value }
-        val existingTitles = conversationRepo
-            .getConversationsOfAssistant(source.assistantId)
-            .first()
-            .mapTo(mutableSetOf()) { it.title }
+        val existingTitles = conversationRepo.getTitlesOfAssistant(source.assistantId)
         // 附件是内容寻址的，分支直接复用同一实体，使用记录会随新会话一起写入；恒等映射不做物理复制
         val fork = source.fork(messageId, existingTitles, copyFile = { it })
             ?: throw NotFoundException("Message not found")
