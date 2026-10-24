@@ -68,10 +68,11 @@ import me.rerere.rikkahub.data.model.Conversation
 import me.rerere.rikkahub.data.model.ConversationSettingsMode
 import me.rerere.rikkahub.data.model.lastContextTokens
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
-import me.rerere.rikkahub.ui.components.ui.ExtensionSelector
+import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupRow
 import me.rerere.rikkahub.ui.components.ui.CardGroupScope
+import me.rerere.rikkahub.ui.components.ui.ExtensionSelector
 import me.rerere.rikkahub.ui.components.ui.switchItem
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalSettings
@@ -113,6 +114,8 @@ internal fun FilesPicker(
 ) {
     val settings = LocalSettings.current
     val provider = chatModel?.findProvider(providers = settings.providers)
+    val searchMode = searchModeOf(assistant.enableWebSearch, assistant.useBuiltInSearch, chatModel)
+    val currentSearchService = settings.searchServices.getOrNull(settings.searchServiceSelected)
     val showContextCache = provider is ProviderSetting.Claude ||
         (provider is ProviderSetting.OpenAI && !provider.useResponseApi)
     val navController = LocalNavController.current
@@ -234,27 +237,42 @@ internal fun FilesPicker(
             }
 
             item(
-                trailingContent = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        SearchPickerIcon(
-                            enableSearch = assistant.enableWebSearch,
-                            useBuiltInSearch = assistant.useBuiltInSearch,
-                            settings = settings,
-                            model = chatModel,
+                leadingContent = {
+                    if (searchMode == SearchMode.LOCAL && currentSearchService != null) {
+                        AutoAIIcon(
+                            name = currentSearchService.displayName,
+                            modifier = Modifier.size(24.dp),
                         )
+                    } else {
                         Icon(
-                            imageVector = HugeIcons.ArrowRight01,
+                            imageVector = searchMode.icon(),
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 },
+                supportingContent = {
+                    Text(
+                        text = when (searchMode) {
+                            SearchMode.OFF -> stringResource(R.string.common_off)
+                            SearchMode.LOCAL ->
+                                currentSearchService?.displayName ?: stringResource(R.string.use_web_search)
+
+                            SearchMode.BUILT_IN -> stringResource(R.string.built_in_search_title)
+                        },
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                trailingContent = {
+                    Icon(
+                        imageVector = HugeIcons.ArrowRight01,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                },
                 onClick = { showSearchPicker = true },
             ) {
-                Text(stringResource(R.string.search_ability_search))
+                Text(stringResource(R.string.use_web_search))
             }
 
             // Extensions (Quick Messages + Prompt Injections + Skills)

@@ -1197,7 +1197,11 @@
   <string name="setting_model_page_enable_suggestion">اقتراحات الدردشة</string>
   <string name="setting_model_page_fast_model">النموذج السريع</string>
   <string name="setting_model_page_fast_model_desc">النموذج المستخدم للعناوين واقتراحات الدردشة والمهام السريعة أو الخلفية الأخرى</string>
+  <string name="setting_model_page_memory_model">نموذج توطيد الذاكرة</string>
+  <string name="setting_model_page_memory_model_desc">النموذج المستخدم لتنظيم المحادثات في الذاكرة طويلة المدى في الخلفية؛ يستخدم النموذج السريع عند عدم تعيينه</string>
+  <string name="setting_model_page_memory_model_follow_fast">نفس النموذج السريع</string>
   <string name="setting_model_page_ocr_model">نموذج OCR</string>
+  <string name="setting_model_page_ocr_model_desc">النموذج المستخدم للتعرّف الضوئي على الحروف في الصور</string>
   <string name="setting_model_page_ocr_prompt_vars">المتغيرات: بيانات الصورة: {images}</string>
   <string name="setting_model_page_prompt_ocr">مطالبة OCR</string>
   <string name="setting_model_page_prompt_suggestion">مطالبة اقتراحات الدردشة</string>
@@ -1207,6 +1211,7 @@
   <string name="setting_model_page_suggestion_prompt_vars">المتغيرات: محتوى المحادثة: {content}، اللغة: {locale}</string>
   <string name="setting_model_page_title">النماذج والمطالبات الافتراضية</string>
   <string name="setting_model_page_translate_model">نموذج الترجمة</string>
+  <string name="setting_model_page_translate_model_desc">النموذج المستخدم لميزات الترجمة</string>
   <string name="setting_model_page_translate_prompt_vars">المتغيرات: النص المصدر: {source_text}، اللغة الهدف: {target_lang}</string>
   <!-- Provider settings -->
   <string name="default_provider_alibaba_bailian">Alibaba Cloud Bailian</string>
@@ -1632,7 +1637,7 @@
   <string name="backup_page_import_from_other_app">استيراد من تطبيق آخر</string>
   <string name="backup_page_import_local">استيراد ملف محلي</string>
   <string name="backup_page_importing">جارٍ الاستيراد...</string>
-  <string name="backup_page_legacy_export">تصدير التنسيق القديم (متوافق مع RikkaHub 3.1.0+)</string>
+  <string name="backup_page_legacy_export">تصدير التنسيق القديم (متوافق مع RikkaHub 3.1.1+)</string>
   <string name="backup_page_legacy_export_desc">إزالة الإعدادات غير المتوافقة التي أضافها هذا التفرّع؛ لا تُضمّن بيئات مساحة العمل</string>
   <string name="backup_page_loading_failed">فشل تحميل ملفات النسخ الاحتياطي: %s</string>
   <string name="backup_page_local_backup_export">تصدير إلى ملف</string>

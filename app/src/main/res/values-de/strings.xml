@@ -1197,7 +1197,11 @@
   <string name="setting_model_page_enable_suggestion">Chat-Vorschläge</string>
   <string name="setting_model_page_fast_model">Schnelles Modell</string>
   <string name="setting_model_page_fast_model_desc">Modell für Titel, Chat-Vorschläge und andere schnelle oder Hintergrundaufgaben</string>
+  <string name="setting_model_page_memory_model">Erinnerungskonsolidierungsmodell</string>
+  <string name="setting_model_page_memory_model_desc">Modell, das Konversationen im Hintergrund in langfristige Erinnerungen organisiert; verwendet das schnelle Modell, wenn nicht festgelegt</string>
+  <string name="setting_model_page_memory_model_follow_fast">Wie das schnelle Modell</string>
   <string name="setting_model_page_ocr_model">OCR-Modell</string>
+  <string name="setting_model_page_ocr_model_desc">Modell für die optische Zeichenerkennung auf Bildern</string>
   <string name="setting_model_page_ocr_prompt_vars">Variablen: Bilddaten: {images}</string>
   <string name="setting_model_page_prompt_ocr">OCR-Prompt</string>
   <string name="setting_model_page_prompt_suggestion">Chat-Vorschlag-Prompt</string>
@@ -1207,6 +1211,7 @@
   <string name="setting_model_page_suggestion_prompt_vars">Variablen: Gesprächsinhalt: {content}, Sprache: {locale}</string>
   <string name="setting_model_page_title">Standardmodelle und Prompts</string>
   <string name="setting_model_page_translate_model">Übersetzungsmodell</string>
+  <string name="setting_model_page_translate_model_desc">Das für Übersetzungsfunktionen verwendete Modell</string>
   <string name="setting_model_page_translate_prompt_vars">Variablen: Quelltext: {source_text}, Zielsprache: {target_lang}</string>
   <!-- Provider settings -->
   <string name="default_provider_alibaba_bailian">Alibaba Cloud Bailian</string>
@@ -1632,7 +1637,7 @@
   <string name="backup_page_import_from_other_app">Aus anderer App importieren</string>
   <string name="backup_page_import_local">Lokale Datei importieren</string>
   <string name="backup_page_importing">Wird importiert...</string>
-  <string name="backup_page_legacy_export">Altes Format exportieren (kompatibel mit RikkaHub 3.1.0+)</string>
+  <string name="backup_page_legacy_export">Altes Format exportieren (kompatibel mit RikkaHub 3.1.1+)</string>
   <string name="backup_page_legacy_export_desc">Entfernt inkompatible Einstellungen dieses Forks; Arbeitsbereichsumgebungen sind nicht enthalten</string>
   <string name="backup_page_loading_failed">Backup-Dateien konnten nicht geladen werden: %s</string>
   <string name="backup_page_local_backup_export">In Datei exportieren</string>

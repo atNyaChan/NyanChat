@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -29,6 +30,7 @@ import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemColors
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.ListItemShapes
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -70,6 +72,8 @@ private data class CardGroupItem(
     val leadingContent: (@Composable () -> Unit)?,
     val trailingContent: (@Composable () -> Unit)?,
     val colors: ListItemColors?,
+    /** 非 null 时渲染在标题行下方、占满整行宽度的表单内容 */
+    val formContent: (@Composable ColumnScope.() -> Unit)? = null,
 )
 
 @DslMarker
@@ -96,6 +100,8 @@ interface CardGroupScope {
         leadingContent: (@Composable () -> Unit)? = null,
         tail: (@Composable () -> Unit)? = null,
         onClick: (() -> Unit)? = null,
+        // 为 true 时 content 渲染在标题行下方并占满整行，标题行只保留图标、标题和说明
+        fullWidthContent: Boolean = false,
         content: (@Composable ColumnScope.() -> Unit)? = null,
     )
 }
@@ -136,8 +142,26 @@ private class CardGroupScopeImpl : CardGroupScope {
         leadingContent: (@Composable () -> Unit)?,
         tail: (@Composable () -> Unit)?,
         onClick: (() -> Unit)?,
+        fullWidthContent: Boolean,
         content: (@Composable ColumnScope.() -> Unit)?,
     ) {
+        if (fullWidthContent) {
+            items.add(
+                CardGroupItem(
+                    onClick = onClick,
+                    onLongClick = null,
+                    modifier = modifier,
+                    overlineContent = null,
+                    headlineContent = label,
+                    supportingContent = description,
+                    leadingContent = leadingContent,
+                    trailingContent = tail,
+                    colors = null,
+                    formContent = content,
+                )
+            )
+            return
+        }
         item(
             onClick = onClick,
             modifier = modifier,
@@ -293,23 +317,80 @@ private fun CardGroupListItem(
         bottomEnd = bottomEndCorner,
     )
 
-    ListItem(
-        modifier = item.modifier
-            .fillMaxWidth()
-            .clip(itemShape)
-            .then(
-                if (itemClickable) {
-                    Modifier.combinedClickable(
-                        interactionSource = interactionSource,
-                        indication = LocalIndication.current,
-                        onClick = {
-                            if (item.onClick != null) item.onClick.invoke()
-                            else clickActionState.invoke()
-                        },
-                        onLongClick = item.onLongClick,
-                    )
-                } else Modifier
+    val clickableModifier = if (itemClickable) {
+        Modifier.combinedClickable(
+            interactionSource = interactionSource,
+            indication = LocalIndication.current,
+            onClick = {
+                if (item.onClick != null) item.onClick.invoke()
+                else clickActionState.invoke()
+            },
+            onLongClick = item.onLongClick,
+        )
+    } else Modifier
+    val colors = item.colors ?: CustomColors.listItemColors
+    val formContent = item.formContent
+
+    if (formContent != null) {
+        // 表单内容独占一行放在标题行下方，标题行只保留图标、标题和说明
+        val rowShape = RoundedCornerShape(
+            topStart = topStartCorner,
+            topEnd = topEndCorner,
+            bottomStart = 0.dp,
+            bottomEnd = 0.dp,
+        )
+        Column(
+            modifier = item.modifier
+                .fillMaxWidth()
+                .clip(itemShape)
+                .background(colors.containerColor)
+                .then(clickableModifier),
+        ) {
+            CardGroupItemRow(
+                item = item,
+                clickActionState = clickActionState,
+                modifier = Modifier.fillMaxWidth(),
+                shapes = ListItemDefaults.shapes(rowShape, rowShape, rowShape, rowShape, rowShape, rowShape),
+                colors = colors,
+                // 标题行上下留白收紧，模型选择框贴近说明文字
+                contentPadding = PaddingValues(start = 16.dp, top = 0.dp, end = 16.dp, bottom = 0.dp),
+            )
+            Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp)) {
+                formContent()
+            }
+        }
+    } else {
+        CardGroupItemRow(
+            item = item,
+            clickActionState = clickActionState,
+            modifier = item.modifier
+                .fillMaxWidth()
+                .clip(itemShape)
+                .then(clickableModifier),
+            shapes = ListItemDefaults.shapes(
+                itemShape,
+                itemShape,
+                itemShape,
+                itemShape,
+                itemShape,
+                itemShape,
             ),
+            colors = colors,
+        )
+    }
+}
+
+@Composable
+private fun CardGroupItemRow(
+    item: CardGroupItem,
+    clickActionState: ItemClickActionState,
+    modifier: Modifier,
+    shapes: ListItemShapes,
+    colors: ListItemColors,
+    contentPadding: PaddingValues = ListItemDefaults.ContentPadding,
+) {
+    ListItem(
+        modifier = modifier,
         overlineContent = item.overlineContent,
         supportingContent = item.supportingContent,
         leadingContent = item.leadingContent,
@@ -321,15 +402,9 @@ private fun CardGroupListItem(
             }
         },
         verticalAlignment = Alignment.CenterVertically,
-        shapes = ListItemDefaults.shapes(
-            itemShape,
-            itemShape,
-            itemShape,
-            itemShape,
-            itemShape,
-            itemShape,
-        ),
-        colors = item.colors ?: CustomColors.listItemColors,
+        shapes = shapes,
+        colors = colors,
+        contentPadding = contentPadding,
     ) { item.headlineContent() }
 }
 

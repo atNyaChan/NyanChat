@@ -1197,7 +1197,11 @@
   <string name="setting_model_page_enable_suggestion">聊天建议</string>
   <string name="setting_model_page_fast_model">快速模型</string>
   <string name="setting_model_page_fast_model_desc">用于生成标题、聊天建议以及执行其他快速或后台任务</string>
+  <string name="setting_model_page_memory_model">记忆整理模型</string>
+  <string name="setting_model_page_memory_model_desc">用于在后台将对话整理为长期记忆的模型；未设置时使用快速模型</string>
+  <string name="setting_model_page_memory_model_follow_fast">跟随快速模型</string>
   <string name="setting_model_page_ocr_model">OCR 模型</string>
+  <string name="setting_model_page_ocr_model_desc">用于图像光学字符识别的模型</string>
   <string name="setting_model_page_ocr_prompt_vars">变量：图像数据：{images}</string>
   <string name="setting_model_page_prompt_ocr">OCR 提示词</string>
   <string name="setting_model_page_prompt_suggestion">聊天建议提示词</string>
@@ -1207,6 +1211,7 @@
   <string name="setting_model_page_suggestion_prompt_vars">变量: 对话内容: {content}, 语言: {locale}</string>
   <string name="setting_model_page_title">默认模型和提示词</string>
   <string name="setting_model_page_translate_model">翻译模型</string>
+  <string name="setting_model_page_translate_model_desc">用于翻译功能的模型</string>
   <string name="setting_model_page_translate_prompt_vars">变量: 原始文本: {source_text}, 目标语言: {target_lang}</string>
   <!-- Provider settings -->
   <string name="default_provider_alibaba_bailian">阿里云百炼</string>
@@ -1632,7 +1637,7 @@
   <string name="backup_page_import_from_other_app">从其他 APP 导入</string>
   <string name="backup_page_import_local">导入本地文件</string>
   <string name="backup_page_importing">正在恢复...</string>
-  <string name="backup_page_legacy_export">导出旧版格式（兼容 RikkaHub 3.1.0+）</string>
+  <string name="backup_page_legacy_export">导出旧版格式（兼容 RikkaHub 3.1.1+）</string>
   <string name="backup_page_legacy_export_desc">移除本 Fork 新增的不兼容设置字段；不包含工作区环境</string>
   <string name="backup_page_loading_failed">加载备份文件失败: %s</string>
   <string name="backup_page_local_backup_export">导出为文件</string>

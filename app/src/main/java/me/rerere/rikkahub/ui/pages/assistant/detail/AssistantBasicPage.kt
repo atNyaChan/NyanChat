@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -37,11 +36,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.ai.provider.ModelType
-import me.rerere.hugeicons.HugeIcons
-import me.rerere.hugeicons.stroke.ArrowRight01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.model.Assistant
+import me.rerere.rikkahub.ui.components.ai.ModelField
 import me.rerere.rikkahub.ui.components.ai.ModelListSheet
 import me.rerere.rikkahub.ui.components.ai.rememberModelListState
 import me.rerere.rikkahub.ui.components.ai.ContextCachePicker
@@ -389,34 +387,19 @@ internal fun AssistantBasicContent(
 
         if (requestSettingsOnly) {
             CardGroup {
-                item(
-                    onClick = { chatModelState.open() },
-                    headlineContent = {
+                FormItem(
+                    label = {
                         Text(stringResource(R.string.assistant_page_chat_model))
                     },
-                    supportingContent = {
+                    description = {
                         Text(stringResource(R.string.assistant_page_chat_model_desc))
                     },
-                    trailingContent = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        ) {
-                            Text(
-                                text = chatModelState.currentModel?.displayName
-                                    ?: stringResource(R.string.model_list_select_model),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                            )
-                            Icon(
-                                HugeIcons.ArrowRight01,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                            )
-                        }
-                    },
-                )
+                ) {
+                    ModelField(
+                        model = chatModelState.currentModel,
+                        onClick = { chatModelState.open() },
+                    )
+                }
             switchItem(
                 checked = assistant.streamOutput,
                 onCheckedChange = {

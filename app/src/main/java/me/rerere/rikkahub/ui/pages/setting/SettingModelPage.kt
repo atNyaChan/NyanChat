@@ -1,14 +1,9 @@
 package me.rerere.rikkahub.ui.pages.setting
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -19,13 +14,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.ai.core.ReasoningLevel
@@ -33,13 +26,14 @@ import me.rerere.ai.provider.Model
 import me.rerere.ai.provider.ModelType
 import me.rerere.ai.provider.ProviderSetting
 import me.rerere.hugeicons.HugeIcons
-import me.rerere.hugeicons.stroke.ArrowRight01
+import me.rerere.hugeicons.stroke.Brain02
 import me.rerere.hugeicons.stroke.BubbleChat
 import me.rerere.hugeicons.stroke.ScanText
 import me.rerere.hugeicons.stroke.Translate
 import me.rerere.hugeicons.stroke.Zap
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
+import me.rerere.rikkahub.ui.components.ai.ModelField
 import me.rerere.rikkahub.ui.components.ai.ModelListSheet
 import me.rerere.rikkahub.ui.components.ai.ReasoningButton
 import me.rerere.rikkahub.ui.components.ai.rememberModelListState
@@ -136,11 +130,15 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
             )
         }
         item {
+            MemoryModelSettingItem(settings = settings, vm = vm)
+        }
+        item {
             ModelSettingItem(
                 title = stringResource(R.string.setting_model_page_translate_model),
                 icon = HugeIcons.Translate,
                 iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
                 iconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                description = stringResource(R.string.setting_model_page_translate_model_desc),
                 modelId = settings.translateModeId,
                 providers = settings.providers,
                 onSelect = { vm.updateSettings { latest -> latest.copy(translateModeId = it.id) } },
@@ -172,6 +170,7 @@ private fun ModelSettingsPage(settings: Settings, vm: SettingVM, contentPadding:
                 icon = HugeIcons.ScanText,
                 iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
                 iconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                description = stringResource(R.string.setting_model_page_ocr_model_desc),
                 modelId = settings.ocrModelId,
                 providers = settings.providers,
                 onSelect = { vm.updateSettings { latest -> latest.copy(ocrModelId = it.id) } },
@@ -211,6 +210,54 @@ private fun SuggestionSettingItem(
 }
 
 @Composable
+private fun MemoryModelSettingItem(settings: Settings, vm: SettingVM) {
+    val state = rememberModelListState(
+        modelId = settings.memoryModelId,
+        providers = settings.providers,
+        type = ModelType.CHAT,
+    )
+    CardGroup {
+        FormItem(
+            label = { Text(stringResource(R.string.setting_model_page_memory_model)) },
+            description = { Text(stringResource(R.string.setting_model_page_memory_model_desc)) },
+            leadingContent = {
+                CardGroupIcon(
+                    icon = HugeIcons.Brain02,
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                )
+            },
+            fullWidthContent = true,
+        ) {
+            ModelField(
+                model = state.currentModel,
+                onClick = { state.open() },
+                // 不设置时跟着快速模型走，所以要能清掉
+                placeholder = stringResource(R.string.setting_model_page_memory_model_follow_fast),
+                onClear = { vm.updateSettings { latest -> latest.copy(memoryModelId = null) } },
+            )
+        }
+        // 没设置时推理强度也跟着快速模型
+        if (state.currentModel != null) {
+            item(
+                headlineContent = { Text(stringResource(R.string.assistant_page_thinking_budget)) },
+                trailingContent = {
+                    ReasoningButton(
+                        reasoningLevel = settings.memoryModelReasoningLevel,
+                        onUpdateReasoningLevel = {
+                            vm.updateSettings { latest -> latest.copy(memoryModelReasoningLevel = it) }
+                        },
+                    )
+                },
+            )
+        }
+    }
+    ModelListSheet(state = state) {
+        vm.updateSettings { latest -> latest.copy(memoryModelId = it.id) }
+    }
+}
+
+@Composable
 private fun ModelSettingItem(
     title: String,
     icon: ImageVector,
@@ -222,6 +269,8 @@ private fun ModelSettingItem(
     onSelect: (Model) -> Unit,
     reasoningLevel: ReasoningLevel? = null,
     onUpdateReasoningLevel: ((ReasoningLevel) -> Unit)? = null,
+    placeholder: String = stringResource(R.string.model_list_select_model),
+    onClear: (() -> Unit)? = null,
     promptType: PromptType? = null,
     prompt: String = "",
     onEditPrompt: (PromptType) -> Unit = {},
@@ -233,62 +282,41 @@ private fun ModelSettingItem(
         type = ModelType.CHAT,
     )
 
-    Column {
-        CardGroup {
-            item(
+    val descriptionContent: (@Composable () -> Unit)? = description?.let { text -> { Text(text) } }
+    CardGroup {
+        FormItem(
+            label = { Text(title) },
+            description = descriptionContent,
+            leadingContent = {
+                CardGroupIcon(
+                    icon = icon,
+                    containerColor = iconContainerColor,
+                    contentColor = iconContentColor,
+                )
+            },
+            fullWidthContent = true,
+        ) {
+            ModelField(
+                model = state.currentModel,
                 onClick = { state.open() },
-                headlineContent = { Text(title) },
-                leadingContent = {
-                    CardGroupIcon(
-                        icon = icon,
-                        containerColor = iconContainerColor,
-                        contentColor = iconContentColor,
+                placeholder = placeholder,
+                onClear = onClear,
+            )
+        }
+        if (reasoningLevel != null && onUpdateReasoningLevel != null) {
+            item(
+                headlineContent = { Text(stringResource(R.string.assistant_page_thinking_budget)) },
+                trailingContent = {
+                    ReasoningButton(
+                        reasoningLevel = reasoningLevel,
+                        onUpdateReasoningLevel = onUpdateReasoningLevel,
                     )
                 },
-                trailingContent = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        Text(
-                            text = state.currentModel?.displayName
-                                ?: stringResource(R.string.model_list_select_model),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        Icon(
-                            HugeIcons.ArrowRight01,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                        )
-                    }
-                },
             )
-            if (reasoningLevel != null && onUpdateReasoningLevel != null) {
-                item(
-                    headlineContent = { Text(stringResource(R.string.assistant_page_thinking_budget)) },
-                    trailingContent = {
-                        ReasoningButton(
-                            reasoningLevel = reasoningLevel,
-                            onUpdateReasoningLevel = onUpdateReasoningLevel,
-                        )
-                    },
-                )
-            }
-            beforePrompt()
-            if (promptType != null) {
-                promptSettingItem(promptType, prompt, showIcon = false) { onEditPrompt(promptType) }
-            }
         }
-        if (description != null) {
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
-            )
+        beforePrompt()
+        if (promptType != null) {
+            promptSettingItem(promptType, prompt, showIcon = false) { onEditPrompt(promptType) }
         }
     }
 

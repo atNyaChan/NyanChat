@@ -1197,7 +1197,11 @@
   <string name="setting_model_page_enable_suggestion">チャット提案</string>
   <string name="setting_model_page_fast_model">高速モデル</string>
   <string name="setting_model_page_fast_model_desc">タイトル、チャット候補、その他の高速タスクやバックグラウンドタスクに使用するモデル</string>
+  <string name="setting_model_page_memory_model">記憶整理モデル</string>
+  <string name="setting_model_page_memory_model_desc">バックグラウンドで会話を長期記憶に整理するために使用されるモデル。未設定の場合は高速モデルを使用します</string>
+  <string name="setting_model_page_memory_model_follow_fast">高速モデルと同じ</string>
   <string name="setting_model_page_ocr_model">OCRモデル</string>
+  <string name="setting_model_page_ocr_model_desc">画像の光学文字認識に使用されるモデル</string>
   <string name="setting_model_page_ocr_prompt_vars">変数: 画像データ: {images}</string>
   <string name="setting_model_page_prompt_ocr">OCR プロンプト</string>
   <string name="setting_model_page_prompt_suggestion">チャット提案プロンプト</string>
@@ -1207,6 +1211,7 @@
   <string name="setting_model_page_suggestion_prompt_vars">変数: 会話内容: {content}, 言語: {locale}</string>
   <string name="setting_model_page_title">デフォルトモデルとプロンプト</string>
   <string name="setting_model_page_translate_model">翻訳モデル</string>
+  <string name="setting_model_page_translate_model_desc">翻訳機能に使用されるモデル</string>
   <string name="setting_model_page_translate_prompt_vars">変数: 原文テキスト: {source_text}, 対象言語: {target_lang}</string>
   <!-- Provider settings -->
   <string name="default_provider_alibaba_bailian">Alibaba Cloud Bailian</string>
@@ -1632,7 +1637,7 @@
   <string name="backup_page_import_from_other_app">他のアプリからインポート</string>
   <string name="backup_page_import_local">ローカルファイルをインポート</string>
   <string name="backup_page_importing">インポート中...</string>
-  <string name="backup_page_legacy_export">旧形式でエクスポート（RikkaHub 3.1.0+ 対応）</string>
+  <string name="backup_page_legacy_export">旧形式でエクスポート（RikkaHub 3.1.1+ 対応）</string>
   <string name="backup_page_legacy_export_desc">この Fork で追加された非互換設定を削除；ワークスペース環境は含まれません</string>
   <string name="backup_page_loading_failed">バックアップファイルの読み込み失敗: %s</string>
   <string name="backup_page_local_backup_export">ファイルにエクスポート</string>

@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -29,7 +30,9 @@ import me.rerere.ai.provider.BuiltInTools
 import me.rerere.ai.provider.Model
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.AiSearch02
+import me.rerere.hugeicons.stroke.GlobalSearch
 import me.rerere.hugeicons.stroke.Search01
+import me.rerere.hugeicons.stroke.SearchRemove
 import me.rerere.hugeicons.stroke.Settings03
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.Screen
@@ -44,6 +47,19 @@ enum class SearchMode {
     OFF,
     LOCAL,
     BUILT_IN,
+}
+
+internal fun searchModeOf(enableSearch: Boolean, useBuiltInSearch: Boolean, model: Model?): SearchMode = when {
+    // 内置搜索仅在模型支持时生效，否则回退到本地搜索
+    useBuiltInSearch && model?.tools?.contains(BuiltInTools.Search) == true -> SearchMode.BUILT_IN
+    enableSearch -> SearchMode.LOCAL
+    else -> SearchMode.OFF
+}
+
+internal fun SearchMode.icon(): ImageVector = when (this) {
+    SearchMode.OFF -> HugeIcons.SearchRemove
+    SearchMode.LOCAL -> HugeIcons.GlobalSearch
+    SearchMode.BUILT_IN -> HugeIcons.AiSearch02
 }
 
 @Composable

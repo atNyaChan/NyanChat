@@ -1197,7 +1197,11 @@
   <string name="setting_model_page_enable_suggestion">Подсказки чата</string>
   <string name="setting_model_page_fast_model">Быстрая модель</string>
   <string name="setting_model_page_fast_model_desc">Модель для заголовков, подсказок в чате и других быстрых или фоновых задач</string>
+  <string name="setting_model_page_memory_model">Модель консолидации памяти</string>
+  <string name="setting_model_page_memory_model_desc">Модель, которая организует диалоги в долговременную память в фоновом режиме; если не задана, используется быстрая модель</string>
+  <string name="setting_model_page_memory_model_follow_fast">Как у быстрой модели</string>
   <string name="setting_model_page_ocr_model">Модель OCR</string>
+  <string name="setting_model_page_ocr_model_desc">Модель, используемая для оптического распознавания текста на изображениях</string>
   <string name="setting_model_page_ocr_prompt_vars">Переменные: Данные изображения: {images}</string>
   <string name="setting_model_page_prompt_ocr">Промпт OCR</string>
   <string name="setting_model_page_prompt_suggestion">Промпт подсказок чата</string>
@@ -1207,6 +1211,7 @@
   <string name="setting_model_page_suggestion_prompt_vars">Переменные: Содержание разговора: {content}, Язык: {locale}</string>
   <string name="setting_model_page_title">Модели и промпты по умолчанию</string>
   <string name="setting_model_page_translate_model">Модель перевода</string>
+  <string name="setting_model_page_translate_model_desc">Модель, используемая для функций перевода</string>
   <string name="setting_model_page_translate_prompt_vars">Переменные: Исходный текст: {source_text}, Целевой язык: {target_lang}</string>
   <!-- Provider settings -->
   <string name="default_provider_alibaba_bailian">Alibaba Cloud Bailian</string>
@@ -1632,7 +1637,7 @@
   <string name="backup_page_import_from_other_app">Импорт из другого приложения</string>
   <string name="backup_page_import_local">Импорт локального файла</string>
   <string name="backup_page_importing">Импорт…</string>
-  <string name="backup_page_legacy_export">Экспорт в старом формате (совместимо с RikkaHub 3.1.0+)</string>
+  <string name="backup_page_legacy_export">Экспорт в старом формате (совместимо с RikkaHub 3.1.1+)</string>
   <string name="backup_page_legacy_export_desc">Удалить несовместимые настройки, добавленные в этом форке; окружения рабочих пространств не включены</string>
   <string name="backup_page_loading_failed">Не удалось загрузить файлы резервной копии: %s</string>
   <string name="backup_page_local_backup_export">Экспорт в файл</string>
