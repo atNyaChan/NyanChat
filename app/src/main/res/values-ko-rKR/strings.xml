@@ -190,6 +190,11 @@
   <string name="search_page_attachment_missing">첨부 삭제됨</string>
   <string name="search_page_attachment_none">첨부 없음</string>
   <string name="search_page_conditions">검색 조건</string>
+  <string name="search_page_content_body">본문</string>
+  <string name="search_page_content_label">일치 내용</string>
+  <string name="search_page_content_reasoning">생각</string>
+  <string name="search_page_content_tool">도구</string>
+  <string name="search_page_content_user">사용자</string>
   <string name="search_page_first_page">첫 페이지</string>
   <string name="search_page_hint">오른쪽 위 점 세 개 버튼을 눌러 검색 조건을 설정하고 검색을 시작하세요</string>
   <string name="search_page_last_page">마지막 페이지</string>

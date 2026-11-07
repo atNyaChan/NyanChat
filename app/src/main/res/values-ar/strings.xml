@@ -190,6 +190,11 @@
   <string name="search_page_attachment_missing">المرفقات محذوفة</string>
   <string name="search_page_attachment_none">بدون مرفقات</string>
   <string name="search_page_conditions">شروط البحث</string>
+  <string name="search_page_content_body">نص</string>
+  <string name="search_page_content_label">محتوى المطابقة</string>
+  <string name="search_page_content_reasoning">الاستدلال</string>
+  <string name="search_page_content_tool">أداة</string>
+  <string name="search_page_content_user">المستخدم</string>
   <string name="search_page_first_page">الصفحة الأولى</string>
   <string name="search_page_hint">اضغط على زر النقاط الثلاث في أعلى اليمين لتعيين شروط البحث وبدء البحث</string>
   <string name="search_page_last_page">الصفحة الأخيرة</string>

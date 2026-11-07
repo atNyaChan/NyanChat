@@ -51,6 +51,8 @@ import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
 import me.rerere.rikkahub.ui.components.ui.CardGroupScope
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceLabel
 import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionInfo
 import me.rerere.rikkahub.ui.components.ui.permission.PermissionManager
@@ -264,7 +266,7 @@ private fun AssistantLocalToolContent(
                 else -> LocalToolAuthorizationMode.ALWAYS
             }
             val checked = option in assistant.localTools
-            item(
+            FormItem(
                 leadingContent = {
                     CardGroupIcon(
                         icon = icon,
@@ -280,29 +282,29 @@ private fun AssistantLocalToolContent(
                         },
                     )
                 },
-                headlineContent = { Text(stringResource(title)) },
-                supportingContent = { Text(stringResource(description)) },
-                trailingContent = {
-                    Select(
-                        options = LocalToolAuthorizationMode.entries,
-                        selectedOption = mode,
-                        onOptionSelected = { setAuthorizationMode(option, it) },
-                        fitToOptions = true,
-                        optionToString = {
-                            stringResource(
-                                when (it) {
-                                    LocalToolAuthorizationMode.DENIED ->
-                                        R.string.local_tool_authorization_mode_denied
-                                    LocalToolAuthorizationMode.MANUAL ->
-                                        R.string.local_tool_authorization_mode_manual
-                                    LocalToolAuthorizationMode.ALWAYS ->
-                                        R.string.local_tool_authorization_mode_always
-                                }
-                            )
-                        },
+                label = { Text(stringResource(title)) },
+                description = { Text(stringResource(description)) },
+            ) {
+                ConnectedChoiceButtons(
+                    options = LocalToolAuthorizationMode.entries,
+                    selected = mode,
+                    onSelect = { setAuthorizationMode(option, it) },
+                ) { authorizationMode, selected ->
+                    ConnectedChoiceLabel(
+                        text = stringResource(
+                            when (authorizationMode) {
+                                LocalToolAuthorizationMode.DENIED ->
+                                    R.string.local_tool_authorization_mode_denied
+                                LocalToolAuthorizationMode.MANUAL ->
+                                    R.string.local_tool_authorization_mode_manual
+                                LocalToolAuthorizationMode.ALWAYS ->
+                                    R.string.local_tool_authorization_mode_always
+                            }
+                        ),
+                        selected = selected,
                     )
-                },
-            )
+                }
+            }
         }
 
         CardGroup {

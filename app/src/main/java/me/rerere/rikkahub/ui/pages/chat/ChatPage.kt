@@ -39,7 +39,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -47,6 +50,8 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -902,6 +907,26 @@ private fun TopBar(
         },
     )
     titleState.EditStateContent { title, onUpdate ->
+        val titleFocusRequester = remember { FocusRequester() }
+        val keyboardController = LocalSoftwareKeyboardController.current
+        // 光标默认落在已有文本末尾，打开弹窗后直接接着编辑
+        var titleField by remember {
+            mutableStateOf(TextFieldValue(title, TextRange(title.length)))
+        }
+        // 自动生成标题等外部更新文本时同步，并把光标重新放到末尾
+        LaunchedEffect(title) {
+            if (title != titleField.text) {
+                titleField = TextFieldValue(title, TextRange(title.length))
+            }
+        }
+
+        // 弹窗出现后直接把焦点放到标题输入框并弹出键盘
+        LaunchedEffect(Unit) {
+            withFrameNanos { }
+            titleFocusRequester.requestFocus()
+            keyboardController?.show()
+        }
+
         AlertDialog(
             containerColor = MaterialTheme.colorScheme.surface,
             onDismissRequest = {
@@ -912,11 +937,21 @@ private fun TopBar(
             },
             text = {
                 OutlinedTextField(
-                    value = title,
+                    value = titleField,
                     onValueChange = { newValue ->
-                        onUpdate(newValue.replace("\n", "").replace("\r", ""))
+                        val text = newValue.text.replace("\n", "").replace("\r", "")
+                        titleField = newValue.copy(
+                            text = text,
+                            selection = TextRange(
+                                newValue.selection.start.coerceIn(0, text.length),
+                                newValue.selection.end.coerceIn(0, text.length),
+                            ),
+                        )
+                        onUpdate(text)
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(titleFocusRequester),
                     singleLine = false,
                 )
             },

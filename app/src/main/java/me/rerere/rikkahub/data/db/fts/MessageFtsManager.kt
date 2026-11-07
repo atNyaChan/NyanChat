@@ -1,5 +1,6 @@
 package me.rerere.rikkahub.data.db.fts
 
+import android.database.Cursor
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.room.withTransaction
@@ -62,6 +63,26 @@ enum class MessageAttachmentState {
     MISSING,
 }
 
+/** 搜索页“匹配内容”：只在这些内容里查找关键词，可多选。 */
+enum class MessageSearchContent {
+    /** 用户发出的消息正文 */
+    USER,
+
+    /** 模型回复的正文（以及工具消息等非用户角色的正文） */
+    BODY,
+
+    /** 思考过程 */
+    REASONING,
+
+    /** 工具调用的输入与输出 */
+    TOOL,
+    ;
+
+    companion object {
+        val DEFAULT: Set<MessageSearchContent> = setOf(USER, BODY)
+    }
+}
+
 /** 搜索页提交的统一查询条件，各条件可同时生效。 */
 data class MessageSearchRequest(
     val keyword: String = "",
@@ -71,12 +92,17 @@ data class MessageSearchRequest(
     val manuallyEdited: Boolean = false,
     val attachmentState: MessageAttachmentState? = null,
     val assistantId: String? = null,
+    val contents: Set<MessageSearchContent> = MessageSearchContent.DEFAULT,
 ) {
     val hasMessageFilter: Boolean
         get() = modelId != null || manuallyEdited || attachmentState != null
 }
 
-private class IndexedMessage(val rowid: Long, val nodeId: String, val text: String)
+private class IndexedMessage(
+    val rowid: Long,
+    val nodeId: String,
+    val texts: MessageCacheTexts,
+)
 
 class MessageFtsManager(private val database: AppDatabase, private val filesDir: File) {
 
@@ -92,33 +118,53 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
         val indexed = HashMap<String, IndexedMessage>()
         val stale = mutableListOf<Long>()
         db.query(
-            "SELECT rowid, node_id, message_id, text FROM message_search_cache WHERE conversation_id = ?",
+            """
+            SELECT rowid, node_id, message_id, user_text, body_text, reasoning_text, tool_text
+            FROM message_search_cache
+            WHERE conversation_id = ?
+            """.trimIndent(),
             arrayOf(conversationId),
-        ).use {
-            while (it.moveToNext()) {
-                val row = IndexedMessage(it.getLong(0), it.getString(1), it.getString(3))
-                if (indexed.putIfAbsent(it.getString(2), row) != null) stale.add(row.rowid)
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                val row = IndexedMessage(
+                    rowid = cursor.getLong(0),
+                    nodeId = cursor.getString(1),
+                    texts = MessageCacheTexts(
+                        user = cursor.getString(3).orEmpty(),
+                        body = cursor.getString(4).orEmpty(),
+                        reasoning = cursor.getString(5).orEmpty(),
+                        tool = cursor.getString(6).orEmpty(),
+                    ),
+                )
+                if (indexed.putIfAbsent(cursor.getString(2), row) != null) stale.add(row.rowid)
             }
         }
         conversation.messageNodes.forEach { node ->
             val nodeId = node.id.toString()
             node.messages.forEach { message ->
-                val text = message.extractFtsText()
+                val texts = message.extractCacheTexts()
                 val existing = indexed.remove(message.id.toString())
-                if (existing != null && existing.nodeId == nodeId && existing.text == text) return@forEach
+                if (existing != null && existing.nodeId == nodeId && existing.texts == texts) {
+                    return@forEach
+                }
                 existing?.let { stale.add(it.rowid) }
-                if (text.isNotBlank()) {
+                if (!texts.isBlank) {
                     db.execSQL(
                         """
-                        INSERT INTO message_search_cache(text, node_id, message_id, conversation_id, message_at)
-                        VALUES (?, ?, ?, ?, ?)
+                        INSERT INTO message_search_cache(
+                            node_id, message_id, conversation_id, message_at,
+                            user_text, body_text, reasoning_text, tool_text
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                         """.trimIndent(),
                         arrayOf(
-                            text,
                             nodeId,
                             message.id.toString(),
                             conversationId,
                             message.createdAtInstant().toEpochMilli().toString(),
+                            texts.user,
+                            texts.body,
+                            texts.reasoning,
+                            texts.tool,
                         )
                     )
                 }
@@ -159,14 +205,20 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
     }
 
     /**
-     * 统一搜索入口：关键词、模型筛选、手动编辑筛选与附件筛选可以同时生效。
-     * 没有任何消息级筛选时复用 `message_search_cache` 快速路径，
-     * 否则扫描消息 JSON 在内存中逐条过滤。
+     * 统一搜索入口：关键词、模型筛选、手动编辑筛选、附件筛选与匹配内容可以同时生效。
+     * 匹配内容只读 `message_search_cache` 的分类列，任何组合都不会为了内容去遍历消息 JSON；
+     * 只有模型/手动编辑/附件这些消息级筛选才扫描消息 JSON。
      */
     suspend fun searchCombined(request: MessageSearchRequest): List<MessageSearchResult> =
         withContext(Dispatchers.IO) {
             if (!request.hasMessageFilter) {
-                searchCached(request.keyword, request.sort, request.mode, listOfNotNull(request.assistantId))
+                searchCached(
+                    keyword = request.keyword,
+                    sort = request.sort,
+                    mode = request.mode,
+                    assistantIds = listOfNotNull(request.assistantId),
+                    contents = request.contents,
+                )
             } else {
                 searchCombinedScan(request)
             }
@@ -177,9 +229,10 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
         sort: MessageSearchSort,
         mode: MessageSearchMode,
         assistantIds: List<String> = emptyList(),
+        contents: Set<MessageSearchContent> = MessageSearchContent.DEFAULT,
     ): List<MessageSearchResult> {
         if (mode != MessageSearchMode.FUZZY) {
-            return searchExact(keyword, sort, mode, assistantIds)
+            return searchExact(keyword, sort, mode, assistantIds, contents)
         }
         val terms = keyword.split(Regex("\\s+")).filter(String::isNotEmpty)
         if (terms.isEmpty()) return emptyList()
@@ -189,23 +242,30 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
             MessageSearchSort.RELEVANCE, MessageSearchSort.NEWEST_FIRST -> "$timeExpression DESC"
             MessageSearchSort.OLDEST_FIRST -> "$timeExpression ASC"
         }
+        val contentColumns = contents.cacheColumns()
+        if (contentColumns.isEmpty()) return emptyList()
+        val matchCondition = contentColumns.joinToString(" OR ") {
+            "instr(lower(msc.$it), lower(?)) > 0"
+        }
+        val queryArgs = Array(contentColumns.size) { terms.first() } + assistantIds.toTypedArray()
         val cursor = db.query(
             """
-            SELECT msc.node_id, msc.message_id, msc.conversation_id, c.title, $timeExpression, msc.text,
+            SELECT msc.node_id, msc.message_id, msc.conversation_id, c.title, $timeExpression,
+                   msc.user_text, msc.body_text, msc.reasoning_text, msc.tool_text,
                    c.assistant_id, f.name
             FROM message_search_cache msc
             JOIN conversationentity c ON c.id = msc.conversation_id
             LEFT JOIN conversation_folder f ON f.id = c.folder_id
-            WHERE instr(lower(msc.text), lower(?)) > 0
+            WHERE $matchCondition
             ${assistantFilter(assistantIds)}
             ORDER BY $orderBy
             """.trimIndent(),
-            (arrayOf(terms.first()) + assistantIds.toTypedArray()),
+            queryArgs,
         )
         val matches = buildList {
             cursor.use {
                 while (it.moveToNext()) {
-                    val text = it.getString(5)
+                    val text = combineContentText(contents, it.cacheRowTexts())
                     text.findOrderedTerms(terms)?.let { ranges ->
                         add(
                             ranges.orderedTermGapCount() to MessageSearchResult(
@@ -215,8 +275,8 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
                                 title = it.getString(3),
                                 timeAt = Instant.ofEpochMilli(it.getLong(4)),
                                 snippet = text.orderedSnippet(ranges),
-                                assistantId = it.getString(6),
-                                folderName = it.getString(7),
+                                assistantId = it.getString(9),
+                                folderName = it.getString(10),
                             )
                         )
                     }
@@ -237,6 +297,7 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
     private fun searchCombinedScan(request: MessageSearchRequest): List<MessageSearchResult> {
         val keyword = request.keyword
         val mode = request.mode
+        val contents = request.contents
         val modelId = request.modelId
         val manuallyEdited = request.manuallyEdited
         val attachmentState = request.attachmentState
@@ -288,7 +349,7 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
                 }
 
                 val title = it.getString(3)
-                val text = message.extractFtsText()
+                val text = message.extractCacheTexts().select(contents)
                 val conversationId = it.getString(2)
                 val timeAt: Instant
                 val snippet: String
@@ -333,7 +394,6 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
                 )
             }
         }
-
         val ordered = when (request.sort) {
             MessageSearchSort.RELEVANCE -> if (mode == MessageSearchMode.FUZZY &&
                 keyword.isNotBlank() &&
@@ -382,7 +442,7 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
                         messageId = message.id.toString(),
                     )
                     if (key !in wanted) continue
-                    val text = message.extractFtsText()
+                    val text = message.extractCacheTexts().combined
                     previews[key] = MessageSearchResult(
                         nodeId = key.nodeId,
                         messageId = key.messageId,
@@ -460,6 +520,7 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
         sort: MessageSearchSort,
         mode: MessageSearchMode,
         assistantIds: List<String> = emptyList(),
+        contents: Set<MessageSearchContent> = MessageSearchContent.DEFAULT,
     ): List<MessageSearchResult> {
         val titleOnly = mode == MessageSearchMode.TITLE_ONLY
         val direction = if (sort == MessageSearchSort.OLDEST_FIRST) "ASC" else "DESC"
@@ -467,19 +528,34 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
         // 消息级结果若缓存由旧版写入（无 message_at），退回该会话的更新时间。
         val timeColumn = if (titleOnly) "c.update_at" else "COALESCE(msc.message_at, c.update_at)"
         val groupBy = if (titleOnly) "GROUP BY msc.conversation_id" else ""
+        val contentColumns = if (titleOnly) emptyList() else contents.cacheColumns()
+        // 仅在选中的分类列里查找关键词，切换匹配内容不需要遍历消息 JSON
+        val matchCondition = if (titleOnly) {
+            "instr(c.title, ?) > 0"
+        } else {
+            if (contentColumns.isEmpty()) return emptyList()
+            contentColumns.joinToString(" OR ") { "instr(msc.$it, ?) > 0" }
+        }
+        val matchArgs = if (titleOnly) {
+            arrayOf(keyword)
+        } else {
+            Array(contentColumns.size) { keyword }
+        }
+        val queryArgs = matchArgs + assistantIds.toTypedArray()
         val cursor = db.query(
             """
-            SELECT msc.node_id, msc.message_id, msc.conversation_id, c.title, $timeColumn, msc.text,
+            SELECT msc.node_id, msc.message_id, msc.conversation_id, c.title, $timeColumn,
+                   msc.user_text, msc.body_text, msc.reasoning_text, msc.tool_text,
                    c.assistant_id, f.name
             FROM message_search_cache msc
             JOIN conversationentity c ON c.id = msc.conversation_id
             LEFT JOIN conversation_folder f ON f.id = c.folder_id
-            WHERE instr(${if (titleOnly) "c.title" else "msc.text"}, ?) > 0
+            WHERE $matchCondition
             ${assistantFilter(assistantIds)}
             $groupBy
             ORDER BY $timeColumn $direction
             """.trimIndent(),
-            (arrayOf(keyword) + assistantIds.toTypedArray()),
+            queryArgs,
         )
         return buildList {
             cursor.use {
@@ -491,9 +567,14 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
                             conversationId = it.getString(2),
                             title = it.getString(3),
                             timeAt = Instant.ofEpochMilli(it.getLong(4)),
-                            snippet = if (titleOnly) "" else it.getString(5).exactSnippet(keyword),
-                            assistantId = it.getString(6),
-                            folderName = it.getString(7),
+                            snippet = if (titleOnly) {
+                                ""
+                            } else {
+                                combineContentText(contents, it.cacheRowTexts())
+                                    .exactSnippet(keyword)
+                            },
+                            assistantId = it.getString(9),
+                            folderName = it.getString(10),
                         )
                     )
                 }
@@ -638,9 +719,101 @@ private fun String.orderedSnippet(ranges: List<IntRange>): String {
     }
 }
 
-private fun UIMessage.extractFtsText(): String =
-    parts.filterIsInstance<UIMessagePart.Text>()
-        .joinToString("\n") { it.text }
+/**
+ * 一条消息按匹配内容拆开的缓存文本。
+ * `user` / `body` 按消息角色二选一，`reasoning` 与 `tool` 各自独立；
+ * `combined` 为用户正文加其余角色正文，供预览使用。
+ */
+private data class MessageCacheTexts(
+    val user: String,
+    val body: String,
+    val reasoning: String,
+    val tool: String,
+) {
+    val combined: String = listOf(user, body).filter(String::isNotBlank).joinToString("\n")
+
+    val isBlank: Boolean
+        get() = combined.isBlank() && reasoning.isBlank() && tool.isBlank()
+
+    /** 拼接搜索页选中的那些内容；与 [combineContentText] 同一套规则。 */
+    fun select(contents: Set<MessageSearchContent>): String =
+        combineContentText(contents, listOf(user, body, reasoning, tool))
+}
+
+private fun UIMessage.extractCacheTexts(): MessageCacheTexts {
+    val textParts = parts.filterIsInstance<UIMessagePart.Text>()
+        .map(UIMessagePart.Text::text)
+        .filter(String::isNotBlank)
+        .joinToString("\n")
+    val isUser = role == MessageRole.USER
+    return MessageCacheTexts(
+        user = if (isUser) textParts else "",
+        body = if (isUser) "" else textParts,
+        reasoning = parts.filterIsInstance<UIMessagePart.Reasoning>()
+            .map(UIMessagePart.Reasoning::reasoning)
+            .filter(String::isNotBlank)
+            .joinToString("\n"),
+        tool = toolCacheText(),
+    )
+}
+
+/** 工具调用的输入与输出（含结果 JSON），不含工具名。 */
+@Suppress("DEPRECATION")
+private fun UIMessage.toolCacheText(): String {
+    val pieces = buildList {
+        parts.forEach { part ->
+            when (part) {
+                is UIMessagePart.Tool -> {
+                    add(part.input)
+                    part.output.filterIsInstance<UIMessagePart.Text>()
+                        .forEach { add(it.text) }
+                }
+
+                is UIMessagePart.ServerTool -> {
+                    part.input?.let { add(it.toString()) }
+                    part.output?.let { add(it.toString()) }
+                }
+
+                is UIMessagePart.ToolCall -> add(part.arguments)
+
+                is UIMessagePart.ToolResult -> {
+                    add(part.arguments.toString())
+                    add(part.content.toString())
+                }
+
+                else -> {}
+            }
+        }
+    }
+    return pieces.filter(String::isNotBlank).joinToString("\n")
+}
+
+/** 按枚举顺序映射到缓存表的分类列。 */
+private fun Set<MessageSearchContent>.cacheColumns(): List<String> =
+    MessageSearchContent.entries.filter(this::contains).map {
+        when (it) {
+            MessageSearchContent.USER -> "user_text"
+            MessageSearchContent.BODY -> "body_text"
+            MessageSearchContent.REASONING -> "reasoning_text"
+            MessageSearchContent.TOOL -> "tool_text"
+        }
+    }
+
+/** 拼接选中内容的缓存文本，顺序固定为用户→正文→思考→工具。 */
+private fun combineContentText(contents: Set<MessageSearchContent>, texts: List<String>): String =
+    MessageSearchContent.entries
+        .filter(contents::contains)
+        .map { texts[it.ordinal] }
+        .filter(String::isNotBlank)
+        .joinToString("\n")
+
+/** 缓存查询里按枚举顺序取出的四个分类正文列（SELECT 中紧随 title/time 之后）。 */
+private fun Cursor.cacheRowTexts(): List<String> = listOf(
+    getString(5),
+    getString(6),
+    getString(7),
+    getString(8),
+).map(String::orEmpty)
 
 /** 消息自身的生成时间，用于搜索结果展示与排序。 */
 private fun UIMessage.createdAtInstant(): Instant =
@@ -664,20 +837,24 @@ internal fun rebuildMessageSearchCache(db: SupportSQLiteDatabase) {
                     val nodeId = nodes.getString(0)
                     val messages = JsonInstant.decodeFromString<List<UIMessage>>(nodes.getString(1))
                     messages.forEach { message ->
-                        val text = message.extractFtsText()
-                        if (text.isNotBlank()) {
+                        val texts = message.extractCacheTexts()
+                        if (!texts.isBlank) {
                             db.execSQL(
                                 """
                                 INSERT INTO message_search_cache(
-                                    text, node_id, message_id, conversation_id, message_at
-                                ) VALUES (?, ?, ?, ?, ?)
+                                    node_id, message_id, conversation_id, message_at,
+                                    user_text, body_text, reasoning_text, tool_text
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                                 """.trimIndent(),
                                 arrayOf(
-                                    text,
                                     nodeId,
                                     message.id.toString(),
                                     conversationId,
                                     message.createdAtInstant().toEpochMilli().toString(),
+                                    texts.user,
+                                    texts.body,
+                                    texts.reasoning,
+                                    texts.tool,
                                 ),
                             )
                         }

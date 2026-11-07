@@ -39,11 +39,11 @@ import me.rerere.ai.provider.ModelType
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.model.Assistant
+import me.rerere.rikkahub.ui.components.ai.ContextCacheChoiceButtons
 import me.rerere.rikkahub.ui.components.ai.ModelField
 import me.rerere.rikkahub.ui.components.ai.ModelListSheet
-import me.rerere.rikkahub.ui.components.ai.rememberModelListState
-import me.rerere.rikkahub.ui.components.ai.ContextCachePicker
 import me.rerere.rikkahub.ui.components.ai.ReasoningButton
+import me.rerere.rikkahub.ui.components.ai.rememberModelListState
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupValue
@@ -442,13 +442,12 @@ internal fun AssistantBasicContent(
                 description = {
                     Text(stringResource(R.string.assistant_page_context_cache_desc))
                 },
-                tail = {
-                    ContextCachePicker(
-                        value = assistant.contextCache,
-                        onValueChange = { onUpdate(assistant.copy(contextCache = it)) },
-                    )
-                },
-            )
+            ) {
+                ContextCacheChoiceButtons(
+                    value = assistant.contextCache,
+                    onValueChange = { onUpdate(assistant.copy(contextCache = it)) },
+                )
+            }
             item(headlineContent = {
                 var temperatureInput by remember(assistant.id) {
                     mutableStateOf(assistant.temperature?.toString().orEmpty())

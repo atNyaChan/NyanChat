@@ -190,6 +190,11 @@
   <string name="search_page_attachment_missing">Вложения удалены</string>
   <string name="search_page_attachment_none">Без вложений</string>
   <string name="search_page_conditions">Условия поиска</string>
+  <string name="search_page_content_body">Текст</string>
+  <string name="search_page_content_label">Сопоставляемое содержимое</string>
+  <string name="search_page_content_reasoning">Рассуждение</string>
+  <string name="search_page_content_tool">Инструмент</string>
+  <string name="search_page_content_user">Пользователь</string>
   <string name="search_page_first_page">Первая страница</string>
   <string name="search_page_hint">Нажмите кнопку с тремя точками в правом верхнем углу, чтобы задать условия поиска и начать поиск</string>
   <string name="search_page_last_page">Последняя страница</string>

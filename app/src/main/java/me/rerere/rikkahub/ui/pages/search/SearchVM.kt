@@ -13,6 +13,7 @@ import me.rerere.ai.provider.Model
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.datastore.getCurrentAssistant
 import me.rerere.rikkahub.data.db.fts.MessageAttachmentState
+import me.rerere.rikkahub.data.db.fts.MessageSearchContent
 import me.rerere.rikkahub.data.db.fts.MessageSearchMode
 import me.rerere.rikkahub.data.db.fts.MessageSearchRequest
 import me.rerere.rikkahub.data.db.fts.MessageSearchResult
@@ -24,6 +25,7 @@ import kotlin.uuid.Uuid
 
 private const val SORT_ORDER_PREF_KEY = "search_page_sort_order"
 private const val SEARCH_MODE_PREF_KEY = "search_page_search_mode"
+private const val SEARCH_CONTENT_PREF_KEY = "search_page_search_content"
 private const val PAGE_SIZE = 20
 
 enum class SearchScope {
@@ -41,6 +43,7 @@ data class SearchConditions(
     val selectedDeletedModelId: Uuid? = null,
     val manuallyEdited: Boolean = false,
     val attachmentState: MessageAttachmentState? = null,
+    val contents: Set<MessageSearchContent> = MessageSearchContent.DEFAULT,
 ) {
     val hasMessageFilter: Boolean
         get() = selectedModel != null ||
@@ -51,6 +54,18 @@ data class SearchConditions(
     val hasAnyCriteria: Boolean
         get() = hasMessageFilter || query.isNotBlank()
 }
+
+/** 按枚举声明顺序保存，避免同一个集合因为顺序不同写出不同的偏好值。 */
+private fun Set<MessageSearchContent>.encodeContents(): String =
+    MessageSearchContent.entries.filter(this::contains).joinToString(",")
+
+/** 空字符串表示“一个都不选”，与缺省偏好（用户 + 正文）区分开。 */
+private fun String.decodeContents(): Set<MessageSearchContent> =
+    if (isBlank()) {
+        emptySet()
+    } else {
+        split(',').map { MessageSearchContent.valueOf(it) }.toSet()
+    }
 
 class SearchVM(
     private val context: Application,
@@ -72,6 +87,12 @@ class SearchVM(
                     context.readStringPreference(SORT_ORDER_PREF_KEY, MessageSearchSort.NEWEST_FIRST.name)!!
                 )
             }.getOrDefault(MessageSearchSort.NEWEST_FIRST),
+            contents = runCatching {
+                context.readStringPreference(
+                    SEARCH_CONTENT_PREF_KEY,
+                    MessageSearchContent.DEFAULT.encodeContents(),
+                )!!.decodeContents()
+            }.getOrDefault(MessageSearchContent.DEFAULT),
         )
     )
         private set
@@ -136,6 +157,7 @@ class SearchVM(
         currentPage = 1
         context.writeStringPreference(SORT_ORDER_PREF_KEY, normalized.sort.name)
         context.writeStringPreference(SEARCH_MODE_PREF_KEY, normalized.mode.name)
+        context.writeStringPreference(SEARCH_CONTENT_PREF_KEY, normalized.contents.encodeContents())
         viewModelScope.launch {
             reloadDeletedModelIds()
             performSearch()
@@ -182,7 +204,10 @@ class SearchVM(
 
     private suspend fun performSearch() {
         val current = conditions
-        if (!current.hasAnyCriteria) {
+        // “匹配内容”一个都不选时没有可搜索的文本；仅匹配标题时不涉及内容
+        val hasSearchableContent = current.mode == MessageSearchMode.TITLE_ONLY ||
+            current.contents.isNotEmpty()
+        if (!current.hasAnyCriteria || !hasSearchableContent) {
             allResults = emptyList()
             results = emptyList()
             resultCount = 0
@@ -198,6 +223,7 @@ class SearchVM(
                 manuallyEdited = current.manuallyEdited,
                 attachmentState = current.attachmentState,
                 assistantId = assistantFilter?.toString(),
+                contents = current.contents,
             )
             allResults = conversationRepo.searchMessages(request)
             resultCount = allResults.size

@@ -103,17 +103,24 @@ fun Int.formatContextLength(): String {
     }
 }
 
-/** ASCII English letters form one word when adjacent; every other code point counts as one word. */
+/**
+ * ASCII English letters form one word when adjacent; every other non-whitespace code point counts as
+ * one word. Whitespace (spaces, tabs, line breaks, ideographic space, ...) is never counted.
+ */
 fun String.wordCount(): Int {
     var count = 0
     var previousWasEnglishLetter = false
     var index = 0
     while (index < length) {
         val codePoint = codePointAt(index)
+        index += Character.charCount(codePoint)
+        if (Character.isWhitespace(codePoint) || Character.isSpaceChar(codePoint)) {
+            previousWasEnglishLetter = false
+            continue
+        }
         val isEnglishLetter = codePoint in 'A'.code..'Z'.code || codePoint in 'a'.code..'z'.code
         if (!isEnglishLetter || !previousWasEnglishLetter) count++
         previousWasEnglishLetter = isEnglishLetter
-        index += Character.charCount(codePoint)
     }
     return count
 }

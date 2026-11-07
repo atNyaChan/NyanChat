@@ -448,31 +448,31 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                             ConnectedChoiceLabel(text = stringResource(mode.labelRes), selected = selected)
                         }
                     }
-                    item(
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_volume_key_scroll_title)) },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_volume_key_scroll_desc)) },
-                        trailingContent = {
-                            Select(
-                                options = VolumeKeyScrollMode.entries,
-                                selectedOption = volumeKeyScrollMode,
-                                onOptionSelected = { mode ->
-                                    updateDisplaySetting(
-                                        displaySetting.copy(
-                                            enableVolumeKeyScroll = mode != VolumeKeyScrollMode.OFF,
-                                            volumeKeyScrollRatio = mode.ratio
-                                                ?: displaySetting.volumeKeyScrollRatio,
-                                        )
+                    FormItem(
+                        label = { Text(stringResource(R.string.setting_display_page_volume_key_scroll_title)) },
+                        description = { Text(stringResource(R.string.setting_display_page_volume_key_scroll_desc)) },
+                    ) {
+                        ConnectedChoiceButtons(
+                            options = VolumeKeyScrollMode.entries,
+                            selected = volumeKeyScrollMode,
+                            onSelect = { mode ->
+                                updateDisplaySetting(
+                                    displaySetting.copy(
+                                        enableVolumeKeyScroll = mode != VolumeKeyScrollMode.OFF,
+                                        volumeKeyScrollRatio = mode.ratio
+                                            ?: displaySetting.volumeKeyScrollRatio,
                                     )
-                                },
-                                optionToString = { mode ->
-                                    mode.ratio?.let { ratio ->
-                                        "${(ratio * 100).toInt()}%"
-                                    } ?: stringResource(R.string.common_off)
-                                },
-                                fitToOptions = true,
+                                )
+                            },
+                        ) { mode, selected ->
+                            ConnectedChoiceLabel(
+                                text = mode.ratio?.let { ratio ->
+                                    "${(ratio * 100).toInt()}%"
+                                } ?: stringResource(R.string.common_off),
+                                selected = selected,
                             )
-                        },
-                    )
+                        }
+                    }
                     item(
                         headlineContent = { Text(stringResource(R.string.setting_display_page_paste_long_text_as_file_title)) },
                         supportingContent = {

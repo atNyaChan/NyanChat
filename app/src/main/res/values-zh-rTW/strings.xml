@@ -190,6 +190,11 @@
   <string name="search_page_attachment_missing">附件被刪除</string>
   <string name="search_page_attachment_none">沒有附件</string>
   <string name="search_page_conditions">搜尋條件</string>
+  <string name="search_page_content_body">正文</string>
+  <string name="search_page_content_label">比對內容</string>
+  <string name="search_page_content_reasoning">思考</string>
+  <string name="search_page_content_tool">工具</string>
+  <string name="search_page_content_user">使用者</string>
   <string name="search_page_first_page">最前頁</string>
   <string name="search_page_hint">點擊右上角三點按鈕設定搜尋條件並開始搜尋</string>
   <string name="search_page_last_page">最後頁</string>

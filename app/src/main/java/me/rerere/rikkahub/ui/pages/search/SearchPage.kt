@@ -65,8 +65,10 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -74,6 +76,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.db.fts.MessageAttachmentState
+import me.rerere.rikkahub.data.db.fts.MessageSearchContent
 import me.rerere.rikkahub.data.db.fts.MessageSearchMode
 import me.rerere.rikkahub.data.db.fts.MessageSearchSort
 import me.rerere.rikkahub.ui.components.ai.ModelListSheet
@@ -83,8 +86,8 @@ import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
 import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceLabel
+import me.rerere.rikkahub.ui.components.ui.ConnectedMultiChoiceButtons
 import me.rerere.rikkahub.ui.components.ui.MessageSearchResultCard
-import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalSettings
@@ -374,10 +377,20 @@ private fun SearchConditionsDialog(
     var deletedModelsExpanded by remember { mutableStateOf(false) }
     val queryFocusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
+    // 输入框保存自己的 TextFieldValue（而不是纯字符串），才能把光标放到已有文本末尾
+    var queryInput by remember {
+        mutableStateOf(
+            TextFieldValue(
+                text = conditions.query,
+                selection = TextRange(conditions.query.length),
+            )
+        )
+    }
 
-    // 搜索条件抽屉一出现就把焦点放到“搜索文本”输入框并弹出键盘。
+    // 搜索条件抽屉一出现就把焦点放到“搜索文本”输入框、光标置于已有文本末尾并弹出键盘。
     LaunchedEffect(Unit) {
         withFrameNanos { }
+        queryInput = queryInput.copy(selection = TextRange(queryInput.text.length))
         queryFocusRequester.requestFocus()
         keyboardController?.show()
     }
@@ -433,8 +446,11 @@ private fun SearchConditionsDialog(
                 item(
                     headlineContent = {
                         OutlinedTextField(
-                            value = conditions.query,
-                            onValueChange = { onConditionsChange(conditions.copy(query = it)) },
+                            value = queryInput,
+                            onValueChange = { value ->
+                                queryInput = value
+                                onConditionsChange(conditions.copy(query = value.text))
+                            },
                             label = { Text(stringResource(R.string.search_page_query_label)) },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -479,6 +495,41 @@ private fun SearchConditionsDialog(
                         }
                     },
                 )
+                if (conditions.mode != MessageSearchMode.TITLE_ONLY) {
+                    FormItem(
+                        label = {
+                            SearchSectionLabel(stringResource(R.string.search_page_content_label))
+                        },
+                        content = {
+                            ConnectedMultiChoiceButtons(
+                                options = MessageSearchContent.entries,
+                                selected = conditions.contents,
+                                onToggle = { content, checked ->
+                                    val contents = if (checked) {
+                                        conditions.contents + content
+                                    } else {
+                                        conditions.contents - content
+                                    }
+                                    // 允许一个都不选，此时右下角“搜索”不可点
+                                    onConditionsChange(conditions.copy(contents = contents))
+                                },
+                            ) { content, selected ->
+                                ConnectedChoiceLabel(
+                                    text = stringResource(
+                                        when (content) {
+                                            MessageSearchContent.USER -> R.string.search_page_content_user
+                                            MessageSearchContent.BODY -> R.string.search_page_content_body
+                                            MessageSearchContent.REASONING ->
+                                                R.string.search_page_content_reasoning
+                                            MessageSearchContent.TOOL -> R.string.search_page_content_tool
+                                        }
+                                    ),
+                                    selected = selected,
+                                )
+                            }
+                        },
+                    )
+                }
                 FormItem(
                     label = {
                         SearchSectionLabel(stringResource(R.string.search_page_sort_label))
@@ -643,17 +694,20 @@ private fun SearchConditionsDialog(
                         }
                     },
                 )
-                item(
-                    headlineContent = { Text(stringResource(R.string.search_page_attachment_label)) },
-                    trailingContent = {
-                        Select(
+                FormItem(
+                    label = {
+                        SearchSectionLabel(stringResource(R.string.search_page_attachment_label))
+                    },
+                    content = {
+                        ConnectedChoiceButtons(
                             options = attachmentOptions,
-                            selectedOption = conditions.attachmentState,
-                            onOptionSelected = { state ->
+                            selected = conditions.attachmentState,
+                            onSelect = { state ->
                                 onConditionsChange(conditions.copy(attachmentState = state))
                             },
-                            optionToString = { state ->
-                                when (state) {
+                        ) { state, selected ->
+                            ConnectedChoiceLabel(
+                                text = when (state) {
                                     MessageAttachmentState.NONE ->
                                         stringResource(R.string.search_page_attachment_none)
                                     MessageAttachmentState.EXISTS ->
@@ -661,10 +715,10 @@ private fun SearchConditionsDialog(
                                     MessageAttachmentState.MISSING ->
                                         stringResource(R.string.search_page_attachment_missing)
                                     null -> stringResource(R.string.common_all)
-                                }
-                            },
-                            fitToOptions = true,
-                        )
+                                },
+                                selected = selected,
+                            )
+                        }
                     },
                 )
             }
@@ -678,7 +732,12 @@ private fun SearchConditionsDialog(
                 TextButton(onClick = onDismiss) {
                     Text(stringResource(R.string.common_cancel))
                 }
-                Button(onClick = onConfirm) {
+                Button(
+                    onClick = onConfirm,
+                    // “匹配内容”一个都没选时没有可搜索的内容；仅匹配标题时不涉及内容
+                    enabled = conditions.mode == MessageSearchMode.TITLE_ONLY ||
+                        conditions.contents.isNotEmpty(),
+                ) {
                     Text(stringResource(R.string.common_search))
                 }
             }

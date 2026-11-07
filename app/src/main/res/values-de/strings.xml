@@ -190,6 +190,11 @@
   <string name="search_page_attachment_missing">Anhänge gelöscht</string>
   <string name="search_page_attachment_none">Keine Anhänge</string>
   <string name="search_page_conditions">Suchbedingungen</string>
+  <string name="search_page_content_body">Text</string>
+  <string name="search_page_content_label">Übereinstimmungsinhalt</string>
+  <string name="search_page_content_reasoning">Reasoning</string>
+  <string name="search_page_content_tool">Tool</string>
+  <string name="search_page_content_user">Benutzer</string>
   <string name="search_page_first_page">Erste Seite</string>
   <string name="search_page_hint">Tippe oben rechts auf die Drei-Punkte-Schaltfläche, um Suchbedingungen festzulegen und die Suche zu starten</string>
   <string name="search_page_last_page">Letzte Seite</string>

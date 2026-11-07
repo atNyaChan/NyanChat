@@ -47,35 +47,43 @@ internal object AppDatabaseFactory {
                         val cacheTableExists = db.query(
                             "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'message_search_cache'"
                         ).use { it.moveToFirst() }
-                        val cacheHasMessageAt = cacheTableExists &&
+                        val cacheColumns = if (cacheTableExists) {
                             db.query("PRAGMA table_info(message_search_cache)").use { cursor ->
                                 val nameIndex = cursor.getColumnIndex("name")
-                                var found = false
-                                while (cursor.moveToNext()) {
-                                    if (nameIndex >= 0 && cursor.getString(nameIndex) == "message_at") {
-                                        found = true
-                                        break
+                                buildSet {
+                                    while (cursor.moveToNext()) {
+                                        if (nameIndex >= 0) add(cursor.getString(nameIndex))
                                     }
                                 }
-                                found
                             }
-                        if (cacheTableExists && !cacheHasMessageAt) {
-                            // 旧缓存缺少 message_at 列时补列；下面会用重建补上消息时间，
-                            // 同表的 title / update_at 两列已不再写入与读取（搜索时联表从 conversationentity 取），
-                            // 保留只是为了既有缓存表不用迁移。
-                            db.execSQL("ALTER TABLE message_search_cache ADD COLUMN message_at TEXT")
+                        } else {
+                            emptySet()
+                        }
+                        val cacheHasMessageAt = "message_at" in cacheColumns
+                        val contentColumns = listOf("user_text", "body_text", "reasoning_text", "tool_text")
+                        // 缓存只是派生数据：结构不符（旧版合并正文列 / 缺少分类列 / 缺消息时间）时整表丢掉重建，
+                        // 不做逐列补列，也不保留已废弃的 `text` 列。
+                        val cacheSchemaCurrent = cacheTableExists &&
+                            cacheHasMessageAt &&
+                            contentColumns.all(cacheColumns::contains) &&
+                            "text" !in cacheColumns
+                        if (cacheTableExists && !cacheSchemaCurrent) {
+                            db.execSQL("DROP TABLE message_search_cache")
                         }
                         // title / update_at 是早期版本写入的会话标题与更新时间，现在不再写入也不再读取，列本身保留
                         db.execSQL(
                             """
                             CREATE TABLE IF NOT EXISTS message_search_cache(
-                                text TEXT,
                                 node_id TEXT,
                                 message_id TEXT,
                                 conversation_id TEXT,
                                 title TEXT,
                                 message_at TEXT,
-                                update_at TEXT
+                                update_at TEXT,
+                                user_text TEXT,
+                                body_text TEXT,
+                                reasoning_text TEXT,
+                                tool_text TEXT
                             )
                             """.trimIndent()
                         )
@@ -95,16 +103,16 @@ internal object AppDatabaseFactory {
                         db.execSQL("DROP INDEX IF EXISTS index_message_search_cache_update_at")
 
                         // 旧版重建索引时不会写 message_at，若整表 message_at 全为空则静默重建补上消息时间。
-                        val hasAnyMessageAt = cacheHasMessageAt &&
+                        val hasAnyMessageAt = cacheSchemaCurrent &&
                             db.query("SELECT 1 FROM message_search_cache WHERE message_at IS NOT NULL LIMIT 1")
                                 .use { it.moveToFirst() }
-                        val hasRowsWithoutMessageAt = cacheHasMessageAt &&
+                        val hasRowsWithoutMessageAt = cacheSchemaCurrent &&
                             !hasAnyMessageAt &&
                             db.query("SELECT 1 FROM message_search_cache LIMIT 1").use { it.moveToFirst() }
 
-                        // 缺缓存表（例如刚恢复的上游旧库存档）或缺 message_at 列时全量重建；
+                        // 缓存表刚建/重建（包括刚恢复的上游旧库存档）或旧行缺消息时间时全量重建；
                         // 旧表 `message_fts` 里的内容从不作为重建来源。
-                        if (!cacheHasMessageAt || hasRowsWithoutMessageAt) {
+                        if (!cacheSchemaCurrent || hasRowsWithoutMessageAt) {
                             rebuildMessageSearchCache(db)
                         }
                         db.setTransactionSuccessful()

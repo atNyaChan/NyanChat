@@ -190,6 +190,11 @@
   <string name="search_page_attachment_missing">添付削除済み</string>
   <string name="search_page_attachment_none">添付なし</string>
   <string name="search_page_conditions">検索条件</string>
+  <string name="search_page_content_body">本文</string>
+  <string name="search_page_content_label">一致内容</string>
+  <string name="search_page_content_reasoning">思考</string>
+  <string name="search_page_content_tool">ツール</string>
+  <string name="search_page_content_user">ユーザー</string>
   <string name="search_page_first_page">最初のページ</string>
   <string name="search_page_hint">右上の三点ボタンから検索条件を設定して検索を開始してください</string>
   <string name="search_page_last_page">最後のページ</string>

@@ -78,9 +78,10 @@ import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
 import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceLabel
 import me.rerere.rikkahub.ui.components.ui.JsonTree
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
-import me.rerere.rikkahub.ui.components.ui.Select
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
@@ -230,31 +231,31 @@ fun LogPage() {
 private fun InterceptRequestCard(modifier: Modifier = Modifier) {
     val interceptMode = RequestInterceptController.mode
     CardGroup(modifier = modifier) {
-        item(
-            headlineContent = {
+        FormItem(
+            label = {
                 Text(stringResource(R.string.log_page_intercept_title))
             },
-            supportingContent = {
+            description = {
                 Text(stringResource(R.string.log_page_intercept_desc))
             },
-            trailingContent = {
-                Select(
-                    options = RequestInterceptMode.entries,
-                    selectedOption = interceptMode,
-                    onOptionSelected = { RequestInterceptController.mode = it },
-                    optionToString = {
-                        stringResource(
-                            when (it) {
-                                RequestInterceptMode.OFF -> R.string.log_page_intercept_off
-                                RequestInterceptMode.LLM_ONLY -> R.string.log_page_intercept_llm_only
-                                RequestInterceptMode.ALL -> R.string.common_all
-                            }
-                        )
-                    },
-                    fitToOptions = true,
+        ) {
+            ConnectedChoiceButtons(
+                options = RequestInterceptMode.entries,
+                selected = interceptMode,
+                onSelect = { RequestInterceptController.mode = it },
+            ) { mode, selected ->
+                ConnectedChoiceLabel(
+                    text = stringResource(
+                        when (mode) {
+                            RequestInterceptMode.OFF -> R.string.log_page_intercept_off
+                            RequestInterceptMode.LLM_ONLY -> R.string.log_page_intercept_llm_only
+                            RequestInterceptMode.ALL -> R.string.common_all
+                        }
+                    ),
+                    selected = selected,
                 )
-            },
-        )
+            }
+        }
     }
 }
 
