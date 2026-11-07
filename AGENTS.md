@@ -239,6 +239,15 @@ merges in git history, but NEVER let git auto-merge file contents.
 - NEVER resolve conflict markers (`<<<<<<<`). With `-s ours` they cannot appear; if you see any,
   abort immediately and stop.
 - NEVER copy upstream files wholesale over ours.
+- **NEVER run `git commit` yourself — under any circumstances, including for an upstream sync,
+  a cleanup, or after a "done" instruction.** Leaving the ported changes staged (or the merge in
+  progress) and handing over is the agent's final step of a sync; the user reviews, builds and
+  commits. If the user seems to want the commit done, ask instead of running it.
+- The same ban covers anything that creates a commit behind the user's back: `git commit`,
+  `git merge` *without* `--no-commit`, `git merge --continue`, `git cherry-pick` (applies and
+  commits), `git revert`, `git rebase --continue`, and `git stash pop` variants that auto-commit.
+  `git stash` / `git reset` / `git checkout` that only move changes around without committing are
+  fine, but undo them so the ported work stays in the working tree.
 
 ### Workflow: one sync = one merge commit
 1. List unported commits: `git log --oneline HEAD..upstream/master`
@@ -252,15 +261,22 @@ merges in git history, but NEVER let git auto-merge file contents.
    If you are unsure how to adapt the change — e.g. the relevant code has diverged too much, or the
       upstream change conflicts with a deliberate design choice in this fork — STOP and ask the
       user. Do not guess.
-4. Commit ONCE. Message format:
+4. STOP. Do not commit. Leave every ported change in the working tree (staged is fine) and, if the
+   merge is still pending, leave it pending (`git merge -s ours ... --no-commit` keeps
+   `.git/MERGE_HEAD`, so the user's commit lands as the merge commit). Report what was ported,
+   what was skipped, and the exact message the user should commit with — the whole sync is ONE
+   commit:
 
    merge(upstream): sync to <newest-hash> (skipped: <hash> <subject>, <hash> <subject>)(if any)
 
-5. Verify `git log HEAD..upstream/master` is now empty.
+   The user runs the commit after building and verifying. Only then is
+   `git log HEAD..upstream/master` empty again; if the user asks why the range is still listed,
+   explain that the commit (and therefore the recorded ancestry) is theirs to make.
 
 ### Do not commit partway through
-The entire sync lands as ONE merge commit. If the range is too large
-to port safely in one session, STOP and ask the user before starting.
+The entire sync lands as ONE merge commit, and that commit is always made by the user. Never split
+the port into agent-made commits to "save progress". If the range is too large to port safely in
+one session, STOP and ask the user before starting.
 
 ### NyanwChanges.md
 - Only record things that actually differ from upstream in the appropriate place in the document;

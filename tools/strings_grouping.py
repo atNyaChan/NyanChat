@@ -75,8 +75,10 @@ GROUPS: list[tuple[str, list[str]]] = [
         r"^chat_page_clear_all_errors$", r"^chat_page_dismiss_error$",
         r"^chat_page_use_independent_conversation_settings", r"^chat_page_select_model_first$",
         r"^chat_page_stop_generation_before_", r"^chat_page_context_message_limit_current$",
-        r"^chat_page_conversation_system_prompt", r"^chat_page_menu_", r"^use_web_search$",
+        r"^chat_page_conversation_system_prompt", r"^chat_page_conversation_map$",
+        r"^chat_page_menu_", r"^use_web_search$",
         r"^chat_page_export_",
+        r"^chat_page_select_all$", r"^chat_page_deselect_all$", r"^chat_page_clear_selection$",
     ]),
     ("Chat history and favorites", [
         r"^chat_page_uncategorized$", r"^chat_page_current_location$",

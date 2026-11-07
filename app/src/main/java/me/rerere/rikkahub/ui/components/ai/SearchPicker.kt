@@ -245,7 +245,7 @@ private fun SearchPickerOptionRow(
             )
         } else {
             CardDefaults.outlinedCardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             )
         },
     ) {

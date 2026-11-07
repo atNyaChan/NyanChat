@@ -18,12 +18,22 @@ import kotlin.concurrent.thread
  * 兼容 OpenAI Chat Completions 的假接口，跑在生成器进程里，app 通过 127.0.0.1 访问。
  *
  * 需要先应用 `app/baselineprofile/mock-provider.patch`，让 app 的默认模型指向这里。
- * 流式请求返回思考过程 + Markdown 正文，正文末尾带递增的编号，方便生成器判断这一轮的回复已经渲染完。
+ * 流式请求返回思考过程 + Markdown 正文，正文末尾带递增的编号：生成器用 [lastReplyIndex] 定位界面上的
+ * 回复末尾、用 [deliveredReplyCount] 判断这一轮的回复是否已经送到 app。
  * 非流式请求是标题和建议生成，返回固定文本。
  */
 class MockOpenAIServer(private val port: Int = PORT) {
     private val serverSocket = ServerSocket()
     private val replyCount = AtomicInteger(0)
+    private val deliveredReplies = AtomicInteger(0)
+
+    /** 最近一条完整写出的流式回复编号，对应界面回复末尾的 `REPLY_MARKER N` */
+    @Volatile
+    var lastReplyIndex: Int = 0
+        private set
+
+    /** 已完整写出的流式回复数量，生成器轮询它判断这一轮回复是否已经送到 app */
+    val deliveredReplyCount: Int get() = deliveredReplies.get()
 
     fun start() {
         serverSocket.reuseAddress = true
@@ -32,7 +42,10 @@ class MockOpenAIServer(private val port: Int = PORT) {
         thread(name = "mock-openai-accept", isDaemon = true) {
             while (!serverSocket.isClosed) {
                 val socket = runCatching { serverSocket.accept() }.getOrNull() ?: break
-                thread(name = "mock-openai-conn", isDaemon = true) { socket.use(::handle) }
+                // app 中途取消生成时会直接断开连接，写入随之失败；不能让它把生成器进程带崩
+                thread(name = "mock-openai-conn", isDaemon = true) {
+                    runCatching { socket.use(::handle) }
+                }
             }
         }
     }
@@ -94,6 +107,10 @@ class MockOpenAIServer(private val port: Int = PORT) {
         REASONING.chunked(CHUNK_SIZE).forEach { send(JSONObject().put("reasoning_content", it)) }
         "$REPLY\n\n$REPLY_MARKER $index".chunked(CHUNK_SIZE).forEach { send(JSONObject().put("content", it)) }
         send(JSONObject(), finishReason = "stop")
+        // 先记送达：app 拿到 finish_reason 后可能立刻断流，后面的 usage / [DONE] 不一定写得出去。
+        // 也先写编号再记数量，生成器读到数量增长时 lastReplyIndex 一定已经是这一轮的编号。
+        lastReplyIndex = index
+        deliveredReplies.incrementAndGet()
         val usage = JSONObject()
             .put("id", "chatcmpl-mock-$index")
             .put("object", "chat.completion.chunk")

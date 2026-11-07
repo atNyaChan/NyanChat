@@ -681,11 +681,11 @@ private fun ColumnScope.ModelList(
                             onClick = {
                                 coroutineScope.launch {
                                     settingsStore.update { settings ->
-                                        if (favorite) {
+                                        // 按最新设置判断是否已收藏，连点时界面上的 favorite 还没刷新，会重复追加
+                                        if (model.id in settings.favoriteModels) {
                                             settings.copy(
                                                 favoriteModels = settings.favoriteModels.filter { it != model.id }
                                             )
-
                                         } else {
                                             settings.copy(
                                                 favoriteModels = settings.favoriteModels + model.id

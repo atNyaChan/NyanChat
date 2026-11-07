@@ -101,6 +101,7 @@ import me.rerere.hugeicons.stroke.FolderExport
 import me.rerere.hugeicons.stroke.FolderOpen
 import me.rerere.hugeicons.stroke.PencilEdit01
 import me.rerere.hugeicons.stroke.Refresh01
+import me.rerere.hugeicons.stroke.Route01
 import me.rerere.hugeicons.stroke.Settings03
 import me.rerere.hugeicons.stroke.Share08
 import me.rerere.hugeicons.stroke.Tick01
@@ -811,6 +812,13 @@ private fun SshConnectionCard(
                 )
             },
         )
+        settings?.jumpHost?.let { jump ->
+            item(
+                leadingContent = { CardGroupIcon(HugeIcons.Route01) },
+                headlineContent = { Text(stringResource(R.string.workspace_ssh_editor_jump_host)) },
+                supportingContent = { Text("${jump.username}@${jump.host}:${jump.port}") },
+            )
+        }
         item(
             leadingContent = { CardGroupIcon(HugeIcons.Folder01) },
             headlineContent = { Text(stringResource(R.string.workspace_detail_ssh_remote_dir)) },
@@ -1345,7 +1353,7 @@ private fun WorkspaceFileItem(
         targetValue = if (selected) {
             MaterialTheme.colorScheme.secondaryContainer
         } else {
-            MaterialTheme.colorScheme.surfaceContainer
+            MaterialTheme.colorScheme.surfaceContainerLow
         },
         animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec(),
     )

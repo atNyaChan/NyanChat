@@ -28,7 +28,7 @@ fun OutlinedItemCard(
     onClick: (() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
     colors: CardColors = CardDefaults.outlinedCardColors(
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
     ),
     shape: Shape = RoundedCornerShape(OutlinedItemCornerRadius),
     content: @Composable ColumnScope.() -> Unit,

@@ -9,6 +9,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import sh.calvin.reorderable.ReorderableCollectionItemScope
+import sh.calvin.reorderable.ReorderableListItemScope
 
 private const val DraggingScale = 0.95f
 
@@ -24,6 +25,29 @@ private const val DraggingScale = 0.95f
  */
 @Composable
 fun ReorderableCollectionItemScope.longPressReorder(
+    isDragging: Boolean,
+    enabled: Boolean = true,
+    onDragStopped: (() -> Unit)? = null,
+): Modifier {
+    val haptic = LocalHapticFeedback.current
+    return Modifier
+        .draggingScale(isDragging)
+        .longPressDraggableHandle(
+            enabled = enabled,
+            onDragStarted = { haptic.dragStarted() },
+            onDragStopped = {
+                haptic.dragStopped()
+                onDragStopped?.invoke()
+            },
+        )
+}
+
+/**
+ * 同上，但用于 `ReorderableColumn` / `ReorderableRow` 的 `ReorderableItem { }`：
+ * 普通 Column 的 item scope 提供的是 [ReorderableListItemScope]。
+ */
+@Composable
+fun ReorderableListItemScope.longPressReorder(
     isDragging: Boolean,
     enabled: Boolean = true,
     onDragStopped: (() -> Unit)? = null,

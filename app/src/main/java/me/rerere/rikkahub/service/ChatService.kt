@@ -174,6 +174,11 @@ class ChatService(
             // 只删上次落库时引用、这次落库不再引用的附件；只在内存里出现过的附件宁可漏删也不误删
             if (previous != null && previous.messageNodes !== current.messageNodes) {
                 withContext(Dispatchers.IO) { deleteUnreferencedFiles(previous, current) }
+                val currentNodeIds = current.messageNodes.mapTo(HashSet()) { it.id }
+                val removedNodeIds = previous.messageNodes.map { it.id }.filterNot { it in currentNodeIds }
+                if (removedNodeIds.isNotEmpty()) {
+                    conversationRepo.deleteNodeFavorites(current.id, removedNodeIds)
+                }
             }
         }
     }

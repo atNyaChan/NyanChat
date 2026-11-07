@@ -157,7 +157,10 @@
 - 展开的输入框处于编辑历史消息状态时，退出编辑（发送或点击“编辑中”卡片的取消键）会自动收起输入框。
 - 聊天图片预览改用图片库的 `ImagePreviewer`：单击图片或向下拖动图片即可退出预览，保留双指缩放、双击缩放与左右翻页。
 - “模糊/玻璃效果”改为连接式按钮组，可选关闭、仅标题栏、模糊、玻璃（默认仅标题栏）。持久化沿用 `enableBlurEffect` 与 `backgroundEffectType`，并新增 `enableTitleBarScrim` 区分“关闭”与“仅标题栏”：两者都不使用模糊/玻璃，“仅标题栏”保留标题栏的顶部渐隐遮罩。选择模糊或玻璃后主页面标题栏、输入栏和侧栏共用 `chatInputHaze` 使用对应效果，模糊/玻璃效果下侧栏保持圆角。选择“关闭”时移除标题栏遮罩，列表恢复顶部内边距，消息不再滚到标题栏下面（与加入该遮罩前一致）。
-- 分享面板第一行并排选择 Markdown 或图片，第二行统一设置是否保留思考，底部使用一个导出按钮，“导出格式”标题改用大号标题样式。
+- 分享面板第一行并排选择 Markdown 或图片，第二行统一设置是否保留思考。如果选择导出为图片，那么第二行下面加上“展开思维过程”开关。底部是“保存”或“分享”（系统分享面板）。
+- 概览页的搜索框固定在页面顶部（不再随卡片列表滚动），样式与“选择模型”页一致。
+- 概览页的每条消息条目改用公共描边卡片 `OutlinedItemCard`。
+- 顶栏会话菜单的删除键的确认弹窗改为与侧栏的删除弹窗相同。
 - 助手消息的翻译入口移入三点操作面板，位于“编辑”下方、“分享”上方。
 - 消息分支存在多条消息时，三点操作面板第一行加入“向前移动/向后移动”，把当前选中的分支消息在列表里前移/后移一位；已在第一条时禁用“前移”，已在最后一条时禁用“后移”。
 - 从消息操作中移除“使用网页视图渲染”、“选择复制”及其独立页面。
@@ -492,7 +495,7 @@
 - 在没有可备份文件或工作区时往本地、S3、WebDAV 三种备份方式“备份项目”下方的“聊天记录始终包含在备份中”描述动态追加“；当前没有文件”“；当前没有工作区”（两者都没有时显示“；当前没有文件或工作区”）。
 - 备份页签顺序调整为本地、S3、WebDAV、提醒。
 - WebDAV 与 S3 页签的“备份项目”选择器并入顶部卡片组，与上次备份时间、备份入口同组，改用连接式多选按钮组。
-- WebDAV 与 S3 的备份文件恢复抽屉里每条备份改用共享描边卡片 `OutlinedItemCard`（填充色为 `surface`）。
+- WebDAV 与 S3 的备份文件恢复抽屉里每条备份改用共享描边卡片 `OutlinedItemCard`。
 - S3 与 WebDAV 配置页的文本输入框标题改为使用输入框自带的浮层 label 。
 - 本地、S3、WebDAV 的覆盖还原操作均增加确认弹窗；ChatBox、Cherry Studio 等合并式导入不属于覆盖还原，因此不显示覆盖警告。确认按钮复用共用字符串 `common_yes`（“好”）。
 - 删除 S3 或 WebDAV 备份文件前显示确认弹窗。
@@ -595,7 +598,7 @@
 
 ## 列表交互
 - {全部可拖动排序的实体列表、收藏与消息搜索结果列表、聊天页及其他模型选择面板中的模型项、网络请求日志与权限请求日志列表、侧栏助手选择列表及“复制已有助手”列表、技能详情页文件树、工作区文件树}统一采用模型提供商“模型”列表的描边卡片样式，新建为公共 `OutlinedItemCard`，统一承载全宽、描边、点击重载、颜色及 shape 入口，圆角统一略增至 16dp，拖动与项目动画 Modifier 仍由列表自身提供；列表外边距、项目间距统一收紧至 8dp，卡片上下内容边距也缩至 8dp，减少无效空白。
-- 公共 `OutlinedItemCard` 背景色改为 `surfaceContainer`，仅“模型提供商重写”（Provider Override）卡片保留原描边透明样式。
+- 公共 `OutlinedItemCard` 背景色改为 `surfaceContainerLow`，仅“模型提供商重写”（Provider Override）卡片保留原描边透明样式。
 - 模型选择面板中的模型卡片长按按压反馈裁剪在卡片圆角范围内，不再溢出为直角矩形。
 - {提示词注入、世界书列表、快捷消息列表、模型列表、MCP 服务器列表、搜索服务、工作区列表、Skill 列表、TTS 提供商列表、ASR 提供商列表}取消侧滑和列表内操作按钮，改为点击整项编辑，导出和删除入口移至编辑面板，并支持长按排序（Skills 与工作区的自定义顺序会单独持久化）。
 - 快捷消息、模式注入、世界书、Skills、工作区列表的空状态统一改用 `ExtensionEmptyState` 并居中。
@@ -625,7 +628,7 @@
 - Release 构建改用 `local.properties` 配置的仓库根目录 `.signing` 发布证书，不再使用 Android Debug 证书；发布身份为 `NyanChat Release`。
 - 发布渠道保持仅 GitHub（Release APK 与每日构建），不引入上游按 `distribution` flavor 区分的 `play` 渠道；构建任务与产物路径仍使用不带渠道的 `assembleRelease` / `bundleRelease`，混淆映射对应为 `app/build/outputs/mapping/release/mapping.txt`。
 - 应用自身的显示名称统一改为 `NyanChat`，包括 Android 应用名、Web 服务、导出图片水印及对外客户端标识，独立的 `RikkaHub` 搜索服务保留原名。deep link scheme 由 `rikkahub` 改为 `nyanchat`。
-- 应用包名改为 `moe.nyanw.nyanchat`，版本字符串自动取构建日期与上游版本号拼接为 `{yyyyMMdd}+{上游版本}`（如 `20261107+3.1.1`）。
+- 应用包名改为 `moe.nyanw.nyanchat`，版本字符串自动取构建日期与上游版本号拼接为 `{yyyyMMdd}+{上游版本}`（如 `20261108+3.1.2`）。
 - 完整移除应用内的自动更新以及捐赠功能，以及启动次数达到阈值后自动弹出的捐赠提醒。
 - “关于”分组只保留“关于”项，并删除右侧的 QQ 和 Discord 链接。
 - “关于”页第二个分组依次包含该 Fork GitHub 链接、该 Fork 的 License 文件链接、RikkaHub GitHub、RikkaHub 官网。
@@ -688,7 +691,7 @@
 - 所有 Android 模块统一使用 `compileSdk { version = release(37) { minorApiLevel = 2 } }`（即 Android SDK Platform 37.2）。
 - 各 library 模块的共享构建配置改由 `build-logic` 的 `rikkahub.android.library` / `rikkahub.android.library.compose` convention plugin 统一提供（compileSdk 37.2、minSdk 28、Java 21、Kotlin jvmTarget 21、Compose）；应用级 keep 规则集中在 `app/src/main/keepRules/rikkahub.keep`，其中保留 fork 特有的 zstd-jni `-keep` 规则。
 - 根构建脚本的 Spotless 取消 `ratchetFrom("origin/master")` 默认值，改为默认对整个仓库执行 ktlint 格式化；需要只格式化相对某个 ref 有改动的文件时传 `-PspotlessRatchet=<ref>`，`.kt` target 另可用 `-PspotlessTarget=<glob>` 临时收窄到某个目录（`*.gradle.kts` 不受该参数影响）。
-- `app/baselineprofile` 生成器在发送消息后不再只做一次 20 秒等待，而是在等待回复结尾标记期间持续把聊天消息列表翻到底部：长回复超过一屏后聊天列表的自动跟随会在气泡底边离开视口时停止，原实现会因结尾标记停在屏幕外而误报回复未渲染。
+- `app/baselineprofile` 生成器在发送消息后不再只做一次 20 秒等待，而是先等 mock 接口把这一轮的流式回复写完整，再在界面里确认回复末尾标记渲染出来；确认期间持续把聊天消息列表翻到最新一条。长回复超过一屏后聊天列表的自动跟随会在气泡底边离开视口时停止，原实现会因结尾标记停在屏幕外而误报回复未渲染；而且原来在等待循环里用的 `fling(UP)` 实际是往更早的消息翻（uiautomator 的 fling 会反转手势方向，日志里 `fling(UP)` 的手势是从上往下划），并且每个 `fling` 都要空等 5 秒等不到的 `scrollFinished` 事件，现在改为按列表可见高度取最大的可滚动节点直接注入 `swipe` 手势。生成器每次运行前还会 `pm clear` 目标 app，因为 benchmark 的 `resetAndCompile` 只重置 ART profile、不清 app 数据：上一轮留下的会话会让这一轮的回复落到很靠下的位置，其中的旧编号标记也会让“等回复出现”变成误判。
 - 在 `app` 的 `packaging` 中显式设置 `dex { useLegacyPackaging = true }`（与已有的 `jniLibs { useLegacyPackaging = true }` 一致），让 dex 继续以 deflate 压缩进 APK。因为 `minSdk` 提升到 28 后，AGP 的 `DexPackagingOptionsImpl` 默认 `useLegacyPackaging = (minSdk < 28)` 变为 false，会把 `classes*.dex` 以不压缩（STORED）方式存入 APK，使 release APK 由约 34MB 涨到约 47MB、debug APK 约翻倍；该默认与内容无关，只影响 zip 压缩方式和安装时的 dex2oat。
 - 移除已发现的死代码，并新增 `tools/scan_deadcode.py` 作为死代码静态检查脚本：一次遍历全仓库建立词频索引，报告未被引用的 Kotlin 声明与整文件、未使用的 import、未引用的字符串资源、孤儿 `res/` 文件与 values 条目、未被引用的枚举项，以及 web-ui 中无人 import 的模块；`--only` 可只跑指定检查，有发现时退出码为 1。`AGENTS.md` 的 Agent Change Workflow 记录其用法。
 - 清理 Firebase 移除后的残留引用：删除 `AGENTS.md` 中关于 `google-services.json` 的过时说明，删除 CI workflow 中写入 `google-services.json` 的步骤。

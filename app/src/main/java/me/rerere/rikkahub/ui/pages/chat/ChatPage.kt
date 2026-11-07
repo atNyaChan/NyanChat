@@ -3,9 +3,11 @@ package me.rerere.rikkahub.ui.pages.chat
 import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -16,10 +18,14 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenuGroup
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PermanentNavigationDrawer
@@ -44,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
@@ -68,10 +75,12 @@ import kotlinx.coroutines.launch
 import me.rerere.ai.provider.Model
 import me.rerere.ai.ui.UIMessagePart
 import me.rerere.hugeicons.HugeIcons
-import me.rerere.hugeicons.stroke.Cancel01
+import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.LeftToRightListBullet
 import me.rerere.hugeicons.stroke.Menu03
 import me.rerere.hugeicons.stroke.MessageAdd01
+import me.rerere.hugeicons.stroke.MoreVertical
+import me.rerere.hugeicons.stroke.Share04
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.getSelectedASRProvider
@@ -93,6 +102,7 @@ import me.rerere.rikkahub.ui.components.ai.completion.WorkspaceCompletionProvide
 import me.rerere.rikkahub.ui.components.ai.chatInputHaze
 import me.rerere.rikkahub.ui.components.ai.rememberChatAttachmentPickerActions
 import me.rerere.rikkahub.ui.components.ai.toRoundedCornerShape
+import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
 import me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalToaster
@@ -458,6 +468,10 @@ private fun ChatPageContent(
     val workspaceRepository: WorkspaceRepository = koinInject()
     val folderRepository: FolderRepository = koinInject()
     var previewMode by rememberSaveable { mutableStateOf(false) }
+    val selectionState = rememberChatSelectionState()
+    var showDeleteConfirm by remember { mutableStateOf(false) }
+    // 概览页有自己的列表，用来让顶栏胶囊背景跟随概览滚动
+    val previewListState = rememberLazyListState()
     val generatingMessageId by vm.generatingMessageId.collectAsStateWithLifecycle()
     // 生成中的统计快照：每 0.1s 推送一次，不跟随每个流式 chunk 重算
     val statsSnapshot by vm.streamingStats.collectAsStateWithLifecycle()
@@ -487,6 +501,10 @@ private fun ChatPageContent(
 
     TTSAutoPlay(vm = vm, setting = setting, conversation = conversation)
 
+    BackHandler(previewMode) {
+        previewMode = false
+    }
+
     Surface(
         color = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxSize()
@@ -502,13 +520,21 @@ private fun ChatPageContent(
                     folderName = folderName,
                     bigScreen = bigScreen,
                     drawerState = drawerState,
-                    previewMode = previewMode,
                     hazeState = hazeState,
                     onNewChat = {
                         navigateToChatPage(navController)
                     },
-                    onClickMenu = {
-                        previewMode = !previewMode
+                    onShowOverview = {
+                        selectionState.selecting = false
+                        previewMode = true
+                    },
+                    onExport = {
+                        // 跟消息上的分享一样进入多选，默认全选，用户可以再挑
+                        previewMode = false
+                        selectionState.start(conversation.messageNodes.map { it.id })
+                    },
+                    onDelete = {
+                        showDeleteConfirm = true
                     },
                     onUpdateTitle = {
                         vm.updateTitle(it)
@@ -623,11 +649,14 @@ private fun ChatPageContent(
                     innerPadding = innerPadding,
                     conversation = conversation,
                     state = chatListState,
+                    previewListState = previewListState,
+                    selectionState = selectionState,
                     loading = loadingJob != null,
                     generatingMessageId = generatingMessageId,
                     statsSnapshot = statsSnapshot,
                     processingStatus = processingStatus,
                     previewMode = previewMode,
+                    onPreviewModeChange = { previewMode = it },
                     settings = setting,
                     hazeState = hazeState,
                     errors = errors,
@@ -703,6 +732,21 @@ private fun ChatPageContent(
                 }
             }
         }
+
+        // 与侧栏删除同一个弹窗文案
+        DeleteConfirmDialog(
+            show = showDeleteConfirm,
+            type = stringResource(R.string.delete_type_chat),
+            name = conversation.title,
+            onConfirm = {
+                showDeleteConfirm = false
+                scope.launch {
+                    vm.deleteConversation(conversation).join()
+                    navigateToChatPage(navController)
+                }
+            },
+            onDismiss = { showDeleteConfirm = false },
+        )
     }
 }
 
@@ -799,10 +843,11 @@ private fun TopBar(
     folderName: String?,
     drawerState: DrawerState,
     bigScreen: Boolean,
-    previewMode: Boolean,
     hazeState: HazeState,
-    onClickMenu: () -> Unit,
     onNewChat: () -> Unit,
+    onShowOverview: () -> Unit,
+    onExport: () -> Unit,
+    onDelete: () -> Unit,
     onUpdateTitle: (String) -> Unit,
     onGenerateTitle: ((String) -> Unit) -> Unit,
 ) {
@@ -891,19 +936,17 @@ private fun TopBar(
         actions = {
             IconButton(
                 onClick = {
-                    onClickMenu()
-                }
-            ) {
-                Icon(if (previewMode) HugeIcons.Cancel01 else HugeIcons.LeftToRightListBullet, "Chat Options")
-            }
-
-            IconButton(
-                onClick = {
                     onNewChat()
                 }
             ) {
                 Icon(HugeIcons.MessageAdd01, "New Message")
             }
+            ChatPageMenu(
+                enabled = conversation.messageNodes.isNotEmpty(),
+                onShowOverview = onShowOverview,
+                onExport = onExport,
+                onDelete = onDelete,
+            )
         },
     )
     titleState.EditStateContent { title, onUpdate ->
@@ -972,5 +1015,82 @@ private fun TopBar(
                 }
             }
         )
+    }
+}
+
+
+// 顶栏右侧的会话菜单；空对话没有内容可概览、导出或删除，菜单项全部置灰
+@Composable
+private fun ChatPageMenu(
+    enabled: Boolean,
+    onShowOverview: () -> Unit,
+    onExport: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    @Composable
+    fun MenuItem(
+        text: String,
+        icon: ImageVector,
+        index: Int,
+        count: Int,
+        destructive: Boolean = false,
+        onClick: () -> Unit,
+    ) {
+        DropdownMenuItem(
+            text = { Text(text) },
+            onClick = {
+                expanded = false
+                onClick()
+            },
+            shape = MenuDefaults.itemShape(index = index, count = count).shape,
+            leadingIcon = { Icon(icon, contentDescription = null) },
+            enabled = enabled,
+            colors = if (destructive) {
+                val errorColor = MaterialTheme.colorScheme.error
+                MenuDefaults.itemColors(textColor = errorColor, leadingIconColor = errorColor)
+            } else {
+                MenuDefaults.itemColors()
+            },
+        )
+    }
+
+    Box {
+        IconButton(onClick = { expanded = true }) {
+            Icon(HugeIcons.MoreVertical, stringResource(R.string.more_options))
+        }
+        DropdownMenuPopup(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            DropdownMenuGroup(shapes = MenuDefaults.groupShape(index = 0, count = 2)) {
+                MenuItem(
+                    text = stringResource(R.string.chat_page_conversation_map),
+                    icon = HugeIcons.LeftToRightListBullet,
+                    index = 0,
+                    count = 2,
+                    onClick = onShowOverview,
+                )
+                MenuItem(
+                    text = stringResource(R.string.common_export),
+                    icon = HugeIcons.Share04,
+                    index = 1,
+                    count = 2,
+                    onClick = onExport,
+                )
+            }
+            Spacer(Modifier.height(MenuDefaults.GroupSpacing))
+            DropdownMenuGroup(shapes = MenuDefaults.groupShape(index = 1, count = 2)) {
+                MenuItem(
+                    text = stringResource(R.string.common_delete),
+                    icon = HugeIcons.Delete01,
+                    index = 0,
+                    count = 1,
+                    destructive = true,
+                    onClick = onDelete,
+                )
+            }
+        }
     }
 }

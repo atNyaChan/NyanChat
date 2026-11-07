@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.Spacer
 import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -53,6 +52,7 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -100,6 +100,7 @@ import me.rerere.rikkahub.ui.hooks.useEditState
 import me.rerere.rikkahub.ui.theme.CustomColors
 import me.rerere.rikkahub.utils.plus
 import org.koin.androidx.compose.koinViewModel
+import sh.calvin.reorderable.ReorderableColumn
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -798,13 +799,6 @@ private fun LorebookEditSheet(
             onEdit(book.copy(entries = book.entries + edited))
         }
     }
-    val entryListState = rememberLazyListState()
-    val entryReorderableState = rememberReorderableLazyListState(entryListState) { from, to ->
-        val reordered = book.entries.toMutableList()
-        val item = reordered.removeAt(from.index)
-        reordered.add(to.index, item)
-        onEdit(book.copy(entries = reordered))
-    }
 
     ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
         onDismissRequest = onDismiss,
@@ -876,22 +870,25 @@ private fun LorebookEditSheet(
                     }
                 }
 
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height((book.entries.size * 80).coerceAtMost(360).dp),
-                    state = entryListState,
+                ReorderableColumn(
+                    list = book.entries,
+                    onSettle = { fromIndex, toIndex ->
+                        val entries = book.entries.toMutableList().apply {
+                            add(toIndex, removeAt(fromIndex))
+                        }
+                        onEdit(book.copy(entries = entries))
+                    },
                     verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    items(book.entries, key = { it.id }) { entry ->
-                        ReorderableItem(
-                            state = entryReorderableState,
-                            key = entry.id,
-                        ) { isDragging ->
+                ) { _, entry, isDragging ->
+                    key(entry.id) {
+                        ReorderableItem {
                             RegexInjectionEntryCard(
                                 entry = entry,
                                 onEdit = { entryEditState.open(entry) },
-                                modifier = longPressReorder(isDragging),
+                                modifier = longPressReorder(
+                                    isDragging = isDragging,
+                                    enabled = book.entries.size > 1,
+                                ),
                             )
                         }
                     }
