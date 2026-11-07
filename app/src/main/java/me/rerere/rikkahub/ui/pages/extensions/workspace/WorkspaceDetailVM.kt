@@ -22,6 +22,7 @@ import java.io.OutputStream
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
+import me.rerere.rikkahub.service.BackgroundShellManager
 import me.rerere.workspace.RootfsInstallProgress
 import me.rerere.workspace.RootfsInstallStage
 import me.rerere.workspace.WorkspaceFileEntry
@@ -33,6 +34,7 @@ class WorkspaceDetailVM(
     private val repository: WorkspaceRepository,
     private val terminalSessionManager: WorkspaceTerminalSessionManager,
     private val context: Context,
+    private val backgroundShellManager: BackgroundShellManager,
 ) : ViewModel() {
     private val _state = MutableStateFlow(WorkspaceDetailState())
     val state = _state.asStateFlow()
@@ -216,6 +218,7 @@ class WorkspaceDetailVM(
             val workspace = state.value.workspace ?: return@launch
             runCatching {
                 terminalSessionManager.closeWorkspace(workspace.root)
+                backgroundShellManager.killWorkspace(workspace.id)
                 repository.delete(id)
             }
             .onSuccess { onComplete() }
@@ -347,6 +350,7 @@ class WorkspaceDetailVM(
             _installProgress.value = RootfsInstallProgress(stage = RootfsInstallStage.DOWNLOADING)
             try {
                 terminalSessionManager.closeWorkspace(workspace.root)
+                backgroundShellManager.killWorkspace(workspace.id)
                 repository.installRootfs(workspace.id, url) { progress ->
                     _installProgress.value = progress
                 }
@@ -369,6 +373,7 @@ class WorkspaceDetailVM(
             _installProgress.value = RootfsInstallProgress(stage = RootfsInstallStage.EXTRACTING)
             try {
                 terminalSessionManager.closeWorkspace(workspace.root)
+                backgroundShellManager.killWorkspace(workspace.id)
                 repository.installRootfs(workspace.id, input, fileName) { progress ->
                     _installProgress.value = progress
                 }

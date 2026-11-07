@@ -53,6 +53,7 @@ import me.rerere.ai.ui.UIMessagePart
 import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.BubbleChatQuestion
 import me.rerere.hugeicons.stroke.Cancel01
+import me.rerere.hugeicons.stroke.Notification01
 import me.rerere.hugeicons.stroke.Tick01
 import me.rerere.hugeicons.stroke.Tools
 import me.rerere.rikkahub.R
@@ -64,7 +65,10 @@ import me.rerere.rikkahub.ui.components.message.tools.ToolUIRegistry
 import me.rerere.rikkahub.ui.components.richtext.ZoomableAsyncImage
 import me.rerere.rikkahub.ui.components.ui.ChainOfThoughtScope
 import me.rerere.ui.components.DotLoading
+import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.modifier.shimmer
+import me.rerere.rikkahub.ui.theme.JetbrainsMono
+import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
 import me.rerere.rikkahub.utils.JsonInstant
 import kotlin.time.Clock
 import kotlin.time.Duration
@@ -95,6 +99,40 @@ fun ChainOfThoughtScope.ChatMessageServerToolStep(tool: UIMessagePart.ServerTool
                 modifier = Modifier.shimmer(isLoading = loading),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
+            )
+        },
+    )
+}
+
+/** 发给模型的运行时通知，例如后台命令结束；展开后显示发给模型的原文 */
+@Composable
+fun ChainOfThoughtScope.ChatMessageNoticeStep(notice: UIMessagePart.Notice) {
+    ChainOfThoughtStep(
+        icon = {
+            Icon(
+                imageVector = HugeIcons.Notification01,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = LocalContentColor.current.copy(alpha = 0.7f),
+            )
+        },
+        label = {
+            Text(
+                text = notice.title,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.secondary,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        },
+        content = {
+            Text(
+                text = notice.text,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontFamily = JetbrainsMono,
+                    fontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings,
+                ),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         },
     )

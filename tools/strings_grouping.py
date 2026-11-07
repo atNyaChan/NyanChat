@@ -107,6 +107,9 @@ GROUPS: list[tuple[str, list[str]]] = [
     ("Chat queue", [
         r"^chat_page_queue_",
     ]),
+    ("Background tasks", [
+        r"^background_tasks_", r"^background_shell_notice_", r"^chat_page_notice_",
+    ]),
     ("Voice mode", [
         r"^chat_page_voice_",
     ]),
@@ -210,6 +213,7 @@ GROUPS: list[tuple[str, list[str]]] = [
     ]),
     ("Notifications", [
         r"^notification_channel_", r"^notification_live_", r"^notification_web_",
+        r"^notification_background_shell_running$",
         r"^media_creation_notification_", r"^floating_chat_",
     ]),
 

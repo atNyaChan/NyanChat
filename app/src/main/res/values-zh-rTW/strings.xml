@@ -305,6 +305,9 @@
   <string name="tool_ui_replay">重播</string>
   <string name="tool_ui_screen_time_total">總螢幕使用時間</string>
   <string name="tool_ui_shell">Shell: %s</string>
+  <string name="tool_ui_shell_background">背景 · %1$s</string>
+  <string name="tool_ui_shell_background_running">背景執行中 · %1$s</string>
+  <string name="tool_ui_shell_background_stopped">已停止 · %1$s</string>
   <string name="tool_ui_shell_default">Shell</string>
   <string name="tool_ui_shell_exit">exit %s</string>
   <string name="tool_ui_shell_timeout">timeout</string>
@@ -327,6 +330,23 @@
   <string name="chat_page_queue_remove">移除</string>
   <string name="chat_page_queue_resume">恢復傳送</string>
   <string name="chat_page_queue_video">[影片]</string>
+  <!-- Background tasks -->
+  <string name="background_shell_notice_exited">背景指令已結束，結束代碼 %1$d：%2$s</string>
+  <string name="background_shell_notice_stopped">背景指令已被你停止：%1$s</string>
+  <string name="background_tasks_duration_hours">%1$d 小時 %2$d 分</string>
+  <string name="background_tasks_duration_minutes">%1$d 分 %2$d 秒</string>
+  <string name="background_tasks_duration_seconds">%1$d 秒</string>
+  <string name="background_tasks_empty">此對話中沒有背景任務</string>
+  <string name="background_tasks_log_truncated">顯示日誌結尾。完整日誌：%1$s</string>
+  <string name="background_tasks_no_output">無輸出</string>
+  <string name="background_tasks_no_output_yet">尚無輸出</string>
+  <string name="background_tasks_running">背景任務：%1$d 個執行中</string>
+  <string name="background_tasks_status_exited">已退出，退出碼 %1$d · %2$s</string>
+  <string name="background_tasks_status_running">執行中 · %1$s</string>
+  <string name="background_tasks_status_stopped">已停止 · %1$s</string>
+  <string name="background_tasks_stopping">正在停止…</string>
+  <string name="background_tasks_title">背景任務</string>
+  <string name="chat_page_notice_retry">重試</string>
   <!-- Voice mode -->
   <string name="chat_page_voice_configure_asr">請先在語音設定中設定 ASR</string>
   <string name="chat_page_voice_configure_key">請先設定 ASR API 金鑰</string>
@@ -1600,6 +1620,7 @@
   <string name="media_creation_notification_running">%1$d 個任務生成中</string>
   <string name="media_creation_notification_video_failed">影片生成失敗</string>
   <string name="media_creation_notification_video_succeeded">影片生成完成</string>
+  <string name="notification_background_shell_running">背景指令執行中：%1$d</string>
   <string name="notification_channel_chat_completed">聊天完成</string>
   <string name="notification_channel_chat_live_update">聊天生成進度</string>
   <string name="notification_channel_web_server">網頁伺服器</string>

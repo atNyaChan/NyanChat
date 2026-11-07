@@ -265,7 +265,7 @@ private fun exportToMarkdown(
         append("# ${conversation.title}\n\n")
         append("*Exported on ${LocalDateTime.now().toLocalString()}*\n\n")
 
-        messages.forEach { message ->
+        messages.filterNot { it.isNoticeOnly }.forEach { message ->
             val role = if (message.role == MessageRole.USER) "**User**" else "**Assistant**"
             append("$role:\n\n")
             message.parts.forEach { part ->
@@ -540,7 +540,9 @@ private fun ExportedChatMessage(
     prevMessage: UIMessage? = null,
     options: ImageExportOptions = ImageExportOptions()
 ) {
-    if (message.parts.isEmptyUIMessage()) return
+    // 通知是发给模型的运行时事件，不导出
+    val parts = remember(message.parts) { message.parts.filterNot { it is UIMessagePart.Notice } }
+    if (parts.isEmptyUIMessage()) return
     val context = LocalContext.current
     val settings = LocalSettings.current
     val model = message.modelId?.let { settings.findModelById(it) } ?: message.snapshotModel()
@@ -551,7 +553,7 @@ private fun ExportedChatMessage(
         model?.displayName?.isNotBlank() == true -> model.displayName
         else -> "AI"
     }
-    val groupedParts = remember(message.parts) { message.parts.groupMessageParts() }
+    val groupedParts = remember(parts) { parts.groupMessageParts() }
     val messageContent: @Composable () -> Unit = {
         Column(
             modifier = Modifier
@@ -584,6 +586,9 @@ private fun ExportedChatMessage(
                                     is ThinkingStep.ServerToolStep -> {
                                         ChatMessageServerToolStep(tool = step.tool)
                                     }
+
+                                    // 导出前已经去掉了通知
+                                    is ThinkingStep.NoticeStep -> {}
                                 }
                             }
                         }

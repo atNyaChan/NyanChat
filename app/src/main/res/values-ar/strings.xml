@@ -305,6 +305,9 @@
   <string name="tool_ui_replay">إعادة التشغيل</string>
   <string name="tool_ui_screen_time_total">إجمالي وقت الشاشة</string>
   <string name="tool_ui_shell">Shell: %s</string>
+  <string name="tool_ui_shell_background">الخلفية · %1$s</string>
+  <string name="tool_ui_shell_background_running">قيد التشغيل في الخلفية · %1$s</string>
+  <string name="tool_ui_shell_background_stopped">تم الإيقاف · %1$s</string>
   <string name="tool_ui_shell_default">Shell</string>
   <string name="tool_ui_shell_exit">خروج %s</string>
   <string name="tool_ui_shell_timeout">مهلة</string>
@@ -327,6 +330,23 @@
   <string name="chat_page_queue_remove">إزالة</string>
   <string name="chat_page_queue_resume">استئناف الإرسال</string>
   <string name="chat_page_queue_video">[فيديو]</string>
+  <!-- Background tasks -->
+  <string name="background_shell_notice_exited">انتهى أمر الخلفية برمز %1$d: %2$s</string>
+  <string name="background_shell_notice_stopped">تم إيقاف أمر الخلفية بواسطتك: %1$s</string>
+  <string name="background_tasks_duration_hours">%1$d س %2$d د</string>
+  <string name="background_tasks_duration_minutes">%1$d د %2$d ث</string>
+  <string name="background_tasks_duration_seconds">%1$d ث</string>
+  <string name="background_tasks_empty">لا توجد مهام خلفية في هذه المحادثة</string>
+  <string name="background_tasks_log_truncated">عرض نهاية السجل. السجل الكامل: %1$s</string>
+  <string name="background_tasks_no_output">لا يوجد إخراج</string>
+  <string name="background_tasks_no_output_yet">لا يوجد ناتج بعد</string>
+  <string name="background_tasks_running">المهام في الخلفية: %1$d قيد التشغيل</string>
+  <string name="background_tasks_status_exited">خرج بالرمز %1$d · %2$s</string>
+  <string name="background_tasks_status_running">قيد التشغيل · %1$s</string>
+  <string name="background_tasks_status_stopped">متوقف · %1$s</string>
+  <string name="background_tasks_stopping">جارٍ الإيقاف…</string>
+  <string name="background_tasks_title">المهام في الخلفية</string>
+  <string name="chat_page_notice_retry">إعادة المحاولة</string>
   <!-- Voice mode -->
   <string name="chat_page_voice_configure_asr">قم بضبط ASR في إعدادات الكلام أولاً</string>
   <string name="chat_page_voice_configure_key">قم بضبط مفتاح API الخاص بـ ASR أولاً</string>
@@ -1600,6 +1620,7 @@
   <string name="media_creation_notification_running">جارٍ توليد %1$d من المهام</string>
   <string name="media_creation_notification_video_failed">فشل توليد الفيديو</string>
   <string name="media_creation_notification_video_succeeded">اكتمل توليد الفيديو</string>
+  <string name="notification_background_shell_running">أوامر تعمل في الخلفية: %1$d</string>
   <string name="notification_channel_chat_completed">اكتملت المحادثة</string>
   <string name="notification_channel_chat_live_update">تقدم توليد المحادثة</string>
   <string name="notification_channel_web_server">خادم الويب</string>

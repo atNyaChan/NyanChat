@@ -305,6 +305,9 @@
   <string name="tool_ui_replay">Erneut abspielen</string>
   <string name="tool_ui_screen_time_total">Gesamte Bildschirmzeit</string>
   <string name="tool_ui_shell">Shell: %s</string>
+  <string name="tool_ui_shell_background">Hintergrund · %1$s</string>
+  <string name="tool_ui_shell_background_running">Läuft im Hintergrund · %1$s</string>
+  <string name="tool_ui_shell_background_stopped">Gestoppt · %1$s</string>
   <string name="tool_ui_shell_default">Shell</string>
   <string name="tool_ui_shell_exit">Exit %s</string>
   <string name="tool_ui_shell_timeout">Zeitüberschreitung</string>
@@ -327,6 +330,23 @@
   <string name="chat_page_queue_remove">Entfernen</string>
   <string name="chat_page_queue_resume">Senden fortsetzen</string>
   <string name="chat_page_queue_video">[Video]</string>
+  <!-- Background tasks -->
+  <string name="background_shell_notice_exited">Hintergrundbefehl mit Code %1$d beendet: %2$s</string>
+  <string name="background_shell_notice_stopped">Hintergrundbefehl von dir gestoppt: %1$s</string>
+  <string name="background_tasks_duration_hours">%1$d Std. %2$d Min.</string>
+  <string name="background_tasks_duration_minutes">%1$d Min. %2$d Sek.</string>
+  <string name="background_tasks_duration_seconds">%1$ds</string>
+  <string name="background_tasks_empty">Keine Hintergrundaufgaben in dieser Unterhaltung</string>
+  <string name="background_tasks_log_truncated">Zeigt das Ende des Protokolls an. Vollständiges Protokoll: %1$s</string>
+  <string name="background_tasks_no_output">Keine Ausgabe</string>
+  <string name="background_tasks_no_output_yet">Noch keine Ausgabe</string>
+  <string name="background_tasks_running">Hintergrundaufgaben: %1$d laufen</string>
+  <string name="background_tasks_status_exited">Beendet mit Code %1$d · %2$s</string>
+  <string name="background_tasks_status_running">Läuft · %1$s</string>
+  <string name="background_tasks_status_stopped">Gestoppt · %1$s</string>
+  <string name="background_tasks_stopping">Wird beendet…</string>
+  <string name="background_tasks_title">Hintergrundaufgaben</string>
+  <string name="chat_page_notice_retry">Erneut versuchen</string>
   <!-- Voice mode -->
   <string name="chat_page_voice_configure_asr">Konfiguriere zuerst ASR in den Spracheinstellungen</string>
   <string name="chat_page_voice_configure_key">Konfiguriere zuerst den ASR-API-Schlüssel.</string>
@@ -1600,6 +1620,7 @@
   <string name="media_creation_notification_running">%1$d Aufgaben werden generiert</string>
   <string name="media_creation_notification_video_failed">Videogenerierung fehlgeschlagen</string>
   <string name="media_creation_notification_video_succeeded">Videogenerierung abgeschlossen</string>
+  <string name="notification_background_shell_running">Hintergrundbefehle laufen: %1$d</string>
   <string name="notification_channel_chat_completed">Chat abgeschlossen</string>
   <string name="notification_channel_chat_live_update">Fortschritt der Chat-Generierung</string>
   <string name="notification_channel_web_server">Webserver</string>

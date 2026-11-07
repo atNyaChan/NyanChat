@@ -305,6 +305,9 @@
   <string name="tool_ui_replay">Повторить</string>
   <string name="tool_ui_screen_time_total">Общее время экрана</string>
   <string name="tool_ui_shell">Shell: %s</string>
+  <string name="tool_ui_shell_background">Фон · %1$s</string>
+  <string name="tool_ui_shell_background_running">Работает в фоне · %1$s</string>
+  <string name="tool_ui_shell_background_stopped">Остановлено · %1$s</string>
   <string name="tool_ui_shell_default">Shell</string>
   <string name="tool_ui_shell_exit">exit %s</string>
   <string name="tool_ui_shell_timeout">timeout</string>
@@ -327,6 +330,23 @@
   <string name="chat_page_queue_remove">Удалить</string>
   <string name="chat_page_queue_resume">Возобновить отправку</string>
   <string name="chat_page_queue_video">[Видео]</string>
+  <!-- Background tasks -->
+  <string name="background_shell_notice_exited">Фоновая команда завершилась с кодом %1$d: %2$s</string>
+  <string name="background_shell_notice_stopped">Фоновая команда остановлена вами: %1$s</string>
+  <string name="background_tasks_duration_hours">%1$d ч %2$d мин</string>
+  <string name="background_tasks_duration_minutes">%1$d мин %2$d с</string>
+  <string name="background_tasks_duration_seconds">%1$d с</string>
+  <string name="background_tasks_empty">В этом диалоге нет фоновых задач</string>
+  <string name="background_tasks_log_truncated">Показан конец журнала. Полный журнал: %1$s</string>
+  <string name="background_tasks_no_output">Нет вывода</string>
+  <string name="background_tasks_no_output_yet">Вывода пока нет</string>
+  <string name="background_tasks_running">Фоновые задачи: %1$d в работе</string>
+  <string name="background_tasks_status_exited">Завершено с кодом %1$d · %2$s</string>
+  <string name="background_tasks_status_running">Выполняется · %1$s</string>
+  <string name="background_tasks_status_stopped">Остановлено · %1$s</string>
+  <string name="background_tasks_stopping">Остановка…</string>
+  <string name="background_tasks_title">Фоновые задачи</string>
+  <string name="chat_page_notice_retry">Повторить</string>
   <!-- Voice mode -->
   <string name="chat_page_voice_configure_asr">Сначала настройте ASR в настройках речи</string>
   <string name="chat_page_voice_configure_key">Сначала настройте API-ключ ASR.</string>
@@ -1600,6 +1620,7 @@
   <string name="media_creation_notification_running">Генерируется задач: %1$d</string>
   <string name="media_creation_notification_video_failed">Ошибка генерации видео</string>
   <string name="media_creation_notification_video_succeeded">Генерация видео завершена</string>
+  <string name="notification_background_shell_running">Выполняются фоновые команды: %1$d</string>
   <string name="notification_channel_chat_completed">Чат завершён</string>
   <string name="notification_channel_chat_live_update">Прогресс генерации чата</string>
   <string name="notification_channel_web_server">Веб-сервер</string>

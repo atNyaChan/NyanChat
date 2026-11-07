@@ -305,6 +305,9 @@
   <string name="tool_ui_replay">リプレイ</string>
   <string name="tool_ui_screen_time_total">総画面時間</string>
   <string name="tool_ui_shell">Shell: %s</string>
+  <string name="tool_ui_shell_background">バックグラウンド · %1$s</string>
+  <string name="tool_ui_shell_background_running">バックグラウンドで実行中 · %1$s</string>
+  <string name="tool_ui_shell_background_stopped">停止 · %1$s</string>
   <string name="tool_ui_shell_default">Shell</string>
   <string name="tool_ui_shell_exit">exit %s</string>
   <string name="tool_ui_shell_timeout">timeout</string>
@@ -327,6 +330,23 @@
   <string name="chat_page_queue_remove">削除</string>
   <string name="chat_page_queue_resume">送信を再開</string>
   <string name="chat_page_queue_video">[動画]</string>
+  <!-- Background tasks -->
+  <string name="background_shell_notice_exited">バックグラウンドコマンドがコード %1$d で終了しました: %2$s</string>
+  <string name="background_shell_notice_stopped">バックグラウンドコマンドを停止しました: %1$s</string>
+  <string name="background_tasks_duration_hours">%1$d時間 %2$d分</string>
+  <string name="background_tasks_duration_minutes">%1$d分 %2$d秒</string>
+  <string name="background_tasks_duration_seconds">%1$d秒</string>
+  <string name="background_tasks_empty">この会話にはバックグラウンドタスクはありません</string>
+  <string name="background_tasks_log_truncated">ログの末尾を表示しています。完全なログ: %1$s</string>
+  <string name="background_tasks_no_output">出力なし</string>
+  <string name="background_tasks_no_output_yet">まだ出力がありません</string>
+  <string name="background_tasks_running">バックグラウンドタスク: %1$d件実行中</string>
+  <string name="background_tasks_status_exited">コード %1$d で終了 · %2$s</string>
+  <string name="background_tasks_status_running">実行中 · %1$s</string>
+  <string name="background_tasks_status_stopped">停止 · %1$s</string>
+  <string name="background_tasks_stopping">停止中…</string>
+  <string name="background_tasks_title">バックグラウンドタスク</string>
+  <string name="chat_page_notice_retry">再試行</string>
   <!-- Voice mode -->
   <string name="chat_page_voice_configure_asr">まず音声設定でASRを設定してください</string>
   <string name="chat_page_voice_configure_key">先にASR APIキーを設定してください</string>
@@ -1600,6 +1620,7 @@
   <string name="media_creation_notification_running">%1$d件のタスクが生成中</string>
   <string name="media_creation_notification_video_failed">動画生成に失敗しました</string>
   <string name="media_creation_notification_video_succeeded">動画生成が完了しました</string>
+  <string name="notification_background_shell_running">バックグラウンドで実行中のコマンド: %1$d</string>
   <string name="notification_channel_chat_completed">チャット完了</string>
   <string name="notification_channel_chat_live_update">チャット生成の進行状況</string>
   <string name="notification_channel_web_server">Webサーバー</string>

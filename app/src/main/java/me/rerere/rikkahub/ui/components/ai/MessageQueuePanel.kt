@@ -6,10 +6,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -30,18 +32,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.rerere.ai.ui.UIMessagePart
+import me.rerere.hugeicons.HugeIcons
+import me.rerere.hugeicons.stroke.Notification01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.ai.transformers.DocumentAsPromptTransformer
 import me.rerere.rikkahub.data.datastore.Settings
-import me.rerere.rikkahub.service.MessageQueueState
+import me.rerere.rikkahub.service.InboxState
 import me.rerere.rikkahub.service.QueuedMessage
+import me.rerere.rikkahub.service.QueuedNotice
 import me.rerere.rikkahub.ui.hooks.ChatInputState
 import me.rerere.rikkahub.utils.wordCount
 import kotlin.uuid.Uuid
 
 @Composable
 internal fun MessageQueuePanel(
-    state: MessageQueueState,
+    state: InboxState,
     settings: Settings,
     onRemove: (Uuid) -> Unit,
     onBeginEdit: (Uuid) -> QueuedMessage?,
@@ -49,7 +54,7 @@ internal fun MessageQueuePanel(
     onResume: () -> Unit,
 ) {
     var editing by remember { mutableStateOf<QueuedMessage?>(null) }
-    if (state.messages.isNotEmpty()) {
+    if (state.items.isNotEmpty()) {
         Surface(
             shape = MaterialTheme.shapes.large,
             color = MaterialTheme.colorScheme.surfaceContainer,
@@ -63,7 +68,7 @@ internal fun MessageQueuePanel(
                         text = stringResource(
                             if (state.paused) R.string.chat_page_queue_paused_count
                             else R.string.chat_page_queue_pending_count,
-                            state.messages.size,
+                            state.items.size,
                         ),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -77,8 +82,34 @@ internal fun MessageQueuePanel(
                 }
                 LazyColumn(modifier = Modifier.heightIn(max = 180.dp)) {
                     itemsIndexed(
-                        state.messages,
-                        key = { _, message -> message.id }) { index, message ->
+                        state.items,
+                        key = { _, item -> item.id }) { index, item ->
+                        // 通知不能编辑，删除就是不再发给模型
+                        if (item is QueuedNotice) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                Icon(
+                                    imageVector = HugeIcons.Notification01,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(14.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                Text(
+                                    text = item.notice.title,
+                                    modifier = Modifier.weight(1f),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                TextButton(onClick = { onRemove(item.id) }) {
+                                    Text(stringResource(R.string.chat_page_queue_remove))
+                                }
+                            }
+                            return@itemsIndexed
+                        }
+                        val message = item as QueuedMessage
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp),

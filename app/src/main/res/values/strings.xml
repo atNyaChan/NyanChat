@@ -305,6 +305,9 @@
   <string name="tool_ui_replay">Replay</string>
   <string name="tool_ui_screen_time_total">Total screen time</string>
   <string name="tool_ui_shell">Shell: %s</string>
+  <string name="tool_ui_shell_background">Background · %1$s</string>
+  <string name="tool_ui_shell_background_running">Running in background · %1$s</string>
+  <string name="tool_ui_shell_background_stopped">Stopped · %1$s</string>
   <string name="tool_ui_shell_default">Shell</string>
   <string name="tool_ui_shell_exit">exit %s</string>
   <string name="tool_ui_shell_timeout">timeout</string>
@@ -327,6 +330,23 @@
   <string name="chat_page_queue_remove">Remove</string>
   <string name="chat_page_queue_resume">Resume sending</string>
   <string name="chat_page_queue_video">[Video]</string>
+  <!-- Background tasks -->
+  <string name="background_shell_notice_exited">Background command exited with code %1$d: %2$s</string>
+  <string name="background_shell_notice_stopped">Background command stopped by you: %1$s</string>
+  <string name="background_tasks_duration_hours">%1$dh %2$dm</string>
+  <string name="background_tasks_duration_minutes">%1$dm %2$ds</string>
+  <string name="background_tasks_duration_seconds">%1$ds</string>
+  <string name="background_tasks_empty">No background tasks in this conversation</string>
+  <string name="background_tasks_log_truncated">Showing the end of the log. Full log: %1$s</string>
+  <string name="background_tasks_no_output">No output</string>
+  <string name="background_tasks_no_output_yet">No output yet</string>
+  <string name="background_tasks_running">Background tasks: %1$d running</string>
+  <string name="background_tasks_status_exited">Exited with code %1$d · %2$s</string>
+  <string name="background_tasks_status_running">Running · %1$s</string>
+  <string name="background_tasks_status_stopped">Stopped · %1$s</string>
+  <string name="background_tasks_stopping">Stopping…</string>
+  <string name="background_tasks_title">Background tasks</string>
+  <string name="chat_page_notice_retry">Retry</string>
   <!-- Voice mode -->
   <string name="chat_page_voice_configure_asr">Configure ASR in speech settings first</string>
   <string name="chat_page_voice_configure_key">Configure the ASR API key first</string>
@@ -1600,6 +1620,7 @@
   <string name="media_creation_notification_running">%1$d tasks generating</string>
   <string name="media_creation_notification_video_failed">Video generation failed</string>
   <string name="media_creation_notification_video_succeeded">Video generation completed</string>
+  <string name="notification_background_shell_running">Background commands running: %1$d</string>
   <string name="notification_channel_chat_completed">Chat Completed</string>
   <string name="notification_channel_chat_live_update">Chat Generation Progress</string>
   <string name="notification_channel_web_server">Web Server</string>

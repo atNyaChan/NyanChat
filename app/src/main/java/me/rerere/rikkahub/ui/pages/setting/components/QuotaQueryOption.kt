@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import me.rerere.ai.provider.CustomHeader
 import me.rerere.ai.provider.ProviderSetting
 import me.rerere.ai.provider.QuotaQuery
+import me.rerere.ai.provider.QuotaQueryMethod
 import me.rerere.ai.provider.renderQuotaTemplate
 import me.rerere.common.http.isJsonExprValid
 import me.rerere.hugeicons.HugeIcons
@@ -42,6 +43,8 @@ import me.rerere.hugeicons.stroke.Refresh03
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.DEFAULT_PROVIDERS
 import me.rerere.rikkahub.ui.components.ui.CardGroup
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
+import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceLabel
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
@@ -114,6 +117,14 @@ fun SettingProviderQuotaQuery(
                     Column(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
+                        ConnectedChoiceButtons(
+                            options = QuotaQueryMethod.entries,
+                            selected = query.method,
+                            onSelect = { onEdit(query.copy(method = it)) },
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        ) { method, selected ->
+                            ConnectedChoiceLabel(text = method.name, selected = selected)
+                        }
                         OutlinedTextField(
                             value = query.url,
                             onValueChange = { onEdit(query.copy(url = it)) },
@@ -158,6 +169,16 @@ fun SettingProviderQuotaQuery(
                                     )
                                 }
                             }
+                        }
+                        if (query.method == QuotaQueryMethod.POST) {
+                            OutlinedTextField(
+                                value = query.body,
+                                onValueChange = { onEdit(query.copy(body = it)) },
+                                label = { Text("Body (JSON)") },
+                                minLines = 3,
+                                modifier = Modifier.fillMaxWidth(),
+                                textStyle = codeStyle,
+                            )
                         }
                         OutlinedTextField(
                             value = query.resultPath,

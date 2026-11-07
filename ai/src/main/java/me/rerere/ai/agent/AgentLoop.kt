@@ -82,11 +82,13 @@ internal class AgentLoop(
     }
 
     private suspend fun generateStep() {
+        appendPendingParts()
         val current = message
         // 调用方可能先放一条空的助手占位消息（生成中显示、承接回复用），它还没有内容，不能发给模型
         val step = hooks.prepareStep(if (current == null || !current.hasContent) history else history + current)
         val params = step.params.copy(tools = request.tools)
-        val base = current ?: UIMessage(
+        // 只带着追加内容创建的消息还没有模型 id
+        val base = current?.let { it.copy(modelId = it.modelId ?: params.model.id) } ?: UIMessage(
             role = MessageRole.ASSISTANT,
             parts = emptyList(),
             modelId = params.model.id,
@@ -97,6 +99,16 @@ internal class AgentLoop(
             generate(step.messages, params, base)
         }
         update(hooks.finishStep(generated, newPartsFrom = base.parts.size).copy(finishedAt = now()))
+    }
+
+    // 续写普通回复时最后一个 part 不是执行完的工具或通知，这时追加会把续写变成新的一轮
+    private suspend fun appendPendingParts() {
+        val current = message
+        if (current != null && !current.parts.lastOrNull().isModelsTurn()) return
+        val parts = hooks.pendingParts()
+        if (parts.isEmpty()) return
+        val base = current ?: UIMessage(role = MessageRole.ASSISTANT, parts = emptyList())
+        update(base.copy(parts = base.parts + parts))
     }
 
     private suspend fun stream(
@@ -221,6 +233,9 @@ internal class AgentLoop(
         events.emit(AgentEvent.Finished(checkNotNull(message), reason))
     }
 }
+
+private fun UIMessagePart?.isModelsTurn() =
+    (this is UIMessagePart.Tool && isExecuted) || this is UIMessagePart.Notice
 
 private val UIMessage.hasContent: Boolean
     get() = parts.isNotEmpty() || getTools().isNotEmpty()
