@@ -1729,7 +1729,7 @@
   <string name="permission_diaog_title">权限请求</string>
   <string name="permission_go_to_settings">前往设置</string>
   <string name="permission_local_network">本地网络</string>
-  <string name="permission_local_network_desc">允许同一局域网内的设备访问 Web 服务器</string>
+  <string name="permission_local_network_desc">连接局域网内的自建服务，以及让其他设备访问 Web 服务器时需要此权限</string>
   <string name="permission_location">位置信息</string>
   <string name="permission_location_desc">用于向助手工具提供大致位置</string>
   <string name="permission_microphone">麦克风</string>

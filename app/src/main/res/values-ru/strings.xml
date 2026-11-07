@@ -1729,7 +1729,7 @@
   <string name="permission_diaog_title">Запрос разрешения</string>
   <string name="permission_go_to_settings">Перейти в настройки приложения</string>
   <string name="permission_local_network">Локальная сеть</string>
-  <string name="permission_local_network_desc">Разрешить устройствам в той же локальной сети доступ к веб-серверу</string>
+  <string name="permission_local_network_desc">Необходимо для подключения к собственным сервисам в локальной сети и для доступа других устройств к веб-серверу</string>
   <string name="permission_location">Местоположение</string>
   <string name="permission_location_desc">Используется для предоставления примерного местоположения инструментам ассистента</string>
   <string name="permission_microphone">Микрофон</string>

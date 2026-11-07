@@ -65,7 +65,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastFilter
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -80,6 +79,7 @@ import me.rerere.ai.provider.ModelPrice
 import me.rerere.ai.provider.ModelType
 import me.rerere.ai.provider.ProviderManager
 import me.rerere.ai.provider.ProviderSetting
+import me.rerere.ai.provider.filterByKeywords
 import me.rerere.ai.provider.supportedBuiltInTools
 import me.rerere.ai.provider.supportsQuota
 import me.rerere.ai.registry.ModelRegistry
@@ -1029,17 +1029,7 @@ private fun ModelPickerSheet(
         var filterText by remember { mutableStateOf("") }
         var deleteTarget by remember { mutableStateOf<Model?>(null) }
         var showDeleteDialog by remember { mutableStateOf(false) }
-        val filterKeywords = filterText.split(" ").filter { it.isNotBlank() }
-        val filteredModels = models.fastFilter {
-            if (filterKeywords.isEmpty()) {
-                true
-            } else {
-                filterKeywords.all { keyword ->
-                    it.modelId.contains(keyword, ignoreCase = true) ||
-                        it.displayName.contains(keyword, ignoreCase = true)
-                }
-            }
-        }
+        val filteredModels = models.filterByKeywords(filterText)
         Column(
             modifier = Modifier
                 .fillMaxWidth()

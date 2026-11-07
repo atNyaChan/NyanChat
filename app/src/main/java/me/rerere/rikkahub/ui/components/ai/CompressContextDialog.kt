@@ -1,6 +1,7 @@
 package me.rerere.rikkahub.ui.components.ai
 
 import android.os.SystemClock
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -8,9 +9,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
@@ -21,7 +25,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,8 +32,10 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
@@ -55,7 +60,8 @@ fun CompressContextDialog(
 ) {
     var additionalPrompt by remember { mutableStateOf("") }
     // 默认全部压缩，请求前缀与对话一致，缓存命中最好
-    var keepRecentMessages by remember { mutableIntStateOf(0) }
+    var keepRecentText by remember { mutableStateOf("0") }
+    val keepRecentMessages = keepRecentText.toIntOrNull() ?: 0
     var currentJob by remember { mutableStateOf<Job?>(null) }
     val isLoading = currentJob?.isActive == true
 
@@ -126,18 +132,34 @@ fun CompressContextDialog(
                                 icon = HugeIcons.Remove01,
                                 contentDescription = "Decrease",
                                 enabled = keepRecentMessages > 0,
-                                onStep = { keepRecentMessages-- },
+                                onStep = { keepRecentText = (keepRecentMessages - 1).toString() },
                             )
-                            Text(
-                                text = keepRecentMessages.toString(),
-                                style = MaterialTheme.typography.titleMediumEmphasized,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.widthIn(min = 40.dp),
+                            BasicTextField(
+                                value = keepRecentText,
+                                onValueChange = { input ->
+                                    val digits = input.filter { it.isDigit() }.take(4)
+                                    keepRecentText = digits.trimStart('0').ifEmpty { digits.take(1) }
+                                },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                textStyle = MaterialTheme.typography.titleMediumEmphasized.copy(
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    textAlign = TextAlign.Center,
+                                ),
+                                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                                modifier = Modifier
+                                    .padding(horizontal = 4.dp)
+                                    .width(56.dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                                        shape = RoundedCornerShape(12.dp),
+                                    )
+                                    .padding(vertical = 8.dp),
                             )
                             StepperIconButton(
                                 icon = HugeIcons.Add01,
                                 contentDescription = "Increase",
-                                onStep = { keepRecentMessages++ },
+                                onStep = { keepRecentText = (keepRecentMessages + 1).toString() },
                             )
                         }
                         Text(

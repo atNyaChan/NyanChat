@@ -44,7 +44,8 @@ import xml.etree.ElementTree as ET
 
 SKIP_DIRS = {
     ".agents", ".git", ".gradle", ".idea", ".kotlin", "build", "captures", "docs",
-    "node_modules", "web-ui",
+    # 内置的上游 material-color-utilities 源码, 见 material3/material-color-utilities/README.md
+    "material-color-utilities", "node_modules", "web-ui",
 }
 TEXT_EXT = (".kt", ".kts", ".xml", ".java", ".json", ".html", ".js", ".ts", ".tsx",
             ".gradle", ".pro", ".md", ".txt")

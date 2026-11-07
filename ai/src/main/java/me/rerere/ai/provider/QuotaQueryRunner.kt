@@ -67,5 +67,5 @@ internal suspend fun OkHttpClient.runQuotaQuery(
         )
     }
     val value = body.getByKey(query.resultPath)
-    ProviderQuota.Balance(value.toFloatOrNull()?.let { "%.2f".format(it) } ?: value)
+    ProviderQuota.Balance(value.toDoubleOrNull()?.let { "%.2f".format(it) } ?: value)
 }

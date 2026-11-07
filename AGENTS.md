@@ -69,9 +69,13 @@ of adding per-screen variants.
   `Boolean.codeFontFeatureSettings`
   (app/src/main/java/me/rerere/rikkahub/ui/theme/FontFeature.kt). Never leave a `FontFamily.Monospace`
   / `JetbrainsMono` style without `fontFeatureSettings = LocalSettings.current.displaySetting
-  .enableCodeLigatures.codeFontFeatureSettings`; the `ui` markdown module receives it through
-  `MarkdownTheme.codeFontFeatureSettings` instead of reading settings itself. Character-cell
-  terminals and the user-chosen chat font are not code-ligature targets.
+  .enableCodeLigatures.codeFontFeatureSettings`. Markdown is rendered by BetterText
+  (`app/src/main/java/me/rerere/rikkahub/ui/components/richtext/MaterialMarkdown.kt`), whose theme has
+  no global monospace hook: the chat `MarkdownBlock` rewrites the parsed document through
+  `MarkdownDocument.applyDisplaySettings`
+  (app/src/main/java/me/rerere/rikkahub/ui/components/richtext/MarkdownDisplaySettings.kt), which also
+  applies the bold font weight. Character-cell terminals and the user-chosen chat font are not
+  code-ligature targets.
 - **Shared components**: loading uses `AppLoadingIndicator`; color picking uses the shared
   `ColorPicker` (ui/src/main/java/me/rerere/ui/common/ColorPicker.kt); custom request Header/Body
   editing uses `CustomRequestProperties`
@@ -270,9 +274,10 @@ to port safely in one session, STOP and ask the user before starting.
 - **ai**: AI SDK abstraction layer for different providers (OpenAI, Google, Anthropic)
 - **common**: Common utilities and extensions
 - **document**: Document parsing module for handling PDF, DOCX, PPTX, and EPUB files
-- **highlight**: Code syntax highlighting implementation
 - **material3**: Material color utility extensions used by the app UI
-- **ui**: Reusable Compose UI components that do not depend on app logic
+- **ui**: Reusable Compose UI components that do not depend on app logic. Markdown parsing/rendering and
+  syntax highlighting come from the external [BetterText](https://github.com/re-ovo/bettertext) library
+  (`bettertext-markdown` / `bettertext-highlight` / `bettertext-latex`), not from this repository.
 - **search**: Search functionality SDK for multiple providers (Exa, Tavily, Zhipu, Bing, Brave, SearXNG, and others)
 - **speech**: Speech module for TTS and ASR implementations
 - **web**: Embedded web server module that provides Ktor server startup function and hosts static frontend build files (

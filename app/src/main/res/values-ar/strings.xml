@@ -1729,7 +1729,7 @@
   <string name="permission_diaog_title">طلب الإذن</string>
   <string name="permission_go_to_settings">الانتقال إلى الإعدادات</string>
   <string name="permission_local_network">الشبكة المحلية</string>
-  <string name="permission_local_network_desc">السماح بالوصول إلى خادم الويب من الأجهزة الموجودة على نفس الشبكة المحلية</string>
+  <string name="permission_local_network_desc">مطلوب للاتصال بالخدمات المستضافة ذاتيًا على الشبكة المحلية، وللسماح للأجهزة الأخرى بالوصول إلى خادم الويب</string>
   <string name="permission_location">الموقع</string>
   <string name="permission_location_desc">يُستخدم لتزويد أدوات المساعد بموقع تقريبي</string>
   <string name="permission_microphone">الميكروفون</string>

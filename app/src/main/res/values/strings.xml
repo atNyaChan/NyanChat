@@ -1729,7 +1729,7 @@
   <string name="permission_diaog_title">Permission Request</string>
   <string name="permission_go_to_settings">Go to Setting</string>
   <string name="permission_local_network">Local Network</string>
-  <string name="permission_local_network_desc">Allow the web server to be accessed from devices on the same local network</string>
+  <string name="permission_local_network_desc">Required to connect to self-hosted services on your local network, and to let other devices access the web server</string>
   <string name="permission_location">Location</string>
   <string name="permission_location_desc">Used to provide approximate location to assistant tools</string>
   <string name="permission_microphone">Microphone</string>

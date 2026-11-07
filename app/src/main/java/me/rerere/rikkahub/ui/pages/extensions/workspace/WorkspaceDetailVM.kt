@@ -257,9 +257,12 @@ class WorkspaceDetailVM(
         }
     }
 
-    fun exportFile(entry: WorkspaceFileEntry, outputStream: OutputStream) {
+    fun exportFile(entry: WorkspaceFileEntry, uri: Uri, resolver: ContentResolver) {
         viewModelScope.launch {
             runCatching {
+                // 部分 ROM 的 SAF 返回的 Uri 并没有真正创建文件, 打开时会抛 FileNotFoundException
+                val outputStream = withContext(Dispatchers.IO) { resolver.openOutputStream(uri) }
+                    ?: error(context.getString(R.string.workspace_detail_export_file_failed))
                 repository.exportFile(
                     id = id,
                     area = state.value.area,

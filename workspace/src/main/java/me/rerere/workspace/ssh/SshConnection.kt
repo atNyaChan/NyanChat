@@ -248,8 +248,10 @@ internal class SshConnection private constructor(
                 when (config.authType) {
                     SshAuthType.PASSWORD -> {
                         setConfig("PreferredAuthentications", "password,keyboard-interactive")
-                        setPassword(config.password)
-                        userInfo = PasswordUserInfo(config.password!!)
+                        val password = config.password!!
+                        // setPassword(String) 已弃用, 它本身就是按 UTF-8 转成字节, 这里显式转换
+                        setPassword(password.toByteArray(Charsets.UTF_8))
+                        userInfo = PasswordUserInfo(password)
                     }
 
                     SshAuthType.PRIVATE_KEY -> setConfig("PreferredAuthentications", "publickey")
