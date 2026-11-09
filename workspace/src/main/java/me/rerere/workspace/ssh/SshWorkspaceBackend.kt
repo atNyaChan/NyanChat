@@ -201,7 +201,6 @@ class SshWorkspaceBackend(
         }
     }
 
-    /** 打开交互式终端: 在工作目录下启动用户的登录 shell */
     /** 打开交互式终端: 在 [cwd] (环境内绝对路径) 下启动用户的登录 shell */
     fun openShell(columns: Int, rows: Int, cwd: String? = null): SshShell =
         pool.openShell(id, config) { connection, onClose ->

@@ -237,7 +237,7 @@ fun ChatDrawerContent(
         },
         drawerShape = drawerShape,
     ) {
-        // 矮屏（如手表、横屏手机）上顶部固定会把会话列表挤没，改为跟随列表一起滚动
+        // 矮屏（如手表、横屏手机）上顶部跟随列表一起滚动，避免把会话列表挤没
         val windowHeight = LocalWindowInfo.current.containerDpSize.height
         val scrollableHeader = windowHeight < 640.dp
 

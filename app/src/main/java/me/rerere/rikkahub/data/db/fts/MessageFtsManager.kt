@@ -39,7 +39,7 @@ data class MessageSearchResult(
      */
     val timeAt: Instant,
     val snippet: String,
-    /** 会话所属助手 ID，用于在结果中标注来源；旧调用方可能拿不到此值。 */
+    /** 会话所属助手 ID，用于在结果中标注来源。 */
     val assistantId: String? = null,
     /** 会话所属文件夹名称，未归类时为 null。 */
     val folderName: String? = null,
@@ -236,7 +236,7 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
         }
         val terms = keyword.split(Regex("\\s+")).filter(String::isNotEmpty)
         if (terms.isEmpty()) return emptyList()
-        // 若缓存由旧版写入（无 message_at），退回该会话的更新时间。
+        // 缓存缺少 message_at 时退回该会话的更新时间。
         val timeExpression = "COALESCE(msc.message_at, c.update_at)"
         val orderBy = when (sort) {
             MessageSearchSort.RELEVANCE, MessageSearchSort.NEWEST_FIRST -> "$timeExpression DESC"
@@ -525,7 +525,7 @@ class MessageFtsManager(private val database: AppDatabase, private val filesDir:
         val titleOnly = mode == MessageSearchMode.TITLE_ONLY
         val direction = if (sort == MessageSearchSort.OLDEST_FIRST) "ASC" else "DESC"
         // 仅匹配标题时每个会话只保留一行，时间沿用该会话的更新时间（忽略消息时间）；
-        // 消息级结果若缓存由旧版写入（无 message_at），退回该会话的更新时间。
+        // 消息级结果缺少 message_at 时退回该会话的更新时间。
         val timeColumn = if (titleOnly) "c.update_at" else "COALESCE(msc.message_at, c.update_at)"
         val groupBy = if (titleOnly) "GROUP BY msc.conversation_id" else ""
         val contentColumns = if (titleOnly) emptyList() else contents.cacheColumns()

@@ -255,7 +255,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
         refreshRequestWordCount()
     }
 
-    // 输入为空或工具栏收起（需要统计时会跳过）时清空缓存；恢复后再重新统计
+    // 生成期间清空缓存并跳过统计，生成结束后重新统计
     LaunchedEffect(skipRequestStats) {
         if (skipRequestStats) {
             invalidateRequestWordCount()

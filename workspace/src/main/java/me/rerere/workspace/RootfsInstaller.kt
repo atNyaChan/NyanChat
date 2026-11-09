@@ -291,7 +291,7 @@ class RootfsInstaller(
     }
 
     // Android 文件系统不允许普通应用创建硬链接, 且 Rootfs 中的硬链接多为 BusyBox applet
-    // 共享同一二进制。统一直接创建指向归档内目标的相对软链接, 不再尝试硬链接也不复制内容。
+    // 共享同一二进制。这里直接创建指向归档内目标的相对软链接，不尝试硬链接，也不复制内容。
     private fun createHardLink(root: File, target: File, linkName: String) {
         if (linkName.isBlank()) return
         val source = root.safeResolve(linkName)

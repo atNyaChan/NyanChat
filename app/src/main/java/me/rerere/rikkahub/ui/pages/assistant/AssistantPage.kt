@@ -16,8 +16,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.FilterChip
@@ -72,7 +73,6 @@ import org.koin.androidx.compose.koinViewModel
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import kotlin.uuid.Uuid
-import androidx.compose.foundation.lazy.items as lazyItems
 import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 @Composable
@@ -157,7 +157,7 @@ fun AssistantPage(vm: AssistantVM = koinViewModel()) {
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 state = lazyListState,
             ) {
-                lazyItems(filteredAssistants, key = { assistant -> assistant.id }) { assistant ->
+                items(filteredAssistants, key = { assistant -> assistant.id }) { assistant ->
                     ReorderableItem(
                         state = reorderableState,
                         key = assistant.id,
@@ -203,7 +203,7 @@ private fun AssistantTagsFilterRow(
             modifier = Modifier.padding(horizontal = 8.dp),
             state = tagsListState
         ) {
-            lazyItems(items = settings.assistantTags, key = { tag -> tag.id }) { tag ->
+            items(items = settings.assistantTags, key = { tag -> tag.id }) { tag ->
                 ReorderableItem(
                     state = tagsReorderableState, key = tag.id
                 ) { isDragging ->
@@ -234,7 +234,7 @@ private fun AssistantTagsFilterRow(
                                     )
                                 }
                             } else null,
-                            shape = RoundedCornerShape(50),
+                            shape = CircleShape,
                             modifier = longPressReorder(isDragging)
                         )
                     }
@@ -270,11 +270,7 @@ private fun AssistantCreationSheet(
                     .padding(horizontal = 16.dp).padding(bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // 内容左右 16dp，再补 8dp 共 24dp
-                BottomSheetTitle(
-                    text = stringResource(R.string.assistant_page_copy_assistant),
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                )
+                BottomSheetTitle(text = stringResource(R.string.assistant_page_copy_assistant))
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -343,7 +339,7 @@ private fun AssistantCreationSheet(
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    lazyItems(existingAssistants, key = { it.id }) { source ->
+                    items(existingAssistants, key = { it.id }) { source ->
                         OutlinedItemCard(
                             onClick = {
                                 val currentName = state.currentState?.name.orEmpty()
@@ -466,7 +462,7 @@ private fun AssistantItem(
                             val tag = settings.assistantTags.find { it.id == tagId }
                                 ?: return@fastForEach
                             Surface(
-                                shape = RoundedCornerShape(50),
+                                shape = CircleShape,
                                 color = MaterialTheme.colorScheme.tertiaryContainer,
                             ) {
                                 Text(

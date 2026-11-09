@@ -657,7 +657,7 @@ private fun AssistantPromptContent(
         )
     }
 
-    DeleteItemDialog(
+    DeleteConfirmDialog(
         show = pendingPresetDeleteIndex != null,
         type = stringResource(R.string.delete_type_preset_message),
         onConfirm = {
@@ -672,7 +672,7 @@ private fun AssistantPromptContent(
         },
         onDismiss = { pendingPresetDeleteIndex = null },
     )
-    DeleteItemDialog(
+    DeleteConfirmDialog(
         show = pendingRegexDeleteIndex != null,
         type = stringResource(R.string.delete_type_regex),
         onConfirm = {
@@ -807,21 +807,6 @@ private fun ConversationSettingsItem(
             )
         }
     }
-}
-
-@Composable
-private fun DeleteItemDialog(
-    show: Boolean,
-    type: String,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit,
-) {
-    DeleteConfirmDialog(
-        show = show,
-        type = type,
-        onConfirm = onConfirm,
-        onDismiss = onDismiss,
-    )
 }
 
 @Composable

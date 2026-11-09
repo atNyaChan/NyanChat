@@ -486,7 +486,7 @@ class BackupManager(
                 }
                 DatabaseBackup.removeSidecars(stagedDatabase)
                 if (!restoredWorkspaces) {
-                    // Old/legacy archives carry no workspace rootfs; disable them after install.
+                    // Archives without a workspaces/ entry (old format or workspace excluded) disable workspaces after install.
                     writeMarker(staging, "needs-workspace-reset")
                 }
             }
@@ -611,7 +611,7 @@ class BackupManager(
         deduplicator?.register(file, name)
     }
 
-    // 内容完全相同的文件已经写入过, 这里只记录指向首份数据的硬链接, 不再写第二份字节
+    // 内容完全相同的文件已经写入过, 这里只记录指向首份数据的硬链接
     private fun addHardLink(tar: TarArchiveOutputStream, name: String, linkName: String) {
         val entry = TarArchiveEntry(name, TarConstants.LF_LINK).apply {
             this.linkName = linkName

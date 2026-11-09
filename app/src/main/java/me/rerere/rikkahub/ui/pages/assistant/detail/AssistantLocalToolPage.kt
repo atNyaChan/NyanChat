@@ -1,6 +1,7 @@
 package me.rerere.rikkahub.ui.pages.assistant.detail
 
 import android.Manifest
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -233,7 +234,12 @@ private fun AssistantLocalToolContent(
             .imePadding(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        fun CardGroupScope.toolItem(option: LocalToolOption, icon: ImageVector, title: Int, description: Int) {
+        fun CardGroupScope.toolItem(
+            option: LocalToolOption,
+            icon: ImageVector,
+            @StringRes title: Int,
+            @StringRes description: Int,
+        ) {
             val checked = assistant.localTools.contains(option)
             switchItem(
                 checked = checked,

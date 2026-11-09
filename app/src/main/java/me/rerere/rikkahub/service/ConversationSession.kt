@@ -237,7 +237,7 @@ class ConversationSession(
     // 处理状态（如 OCR 识别中）
     val processingStatus = MutableStateFlow<String?>(null)
 
-    // 最近一轮正在写的助手消息，这一轮还没有输出时为空。重新生成较早的消息时它不在会话末尾，
+    // 最近一轮正在写的助手消息，还没开始生成时为空。重新生成较早的消息时它不在会话末尾，
     // 生成期间那个节点还可能被切到别的分支，只能按 id 找；生成结束后保留，后台悬浮窗靠它继续展示这一轮的回复。
     val replyMessageId = MutableStateFlow<Uuid?>(null)
 

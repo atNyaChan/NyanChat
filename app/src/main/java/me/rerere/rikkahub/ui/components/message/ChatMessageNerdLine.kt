@@ -126,7 +126,6 @@ private fun DetailedNerdLine(
     round: Int? = null,
     stats: StreamingStatsSnapshot? = null,
 ) {
-    val settings = LocalSettings.current.displaySetting
     var expanded by remember(message.id) { mutableStateOf(false) }
     // 多轮工具调用时 usage 与生成耗时是各次模型调用的累计
     val usage = message.usage
@@ -145,161 +144,157 @@ private fun DetailedNerdLine(
                     ) { expanded = !expanded }
                     .padding(horizontal = 4.dp, vertical = 2.dp)
             ) {
-                if (settings.showTokenUsage) {
-                    // 生成中用每 0.1s 推送的快照（含按时钟外推的生成耗时），没 chunk 时耗时/速度也会继续走；
-                    // 生成结束后换回最终的 generationTimeMs，保持“不含首 token 延迟与工具等待”的口径。
-                    val statsMillis = if (loading) {
-                        stats?.liveGenerationMillis ?: stats?.elapsedMillis ?: message.elapsedMillis(loading = true)
-                    } else {
-                        generationMillis ?: stats?.elapsedMillis ?: message.elapsedMillis(loading = false)
-                    }
-                    val seconds = statsMillis / 1000f
-                    val cost = if (!loading && usage != null) calculateCost(usage, model) else null
-                    val manuallyEdited = !loading && message.modelId == null
-                    val showGenerationStats = loading || message.modelId != null
-                    // 用过工具的消息会经历多次模型调用：有生成耗时时以它为准，
-                    // 旧消息退回的创建到完成总时长包含工具执行与审批等待，word/s 会失真。
-                    val usedTools = message.parts.any {
-                        it is UIMessagePart.Tool || it is UIMessagePart.ServerTool
-                    }
-                    val statsTimeValid = generationMillis != null || !usedTools
+                // 生成中用每 0.1s 推送的快照（含按时钟外推的生成耗时），没 chunk 时耗时/速度也会继续走；
+                // 生成结束后换回最终的 generationTimeMs，保持“不含首 token 延迟与工具等待”的口径。
+                val statsMillis = if (loading) {
+                    stats?.liveGenerationMillis ?: stats?.elapsedMillis ?: message.elapsedMillis(loading = true)
+                } else {
+                    generationMillis ?: stats?.elapsedMillis ?: message.elapsedMillis(loading = false)
+                }
+                val seconds = statsMillis / 1000f
+                val cost = if (!loading && usage != null) calculateCost(usage, model) else null
+                val manuallyEdited = !loading && message.modelId == null
+                val showGenerationStats = loading || message.modelId != null
+                // 用过工具的消息会经历多次模型调用：有生成耗时时以它为准，
+                // 旧消息退回的创建到完成总时长包含工具执行与审批等待，word/s 会失真。
+                val usedTools = message.parts.any {
+                    it is UIMessagePart.Tool || it is UIMessagePart.ServerTool
+                }
+                val statsTimeValid = generationMillis != null || !usedTools
 
-                    run {
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            itemVerticalAlignment = Alignment.CenterVertically,
-                        ) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    itemVerticalAlignment = Alignment.CenterVertically,
+                ) {
+                    StatsItem(
+                        icon = {
+                            Icon(
+                                imageVector = HugeIcons.Message01,
+                                contentDescription = "Words",
+                                modifier = Modifier.size(12.dp),
+                            )
+                        },
+                        content = {
+                            if (loading && wordCount == 0) {
+                                Text("waiting")
+                            } else {
+                                CountText(
+                                    value = wordCount,
+                                    expanded = expanded,
+                                    suffix = if (manuallyEdited) " word (edited)" else " word",
+                                )
+                            }
+                        },
+                    )
+                    if (showGenerationStats) {
+                        StatsItem(
+                            icon = {
+                                Icon(
+                                    imageVector = HugeIcons.Clock02,
+                                    contentDescription = "Duration",
+                                    modifier = Modifier.size(12.dp),
+                                )
+                            },
+                            content = { Text(text = "${seconds.toFixed(1)}s") },
+                        )
+                        if (statsTimeValid && statsMillis >= 150 && wordCount > 0) {
+                            val wordsPerSecond = wordCount.toFloat() / statsMillis * 1000
                             StatsItem(
                                 icon = {
                                     Icon(
-                                        imageVector = HugeIcons.Message01,
-                                        contentDescription = "Words",
+                                        imageVector = HugeIcons.Zap,
+                                        contentDescription = "Word speed",
                                         modifier = Modifier.size(12.dp),
                                     )
                                 },
-                                content = {
-                                    if (loading && wordCount == 0) {
-                                        Text("waiting")
-                                    } else {
-                                        CountText(
-                                            value = wordCount,
-                                            expanded = expanded,
-                                            suffix = if (manuallyEdited) " word (edited)" else " word",
-                                        )
-                                    }
-                                },
+                                content = { Text(text = "${wordsPerSecond.toFixed(1)} word/s") },
                             )
-                            if (showGenerationStats) {
-                                StatsItem(
-                                    icon = {
-                                        Icon(
-                                            imageVector = HugeIcons.Clock02,
-                                            contentDescription = "Duration",
-                                            modifier = Modifier.size(12.dp),
-                                        )
-                                    },
-                                    content = { Text(text = "${seconds.toFixed(1)}s") },
-                                )
-                                if (statsTimeValid && statsMillis >= 150 && wordCount > 0) {
-                                    val wordsPerSecond = wordCount.toFloat() / statsMillis * 1000
-                                    StatsItem(
-                                        icon = {
-                                            Icon(
-                                                imageVector = HugeIcons.Zap,
-                                                contentDescription = "Word speed",
-                                                modifier = Modifier.size(12.dp),
-                                            )
-                                        },
-                                        content = { Text(text = "${wordsPerSecond.toFixed(1)} word/s") },
-                                    )
-                                }
-                            }
-                            if (!loading && round != null) {
-                                // 多轮工具调用时说明这条消息一共请求了几次模型
-                                val steps = message.stepCount ?: 1
-                                StatsItem(
-                                    icon = {
-                                        Icon(
-                                            imageVector = HugeIcons.Repeat,
-                                            contentDescription = "Round",
-                                            modifier = Modifier.size(12.dp),
-                                        )
-                                    },
-                                    content = {
-                                        Text(
-                                            text = "round #$round" + if (steps > 1) {
-                                                ", $steps steps"
-                                            } else {
-                                                ""
-                                            }
-                                        )
-                                    },
-                                )
-                            }
                         }
                     }
-
-                    // 生成中只要 provider 返回了 usage 就先显示这行，费用仍在生成结束后才显示
-                    if (message.modelId != null && usage != null) {
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            itemVerticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            // 调用过工具时向用户说明这行 token 的统计口径：旧消息只有最后一次调用的量，
-                            // 新消息（有 generationTimeMs）是各次调用的累计值
-                            if (usedTools) {
-                                Text(text = if (generationMillis == null) "Last LLM Call:" else "Total:")
-                            }
-                            StatsItem(
-                                icon = {
-                                    Icon(
-                                        imageVector = HugeIcons.Upload02,
-                                        contentDescription = "Input",
-                                        modifier = Modifier.size(12.dp),
-                                    )
-                                },
-                                content = {
-                                    CountText(usage.promptTokens, expanded, " token")
-                                    if (usage.cachedTokens > 0) {
-                                        Text(text = " (")
-                                        CountText(usage.cachedTokens, expanded, " cached)")
-                                    }
-                                },
-                            )
-                            StatsItem(
-                                icon = {
-                                    Icon(
-                                        imageVector = HugeIcons.Download04,
-                                        contentDescription = "Output",
-                                        modifier = Modifier.size(12.dp),
-                                    )
-                                },
-                                content = {
-                                    if (loading) {
-                                        Text(text = "(~")
-                                        CountText(usage.completionTokens, expanded, " token")
-                                        Text(text = ")")
-                                    } else {
-                                        CountText(usage.completionTokens, expanded, " token")
-                                    }
-                                },
-                            )
-                            if (statsTimeValid && statsMillis >= 150) {
-                                val tokensPerSecond = usage.completionTokens.toFloat() / statsMillis * 1000
-                                StatsItem(
-                                    icon = {
-                                        Icon(
-                                            imageVector = HugeIcons.Zap,
-                                            contentDescription = "Token speed",
-                                            modifier = Modifier.size(12.dp),
-                                        )
-                                    },
-                                    content = { Text(text = "${tokensPerSecond.toFixed(1)} tok/s") },
+                    if (!loading && round != null) {
+                        // 多轮工具调用时说明这条消息一共请求了几次模型
+                        val steps = message.stepCount ?: 1
+                        StatsItem(
+                            icon = {
+                                Icon(
+                                    imageVector = HugeIcons.Repeat,
+                                    contentDescription = "Round",
+                                    modifier = Modifier.size(12.dp),
                                 )
-                            }
-                            cost?.let {
-                                Text(text = "\$${formatCost(it)}")
-                            }
+                            },
+                            content = {
+                                Text(
+                                    text = "round #$round" + if (steps > 1) {
+                                        ", $steps steps"
+                                    } else {
+                                        ""
+                                    }
+                                )
+                            },
+                        )
+                    }
+                }
+
+                // 生成中只要 provider 返回了 usage 就先显示这行，费用仍在生成结束后才显示
+                if (message.modelId != null && usage != null) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        itemVerticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        // 调用过工具时向用户说明这行 token 的统计口径：旧消息只有最后一次调用的量，
+                        // 新消息（有 generationTimeMs）是各次调用的累计值
+                        if (usedTools) {
+                            Text(text = if (generationMillis == null) "Last LLM Call:" else "Total:")
+                        }
+                        StatsItem(
+                            icon = {
+                                Icon(
+                                    imageVector = HugeIcons.Upload02,
+                                    contentDescription = "Input",
+                                    modifier = Modifier.size(12.dp),
+                                )
+                            },
+                            content = {
+                                CountText(usage.promptTokens, expanded, " token")
+                                if (usage.cachedTokens > 0) {
+                                    Text(text = " (")
+                                    CountText(usage.cachedTokens, expanded, " cached)")
+                                }
+                            },
+                        )
+                        StatsItem(
+                            icon = {
+                                Icon(
+                                    imageVector = HugeIcons.Download04,
+                                    contentDescription = "Output",
+                                    modifier = Modifier.size(12.dp),
+                                )
+                            },
+                            content = {
+                                if (loading) {
+                                    Text(text = "(~")
+                                    CountText(usage.completionTokens, expanded, " token")
+                                    Text(text = ")")
+                                } else {
+                                    CountText(usage.completionTokens, expanded, " token")
+                                }
+                            },
+                        )
+                        if (statsTimeValid && statsMillis >= 150) {
+                            val tokensPerSecond = usage.completionTokens.toFloat() / statsMillis * 1000
+                            StatsItem(
+                                icon = {
+                                    Icon(
+                                        imageVector = HugeIcons.Zap,
+                                        contentDescription = "Token speed",
+                                        modifier = Modifier.size(12.dp),
+                                    )
+                                },
+                                content = { Text(text = "${tokensPerSecond.toFixed(1)} tok/s") },
+                            )
+                        }
+                        cost?.let {
+                            Text(text = "\$${formatCost(it)}")
                         }
                     }
                 }
@@ -421,7 +416,7 @@ private fun ConciseNerdLine(
                 tonalElevation = 3.dp,
                 shadowElevation = 6.dp,
             ) {
-                // 与 upstream 的 RichTooltip 一致：标题用 titleMedium，正文用 bodyMedium
+                // 沿用 Material RichTooltip 的排版：标题用 titleMedium，正文用 bodyMedium
                 ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(

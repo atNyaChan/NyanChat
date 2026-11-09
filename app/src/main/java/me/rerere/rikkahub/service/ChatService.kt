@@ -349,13 +349,8 @@ class ChatService(
         session.initialize(
             load = { loadConversation(conversationId) },
             create = {
-                if (createIfMissing) {
-                    newConversation(
-                        conversationId
-                    )
-                } else {
-                    throw NotFoundException("Conversation not found")
-                }
+                if (!createIfMissing) throw NotFoundException("Conversation not found")
+                newConversation(conversationId)
             },
         )
         block(session)
@@ -386,7 +381,7 @@ class ChatService(
 
     /**
      * 加载会话后在最新状态上修改并落库。
-     * 删除消息或切换分支也可能解除工具审批阻塞，落库后重新检查队列。
+     * 切换分支也可能解除工具审批阻塞，落库后重新检查队列。
      * [idleActionRes] 不为空时生成中直接抛 ConflictException（文案带上被拒绝的动作）：
      * 流式回复按节点 id 写回会话，删掉的节点会被下一个事件重新追加到末尾，
      * 编辑会新建分支并会把选中分支切走，附件索引也会把仍在写的消息当成已移除。
@@ -827,7 +822,7 @@ class ChatService(
      */
     private suspend fun runTurn(session: ConversationSession, regenerateNodeId: Uuid? = null): TurnResult {
         val conversationId = session.id
-        // 先清理上一轮状态；确定历史后，仅为真正的续写恢复消息 ID。
+        // 先清理上一轮状态；确定历史后再设置本轮要写的消息 ID。
         session.replyMessageId.value = null
         // 生成开始前失败时通知只用来取消 Live Update，用不到发送者名称
         var senderName = ""
@@ -1247,10 +1242,10 @@ class ChatService(
                 session.updateMetadata(
                     transform = {
                         it.copy(
-                            config = it.config?.let { cfg ->
-                                cfg.copy(
-                                    enableWebSearch = enableWebSearch ?: cfg.enableWebSearch,
-                                    builtInSearch = builtInSearch ?: cfg.builtInSearch,
+                            config = it.config?.let { config ->
+                                config.copy(
+                                    enableWebSearch = enableWebSearch ?: config.enableWebSearch,
+                                    builtInSearch = builtInSearch ?: config.builtInSearch,
                                 )
                             }
                         )
@@ -1338,7 +1333,6 @@ class ChatService(
 
     /**
      * fork：整条消息节点变换（分支排序/切换选中），在最新状态上执行后落库。
-     * 上游的 selectMessageNode 只能切选中；这里的分支还支持前后移动。
      */
     suspend fun updateMessageNode(
         conversationId: Uuid,

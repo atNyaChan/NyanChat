@@ -363,7 +363,7 @@ class ResponseAPI(
 
     private fun JsonArrayBuilder.addAssistantItems(
         message: UIMessage,
-        includeHistoryReasoning: Boolean = true,
+        includeHistoryReasoning: Boolean,
     ) {
         val groups = groupPartsByToolBoundary(message.parts)
         val contentBuffer = mutableListOf<UIMessagePart>()

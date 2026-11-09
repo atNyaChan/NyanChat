@@ -253,7 +253,7 @@ private fun ChatListNormal(
     val conversationUpdated by rememberUpdatedState(conversation)
     val density = LocalDensity.current
     val activity = LocalContext.current as? me.rerere.rikkahub.RouteActivity
-    // “关闭”背景效果时不再把消息滚到标题栏下面，也不绘制顶部渐隐遮罩（与加入该效果前一致）
+    // “关闭”背景效果时不给消息加标题栏方向的偏移，也不绘制顶部渐隐遮罩
     val titleBarScrim = settings.displaySetting.enableTitleBarScrim
 
     DisposableEffect(Unit) {
@@ -372,7 +372,7 @@ private fun ChatListNormal(
                         if (titleBarScrim) {
                             Modifier.topFadingEdge(innerPadding.calculateTopPadding() + 24.dp)
                         } else {
-                            // 关闭遮罩时恢复为给列表加顶部内边距，消息不再出现在标题栏下面
+                            // 关闭遮罩时给列表加顶部内边距，消息不会出现在标题栏下面
                             Modifier.padding(top = innerPadding.calculateTopPadding())
                         }
                     )

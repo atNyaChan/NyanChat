@@ -165,7 +165,7 @@ class WorkspaceFileSystem(
 
     private fun resolvePath(root: File, path: String): File = resolvePath(root, path, followFinalSymlink = true)
 
-    /** 解析路径但不跟随最后一段的软链接，用于删除/移动/新建目录等应作用于条目本身的操作 */
+    /** 解析路径但不跟随最后一段的软链接，用于删除/新建目录等应作用于条目本身的操作 */
     private fun resolvePathNoFollow(
         root: File,
         path: String

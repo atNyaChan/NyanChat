@@ -25,9 +25,7 @@ internal fun forkConversationTitle(sourceTitle: String, existingTitles: Set<Stri
  * 从开头复制到 [messageId] 所在的节点（含），得到一个新会话；没有这条消息时返回 null。
  *
  * 继承助手、系统提示词、提示词注入、会话配置、工作目录和文件夹，标题在 [existingTitles] 中顺延编号。
- * 节点换新 id；本地附件经 [copyFile] 复制一份，两个会话之后各删各的文件，互不影响。
- *
- * fork：附件是内容寻址的，调用方传恒等映射（`{ it }`）复用同一实体，使用记录会随新会话一起写入。
+ * 节点换新 id；本地附件经 [copyFile] 映射，fork 传恒等映射复用同一 CAS 实体，使用记录随新会话一起写入。
  */
 internal fun Conversation.fork(
     messageId: Uuid,

@@ -115,7 +115,6 @@ fun SearchPage(initialModelId: String? = null, vm: SearchVM = koinViewModel()) {
     var showRebuildDialog by remember { mutableStateOf(false) }
     var showConditionsDialog by remember { mutableStateOf(false) }
     var draftConditions by remember { mutableStateOf(SearchConditions()) }
-    // 站内首次进入自动弹一次条件弹窗；从结果跳去聊天再返回时不再重复弹出。
     var conditionsAutoOpened by rememberSaveable { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -431,10 +430,7 @@ private fun SearchConditionsDialog(
                 .imePadding(),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            BottomSheetTitle(
-                text = stringResource(R.string.search_page_conditions),
-                modifier = Modifier.padding(horizontal = 24.dp),
-            )
+            BottomSheetTitle(text = stringResource(R.string.search_page_conditions))
 
             CardGroup(
                 modifier = Modifier

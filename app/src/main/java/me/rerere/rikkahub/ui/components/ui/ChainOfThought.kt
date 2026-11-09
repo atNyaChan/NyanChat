@@ -44,7 +44,7 @@ import me.rerere.hugeicons.stroke.ArrowUp01
 import me.rerere.hugeicons.stroke.Search01
 import me.rerere.hugeicons.stroke.Sparkles
 
-// 最后一步连线在容器底部留出的收尾长度（与 Fork 原实现的 bottomOffset 一致）
+// 最后一步连线在容器底部留出的收尾长度
 private val ChainOfThoughtTrailingLineOffset = 16.dp
 
 // 思考块卡片圆角
@@ -259,7 +259,7 @@ private class ChainOfThoughtScopeImpl(
                                 strokeWidth = strokeWidth,
                             )
                         }
-                        // 最后一步没有展开内容时，向下的连线像原实现一样在容器底部留出收尾
+                        // 最后一步没有展开内容时，向下的连线在容器底部留出收尾
                         val bottomEnd = if (isLast && !(contentVisible && hasContent)) {
                             size.height - ChainOfThoughtTrailingLineOffset.toPx()
                         } else {

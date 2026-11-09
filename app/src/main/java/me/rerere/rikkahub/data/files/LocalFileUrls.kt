@@ -23,7 +23,10 @@ object LocalFileUrls {
     private const val UPLOAD_FOLDER = FileFolders.UPLOAD
     private const val FILES_MARKER = "/files/"
 
-    /** 运行形式 -> 落盘形式。只处理 filesDir 下的 `file://`，其它（http/data/content/已是相对）原样返回。 */
+    /**
+     * 运行形式 -> 落盘形式。只处理 filesDir 下的 `file://`，其它（http/data/content/已是相对）原样返回；
+     * 无法相对化的旧/跨安装绝对路径会按文件名在 `upload/` 下尝试找回相对路径。
+     */
     fun toStored(filesDir: File, url: String): String {
         if (url.isBlank()) return url
         val uri = runCatching { Uri.parse(url) }.getOrNull() ?: return url

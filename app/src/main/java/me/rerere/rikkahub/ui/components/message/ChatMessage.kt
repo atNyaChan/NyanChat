@@ -223,11 +223,10 @@ fun ChatMessage(
             }
         }
 
-        val showActions = true
         val motionScheme = MaterialTheme.motionScheme
 
         AnimatedVisibility(
-            visible = showActions,
+            visible = true,
             enter = slideInVertically(motionScheme.defaultSpatialSpec()) { it / 2 } +
                 fadeIn(motionScheme.defaultEffectsSpec()),
             exit = slideOutVertically(motionScheme.fastSpatialSpec()) { it / 2 } +
@@ -421,7 +420,7 @@ private fun MessagePartsBlock(
                                     role = role,
                                     color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = settings.displaySetting.bubbleOpacity),
                                     onClick = { onUserMessageClick?.invoke() },
-                                    // 用户气泡最大宽度占满整行，不与助手的回复错开
+                                    // 用户气泡占满整行宽度
                                     modifier = Modifier.animateContentSize(),
                                 ) {
                                     if (part.text.isBlank() && part.text.isNotEmpty()) {

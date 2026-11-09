@@ -143,7 +143,7 @@ fun LogPage() {
                         DropdownMenu(
                             expanded = filterMenuExpanded,
                             onDismissRequest = { filterMenuExpanded = false },
-                            shape = me.rerere.rikkahub.ui.theme.rememberScreenEdgeCornerShape(),
+                            shape = rememberScreenEdgeCornerShape(),
                         ) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.common_all)) },

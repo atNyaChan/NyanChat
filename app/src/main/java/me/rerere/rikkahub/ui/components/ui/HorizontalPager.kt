@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 // 页签 pager：转发 androidx.compose.foundation.pager.HorizontalPager，只把 overscrollEffect 固定为 null，
-// 让水平滑动翻页（含滑到首尾）不再有拉伸回弹；页签内列表等其它滚动区域仍保留平台拉伸效果。
+// 水平滑动翻页（含滑到首尾）没有拉伸回弹；页签内列表等其它滚动区域仍保留平台拉伸效果。
 @Composable
 internal fun HorizontalPager(
     state: PagerState,

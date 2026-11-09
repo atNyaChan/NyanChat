@@ -54,8 +54,9 @@ import kotlin.uuid.Uuid
  * 聊天附件管理。
  *
  * 附件实体以 sha256 命名保存在 `files/upload/<sha256>`，登记信息（MIME、大小、使用位置与
- * 展示名/时间）保存在 `managed_files_cas` 表的 `usages` JSON 里。消息里的附件 url 是
- * `upload/<sha256>`，兼容旧版 ZIP 导出时再按登记的使用记录还原成 `upload/<uuid.ext>`。
+ * 展示名/时间）保存在 `managed_files_cas` 表的 `usages` JSON 里。消息里的附件 url 在库里是
+ * `upload/<sha256>`（内存里展开成绝对 `file://` url），兼容旧版 ZIP 导出时再按登记的使用记录
+ * 还原成 `upload/<uuid.ext>`。
  *
  * 输入框/队列里的附件先放在 `cacheDir/upload_tmp` 临时目录（不登记、不参与内容寻址），只有会话
  * 真正落库（`commitConversationFiles`）时才按内容 sha256 提交成 CAS 实体；来源展示名/MIME 由
@@ -82,7 +83,7 @@ class FilesManager(
     private val usagesMutex = Mutex()
 
     /**
-     * 会话到附件的内存索引（`conversationId -> sha256`），用于替代 `usages` 的整表 `instr` 扫描。
+     * 会话到附件的内存索引（`conversationId -> sha256`），用来定位某会话引用到的内容，无需扫描 `usages` JSON。
      * 懒加载，且只在 [usagesMutex] 内读写；任何会改写多行的重建/全量清理都会把它标记为失效。
      */
     private val conversationIndex = mutableMapOf<String, MutableSet<String>>()
@@ -515,7 +516,7 @@ class FilesManager(
 
     /**
      * 懒加载 [conversationIndex]。`usages` JSON 损坏时先按消息库重建全表索引再读取，
-     * 保持与原先基于 `instr` 查询时相同的自动修复行为。
+     * 调用方无需感知。
      */
     private suspend fun ensureConversationIndexLocked() {
         if (conversationIndexBuilt) return
@@ -531,7 +532,7 @@ class FilesManager(
         conversationIndexBuilt = true
     }
 
-    /** 该会话在 `usages` 里引用到的行；替代原先 `usages` 的整表 `instr` 扫描。 */
+    /** 该会话在 `usages` 里引用到的行，取自内存索引。 */
     private suspend fun rowsByConversationLocked(conversationId: String): List<ManagedFileCasEntity> {
         ensureConversationIndexLocked()
         val shas = conversationIndex[conversationId] ?: return emptyList()
@@ -586,7 +587,7 @@ class FilesManager(
      * 或只有兜底 MIME 的类型。
      *
      * 只加载本次引用到的内容与该会话此前引用过的行（`usages` 损坏时按消息库重建全表索引），
-     * 不再每次保存都整表读取并解析 `usages`。
+     * 每次保存只解析这些行，其余行不读取。
      */
     suspend fun updateAttachmentIndex(
         conversation: Conversation,
@@ -608,7 +609,7 @@ class FilesManager(
                 }
             }
             // 只处理本次会真正改动的行：本次引用到的内容，以及该会话此前引用过、本次可能不再引用的内容。
-            // 其余行的处理结果必然与现状一致（refs 为空且 usages 里没有该会话），不再整表解码。
+            // 其余行的处理结果必然与现状一致（refs 为空且 usages 里没有该会话），无需解码。
             val rowsBySha = linkedMapOf<String, ManagedFileCasEntity>()
             refsBySha.forEach { (sha256, refs) ->
                 val existing = repository.getBySha(sha256)
@@ -618,7 +619,7 @@ class FilesManager(
                 }
                 val file = File(uploadDir, sha256)
                 if (!file.isFile) return@forEach
-                // 没有登记的内容：一条 insert 直接写成最终使用记录，不再先写 none
+                // 没有登记的内容：一条 insert 直接写成最终使用记录
                 val info = commitInfos[sha256]
                 val mimeType = info?.mimeType?.takeIf { it.isNotBlank() } ?: guessMimeType(file, sha256)
                 val usages = refs.map { ref ->
@@ -691,7 +692,7 @@ class FilesManager(
     suspend fun removeConversationFromAttachmentIndex(conversationId: Uuid) = withContext(Dispatchers.IO) {
         usagesMutex.withLock {
             val id = conversationId.toString()
-            // 只有 `usages` 里提到该会话的行才可能带它的消息记录：走内存索引，避免整个 `usages` 表的 instr 扫描
+            // 只有 `usages` 里提到该会话的行才可能带它的消息记录：走内存索引定位，避免扫描整个 `usages` 表
             var rows = rowsByConversationLocked(id)
             if (rows.any { it.decodeUsagesOrNull() == null }) {
                 rebuildAttachmentIndexLocked()
@@ -782,7 +783,7 @@ class FilesManager(
     /**
      * 设置（助手头像/聊天背景、用户头像）变化后，重建这些附件在 `managed_files_cas` 里的使用记录。
      * 与消息使用记录互不影响，设置里不再引用的内容会退回 `none` 记录；展示名沿用原有设置记录或
-     * `none` 记录里的值（旧库导入与刚提交的附件都先写在 `none` 上）。
+     * `none` 记录里的值。
      */
     suspend fun updateSettingsAttachmentUsages(settings: Settings) = withContext(Dispatchers.IO) {
         usagesMutex.withLock {
@@ -1220,7 +1221,7 @@ data class CasAttachment(
     val sizeBytes: Long,
     val usages: List<FileUsage>,
 ) {
-    /** 真实消息使用记录；文件管理页只把“消息”与设置类使用算作引用。 */
+    /** 真实消息使用记录（设置类见 [settingsUsages]，引用总数见 [usageCount]）。 */
     val references: List<FileUsage>
         get() = usages.filter { it.isMessageUsage() }
 
