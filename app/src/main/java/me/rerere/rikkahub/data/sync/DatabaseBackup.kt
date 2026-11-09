@@ -10,7 +10,6 @@ internal object DatabaseBackup {
 
     /** VACUUM INTO includes committed WAL contents in a consistent, standalone snapshot. */
     fun createSnapshot(database: SupportSQLiteDatabase, destination: File) {
-        check(!destination.exists()) { "Backup snapshot already exists" }
         database.execSQL("VACUUM main INTO ?", arrayOf(destination.absolutePath))
     }
 

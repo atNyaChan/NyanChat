@@ -484,9 +484,9 @@
 	- 数据库导出一个 `rikka_hub.db.zst`，并使用 zstd 等级 9、长距离匹配窗口（`--long 27`）多线程压缩，再与 `settings.json`、`upload`、skills、fonts 等附件一起打入 tar。
 	- 选择导出“工作区”时，在 `workspaces/` 下为所有非空工作区按根标识生成独立的 `{workspaceRoot}.tar.zst`；每个子归档复用单工作区导出实现，包含 Rootfs 及对应 `/workspace` 文件。恢复时会将两部分还原到对应工作区。
 	- 导出普通文件时仍按内容去重：`upload`、`skills`、`fonts`、`media_creation` 中逐字节相同的文件只在 tar 内保留一份数据，其余条目写成指向首份数据的 TAR 硬链接，缩小备份体积。先用文件大小筛选，只有大小相同的文件才计算 SHA-256，大小唯一的文件不做哈希。其中 `upload`、`fonts` 只打包顶层文件，`skills`、`media_creation` 才递归包含子目录。
-	- 备份包内的普通文件条目不保留源文件的 POSIX 权限与属主信息，统一按条目名以普通文件（0644）写入；恢复解包时本来也不回写目标权限。恢复时直接流式解析 TAR。由于 Android 环境不保证支持硬链接，打包时写入的 TAR 硬链接条目会在目标条目落盘后于暂存目录展开成独立副本（复制内容），不再创建硬链接。
+	- 备份包内的普通文件条目不保留源文件的 POSIX 权限与属主信息，统一按条目名以普通文件（0644）写入；恢复解包时本来也不回写目标权限。恢复时直接流式解析 TAR。由于 Android 环境不保证支持硬链接，打包时写入的 TAR 硬链接条目会在暂存目录展开成独立副本（复制内容），不再创建硬链接。
 	- 恢复时若存档包含非空 `upload`，会在应用阶段把原 `filesDir/upload` 整体移到 `pending/originals-upload` 备份，再用存档里的 `upload` 整体替换；恢复失败回滚时删掉新目录并把备份放回。存档没有 `upload`（或为空）时不动本地目录。
-	- 导入时先读存档数据库声明的 schema 版本（`PRAGMA user_version`）：旧库（< 100）把 `upload` 里的每个文件都按内容重新算 sha256 并重命名为 `upload/<sha256>`（相同内容去重），把消息与设置里的旧文件名改写为 sha256，再把旧 `managed_files` 表转成 `managed_files_cas`；已是 CAS schema（100 及以上）的存档完全不对 `upload` 做迁移，文件名与登记表保持原样。
+	- 导入时先读存档数据库声明的 schema 版本（`PRAGMA user_version`）。新 TAR 只由本项目写出，附件必定已是 CAS 布局，因此直接拒绝 schema 低于 100 的旧 TAR，不再做附件迁移；已含 CAS 登记表的存档完全不对 `upload` 做迁移，文件名与登记表保持原样。只有旧 RikkaHub 兼容 ZIP 仍支持旧库（30 ~ 99）迁移：把 `upload` 里的每个文件都按内容重新算 sha256 并重命名为 `upload/<sha256>`（相同内容去重），把消息与设置里的旧文件名改写为 sha256，再把旧 `managed_files` 表转成 `managed_files_cas`。
 	- 本地、WebDAV 和 S3 使用相同的新格式。
 
 #### 其它
@@ -502,7 +502,7 @@
 - “备份提醒”的间隔按钮组最前面加入用于关闭提醒的“关”，不再单独显示备份提醒开关；无论是否关闭都显示上次备份时间。
 - 导出备份前先写入最新备份时间，使归档内的设置也包含该时间；导出或上传失败时恢复导出前的时间。
 - 导入完整备份后扫描消息数据库，把图片、文档、视频和音频记录里的附件 url 统一改写成相对 `filesDir` 的落盘路径（`upload/<sha256>`）。设置里的助手头像、聊天背景与用户头像在写入 DataStore 时同样折叠成相对路径。
-- 导入时按存档数据库版本处理附件：仅当版本低于 100 时，把旧的 `managed_files` 表转换成 `managed_files_cas`（一份 sha256 一行，使用记录写入 `usages` 并逐条保存旧文件名与展示名），并把消息/设置里 `upload/<uuid.ext>` 的名字按内容 sha256 改写；消息库里记录了真实文件名（目前文档附件才有）时优先用它作为该次使用的展示名。版本已是 100 及以上的存档直接用恢复后的 `managed_files_cas`，不迁移 `upload`。导入后删除旧 `managed_files` 表（带数据的转换始终在恢复阶段完成；App 自身禁止原地升级：运行路径不注册上游旧版本的迁移，启动读到小于 100 的上游旧库会直接报错，`Migration_30_31`、`Migration_31_32`、`Migration_32_102` 只在恢复存档的暂存库上执行）。旧表转 `managed_files_cas` 的整个转换（建表、改写消息 url、删旧表）在单个 SQLite 事务内完成，中途异常会整体回滚，不留下半转换的库。
+- 导入时按存档数据库版本与其容器格式处理附件：新 `.tar` 必须是 CAS schema（100 及以上），低于 100 的旧 TAR 直接报错；只有旧 ZIP 在版本低于 100 时才把旧的 `managed_files` 表转换成 `managed_files_cas`（一份 sha256 一行，使用记录写入 `usages` 并逐条保存旧文件名与展示名），并把消息/设置里 `upload/<uuid.ext>` 的名字按内容 sha256 改写；消息库里记录了真实文件名（目前文档附件才有）时优先用它作为该次使用的展示名。版本已是 100 及以上的存档直接用恢复后的 `managed_files_cas`，不迁移 `upload`。导入后删除旧 `managed_files` 表（带数据的转换始终在恢复阶段完成；App 自身禁止原地升级：运行路径不注册上游旧版本的迁移，启动读到小于 100 的上游旧库会直接报错，`Migration_30_31`、`Migration_31_32`、`Migration_32_102` 只在恢复旧 ZIP 的暂存库上执行）。旧表转 `managed_files_cas` 的整个转换（建表、改写消息 url、删旧表）在单个 SQLite 事务内完成，中途异常会整体回滚，不留下半转换的库。
 - 导入根据文件后缀识别新 `.tar` 与旧 `.zip`，旧 ZIP 备份仍可还原；还原时只读取单个 `rikka_hub.db`，不再合并旧 zip 的 `-wal`/`-shm` 旁路文件。
 - 本地导出额外提供旧 ZIP 兼容格式（移除 Fork 新增的模型价格、排序、显示（含 `detailedTokenUsage`、`enableTitleBarScrim`）、上下文缓存、回传思考、本地工具授权、中途思考、自定义字体字重与内置搜索字段；`chatFontFamily` 的 `outfit` 回落为 `serif`；`webDavConfig`/`s3Config`/`uploadS3Config` 的备份项去除 `WORKSPACE`；过滤官方版本无法反序列化的电池和定位本地工具；并标注“兼容 RikkaHub 3.1.1+”）。
 - 兼容 ZIP 中 `rikka_hub.db` 与 `settings.json` 使用 deflate 5 级压缩，其余附件条目只储存（STORED）不压缩。

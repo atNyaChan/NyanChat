@@ -150,10 +150,11 @@ as an ordinary folder, and never invent a uuid/filename-keyed path for an attach
   for `upload-*.tmp` residue. Any listing, sizing, counting, startup sync
   (`FilesManager.syncManagedFiles`) or backup must skip `AttachmentCas.isTemporary` files so a
   half-written temp file never leaks into the UI, stats or an archive.
-- **Backup/restore is CAS-aware.** Archives declare a schema version; only pre-`CAS_SCHEMA_VERSION`
-  (100) archives at or above `MIN_SUPPORTED_SCHEMA_VERSION` (30 / 31 / 32, the upstream schema versions) are migrated
-  (`ManagedFilesArchive.normalizeUploadDir` renames `upload` to sha256 and `convertLegacyDatabase`
-  converts the old `managed_files` table); older archives are rejected. Never
+- **Backup/restore is CAS-aware.** Archives declare a schema version. Current `.tar` backups are always
+  CAS (`>= CAS_SCHEMA_VERSION`); a pre-CAS (100) `.tar` is rejected. Only legacy RikkaHub-compatible
+  `.zip` archives at or above `MIN_SUPPORTED_SCHEMA_VERSION` (30 / 31 / 32, the upstream schema versions)
+  are migrated (`ManagedFilesArchive.normalizeUploadDir` renames `upload` to sha256 and
+  `convertLegacyDatabase` converts the old `managed_files` table); older archives are rejected. Never
   re-normalize an archive that is already CAS, and never copy upstream files over our CAS layout.
 - **`FilesManager` is the single entry point** (`data/files/FilesManager.kt`). UI/service/repository
   code must use its APIs rather than opening `upload` files directly, so registration, usages and
@@ -188,12 +189,15 @@ When adding a new schema version (fork target `N`, matching upstream version `U`
 2. Add `Migration(previousForkVersion, N)` for the fork's own databases (for example `101 -> 102`).
 3. Add `Migration(previousUpstreamVersion, U)` for upstream archives (for example `31 -> 32`).
 4. Add `Migration(U, N)` bridging the upstream schema to the fork schema (for example `32 -> 102`).
-   Keep it idempotent: legacy archives may already have been partially converted by
+   Keep it idempotent: legacy ZIP archives may already have been partially converted by
    `ManagedFilesArchive` before Room runs. Attachment URL rewrites and `upload` renames stay in
    `ManagedFilesArchive.convertLegacyDatabase`, never in a SQL-only migration.
 5. Register fork migrations (`100 -> 101`, `101 -> 102`, ...) unconditionally in `AppDatabaseFactory`;
    register the upstream chain (`30 -> 31`, `31 -> 32`, `32 -> N`) only under `allowLegacyMigration`,
-   so the app itself still refuses to open an old upstream database in place.
+   which `BackupManager` enables only for legacy `.zip` restores, so the app itself still refuses to
+   open an old upstream database in place and old TAR backups are rejected.
+   A `.tar` backup must already use the fork's CAS schema (`>= 100`); no upstream migration chain runs
+   for TAR, though the fork's own migrations (`100 -> 101 -> ...`) still apply.
 6. Update `ManagedFilesArchive.LEGACY_SCHEMA_VERSION` to `U`: the compatible ZIP export must declare
    the same schema version upstream writes. Export converts `managed_files_cas` back to
    `managed_files`, writes `PRAGMA user_version = U`, and drops `room_master_table`.

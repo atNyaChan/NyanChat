@@ -454,30 +454,33 @@ class BackupManager(
             if (stagedDatabase.exists()) {
                 DatabaseBackup.normalize(stagedDatabase)
                 // 按存档数据库声明的 schema 版本决定是否迁移 upload：
-                // - 低于 30 的旧库不再支持，直接拒绝；
-                // - 旧库（30 ~ 99，上游 RikkaHub 为 30 / 31 / 32）里附件是 `uuid.ext` 文件名、登记在 `managed_files`，
+                // - `.tar` 只由本项目写出，附件必定已是 CAS 布局；旧版 TAR（< 100）不再支持，直接拒绝；
+                // - 旧 `.zip`（30 ~ 99，上游 RikkaHub 为 30 / 31 / 32）里附件是 `uuid.ext` 文件名、登记在 `managed_files`，
                 //   先按内容统一命名成 `upload/<sha256>`（全部重新算哈希），再把旧表转成 `managed_files_cas`；
-                // - 已是 CAS schema（100）的库存的文件名与 `managed_files_cas` 一一对应，完全不动 `upload`。
-                val schemaVersion = ManagedFilesArchive.readSchemaVersion(stagedDatabase)
-                require(
-                    schemaVersion == null ||
-                        schemaVersion >= ManagedFilesArchive.MIN_SUPPORTED_SCHEMA_VERSION
-                ) {
+                // - 已是 CAS schema（100 及以上）的库存的文件名与 `managed_files_cas` 一一对应，完全不动 `upload`。
+                val schemaVersion = requireNotNull(ManagedFilesArchive.readSchemaVersion(stagedDatabase)) {
+                    "Backup database does not declare a schema version"
+                }
+                require(schemaVersion >= ManagedFilesArchive.MIN_SUPPORTED_SCHEMA_VERSION) {
                     "Backup schema $schemaVersion is older than the supported minimum " +
                         ManagedFilesArchive.MIN_SUPPORTED_SCHEMA_VERSION
                 }
-                if (!ManagedFilesArchive.isCasSchema(schemaVersion)) {
+                if (isTar) {
+                    require(ManagedFilesArchive.isCasSchema(schemaVersion)) {
+                        "Unsupported legacy tar backup schema $schemaVersion"
+                    }
+                } else if (!ManagedFilesArchive.isCasSchema(schemaVersion)) {
                     val filesRoot = File(payload, "files")
                     oldNameToSha = ManagedFilesArchive.normalizeUploadDir(filesRoot)
                     // 先把旧的 managed_files 表转成 managed_files_cas，再交给 Room 校验/迁移
                     ManagedFilesArchive.convertLegacyDatabase(stagedDatabase, json, oldNameToSha, filesRoot)
                 }
                 // Reject unsupported schemas before publishing; run supported old migrations on the copy.
-                // 恢复存档时才允许上游旧库迁移（App 自身读到 30 / 31 / 32 会直接报错）。
+                // 只有旧 ZIP 才允许上游旧库迁移（App 自身读到 30 / 31 / 32 会直接报错）。
                 val room = AppDatabaseFactory.create(
                     context,
                     stagedDatabase.absolutePath,
-                    allowLegacyMigration = true,
+                    allowLegacyMigration = !isTar,
                 )
                 try {
                     DatabaseBackup.checkpoint(room.openHelper.writableDatabase)
@@ -492,6 +495,8 @@ class BackupManager(
             }
 
             val settingsFile = File(staging, "settings.json")
+            // 当前版本的 TAR 备份必定包含 settings.json；缺失说明归档不完整
+            if (isTar) require(settingsFile.isFile) { "Backup is missing settings.json" }
             if (settingsFile.exists()) {
                 // 旧附件目录已改成 upload/<sha256> 时，设置里旧的 upload/<uuid.ext> 同步改写
                 val settingsJson = ManagedFilesArchive.rewriteSettingsAttachments(
@@ -519,32 +524,21 @@ class BackupManager(
         name.startsWith(WORKSPACES_ENTRY) && name.endsWith(".tar.zst")
 
     /**
-     * 打包时写入的 TAR 硬链接条目没有数据区，恢复时在目标条目落盘后把它展开成独立副本
-     * （Android 环境不保证支持硬链接，所以不用硬链接还原）；目标本身也是硬链接条目时循环解析。
+     * 打包时写入的 TAR 硬链接条目没有数据区，恢复时把它展开成独立副本（Android 环境不保证支持硬链接，
+     * 所以不用硬链接还原）。打包时只会链接到已经写在前面的普通文件条目，因此目标必定已落盘。
      */
-    private fun expandHardLinks(links: List<PendingHardLink>, extracted: MutableMap<String, File>) {
-        var unresolved = links
-        while (unresolved.isNotEmpty()) {
-            val pending = mutableListOf<PendingHardLink>()
-            for (link in unresolved) {
-                val source = extracted[link.linkName]
-                if (source == null) {
-                    pending += link
-                    continue
-                }
-                check(link.target.parentFile!!.isDirectory || link.target.parentFile!!.mkdirs()) {
-                    "Cannot create backup staging directory"
-                }
-                FileOutputStream(link.target).use { output ->
-                    source.inputStream().use { it.copyTo(output, IO_BUFFER_SIZE) }
-                    output.fd.sync()
-                }
-                extracted[link.name] = link.target
+    private fun expandHardLinks(links: List<PendingHardLink>, extracted: Map<String, File>) {
+        links.forEach { link ->
+            val source = requireNotNull(extracted[link.linkName]) {
+                "Backup hard link target not found: ${link.linkName}"
             }
-            check(pending.size < unresolved.size) {
-                "Backup hard link target not found: ${pending.first().linkName}"
+            check(link.target.parentFile!!.isDirectory || link.target.parentFile!!.mkdirs()) {
+                "Cannot create backup staging directory"
             }
-            unresolved = pending
+            FileOutputStream(link.target).use { output ->
+                source.inputStream().use { it.copyTo(output, IO_BUFFER_SIZE) }
+                output.fd.sync()
+            }
         }
     }
 
