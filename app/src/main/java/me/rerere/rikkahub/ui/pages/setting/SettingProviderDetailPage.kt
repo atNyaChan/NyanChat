@@ -31,6 +31,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -44,6 +45,7 @@ import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -66,6 +68,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.contentOrNull
@@ -88,6 +91,7 @@ import me.rerere.hugeicons.stroke.Add01
 import me.rerere.hugeicons.stroke.Cancel01
 import me.rerere.hugeicons.stroke.Delete01
 import me.rerere.hugeicons.stroke.Package01
+import me.rerere.hugeicons.stroke.Refresh01
 import me.rerere.hugeicons.stroke.Settings03
 import me.rerere.hugeicons.stroke.Share01
 import me.rerere.hugeicons.stroke.Tick01
@@ -175,14 +179,22 @@ fun SettingProviderDetailSheet(
         internalProvider = internalProvider.addModel(edited.copy(displayName = edited.displayName.trim()))
     }
 
-    val modelList by produceState(emptyList(), internalProvider.id) {
-        runCatching {
-            value = providerManager.getProviderByType(internalProvider)
-                .listModels(internalProvider)
+    // 增删、排序已添加的模型不影响远端列表，去掉 models 再作为 key，避免每次编辑都重新请求
+    val listKey = remember(internalProvider) { internalProvider.copyProvider(models = emptyList()) }
+    var refreshModelList by remember { mutableIntStateOf(0) }
+    val remoteModels by produceState(RemoteModels(), listKey, refreshModelList) {
+        value = value.copy(loading = true, error = null)
+        value = try {
+            val models = providerManager.getProviderByType(listKey)
+                .listModels(listKey)
                 .sortedBy { it.modelId }
-                .toList()
-        }.onFailure {
-            it.printStackTrace()
+            RemoteModels(models = models)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // 失败时保留上次拿到的列表
+            value.copy(loading = false, error = e)
         }
     }
 
@@ -488,7 +500,8 @@ fun SettingProviderDetailSheet(
 
     if (showModelPicker) {
         ModelPickerSheet(
-            models = modelList,
+            remoteModels = remoteModels,
+            onRefresh = { refreshModelList++ },
             selectedModels = internalProvider.models,
             provider = internalProvider,
             onModelSelected = { model ->
@@ -1009,9 +1022,17 @@ private fun GoogleServiceAccountFields(
     )
 }
 
+/** 提供商远端的可用模型列表，[error] 不为空时 [models] 是上次成功拿到的结果 */
+private data class RemoteModels(
+    val models: List<Model> = emptyList(),
+    val loading: Boolean = false,
+    val error: Throwable? = null,
+)
+
 @Composable
 private fun ModelPickerSheet(
-    models: List<Model>,
+    remoteModels: RemoteModels,
+    onRefresh: () -> Unit,
     selectedModels: List<Model>,
     provider: ProviderSetting,
     onModelSelected: (Model) -> Unit,
@@ -1029,7 +1050,7 @@ private fun ModelPickerSheet(
         var filterText by remember { mutableStateOf("") }
         var deleteTarget by remember { mutableStateOf<Model?>(null) }
         var showDeleteDialog by remember { mutableStateOf(false) }
-        val filteredModels = models.filterByKeywords(filterText)
+        val filteredModels = remoteModels.models.filterByKeywords(filterText)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1046,13 +1067,51 @@ private fun ModelPickerSheet(
             )
 
             // 可选模型标题
-            Text(
-                text = stringResource(R.string.setting_provider_page_avaliable_models),
-                style = MaterialTheme.typography.titleMedium,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp, vertical = 4.dp),
-            )
+            ) {
+                Text(
+                    text = stringResource(R.string.setting_provider_page_avaliable_models),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                IconButton(
+                    onClick = onRefresh,
+                    enabled = !remoteModels.loading,
+                ) {
+                    Icon(HugeIcons.Refresh01, contentDescription = stringResource(R.string.common_refresh))
+                }
+            }
+
+            if (remoteModels.loading) {
+                LinearWavyProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                )
+            }
+
+            remoteModels.error?.let { error ->
+                Surface(
+                    shape = MaterialTheme.shapes.large,
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                ) {
+                    Text(
+                        text = error.message ?: error.javaClass.simpleName,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        maxLines = 4,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(12.dp),
+                    )
+                }
+            }
 
             LazyColumn(
                 modifier = Modifier

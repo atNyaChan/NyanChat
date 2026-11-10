@@ -30,6 +30,7 @@
 - 🔄 支持多个不同供应商和自定义 API。
 - 🧠 精确记忆（但消耗更多 token ）
 - 📦 基于 proot 的 Linux 工作区
+- 📱 Phone Use：让 AI 通过无障碍服务操作手机
 - 🔍 联网搜索（ Bing、Perplexity 等）
 - 🛠️ MCP 支持
 - 🖼️ 支持生图 API
@@ -38,7 +39,7 @@
 - ✅ 如果发现 bug 或者想要一些小功能，欢迎提出！
 - ❌ **请不要提交修改较大的 PR。有想实现的功能的话请在 Issues 里提出，而不是自己实现然后直接提交代码**
 - ❌ **请不要在 Issue 里附上大段代码分析**，说明问题及复现方式即可。（不过也可以大致分析造成该问题的代码，不要写太多就好）
-- NyanChat 不会添加使用无障碍权限或 adb (Shizuku) 或 root 来自动化控制手机的 Agent 功能，也不会添加 bot 功能（如 QQ bot）（由于此类功能过于危险且难以测试）。如果需要此类功能，请使用 [RikkaHub Agent](https://github.com/ExTV/rikkahub-agent) 或 [Operit](https://github.com/AAswordman/Operit)。
+- NyanChat 不会添加 bot 功能（如 QQ bot）。如果需要此类功能，请使用 [RikkaHub Agent](https://github.com/ExTV/rikkahub-agent) 或 [Operit](https://github.com/AAswordman/Operit)。
 > 不过通过 Android API 实现的功能还是可以加的！
 - ❌ **请不要让 NyanChat 内置新的模型提供商**：NyanChat 只会内置 RikkaHub 已有的提供商。如果想要别的提供商，请自定义 `base_url`。
 - ❌ **遇到跟特定模型请求或者生图功能的问题，请先下载官方 RikkaHub 确认问题是否在 RikkaHub 中存在**。如存在，请在 RikkaHub 提交 Issues / PR（并附上用 RikkaHub 复现的截图）。（因为 NyanChat 几乎没有改动跟构建或发送 LLM 请求相关的代码，除了缓存开关）

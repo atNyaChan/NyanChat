@@ -83,7 +83,7 @@ val DEFAULT_PROVIDERS = listOf(
         name = "Vercel AI Gateway",
         baseUrl = "https://ai-gateway.vercel.sh/v1",
         apiKey = "",
-        enabled = false,
+        enabled = true,
         builtIn = true,
         quotaQuery = QuotaQuery(
             enabled = true,
@@ -96,7 +96,7 @@ val DEFAULT_PROVIDERS = listOf(
         name = "Alibaba Cloud Bailian",
         baseUrl = "https://dashscope.aliyuncs.com/compatible-mode/v1",
         apiKey = "",
-        enabled = false,
+        enabled = true,
         builtIn = true
     ),
     ProviderSetting.OpenAI(
@@ -104,7 +104,7 @@ val DEFAULT_PROVIDERS = listOf(
         name = "Volcengine",
         baseUrl = "https://ark.cn-beijing.volces.com/api/v3",
         apiKey = "",
-        enabled = false,
+        enabled = true,
         builtIn = true
     ),
     ProviderSetting.OpenAI(
@@ -112,7 +112,7 @@ val DEFAULT_PROVIDERS = listOf(
         name = "Zhipu AI",
         baseUrl = "https://open.bigmodel.cn/api/paas/v4",
         apiKey = "",
-        enabled = false,
+        enabled = true,
         builtIn = true
     ),
     ProviderSetting.OpenAI(
@@ -120,7 +120,7 @@ val DEFAULT_PROVIDERS = listOf(
         name = "xAI",
         baseUrl = "https://api.x.ai/v1",
         apiKey = "",
-        enabled = false,
+        enabled = true,
         builtIn = true,
         useResponseApi = true,
     ),
@@ -129,7 +129,7 @@ val DEFAULT_PROVIDERS = listOf(
         name = "MiniMax",
         baseUrl = "https://api.minimaxi.com/anthropic/v1",
         apiKey = "",
-        enabled = false,
+        enabled = true,
         builtIn = true,
     ),
     ProviderSetting.OpenAI(
@@ -137,7 +137,7 @@ val DEFAULT_PROVIDERS = listOf(
         name = "MIMO",
         baseUrl = "https://api.xiaomimimo.com/v1",
         apiKey = "",
-        enabled = false,
+        enabled = true,
         builtIn = true,
     ),
 )

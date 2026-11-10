@@ -228,7 +228,7 @@ GROUPS: list[tuple[str, list[str]]] = [
         r"^permission_log_page_", r"^request_intercept_",
     ]),
     ("Permissions", [
-        r"^permission_",
+        r"^permission_", r"^phone_use_",
     ]),
     ("Web server", [
         r"^setting_page_web_server",

@@ -111,6 +111,11 @@ class ConversationSessionManager(
             session?.generationJob ?: flowOf(null)
         }
 
+    fun getActivityFlow(conversationId: Uuid): Flow<SessionActivity?> =
+        sessions.map { it[conversationId] }.distinctUntilChanged().flatMapLatest { session ->
+            session?.activity ?: flowOf(null)
+        }
+
     fun getGeneratingMessageIdFlow(conversationId: Uuid): Flow<Uuid?> =
         sessions.map { it[conversationId] }.distinctUntilChanged().flatMapLatest { session ->
             session?.generatingMessageId ?: flowOf(null)

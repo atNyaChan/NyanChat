@@ -127,12 +127,15 @@ private fun MainPage(vm: DebugVM) {
     var isRecalculating by remember { mutableStateOf(false) }
     var isCreatingOversized by remember { mutableStateOf(false) }
     var isCreatingMessages by remember { mutableStateOf(false) }
+    var isCreatingTokenConversation by remember { mutableStateOf(false) }
     var isSavingDatabase by remember { mutableStateOf(false) }
     var lastDatabaseSaveTime by remember { mutableStateOf<Long?>(null) }
     val oversizedTitle = stringResource(R.string.debug_page_oversized_conversation_title, 30)
     val creatingOversizedMsg = stringResource(R.string.debug_page_creating_oversized_conversation)
     val messagesTitle = stringResource(R.string.debug_page_messages_conversation_title, 1024)
     val creatingMessagesMsg = stringResource(R.string.debug_page_creating_1024_conversation)
+    val tokenConversationTitle = stringResource(R.string.debug_page_token_conversation_title, 500)
+    val creatingTokenConversationMsg = stringResource(R.string.debug_page_creating_token_conversation)
     LaunchedEffect(Unit) {
         lastDatabaseSaveTime = vm.lastDatabaseSaveTimeMillis()
     }
@@ -262,6 +265,24 @@ private fun MainPage(vm: DebugVM) {
         ) {
             Text(stringResource(R.string.debug_page_create_1024_conversation))
         }
+
+        Button(
+            onClick = {
+                isCreatingTokenConversation = true
+                scope.launch {
+                    try {
+                        vm.createConversationWithTokens(500_000, tokenConversationTitle)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    } finally {
+                        isCreatingTokenConversation = false
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(stringResource(R.string.debug_page_create_token_conversation))
+        }
     }
 
     if (isRecalculating) {
@@ -272,6 +293,9 @@ private fun MainPage(vm: DebugVM) {
     }
     if (isCreatingMessages) {
         DebugProgressDialog(creatingMessagesMsg)
+    }
+    if (isCreatingTokenConversation) {
+        DebugProgressDialog(creatingTokenConversationMsg)
     }
 }
 

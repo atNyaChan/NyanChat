@@ -53,6 +53,7 @@
   <string name="common_off">Aus</string>
   <string name="common_ok">OK</string>
   <string name="common_on">Ein</string>
+  <string name="common_refresh">Aktualisieren</string>
   <string name="common_rename">Umbenennen</string>
   <string name="common_save">Speichern</string>
   <string name="common_search">Suchen</string>
@@ -290,6 +291,29 @@
   <string name="chat_message_tool_edit_memory">Erinnerung aktualisiert</string>
   <string name="chat_message_tool_get_time">Zeitinfo abrufen</string>
   <string name="chat_message_tool_list_memory">Erinnerungen aufgelistet</string>
+<string name="chat_message_tool_phone_use_list_apps">Apps auflisten</string>
+<string name="chat_message_tool_phone_use_long_press">Lange drücken</string>
+<string name="chat_message_tool_phone_use_long_press_target">%1$s lange drücken</string>
+<string name="chat_message_tool_phone_use_observe">Bildschirm lesen</string>
+<string name="chat_message_tool_phone_use_open_app">App öffnen</string>
+<string name="chat_message_tool_phone_use_open_app_name">App öffnen: %1$s</string>
+<string name="chat_message_tool_phone_use_press_back">Zurück drücken</string>
+<string name="chat_message_tool_phone_use_press_enter">Enter drücken</string>
+<string name="chat_message_tool_phone_use_press_home">Zum Startbildschirm wechseln</string>
+<string name="chat_message_tool_phone_use_press_notifications">Benachrichtigungen öffnen</string>
+<string name="chat_message_tool_phone_use_press_recents">Zuletzt verwendete Apps öffnen</string>
+<string name="chat_message_tool_phone_use_screenshot">Screenshot aufnehmen</string>
+<string name="chat_message_tool_phone_use_scroll_down">Nach unten scrollen</string>
+<string name="chat_message_tool_phone_use_scroll_left">Nach links scrollen</string>
+<string name="chat_message_tool_phone_use_scroll_right">Nach rechts scrollen</string>
+<string name="chat_message_tool_phone_use_scroll_up">Nach oben scrollen</string>
+<string name="chat_message_tool_phone_use_swipe">Wischen</string>
+<string name="chat_message_tool_phone_use_swipe_path">Wischen: %1$s → %2$s</string>
+<string name="chat_message_tool_phone_use_tap">Tippen</string>
+<string name="chat_message_tool_phone_use_tap_target">Auf %1$s tippen</string>
+<string name="chat_message_tool_phone_use_type">Text eingeben</string>
+<string name="chat_message_tool_phone_use_type_text">Text eingeben: %1$s</string>
+<string name="chat_message_tool_phone_use_wait">%1$s Sekunden warten</string>
   <string name="chat_message_tool_read_memory">Erinnerung gelesen</string>
   <string name="chat_message_tool_recent_chats">Letzte Chats anzeigen</string>
   <string name="chat_message_tool_scrape_prefix">Website scrapen: %1$s</string>
@@ -552,6 +576,11 @@
   <string name="assistant_page_local_tools_javascript_engine_title">JavaScript-Engine</string>
   <string name="assistant_page_local_tools_location_desc">Lass die KI den zuletzt bekannten Standort des Geräts lesen</string>
   <string name="assistant_page_local_tools_location_title">Standortinformationen</string>
+<string name="assistant_page_local_tools_phone_use_desc">Lass die KI den Bildschirm lesen und andere Apps auf diesem Telefon bedienen</string>
+<string name="assistant_page_local_tools_phone_use_enable_service">Aktiviere \"NyanChat Phone Use\" in den Bedienungshilfen-Einstellungen</string>
+<string name="assistant_page_local_tools_phone_use_floating_window_required">Aktiviere zuerst das schwebende Hintergrundfenster</string>
+<string name="assistant_page_local_tools_phone_use_service_off">Der Bedienungshilfe-Dienst ist deaktiviert. Schalte diesen Schalter aus und wieder ein, um die Einstellungen zu öffnen. Wenn das System die Option ausgraut, erlaube zuerst eingeschränkte Einstellungen für diese App in den App-Infos.</string>
+<string name="assistant_page_local_tools_phone_use_title">Telefonnutzung</string>
   <string name="assistant_page_local_tools_screen_time_desc">Lass die KI deine App-Nutzungszeit lesen</string>
   <string name="assistant_page_local_tools_screen_time_permission_required">Bitte erteile in den Einstellungen die Berechtigung für den Nutzungszugriff, um die Bildschirmzeit nutzen zu können</string>
   <string name="assistant_page_local_tools_screen_time_title">Bildschirmzeit</string>
@@ -844,10 +873,10 @@
   <string name="workspace_ssh_editor_import_key">Aus Datei importieren</string>
   <string name="workspace_ssh_editor_jump_host">Jump-Host</string>
   <string name="workspace_ssh_editor_jump_host_enable">Über einen Jump-Host verbinden</string>
-  <string name="workspace_ssh_editor_jump_host_enable_desc">Stelle zuerst eine Verbindung zum Jump-Host her und erreiche den Server darüber, wie ProxyJump in OpenSSH. Der obige Host wird vom Jump-Host aufgelöst</string>
-  <string name="workspace_ssh_editor_jump_host_key">Hostschlüssel des Jump-Hosts</string>
-  <string name="workspace_ssh_editor_jump_host_key_changed">Hostschlüssel des Jump-Hosts geändert</string>
-  <string name="workspace_ssh_editor_jump_host_key_confirm">Hostschlüssel des Jump-Hosts bestätigen</string>
+  <string name="workspace_ssh_editor_jump_host_enable_desc">Zuerst mit einem Jump-Host verbinden und den Server darüber erreichen, wie ProxyJump in OpenSSH. Der oben angegebene Host wird vom Jump-Host aus aufgelöst</string>
+  <string name="workspace_ssh_editor_jump_host_key">Jump-Host-Schlüssel</string>
+  <string name="workspace_ssh_editor_jump_host_key_changed">Jump-Host-Schlüssel geändert</string>
+  <string name="workspace_ssh_editor_jump_host_key_confirm">Jump-Host-Schlüssel bestätigen</string>
   <string name="workspace_ssh_editor_missing_fields">Gib Host, Port und Benutzername ein</string>
   <string name="workspace_ssh_editor_missing_jump_fields">Gib Host, Port und Benutzername des Jump-Hosts ein</string>
   <string name="workspace_ssh_editor_missing_remote_dir">Gib das Remote-Arbeitsverzeichnis ein</string>
@@ -869,7 +898,7 @@
   <string name="workspace_ssh_editor_saved_keep">Gespeichert. Leer lassen, um ihn beizubehalten</string>
   <string name="workspace_ssh_editor_security">Sicherheit</string>
   <string name="workspace_ssh_editor_shell">Shell</string>
-  <string name="workspace_ssh_editor_target_host_key">Hostschlüssel des Servers</string>
+  <string name="workspace_ssh_editor_target_host_key">Server-Hostschlüssel</string>
   <string name="workspace_ssh_editor_test">Verbindung testen</string>
   <string name="workspace_ssh_editor_title_edit">SSH-Verbindung bearbeiten</string>
   <string name="workspace_ssh_editor_title_new">Neuer SSH-Arbeitsbereich</string>
@@ -1111,6 +1140,10 @@
   <string name="setting_display_page_amoled_dark_mode_title">AMOLED-Dunkelmodus</string>
   <string name="setting_display_page_auto_collapse_thinking_desc">Denkinhalt nach Abschluss des Denkens automatisch einklappen</string>
   <string name="setting_display_page_auto_collapse_thinking_title">Denken automatisch einklappen</string>
+<string name="setting_display_page_auto_compress_desc">Komprimiert nach einer Antwort den Verlauf automatisch zu einer Zusammenfassung, wenn die Kontextauslastung den festgelegten Anteil überschreitet</string>
+<string name="setting_display_page_auto_compress_threshold_desc">Relativ zum Kontextfenster des Chatmodells</string>
+<string name="setting_display_page_auto_compress_threshold_title">Auslöseverhältnis</string>
+<string name="setting_display_page_auto_compress_title">Kontext automatisch komprimieren</string>
   <string name="setting_display_page_auto_play_tts_desc">TTS nach Abschluss der Assistentenantwort automatisch abspielen</string>
   <string name="setting_display_page_auto_play_tts_title">TTS nach Generierung automatisch abspielen</string>
   <string name="setting_display_page_background_effect_blur">Unschärfe</string>
@@ -1776,11 +1809,13 @@
   <string name="permission_microphone">Mikrofon</string>
   <string name="permission_microphone_desc">Die Mikrofonberechtigung wird für die Spracherkennung benötigt</string>
   <string name="permission_notification">Benachrichtigung</string>
+<string name="permission_notification_card_desc">Erlaube Benachrichtigungen, um den Fortschritt von Hintergrundaufgaben wie KI-Generierung und Webserver zu sehen</string>
   <string name="permission_notification_desc">Benachrichtigungen senden</string>
   <string name="permission_permanently_denied">Dauerhaft abgelehnt</string>
   <string name="permission_precise_location">Genauer Standort</string>
   <string name="permission_precise_location_desc">Wird verwendet, um Assistenten-Tools einen genaueren Standort bereitzustellen</string>
   <string name="permission_required">Erforderlich</string>
+<string name="phone_use_accessibility_description">Ermöglicht dem KI-Assistenten, den Bildschirm zu lesen und Tippen, Wischen und Texteingaben für dich auszuführen, wenn du das Phone-Use-Tool aktivierst. Es wird nichts ausgeführt, solange der Assistent keine von dir angeforderte Aufgabe ausführt.</string>
   <!-- Web server -->
   <string name="setting_page_web_server">Webserver</string>
   <string name="setting_page_web_server_desc">Über das Web auf NyanChat zugreifen</string>
@@ -1833,8 +1868,10 @@
   <string name="debug_page_crash">Absturz</string>
   <string name="debug_page_create_1024_conversation">Chat mit 1024 Nachrichten erstellen</string>
   <string name="debug_page_create_oversized_conversation">Übergroße Unterhaltung erstellen (30 MiB)</string>
+  <string name="debug_page_create_token_conversation">Chat mit ~500k Tokens erstellen</string>
   <string name="debug_page_creating_1024_conversation">Unterhaltung mit 1024 Nachrichten wird erstellt…</string>
   <string name="debug_page_creating_oversized_conversation">Übergroße Unterhaltung mit 30 MiB wird erstellt…</string>
+  <string name="debug_page_creating_token_conversation">Unterhaltung mit ~500k Tokens wird erstellt…</string>
   <string name="debug_page_last_database_save_time">Letzte Speicherung: %1$s</string>
   <string name="debug_page_last_database_save_time_never">Letzte Speicherung: nie</string>
   <string name="debug_page_messages_conversation_title">%1$d-Nachrichten-Test</string>
@@ -1847,6 +1884,7 @@
   <string name="debug_page_tab_colors">Farben</string>
   <string name="debug_page_tab_main">Allgemein</string>
   <string name="debug_page_tab_recovery">Wiederherstellung</string>
+  <string name="debug_page_token_conversation_title">~%1$dk-Token-Unterhaltungstest</string>
   <!-- Errors -->
   <string name="error_fast_model_not_found">Schnelles Modell nicht gefunden. Bitte wähle eines in den Einstellungen aus.</string>
   <string name="error_fast_model_provider_not_found">Anbieter des schnellen Modells nicht gefunden</string>
@@ -1876,6 +1914,7 @@
   <string name="error_skill_rename_forbidden">Der Skill-Name darf nicht geändert werden (das Feld name muss „%1$s“ sein)</string>
   <string name="error_skill_save_check_format">Speichern fehlgeschlagen; bitte prüfe das Skill-Format</string>
   <string name="error_skill_save_failed_name">Speichern fehlgeschlagen: %1$s</string>
+<string name="error_title_auto_compress">Automatische Komprimierung fehlgeschlagen</string>
   <string name="error_title_generate_title">Titelerstellung fehlgeschlagen</string>
   <string name="error_title_generation">Nachrichtengenerierung fehlgeschlagen</string>
   <string name="error_title_operation">Vorgang fehlgeschlagen</string>

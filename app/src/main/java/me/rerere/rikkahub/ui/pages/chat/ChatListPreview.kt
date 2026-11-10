@@ -25,9 +25,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,6 +44,10 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.toJavaLocalDateTime
 import me.rerere.ai.core.MessageRole
 import me.rerere.ai.provider.Model
@@ -71,12 +78,15 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
+import kotlin.uuid.Uuid
 
 /**
  * 概览里的一张卡片：一轮对话 = 一条用户消息 + 后面跟着的助手回复（工具调用会拆成多个节点，这里合并）。
  * 对话开头没有用户消息时（如开场白），[user] 为空。
  */
 private data class PreviewRound(
+    // 这一轮第一个节点的 id，用作列表 key
+    val id: Uuid,
     // 点击跳转的目标，取这一轮第一个节点
     val firstIndex: Int,
     val lastIndex: Int,
@@ -102,6 +112,7 @@ private fun List<MessageNode>.toPreviewRounds(): List<PreviewRound> {
         val user = group.first().value.currentMessage.takeIf { it.role == MessageRole.USER }
         val replies = group.map { it.value.currentMessage }.filter { it.role != MessageRole.USER }
         PreviewRound(
+            id = group.first().value.id,
             firstIndex = group.first().index,
             lastIndex = group.last().index,
             user = user,
@@ -131,7 +142,15 @@ internal fun ChatListPreview(
     var searchQuery by rememberSaveable { mutableStateOf("") }
     val query = searchQuery.trim()
 
-    val rounds = remember(conversation.messageNodes) { conversation.messageNodes.toPreviewRounds() }
+    // 长对话里逐条做正则清洗很慢，放到后台算；没算完时为 null。
+    // 生成中节点每个 chunk 都在变，conflate 掉中间状态，只算最新的
+    val nodes by rememberUpdatedState(conversation.messageNodes)
+    val loadedRounds by produceState<List<PreviewRound>?>(initialValue = null) {
+        snapshotFlow { nodes }
+            .conflate()
+            .collect { value = withContext(Dispatchers.Default) { it.toPreviewRounds() } }
+    }
+    val rounds = loadedRounds.orEmpty()
     val filtered = remember(rounds, query) {
         if (query.isEmpty()) rounds else rounds.filter { it.matches(query) }
     }
@@ -145,13 +164,17 @@ internal fun ChatListPreview(
 
     // 打开时的阅读位置；概览期间聊天列表不动，记一次就够
     val currentIndex = remember { chatListState.firstVisibleItemIndex }
-    val currentRound = remember(rounds) {
-        rounds.indexOfFirst { currentIndex in it.firstIndex..it.lastIndex }
+    // listState 由外部持有（顶栏胶囊要读它），每次打开都重新定位：停在当前轮的前一轮，让上面露出一点上下文。
+    // 要等卡片算出来、列表里有内容之后才能滚
+    val loaded = loadedRounds != null
+    LaunchedEffect(loaded) {
+        if (!loaded) return@LaunchedEffect
+        val currentRound = rounds.indexOfFirst { currentIndex in it.firstIndex..it.lastIndex }
+        listState.scrollToItem((currentRound - 1).coerceAtLeast(0))
     }
-    // listState 由外部持有（顶栏胶囊要读它），每次打开都重新定位：
-    // 搜索框固定在顶部不在列表里，第 r 轮就是第 r 项
-    LaunchedEffect(Unit) {
-        listState.scrollToItem(currentRound.coerceAtLeast(0))
+    // 搜索框固定在列表外，滚到中间时改搜索词，结果要从头看
+    LaunchedEffect(listState) {
+        snapshotFlow { searchQuery.trim() }.drop(1).collect { listState.scrollToItem(0) }
     }
 
     // 搜索框固定在概览页顶部，下面的列表只在它下方滚动
@@ -183,7 +206,7 @@ internal fun ChatListPreview(
                 .fillMaxWidth()
                 .weight(1f),
         ) {
-            if (filtered.isEmpty()) {
+            if (loaded && filtered.isEmpty()) {
                 item(key = PreviewEmptyKey) {
                     Column(
                         modifier = Modifier
@@ -207,7 +230,7 @@ internal fun ChatListPreview(
                 }
             }
 
-            items(items = filtered, key = { conversation.messageNodes[it.firstIndex].id }) { round ->
+            items(items = filtered, key = { it.id }) { round ->
                 val reply = round.reply
                 PreviewRoundCard(
                     round = round,
@@ -380,7 +403,8 @@ private fun HighlightedSnippet(
     val highlightTextColor = MaterialTheme.colorScheme.onTertiaryContainer
     val annotated = remember(text, query, highlightColor, highlightTextColor) {
         buildHighlightedText(
-            text = extractMatchingSnippet(text, query),
+            // Text 会把整段文字都排版一遍才截到 maxLines，长回复必须先截短
+            text = extractMatchingSnippet(text, query).take(SnippetMaxLength),
             query = query,
             highlightColor = highlightColor,
             highlightTextColor = highlightTextColor,
@@ -514,6 +538,9 @@ private fun extractMatchingSnippet(text: String, query: String): String {
 }
 
 private const val SnippetContextLength = 24
+
+// 卡片最多显示两行，留足宽屏和小字号的余量
+private const val SnippetMaxLength = 300
 
 private fun buildHighlightedText(
     text: String,

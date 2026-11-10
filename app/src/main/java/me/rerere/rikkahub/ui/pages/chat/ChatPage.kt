@@ -93,6 +93,7 @@ import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.rikkahub.data.repository.FolderRepository
 import me.rerere.rikkahub.service.BackgroundShellStatus
 import me.rerere.rikkahub.service.ChatError
+import me.rerere.rikkahub.service.SessionActivity
 import me.rerere.rikkahub.ui.components.ai.BackgroundTasksSheet
 import me.rerere.rikkahub.ui.components.ai.ChatInput
 import me.rerere.rikkahub.ui.components.ai.FilesPicker
@@ -460,6 +461,8 @@ private fun ChatPageContent(
     onClearAllErrors: () -> Unit,
     hazeState: HazeState,
 ) {
+    val sessionActivity by vm.sessionActivity.collectAsStateWithLifecycle()
+
     val scope = rememberCoroutineScope()
     val toaster = LocalToaster.current
     val selectModelFirstMessage = stringResource(R.string.chat_page_select_model_first)
@@ -652,6 +655,7 @@ private fun ChatPageContent(
                     previewListState = previewListState,
                     selectionState = selectionState,
                     loading = loadingJob != null,
+                    compressing = sessionActivity == SessionActivity.Compressing,
                     generatingMessageId = generatingMessageId,
                     statsSnapshot = statsSnapshot,
                     processingStatus = processingStatus,
@@ -934,6 +938,12 @@ private fun TopBar(
             }
         },
         actions = {
+            ChatPageMenu(
+                enabled = conversation.messageNodes.isNotEmpty(),
+                onShowOverview = onShowOverview,
+                onExport = onExport,
+                onDelete = onDelete,
+            )
             IconButton(
                 onClick = {
                     onNewChat()
@@ -941,12 +951,6 @@ private fun TopBar(
             ) {
                 Icon(HugeIcons.MessageAdd01, "New Message")
             }
-            ChatPageMenu(
-                enabled = conversation.messageNodes.isNotEmpty(),
-                onShowOverview = onShowOverview,
-                onExport = onExport,
-                onDelete = onDelete,
-            )
         },
     )
     titleState.EditStateContent { title, onUpdate ->

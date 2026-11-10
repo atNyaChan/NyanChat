@@ -75,6 +75,7 @@ import me.rerere.hugeicons.stroke.View
 import me.rerere.hugeicons.stroke.ViewOff
 import me.rerere.rikkahub.BuildConfig
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.data.datastore.AUTO_COMPRESS_THRESHOLD_RANGE
 import me.rerere.rikkahub.data.datastore.BackgroundEffectSelection
 import me.rerere.rikkahub.data.datastore.ChatFontFamily
 import me.rerere.rikkahub.data.datastore.DisplaySetting
@@ -379,6 +380,50 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                         supportingContent = { Text(stringResource(R.string.setting_display_page_enable_auto_scroll_desc)) },
                         headlineContent = { Text(stringResource(R.string.setting_display_page_enable_auto_scroll_title)) },
                     )
+                    switchItem(
+                        checked = settings.enableAutoCompress,
+                        onCheckedChange = {
+                            vm.updateSettings { latest -> latest.copy(enableAutoCompress = it) }
+                        },
+                        supportingContent = { Text(stringResource(R.string.setting_display_page_auto_compress_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_display_page_auto_compress_title)) },
+                    )
+                    if (settings.enableAutoCompress) {
+                        FormItem(
+                            label = { Text(stringResource(R.string.setting_display_page_auto_compress_threshold_title)) },
+                            description = { Text(stringResource(R.string.setting_display_page_auto_compress_threshold_desc)) },
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                val autoCompressState = remember {
+                                    SliderState(
+                                        value = settings.autoCompressThreshold,
+                                        trackRange = AUTO_COMPRESS_THRESHOLD_RANGE,
+                                        steps = 8,
+                                    )
+                                }
+                                LaunchedEffect(settings.autoCompressThreshold) {
+                                    if (autoCompressState.value != settings.autoCompressThreshold) {
+                                        autoCompressState.value = settings.autoCompressThreshold
+                                    }
+                                }
+                                Slider(
+                                    state = autoCompressState,
+                                    onValueChange = {
+                                        // 按 5% 取整，避免浮点误差存成 0.79999995 之类的值
+                                        val value = (it * 20).roundToInt() / 20f
+                                        autoCompressState.value = value
+                                        vm.updateSettings { latest -> latest.copy(autoCompressThreshold = value) }
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                )
+                                CardGroupValue("${(settings.autoCompressThreshold * 100).roundToInt()}%")
+                            }
+                        }
+                    }
                     switchItem(
                         checked = displaySetting.enableMessageGenerationHapticEffect,
                         onCheckedChange = {

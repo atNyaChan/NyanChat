@@ -30,6 +30,7 @@
 - 🔄 Support for multiple providers and custom APIs.
 - 🧠 Precise memory (but consumes more tokens)
 - 📦 proot-based Linux workspace
+- 📱 Phone Use: let the AI operate your phone through the accessibility service
 - 🔍 Web search (Bing, Perplexity, etc.)
 - 🛠️ MCP support
 - 🖼️ Image generation API support
@@ -38,7 +39,7 @@
 - ✅ If you find a bug or want a small feature, feel free to open an issue!
 - ❌ **Please do not submit PRs with large changes. If you want to implement a feature, please propose it in Issues first rather than implementing and submitting code directly.**
 - ❌ **Please do not include lengthy code analysis in Issues.** Just describe the problem and how to reproduce it. (Though a brief analysis of the problematic code is fine, just keep it short.)
-- NyanChat will not add Agent features that use accessibility permissions, adb (Shizuku), or root to automate phone control, nor will it add bot features (like QQ bots) (as such features are too dangerous and hard to test). For such features, please use [RikkaHub Agent](https://github.com/ExTV/rikkahub-agent) or [Operit](https://github.com/AAswordman/Operit).
+- NyanChat will not add bot features (like QQ bots). For such features, please use [RikkaHub Agent](https://github.com/ExTV/rikkahub-agent) or [Operit](https://github.com/AAswordman/Operit).
 > However, features implemented through Android APIs are still welcome!
 - ❌ **Please do not request NyanChat to built-in new model providers**: NyanChat will only include providers already present in RikkaHub. For other providers, please use a custom `base_url`.
 - ❌ **For issues with specific model requests or image generation, please first download the official RikkaHub to check if the issue exists there.** If it does, please submit Issues / PRs to RikkaHub (with screenshots reproducing the issue in RikkaHub). (Since NyanChat has barely modified code related to constructing or sending LLM requests, except for the cache toggle.)

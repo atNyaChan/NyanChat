@@ -53,6 +53,7 @@
   <string name="common_off">オフ</string>
   <string name="common_ok">OK</string>
   <string name="common_on">オン</string>
+  <string name="common_refresh">更新</string>
   <string name="common_rename">名前を変更</string>
   <string name="common_save">保存</string>
   <string name="common_search">検索</string>
@@ -290,6 +291,29 @@
   <string name="chat_message_tool_edit_memory">記憶を更新しました</string>
   <string name="chat_message_tool_get_time">時刻情報を取得</string>
   <string name="chat_message_tool_list_memory">メモリの一覧</string>
+<string name="chat_message_tool_phone_use_list_apps">アプリを一覧表示</string>
+<string name="chat_message_tool_phone_use_long_press">長押し</string>
+<string name="chat_message_tool_phone_use_long_press_target">%1$sを長押し</string>
+<string name="chat_message_tool_phone_use_observe">画面を読み取る</string>
+<string name="chat_message_tool_phone_use_open_app">アプリを開く</string>
+<string name="chat_message_tool_phone_use_open_app_name">アプリを開く: %1$s</string>
+<string name="chat_message_tool_phone_use_press_back">戻るボタンを押す</string>
+<string name="chat_message_tool_phone_use_press_enter">Enterキーを押す</string>
+<string name="chat_message_tool_phone_use_press_home">ホーム画面に移動</string>
+<string name="chat_message_tool_phone_use_press_notifications">通知を開く</string>
+<string name="chat_message_tool_phone_use_press_recents">最近使ったアプリを開く</string>
+<string name="chat_message_tool_phone_use_screenshot">スクリーンショットを撮影</string>
+<string name="chat_message_tool_phone_use_scroll_down">下にスクロール</string>
+<string name="chat_message_tool_phone_use_scroll_left">左にスクロール</string>
+<string name="chat_message_tool_phone_use_scroll_right">右にスクロール</string>
+<string name="chat_message_tool_phone_use_scroll_up">上にスクロール</string>
+<string name="chat_message_tool_phone_use_swipe">スワイプ</string>
+<string name="chat_message_tool_phone_use_swipe_path">%1$s → %2$s にスワイプ</string>
+<string name="chat_message_tool_phone_use_tap">タップ</string>
+<string name="chat_message_tool_phone_use_tap_target">%1$sをタップ</string>
+<string name="chat_message_tool_phone_use_type">テキストを入力</string>
+<string name="chat_message_tool_phone_use_type_text">テキストを入力: %1$s</string>
+<string name="chat_message_tool_phone_use_wait">%1$s秒待機</string>
   <string name="chat_message_tool_read_memory">メモリを読む</string>
   <string name="chat_message_tool_recent_chats">最近のチャットを表示</string>
   <string name="chat_message_tool_scrape_prefix">ウェブサイトをスクレイピング: %1$s</string>
@@ -396,8 +420,8 @@
   <string name="chat_page_compress_conversation_changed">圧縮中に会話が変更されました。もう一度お試しください。</string>
   <string name="chat_page_compress_handle_pending_tools">圧縮する前に保留中のツール呼び出しを処理してください</string>
   <string name="chat_page_compress_keep_recent">最近のメッセージを保持</string>
-  <string name="chat_page_compress_keep_recent_desc">これらのメッセージは圧縮されず、要約の後にそのまま残ります。0 を指定するとすべてを圧縮し、プロンプトキャッシュを最も活用できます。会話が長すぎて圧縮に失敗する場合は、保持する件数を増やしてください。</string>
-  <string name="chat_page_compress_not_enough_messages">圧縮できるメッセージが足りません。保持するメッセージ数を減らしてください。</string>
+  <string name="chat_page_compress_keep_recent_desc">これらのメッセージは圧縮されず、要約の後に残ります。0 にするとすべてを圧縮し、プロンプトキャッシュを最も有効に再利用します。会話が長すぎて圧縮できない場合は、保持するメッセージを増やしてください。</string>
+  <string name="chat_page_compress_not_enough_messages">圧縮するのに十分なメッセージがありません。保持するメッセージ数を減らしてください。</string>
   <string name="chat_page_compress_nothing_to_compress">前回の要約以降、圧縮する新しいメッセージはありません</string>
   <string name="chat_page_compress_tool_call_response">モデルが要約を書かずにツールを呼び出そうとしました。もう一度お試しください。</string>
   <string name="chat_page_compressing">圧縮中…</string>
@@ -552,6 +576,11 @@
   <string name="assistant_page_local_tools_javascript_engine_title">JavaScriptエンジン</string>
   <string name="assistant_page_local_tools_location_desc">AI に端末の最新の既知位置を読み取らせます</string>
   <string name="assistant_page_local_tools_location_title">位置情報</string>
+<string name="assistant_page_local_tools_phone_use_desc">AI が画面を読み取り、この端末上の他のアプリを操作できるようにします</string>
+<string name="assistant_page_local_tools_phone_use_enable_service">ユーザー補助設定で\"NyanChat Phone Use\"をオンにしてください</string>
+<string name="assistant_page_local_tools_phone_use_floating_window_required">先にバックグラウンドのフローティングウィンドウを有効にしてください</string>
+<string name="assistant_page_local_tools_phone_use_service_off">ユーザー補助サービスがオフです。このスイッチをオフにしてから再度オンにすると設定が開きます。システムでこのオプションがグレー表示される場合は、先にアプリ情報でこのアプリの制限付き設定を許可してください。</string>
+<string name="assistant_page_local_tools_phone_use_title">スマホ操作</string>
   <string name="assistant_page_local_tools_screen_time_desc">AIにアプリの画面使用時間を読み取らせます</string>
   <string name="assistant_page_local_tools_screen_time_permission_required">スクリーンタイムを使用するには、設定で「使用状況へのアクセス」許可を付与してください</string>
   <string name="assistant_page_local_tools_screen_time_title">スクリーンタイム</string>
@@ -844,7 +873,7 @@
 <string name="workspace_ssh_editor_import_key">ファイルからインポート</string>
 <string name="workspace_ssh_editor_jump_host">ジャンプホスト</string>
 <string name="workspace_ssh_editor_jump_host_enable">ジャンプホスト経由で接続</string>
-<string name="workspace_ssh_editor_jump_host_enable_desc">先にジャンプホストへ接続し、そこを経由してサーバーに接続します。OpenSSH の ProxyJump と同じです。上のホスト名はジャンプホスト側で解決されます</string>
+  <string name="workspace_ssh_editor_jump_host_enable_desc">最初にジャンプホストへ接続し、それを経由してサーバーに到達します（OpenSSH の ProxyJump と同様）。上記のホストはジャンプホストから名前解決されます</string>
 <string name="workspace_ssh_editor_jump_host_key">ジャンプホストのホスト鍵</string>
 <string name="workspace_ssh_editor_jump_host_key_changed">ジャンプホストのホスト鍵が変更されました</string>
 <string name="workspace_ssh_editor_jump_host_key_confirm">ジャンプホストのホスト鍵を確認</string>
@@ -1111,6 +1140,10 @@
   <string name="setting_display_page_amoled_dark_mode_title">AMOLED ダークモード</string>
   <string name="setting_display_page_auto_collapse_thinking_desc">思考が完了したら思考内容を自動的に折りたたむ</string>
   <string name="setting_display_page_auto_collapse_thinking_title">思考を自動折りたたむ</string>
+<string name="setting_display_page_auto_compress_desc">返信後、コンテキスト使用率が設定した割合を超えた場合、履歴を自動的に要約に圧縮します</string>
+<string name="setting_display_page_auto_compress_threshold_desc">チャットモデルのコンテキストウィンドウを基準とした相対値</string>
+<string name="setting_display_page_auto_compress_threshold_title">発動比率</string>
+<string name="setting_display_page_auto_compress_title">コンテキストの自動圧縮</string>
   <string name="setting_display_page_auto_play_tts_desc">アシスタントのメッセージ生成完了後にTTSを自動再生</string>
   <string name="setting_display_page_auto_play_tts_title">生成後にTTSを自動再生</string>
   <string name="setting_display_page_background_effect_blur">ぼかし</string>
@@ -1776,11 +1809,13 @@
   <string name="permission_microphone">マイク</string>
   <string name="permission_microphone_desc">音声認識にはマイクの権限が必要です</string>
   <string name="permission_notification">通知</string>
+<string name="permission_notification_card_desc">AI生成やWebサーバーなどのバックグラウンドタスクの進捗を確認するには、通知を許可してください</string>
   <string name="permission_notification_desc">通知を送信する</string>
   <string name="permission_permanently_denied">永久に拒否されました</string>
   <string name="permission_precise_location">正確な位置情報</string>
   <string name="permission_precise_location_desc">アシスタントツールにより正確な位置を提供するために使用します</string>
   <string name="permission_required">必須</string>
+<string name="phone_use_accessibility_description">Phone Useツールを有効にすると、AIアシスタントが画面を読み取り、タップ、スワイプ、テキスト入力を代行できるようになります。アシスタントがあなたの依頼したタスクを実行している場合にのみ動作し、それ以外は何も行われません。</string>
   <!-- Web server -->
   <string name="setting_page_web_server">Webサーバー</string>
   <string name="setting_page_web_server_desc">Web経由でNyanChatにアクセス</string>
@@ -1833,8 +1868,10 @@
   <string name="debug_page_crash">クラッシュ</string>
   <string name="debug_page_create_1024_conversation">1024 件のメッセージでチャットを作成</string>
   <string name="debug_page_create_oversized_conversation">超大な会話を作成 (30 MiB)</string>
+  <string name="debug_page_create_token_conversation">約 500k トークンの会話を作成</string>
   <string name="debug_page_creating_1024_conversation">1024 件のメッセージの会話を作成中…</string>
   <string name="debug_page_creating_oversized_conversation">30 MiB の超大な会話を作成中…</string>
+  <string name="debug_page_creating_token_conversation">約 500k トークンの会話を作成中…</string>
   <string name="debug_page_last_database_save_time">最終保存時間: %1$s</string>
   <string name="debug_page_last_database_save_time_never">最終保存時間: なし</string>
   <string name="debug_page_messages_conversation_title">%1$d 件のメッセージテスト</string>
@@ -1847,6 +1884,7 @@
   <string name="debug_page_tab_colors">カラー</string>
   <string name="debug_page_tab_main">一般</string>
   <string name="debug_page_tab_recovery">復元</string>
+  <string name="debug_page_token_conversation_title">約 %1$dk トークンの会話テスト</string>
   <!-- Errors -->
   <string name="error_fast_model_not_found">高速モデルが見つかりません。設定で選択してください。</string>
   <string name="error_fast_model_provider_not_found">高速モデルのプロバイダーが見つかりません</string>
@@ -1876,6 +1914,7 @@
   <string name="error_skill_rename_forbidden">スキル名は変更できません（name フィールドは “%1$s” である必要があります）</string>
   <string name="error_skill_save_check_format">保存に失敗しました。スキル形式を確認してください</string>
   <string name="error_skill_save_failed_name">保存に失敗しました: %1$s</string>
+<string name="error_title_auto_compress">自動圧縮に失敗しました</string>
   <string name="error_title_generate_title">タイトル生成に失敗しました</string>
   <string name="error_title_generation">メッセージ生成に失敗しました</string>
   <string name="error_title_operation">操作に失敗しました</string>

@@ -14,6 +14,9 @@ import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.event.AppEvent
 import me.rerere.rikkahub.data.event.AppEventBus
+import me.rerere.rikkahub.data.files.FilesManager
+import me.rerere.rikkahub.phoneuse.PhoneUseManager
+import me.rerere.rikkahub.phoneuse.isFloatingChatWindowOn
 import me.rerere.tts.provider.TTSManager
 
 class LocalTools(
@@ -21,6 +24,8 @@ class LocalTools(
     private val eventBus: AppEventBus,
     private val ttsManager: TTSManager,
     private val settingsStore: SettingsStore,
+    private val phoneUseManager: PhoneUseManager,
+    private val filesManager: FilesManager,
 ) {
     val javascriptTool by lazy { buildJavascriptTool() }
 
@@ -43,6 +48,20 @@ class LocalTools(
     val calendarCreateTool by lazy { buildCalendarCreateTool(context) }
 
     val chartDisplayTool by lazy { buildChartDisplayTool() }
+
+    val phoneUseTool by lazy {
+        buildPhoneUseTool(
+            ownPackageName = context.packageName,
+            manager = phoneUseManager,
+            isFloatingWindowOn = { isFloatingChatWindowOn(context, settingsStore.settingsFlow.value) },
+            saveScreenshot = { bytes ->
+                filesManager.createChatFilesByByteArrays(
+                    byteArrays = listOf(bytes),
+                    mimeType = "image/jpeg",
+                ).first().toString()
+            },
+        )
+    }
 
     fun getTools(
         options: List<LocalToolOption>,
@@ -78,6 +97,10 @@ class LocalTools(
         add(LocalToolOption.Calendar, calendarCreateTool)
         if (options.contains(LocalToolOption.ChartDisplay)) {
             tools.add(chartDisplayTool)
+        }
+        // 系统版本不支持时不提供（比如导入的备份里带着这个开关）
+        if (options.contains(LocalToolOption.PhoneUse) && PhoneUseManager.isSupported) {
+            tools.add(phoneUseTool)
         }
         return tools
     }

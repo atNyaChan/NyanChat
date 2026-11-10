@@ -82,6 +82,14 @@ fun Context.hasUsageStatsPermission(): Boolean {
  * Open the system "Usage access" settings page so the user can grant the
  * PACKAGE_USAGE_STATS permission manually.
  */
+fun Context.openAccessibilitySettings() {
+    runCatching {
+        startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    }.onFailure {
+        Log.e(TAG, "openAccessibilitySettings failed", it)
+    }
+}
+
 fun Context.openUsageAccessSettings() {
     runCatching {
         startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {

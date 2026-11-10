@@ -267,9 +267,10 @@ merges in git history, but NEVER let git auto-merge file contents.
       user. Do not guess.
 4. STOP. Do not commit. Leave every ported change in the working tree (staged is fine) and, if the
    merge is still pending, leave it pending (`git merge -s ours ... --no-commit` keeps
-   `.git/MERGE_HEAD`, so the user's commit lands as the merge commit). Report what was ported,
-   what was skipped, and the exact message the user should commit with — the whole sync is ONE
-   commit:
+   `.git/MERGE_HEAD`, so the user's commit lands as the merge commit). Before asking the user to
+   verify, tell them (1) what user-visible UI changes the sync introduces and (2) what needs to be
+   tested after compiling. Also report what was ported, what was skipped, and the exact message the
+   user should commit with — the whole sync is ONE commit:
 
    merge(upstream): sync to <newest-hash> (skipped: <hash> <subject>, <hash> <subject>)(if any)
 

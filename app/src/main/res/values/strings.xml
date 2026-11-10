@@ -53,6 +53,7 @@
   <string name="common_off">Off</string>
   <string name="common_ok">OK</string>
   <string name="common_on">On</string>
+  <string name="common_refresh">Refresh</string>
   <string name="common_rename">Rename</string>
   <string name="common_save">Save</string>
   <string name="common_search">Search</string>
@@ -290,6 +291,29 @@
   <string name="chat_message_tool_edit_memory">Updated memory</string>
   <string name="chat_message_tool_get_time">Get time info</string>
   <string name="chat_message_tool_list_memory">Listed memories</string>
+<string name="chat_message_tool_phone_use_list_apps">List apps</string>
+<string name="chat_message_tool_phone_use_long_press">Long press</string>
+<string name="chat_message_tool_phone_use_long_press_target">Long press %1$s</string>
+<string name="chat_message_tool_phone_use_observe">Read screen</string>
+<string name="chat_message_tool_phone_use_open_app">Open app</string>
+<string name="chat_message_tool_phone_use_open_app_name">Open app: %1$s</string>
+<string name="chat_message_tool_phone_use_press_back">Press Back</string>
+<string name="chat_message_tool_phone_use_press_enter">Press Enter</string>
+<string name="chat_message_tool_phone_use_press_home">Go to home screen</string>
+<string name="chat_message_tool_phone_use_press_notifications">Open notifications</string>
+<string name="chat_message_tool_phone_use_press_recents">Open recent apps</string>
+<string name="chat_message_tool_phone_use_screenshot">Take screenshot</string>
+<string name="chat_message_tool_phone_use_scroll_down">Scroll down</string>
+<string name="chat_message_tool_phone_use_scroll_left">Scroll left</string>
+<string name="chat_message_tool_phone_use_scroll_right">Scroll right</string>
+<string name="chat_message_tool_phone_use_scroll_up">Scroll up</string>
+<string name="chat_message_tool_phone_use_swipe">Swipe</string>
+<string name="chat_message_tool_phone_use_swipe_path">Swipe %1$s → %2$s</string>
+<string name="chat_message_tool_phone_use_tap">Tap</string>
+<string name="chat_message_tool_phone_use_tap_target">Tap %1$s</string>
+<string name="chat_message_tool_phone_use_type">Type text</string>
+<string name="chat_message_tool_phone_use_type_text">Enter text: %1$s</string>
+<string name="chat_message_tool_phone_use_wait">Wait %1$s seconds</string>
   <string name="chat_message_tool_read_memory">Read memory</string>
   <string name="chat_message_tool_recent_chats">View recent chats</string>
   <string name="chat_message_tool_scrape_prefix">Scrape website: %1$s</string>
@@ -552,6 +576,11 @@
   <string name="assistant_page_local_tools_javascript_engine_title">JavaScript Engine</string>
   <string name="assistant_page_local_tools_location_desc">Allow AI to read the device’s last known location</string>
   <string name="assistant_page_local_tools_location_title">Location information</string>
+<string name="assistant_page_local_tools_phone_use_desc">Let the AI read the screen and operate other apps on this phone</string>
+<string name="assistant_page_local_tools_phone_use_enable_service">Turn on \"NyanChat Phone Use\" in the accessibility settings</string>
+<string name="assistant_page_local_tools_phone_use_floating_window_required">Turn on the background floating window first</string>
+<string name="assistant_page_local_tools_phone_use_service_off">The accessibility service is off. Turn this switch off and on again to open the settings. If the system greys the option out, allow restricted settings for this app in App info first.</string>
+<string name="assistant_page_local_tools_phone_use_title">Phone Use</string>
   <string name="assistant_page_local_tools_screen_time_desc">Let the AI read your app screen usage time</string>
   <string name="assistant_page_local_tools_screen_time_permission_required">Please grant the Usage access permission in settings to use screen time</string>
   <string name="assistant_page_local_tools_screen_time_title">Screen Time</string>
@@ -1111,6 +1140,10 @@
   <string name="setting_display_page_amoled_dark_mode_title">AMOLED Dark Mode</string>
   <string name="setting_display_page_auto_collapse_thinking_desc">Automatically collapse thinking content after thinking is complete</string>
   <string name="setting_display_page_auto_collapse_thinking_title">Auto Collapse Thinking</string>
+<string name="setting_display_page_auto_compress_desc">After a reply, automatically compress the history into a summary when context usage exceeds the set ratio</string>
+<string name="setting_display_page_auto_compress_threshold_desc">Relative to the chat model\'s context window</string>
+<string name="setting_display_page_auto_compress_threshold_title">Trigger Ratio</string>
+<string name="setting_display_page_auto_compress_title">Auto-compress Context</string>
   <string name="setting_display_page_auto_play_tts_desc">Automatically play TTS after assistant message generation completes</string>
   <string name="setting_display_page_auto_play_tts_title">Auto-play TTS After Generation</string>
   <string name="setting_display_page_background_effect_blur">Blur</string>
@@ -1776,11 +1809,13 @@
   <string name="permission_microphone">Microphone</string>
   <string name="permission_microphone_desc">Microphone permission is required for speech recognition</string>
   <string name="permission_notification">Notification</string>
+<string name="permission_notification_card_desc">Allow notifications to see the progress of background tasks such as AI generation and the web server</string>
   <string name="permission_notification_desc">Send notifications</string>
   <string name="permission_permanently_denied">Permanently Denied</string>
   <string name="permission_precise_location">Precise location</string>
   <string name="permission_precise_location_desc">Used to provide more accurate location to assistant tools</string>
   <string name="permission_required">Required</string>
+<string name="phone_use_accessibility_description">Lets the AI assistant read the screen and perform taps, swipes and text input for you when you enable the Phone Use tool. Nothing is done unless the assistant is running a task you asked for.</string>
   <!-- Web server -->
   <string name="setting_page_web_server">Web Server</string>
   <string name="setting_page_web_server_desc">Access NyanChat via Web</string>
@@ -1833,8 +1868,10 @@
   <string name="debug_page_crash">Crash</string>
   <string name="debug_page_create_1024_conversation">Create a chat with 1024 messages</string>
   <string name="debug_page_create_oversized_conversation">Create oversized conversation (30 MiB)</string>
+  <string name="debug_page_create_token_conversation">Create a ~500k token conversation</string>
   <string name="debug_page_creating_1024_conversation">Creating a conversation with 1024 messages…</string>
   <string name="debug_page_creating_oversized_conversation">Creating a 30 MiB oversized conversation…</string>
+  <string name="debug_page_creating_token_conversation">Creating a ~500k token conversation…</string>
   <string name="debug_page_last_database_save_time">Last save time: %1$s</string>
   <string name="debug_page_last_database_save_time_never">Last save time: never</string>
   <string name="debug_page_messages_conversation_title">%1$d messages test</string>
@@ -1847,6 +1884,7 @@
   <string name="debug_page_tab_colors">Colors</string>
   <string name="debug_page_tab_main">General</string>
   <string name="debug_page_tab_recovery">Recovery</string>
+  <string name="debug_page_token_conversation_title">~%1$dk token conversation test</string>
   <!-- Errors -->
   <string name="error_fast_model_not_found">Fast model not found. Please select one in settings.</string>
   <string name="error_fast_model_provider_not_found">Provider of the fast model not found</string>
@@ -1876,6 +1914,7 @@
   <string name="error_skill_rename_forbidden">Skill name must not be changed (the name field must be “%1$s”)</string>
   <string name="error_skill_save_check_format">Save failed; please check the skill format</string>
   <string name="error_skill_save_failed_name">Save failed: %1$s</string>
+<string name="error_title_auto_compress">Auto-compression failed</string>
   <string name="error_title_generate_title">Title generation failed</string>
   <string name="error_title_generation">Message generation failed</string>
   <string name="error_title_operation">Operation failed</string>

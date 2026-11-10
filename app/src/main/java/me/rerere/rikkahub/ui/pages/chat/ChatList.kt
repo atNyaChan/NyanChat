@@ -83,6 +83,7 @@ fun ChatList(
     previewListState: LazyListState,
     selectionState: ChatSelectionState,
     loading: Boolean,
+    compressing: Boolean = false,
     generatingMessageId: Uuid? = null,
     statsSnapshot: StreamingStatsSnapshot? = null,
     processingStatus: String? = null,
@@ -148,6 +149,7 @@ fun ChatList(
                 conversation = conversation,
                 state = state,
                 loading = loading,
+                compressing = compressing,
                 generatingMessageId = generatingMessageId,
                 statsSnapshot = statsSnapshot,
                 processingStatus = processingStatus,
@@ -223,6 +225,7 @@ private fun ChatListNormal(
     conversation: Conversation,
     state: LazyListState,
     loading: Boolean,
+    compressing: Boolean,
     generatingMessageId: Uuid? = null,
     statsSnapshot: StreamingStatsSnapshot? = null,
     processingStatus: String? = null,
@@ -400,7 +403,7 @@ private fun ChatListNormal(
                             model = node.currentMessage.modelId?.let(modelById::get)
                                 ?: node.currentMessage.snapshotModel(),
                             assistant = assistant,
-                            loading = loading && node.currentMessage.id == generatingMessageId,
+                            loading = loading && !compressing && node.currentMessage.id == generatingMessageId,
                             statsSnapshot = statsSnapshot?.takeIf { it.message.id == node.currentMessage.id },
                             generating = loading,
                             onRegenerate = {

@@ -47,6 +47,7 @@ import me.rerere.rikkahub.service.BackgroundShellTask
 import me.rerere.rikkahub.service.ChatError
 import me.rerere.rikkahub.service.ChatErrorSolution
 import me.rerere.rikkahub.service.ChatService
+import me.rerere.rikkahub.service.SessionActivity
 import me.rerere.rikkahub.service.RequestContextStats
 import me.rerere.rikkahub.ui.components.message.StreamingStatsSnapshot
 import me.rerere.rikkahub.ui.hooks.ChatInputState
@@ -88,6 +89,11 @@ class ChatVM(
     val conversationJob: StateFlow<Job?> =
         chatService
             .getGenerationJobStateFlow(_conversationId)
+            .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    val sessionActivity: StateFlow<SessionActivity?> =
+        chatService
+            .getActivityFlow(_conversationId)
             .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     val processingStatus: StateFlow<String?> =

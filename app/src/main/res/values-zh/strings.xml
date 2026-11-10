@@ -53,6 +53,7 @@
   <string name="common_off">关闭</string>
   <string name="common_ok">好</string>
   <string name="common_on">开启</string>
+  <string name="common_refresh">刷新</string>
   <string name="common_rename">重命名</string>
   <string name="common_save">保存</string>
   <string name="common_search">搜索</string>
@@ -290,6 +291,29 @@
   <string name="chat_message_tool_edit_memory">更新了记忆</string>
   <string name="chat_message_tool_get_time">获取时间信息</string>
   <string name="chat_message_tool_list_memory">记忆清单</string>
+<string name="chat_message_tool_phone_use_list_apps">列出应用</string>
+<string name="chat_message_tool_phone_use_long_press">长按</string>
+<string name="chat_message_tool_phone_use_long_press_target">长按 %1$s</string>
+<string name="chat_message_tool_phone_use_observe">读取屏幕</string>
+<string name="chat_message_tool_phone_use_open_app">打开应用</string>
+<string name="chat_message_tool_phone_use_open_app_name">打开应用：%1$s</string>
+<string name="chat_message_tool_phone_use_press_back">按返回键</string>
+<string name="chat_message_tool_phone_use_press_enter">按 Enter 键</string>
+<string name="chat_message_tool_phone_use_press_home">前往主屏幕</string>
+<string name="chat_message_tool_phone_use_press_notifications">打开通知</string>
+<string name="chat_message_tool_phone_use_press_recents">打开最近使用的应用</string>
+<string name="chat_message_tool_phone_use_screenshot">截图</string>
+<string name="chat_message_tool_phone_use_scroll_down">向下滚动</string>
+<string name="chat_message_tool_phone_use_scroll_left">向左滚动</string>
+<string name="chat_message_tool_phone_use_scroll_right">向右滚动</string>
+<string name="chat_message_tool_phone_use_scroll_up">向上滚动</string>
+<string name="chat_message_tool_phone_use_swipe">滑动</string>
+<string name="chat_message_tool_phone_use_swipe_path">滑动 %1$s → %2$s</string>
+<string name="chat_message_tool_phone_use_tap">点击</string>
+<string name="chat_message_tool_phone_use_tap_target">点击 %1$s</string>
+<string name="chat_message_tool_phone_use_type">输入文本</string>
+<string name="chat_message_tool_phone_use_type_text">输入文本：%1$s</string>
+<string name="chat_message_tool_phone_use_wait">等待 %1$s 秒</string>
   <string name="chat_message_tool_read_memory">读取记忆</string>
   <string name="chat_message_tool_recent_chats">查看最近的对话</string>
   <string name="chat_message_tool_scrape_prefix">抓取网站：%1$s</string>
@@ -552,6 +576,11 @@
   <string name="assistant_page_local_tools_javascript_engine_title">JavaScript 引擎</string>
   <string name="assistant_page_local_tools_location_desc">让 AI 读取设备最后一次已知位置</string>
   <string name="assistant_page_local_tools_location_title">位置信息</string>
+<string name="assistant_page_local_tools_phone_use_desc">允许 AI 读取屏幕并操作此手机上的其他应用</string>
+<string name="assistant_page_local_tools_phone_use_enable_service">在无障碍设置中开启“NyanChat Phone Use”</string>
+<string name="assistant_page_local_tools_phone_use_floating_window_required">请先开启后台悬浮窗</string>
+<string name="assistant_page_local_tools_phone_use_service_off">无障碍服务已关闭。请将此开关关闭再打开，以进入设置。若该选项在系统中呈灰色不可用，请先在“应用信息”中为此应用允许受限设置。并且将应用的自启动开关打开，可以避免无障碍权限被频繁收回。</string>
+<string name="assistant_page_local_tools_phone_use_title">Phone Use</string>
   <string name="assistant_page_local_tools_screen_time_desc">让 AI 读取你的应用屏幕使用时间</string>
   <string name="assistant_page_local_tools_screen_time_permission_required">请在设置中授予“使用情况访问权限”以使用屏幕使用时间</string>
   <string name="assistant_page_local_tools_screen_time_title">屏幕时间</string>
@@ -1111,6 +1140,10 @@
   <string name="setting_display_page_amoled_dark_mode_title">AMOLED 暗色模式</string>
   <string name="setting_display_page_auto_collapse_thinking_desc">思考完成自动折叠思考内容</string>
   <string name="setting_display_page_auto_collapse_thinking_title">自动折叠思考</string>
+<string name="setting_display_page_auto_compress_desc">回复后，当上下文使用率超过设定比例时，自动将历史记录压缩为摘要</string>
+<string name="setting_display_page_auto_compress_threshold_desc">相对于聊天模型的上下文窗口</string>
+<string name="setting_display_page_auto_compress_threshold_title">触发比例</string>
+<string name="setting_display_page_auto_compress_title">自动压缩上下文</string>
   <string name="setting_display_page_auto_play_tts_desc">助手消息生成完成后自动播放 TTS</string>
   <string name="setting_display_page_auto_play_tts_title">生成后自动播放 TTS</string>
   <string name="setting_display_page_background_effect_blur">模糊</string>
@@ -1776,11 +1809,13 @@
   <string name="permission_microphone">麦克风</string>
   <string name="permission_microphone_desc">需要麦克风权限以进行语音识别</string>
   <string name="permission_notification">通知</string>
+<string name="permission_notification_card_desc">允许通知，以便在通知栏查看 AI 生成、Web 服务器等后台任务的进度</string>
   <string name="permission_notification_desc">发送通知</string>
   <string name="permission_permanently_denied">已永久拒绝</string>
   <string name="permission_precise_location">精确位置</string>
   <string name="permission_precise_location_desc">用于向助手工具提供更精确的位置</string>
   <string name="permission_required">必需</string>
+<string name="phone_use_accessibility_description">启用 Phone Use 工具后，允许 AI 助手读取屏幕并为您执行点按、滑动和文本输入。除非助手正在运行您请求的任务，否则不会执行任何操作。</string>
   <!-- Web server -->
   <string name="setting_page_web_server">Web 服务器</string>
   <string name="setting_page_web_server_desc">通过网页访问 NyanChat</string>
@@ -1833,8 +1868,10 @@
   <string name="debug_page_crash">崩溃</string>
   <string name="debug_page_create_1024_conversation">创建 1024 个消息的聊天</string>
   <string name="debug_page_create_oversized_conversation">创建超大对话 (30 MiB)</string>
+  <string name="debug_page_create_token_conversation">创建约 500k token 对话</string>
   <string name="debug_page_creating_1024_conversation">正在创建 1024 条消息对话…</string>
   <string name="debug_page_creating_oversized_conversation">正在创建 30 MiB 超大对话…</string>
+  <string name="debug_page_creating_token_conversation">正在创建约 500k token 的对话…</string>
   <string name="debug_page_last_database_save_time">上次保存时间: %1$s</string>
   <string name="debug_page_last_database_save_time_never">上次保存时间: 从未</string>
   <string name="debug_page_messages_conversation_title">%1$d条消息测试</string>
@@ -1847,6 +1884,7 @@
   <string name="debug_page_tab_colors">颜色</string>
   <string name="debug_page_tab_main">通用</string>
   <string name="debug_page_tab_recovery">恢复</string>
+  <string name="debug_page_token_conversation_title">约 %1$dk token 对话测试</string>
   <!-- Errors -->
   <string name="error_fast_model_not_found">未找到快速模型。请在设置中选择一个。</string>
   <string name="error_fast_model_provider_not_found">未找到快速模型的提供商</string>
@@ -1876,6 +1914,7 @@
   <string name="error_skill_rename_forbidden">不允许修改技能名称（name 字段必须为 “%1$s”）</string>
   <string name="error_skill_save_check_format">保存失败，请检查技能格式</string>
   <string name="error_skill_save_failed_name">保存失败：%1$s</string>
+<string name="error_title_auto_compress">自动压缩失败</string>
   <string name="error_title_generate_title">生成标题失败</string>
   <string name="error_title_generation">消息生成失败</string>
   <string name="error_title_operation">操作失败</string>
