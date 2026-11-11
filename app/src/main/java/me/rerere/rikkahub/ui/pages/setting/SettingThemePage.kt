@@ -30,15 +30,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -76,6 +73,8 @@ import me.rerere.hugeicons.stroke.PlusSign
 import me.rerere.hugeicons.stroke.Tick01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ui.AppBottomSheet
+import me.rerere.rikkahub.ui.components.ui.BottomSheetColumn
 import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.switchItem
@@ -90,7 +89,6 @@ import me.rerere.rikkahub.utils.plus
 import me.rerere.ui.common.ColorPicker
 import org.koin.androidx.compose.koinViewModel
 import kotlin.uuid.Uuid
-import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 private val themeJson = Json {
     ignoreUnknownKeys = true
@@ -404,7 +402,6 @@ private fun CustomThemeEditSheet(
     onDismiss: () -> Unit,
     onSave: (CustomTheme) -> Unit,
 ) {
-    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     var currentTheme by remember {
         mutableStateOf(theme ?: CustomTheme())
     }
@@ -422,16 +419,10 @@ private fun CustomThemeEditSheet(
             }
     }
 
-    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .bottomSheetMaxHeight()
-                .padding(horizontal = 24.dp)
-                .padding(bottom = 8.dp),
+    AppBottomSheet(onDismissRequest = onDismiss) {
+        BottomSheetColumn(
+            horizontalPadding = 24.dp,
+            verticalArrangement = Arrangement.Top,
         ) {
             BottomSheetTitle(
                 text = if (theme == null) stringResource(R.string.setting_theme_page_create_theme)

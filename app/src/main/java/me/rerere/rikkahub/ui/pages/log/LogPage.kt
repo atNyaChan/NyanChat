@@ -37,7 +37,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.RadioButton
@@ -76,6 +75,8 @@ import me.rerere.rikkahub.data.ai.RequestInterceptMode
 import me.rerere.rikkahub.data.ai.isLlmRequest
 import me.rerere.rikkahub.ui.components.nav.BackButton
 import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
+import me.rerere.rikkahub.ui.components.ui.AppBottomSheet
+import me.rerere.rikkahub.ui.components.ui.BottomSheetColumn
 import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
@@ -295,11 +296,11 @@ private fun UnifiedLogList(
     }
 
     selectedLog?.let { log ->
-        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
+        AppBottomSheet(
             onDismissRequest = { selectedLog = null },
-            sheetState = sheetState
+            sheetState = sheetState,
         ) {
-            Column(modifier = Modifier.fillMaxWidth()) {
+            BottomSheetColumn(horizontalPadding = 0.dp, bottomPadding = 0.dp) {
                 BottomSheetTitle(
                     text = stringResource(R.string.log_page_request_detail),
                     modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 8.dp),

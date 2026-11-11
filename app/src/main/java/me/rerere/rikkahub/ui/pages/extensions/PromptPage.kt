@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -31,7 +30,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FloatingToolbarDefaults.ScreenOffset
@@ -42,14 +40,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -81,6 +76,8 @@ import me.rerere.rikkahub.data.model.Lorebook
 import me.rerere.rikkahub.data.model.PromptInjection
 import me.rerere.rikkahub.ui.components.ai.ExtensionEmptyState
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ui.AppBottomSheet
+import me.rerere.rikkahub.ui.components.ui.BottomSheetColumn
 import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
@@ -351,7 +348,6 @@ private fun ModeInjectionEditSheet(
     onEdit: (PromptInjection.ModeInjection) -> Unit,
     onDelete: (() -> Unit)?,
 ) {
-    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     var showExportDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
     val exporter = rememberExporter(injection, ModeInjectionSerializer)
@@ -365,18 +361,10 @@ private fun ModeInjectionEditSheet(
         }
     }
 
-    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        dragHandle = {
-            BottomSheetDefaults.DragHandle()
-        }
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .bottomSheetMaxHeight(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+    AppBottomSheet(onDismissRequest = onDismiss) {
+        BottomSheetColumn(
+            horizontalPadding = 0.dp,
+            bottomPadding = 0.dp,
         ) {
             BottomSheetTitle(
                 text = stringResource(R.string.prompt_page_edit_mode_injection),
@@ -787,7 +775,6 @@ private fun LorebookEditSheet(
     onEdit: (Lorebook) -> Unit,
     onDelete: (() -> Unit)?,
 ) {
-    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     var showExportDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
     val exporter = rememberExporter(book, LorebookSerializer)
@@ -800,18 +787,10 @@ private fun LorebookEditSheet(
         }
     }
 
-    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        dragHandle = {
-            BottomSheetDefaults.DragHandle()
-        }
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .bottomSheetMaxHeight(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+    AppBottomSheet(onDismissRequest = onDismiss) {
+        BottomSheetColumn(
+            horizontalPadding = 0.dp,
+            bottomPadding = 0.dp,
         ) {
             BottomSheetTitle(
                 text = stringResource(R.string.prompt_page_edit_lorebook),
@@ -1013,10 +992,6 @@ private fun RegexInjectionEditDialog(
 ) {
     var newKeyword by remember { mutableStateOf("") }
     var showDeleteConfirm by remember { mutableStateOf(false) }
-    val sheetState = rememberBottomSheetState(
-        initialValue = SheetValue.Hidden,
-        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
-    )
     val contentState = rememberTextFieldState(entry.content)
     val currentEntry by rememberUpdatedState(entry)
 
@@ -1029,18 +1004,10 @@ private fun RegexInjectionEditDialog(
             }
     }
 
-    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        dragHandle = {
-            BottomSheetDefaults.DragHandle()
-        },
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .bottomSheetMaxHeight(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+    AppBottomSheet(onDismissRequest = onDismiss) {
+        BottomSheetColumn(
+            horizontalPadding = 0.dp,
+            bottomPadding = 0.dp,
         ) {
             BottomSheetTitle(
                 text = stringResource(R.string.prompt_page_edit_entry),

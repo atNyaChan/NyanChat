@@ -20,11 +20,8 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -65,6 +62,8 @@ import me.rerere.hugeicons.stroke.VolumeHigh
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.model.MessageNode
+import me.rerere.rikkahub.ui.components.ui.AppBottomSheet
+import me.rerere.rikkahub.ui.components.ui.BottomSheetColumn
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupItemSpacing
 import me.rerere.rikkahub.ui.components.ui.CardGroupRow
@@ -81,7 +80,6 @@ import me.rerere.rikkahub.utils.extractQuotedContentAsText
 import me.rerere.rikkahub.utils.removeBracketedContent
 import me.rerere.rikkahub.utils.toLocalString
 import me.rerere.rikkahub.utils.toMessageTimeString
-import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 @Composable
 fun ColumnScope.ChatMessageActionButtons(
@@ -350,15 +348,9 @@ fun ChatMessageActionsSheet(
     val toaster = LocalToaster.current
     val navController = LocalNavController.current
     val codeFontFeatureSettings = LocalSettings.current.displaySetting.enableCodeLigatures.codeFontFeatureSettings
-    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
-        onDismissRequest = onDismissRequest,
-        sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .bottomSheetMaxHeight()
-                .padding(horizontal = 16.dp).padding(bottom = 16.dp),
+    AppBottomSheet(onDismissRequest = onDismissRequest) {
+        BottomSheetColumn(
+            bottomPadding = 16.dp,
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {

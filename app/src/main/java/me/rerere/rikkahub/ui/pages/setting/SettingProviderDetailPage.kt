@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -25,7 +24,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
@@ -34,14 +32,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -109,7 +104,9 @@ import me.rerere.rikkahub.ui.components.ai.ModelModalityTag
 import me.rerere.rikkahub.ui.components.ai.ModelTypeTag
 import me.rerere.rikkahub.ui.components.ai.ProviderQuotaText
 import me.rerere.rikkahub.ui.components.ai.rememberModelListState
+import me.rerere.rikkahub.ui.components.ui.AppBottomSheet
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
+import me.rerere.rikkahub.ui.components.ui.BottomSheetColumn
 import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
@@ -123,7 +120,6 @@ import me.rerere.rikkahub.ui.components.ui.PagerTabs
 import me.rerere.rikkahub.ui.components.ui.ShareSheet
 import me.rerere.rikkahub.ui.components.ui.Tag
 import me.rerere.rikkahub.ui.components.ui.TagType
-import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.rikkahub.ui.components.ui.rememberShareSheetState
 import me.rerere.rikkahub.ui.components.ui.switchItem
@@ -198,10 +194,6 @@ fun SettingProviderDetailSheet(
         }
     }
 
-    val sheetState = rememberBottomSheetState(
-        initialValue = SheetValue.Hidden,
-        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
-    )
     val pagerState = rememberPagerState { ProviderSheetTab.entries.size }
     // 模型页的模型列表（拖拽排序需要 LazyListState）
     val lazyListState = rememberLazyListState()
@@ -278,22 +270,15 @@ fun SettingProviderDetailSheet(
         }
     }
 
-    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
+    AppBottomSheet(
         onDismissRequest = {
             onDismiss()
         },
-        sheetState = sheetState,
-        dragHandle = {
-            BottomSheetDefaults.DragHandle()
-        },
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.95f)
-                .padding(bottom = 8.dp)
-                .imePadding(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+        BottomSheetColumn(
+            horizontalPadding = 0.dp,
+            fillHeightFraction = 0.95f,
+            modifier = Modifier.imePadding(),
         ) {
             BottomSheetTitle(
                 text = stringResource(
@@ -523,25 +508,14 @@ fun SettingProviderDetailSheet(
 
     if (customModelDialog.isEditing) {
         customModelDialog.currentState?.let { modelState ->
-            val sheetState = rememberBottomSheetState(
-                initialValue = SheetValue.Hidden,
-                enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
-            )
-            ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
+            AppBottomSheet(
                 onDismissRequest = {
                     customModelDialog.dismiss()
                 },
-                sheetState = sheetState,
-                dragHandle = {
-                    BottomSheetDefaults.DragHandle()
-                }
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(0.95f)
-                        .padding(bottom = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                BottomSheetColumn(
+                    horizontalPadding = 0.dp,
+                    fillHeightFraction = 0.95f,
                 ) {
                     BottomSheetTitle(
                         text = stringResource(R.string.setting_provider_page_custom_model),
@@ -1040,25 +1014,15 @@ private fun ModelPickerSheet(
     onDismiss: () -> Unit,
     onMigrateModelId: ((Model, Model) -> Unit)? = null,
 ) {
-    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
-        onDismissRequest = onDismiss,
-        sheetState = rememberBottomSheetState(
-            initialValue = SheetValue.Hidden,
-            enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
-        ),
-    ) {
+    AppBottomSheet(onDismissRequest = onDismiss) {
         var filterText by remember { mutableStateOf("") }
         var deleteTarget by remember { mutableStateOf<Model?>(null) }
         var showDeleteDialog by remember { mutableStateOf(false) }
         val filteredModels = remoteModels.models.filterByKeywords(filterText)
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .bottomSheetMaxHeight()
-                .padding(horizontal = 8.dp)
-                .padding(bottom = 8.dp)
-                .imePadding(),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+        BottomSheetColumn(
+            horizontalPadding = 8.dp,
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier.imePadding(),
         ) {
             // 内容左右 8dp，再补 16dp 共 24dp
             BottomSheetTitle(
@@ -2087,26 +2051,15 @@ private fun ModelCard(
 
     if (dialogState.isEditing) {
         dialogState.currentState?.let { editingModel ->
-            val sheetState = rememberBottomSheetState(
-                initialValue = SheetValue.Hidden,
-                enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
-            )
-            ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
+            AppBottomSheet(
                 onDismissRequest = {
                     dialogState.dismiss()
                 },
-                sheetState = sheetState,
-                dragHandle = {
-                    BottomSheetDefaults.DragHandle()
-                },
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(0.95f)
-                        .padding(bottom = 8.dp)
-                        .imePadding(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                BottomSheetColumn(
+                    horizontalPadding = 0.dp,
+                    fillHeightFraction = 0.95f,
+                    modifier = Modifier.imePadding(),
                 ) {
                     BottomSheetTitle(
                         text = stringResource(R.string.setting_provider_page_edit_model),
@@ -2336,28 +2289,18 @@ private fun ProviderOverrideSettings(
 
         // Provider configuration modal
         if (showProviderConfig && editingProvider != null) {
-            ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
+            AppBottomSheet(
                 onDismissRequest = {
                     showProviderConfig = false
                     editingProvider = null
                 },
-                sheetState = rememberBottomSheetState(
-                    initialValue = SheetValue.Hidden,
-                    enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
-                ),
-                dragHandle = {
-                    BottomSheetDefaults.DragHandle()
-                },
             ) {
                 var internalProvider by remember(editingProvider) { mutableStateOf(editingProvider!!) }
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(0.95f)
-                        .padding(bottom = 8.dp)
-                        .imePadding(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                BottomSheetColumn(
+                    horizontalPadding = 0.dp,
+                    fillHeightFraction = 0.95f,
+                    modifier = Modifier.imePadding(),
                 ) {
                     BottomSheetTitle(
                         text = stringResource(R.string.setting_provider_page_configure_provider_override),

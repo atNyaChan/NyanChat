@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,16 +37,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -95,6 +90,8 @@ import me.rerere.rikkahub.data.ai.mcp.McpServerConfig
 import me.rerere.rikkahub.data.ai.mcp.McpStatus
 import me.rerere.rikkahub.data.ai.mcp.McpTool
 import me.rerere.rikkahub.ui.components.nav.BackButton
+import me.rerere.rikkahub.ui.components.ui.AppBottomSheet
+import me.rerere.rikkahub.ui.components.ui.BottomSheetColumn
 import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.ConnectedChoiceButtons
@@ -463,18 +460,14 @@ private fun McpServerConfigModal(
     state.EditStateContent { config, updateValue ->
         val pagerState = rememberPagerState { McpConfigTab.entries.size }
         var showDeleteConfirm by remember { mutableStateOf(false) }
-        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
+        AppBottomSheet(
             onDismissRequest = {
                 state.dismiss()
             },
-            sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.95f)
-                    .padding(horizontal = 8.dp).padding(bottom = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+            BottomSheetColumn(
+                horizontalPadding = 8.dp,
+                fillHeightFraction = 0.95f,
             ) {
                 // 内容左右 8dp，再补 16dp 共 24dp
                 BottomSheetTitle(
@@ -1045,17 +1038,9 @@ private fun McpImportModal(
     val noValidConfigMsg = stringResource(R.string.setting_mcp_page_import_no_valid_config)
     val parseErrorMsg = stringResource(R.string.setting_mcp_page_import_parse_error)
 
-    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
-        onDismissRequest = onDismiss,
-        sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .bottomSheetMaxHeight()
-                .padding(horizontal = 16.dp).padding(bottom = 8.dp)
-                .imePadding(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+    AppBottomSheet(onDismissRequest = onDismiss) {
+        BottomSheetColumn(
+            modifier = Modifier.imePadding(),
         ) {
             BottomSheetTitle(text = stringResource(R.string.setting_mcp_page_import_title))
             Text(

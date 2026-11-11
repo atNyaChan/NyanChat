@@ -21,13 +21,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -300,21 +297,12 @@ fun UIAvatar(
     }
 
     if (showEmojiPicker) {
-        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
+        AppBottomSheet(
             onDismissRequest = {
                 showEmojiPicker = false
             },
-            sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .bottomSheetMaxHeight()
-                    .wrapContentHeight()
-                    .padding(horizontal = 16.dp)
-                    .padding(bottom = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
+            BottomSheetColumn(modifier = Modifier.wrapContentHeight()) {
                 // 内容左右 16dp，再补 8dp 共 24dp
                 BottomSheetTitle(
                     text = stringResource(id = R.string.avatar_pick_emoji),

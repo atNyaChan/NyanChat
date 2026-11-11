@@ -6,7 +6,7 @@ import me.rerere.hugeicons.stroke.Bug01
 import me.rerere.hugeicons.stroke.Earth
 import me.rerere.hugeicons.stroke.Refresh01
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,12 +19,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,8 +40,9 @@ import me.rerere.ui.webview.rememberWebViewState
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
 import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
+import me.rerere.rikkahub.ui.components.ui.AppBottomSheet
+import me.rerere.rikkahub.ui.components.ui.BottomSheetColumn
 import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
-import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,7 +76,6 @@ fun WebViewPage(url: String, contentId: String) {
 
     var showDropdown by remember { mutableStateOf(false) }
     var showConsoleSheet by remember { mutableStateOf(false) }
-    val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
 
     BackHandler(state.canGoBack) {
         state.goBack()
@@ -156,17 +153,8 @@ fun WebViewPage(url: String, contentId: String) {
     }
 
     if (showConsoleSheet) {
-        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
-            onDismissRequest = { showConsoleSheet = false },
-            sheetState = sheetState
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .bottomSheetMaxHeight()
-                    .padding(horizontal = 16.dp)
-                    .padding(bottom = 8.dp)
-            ) {
+        AppBottomSheet(onDismissRequest = { showConsoleSheet = false }) {
+            BottomSheetColumn(verticalArrangement = Arrangement.Top) {
                 BottomSheetTitle(
                     text = "Console Logs",
                     modifier = Modifier.padding(bottom = 16.dp),

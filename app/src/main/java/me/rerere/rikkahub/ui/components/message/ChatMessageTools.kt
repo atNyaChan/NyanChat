@@ -22,12 +22,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -63,6 +60,7 @@ import me.rerere.rikkahub.ui.components.message.tools.DefaultToolPreview
 import me.rerere.rikkahub.ui.components.message.tools.ToolUIContext
 import me.rerere.rikkahub.ui.components.message.tools.ToolUIRegistry
 import me.rerere.rikkahub.ui.components.richtext.ZoomableAsyncImage
+import me.rerere.rikkahub.ui.components.ui.AppBottomSheet
 import me.rerere.rikkahub.ui.components.ui.ChainOfThoughtScope
 import me.rerere.ui.components.DotLoading
 import me.rerere.rikkahub.ui.context.LocalSettings
@@ -307,23 +305,16 @@ fun ChainOfThoughtScope.ChatMessageToolStep(
     }
 
     if (showResult && !renderer.inlineDetail) {
-        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
-            sheetState = rememberBottomSheetState(
-                initialValue = SheetValue.Hidden,
-                enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
-            ),
-            onDismissRequest = { showResult = false },
-            content = {
-                if (outputUnparsable) {
-                    DefaultToolPreview(context = context)
-                } else {
-                    renderer.Preview(
-                        context = context,
-                        onDismissRequest = { showResult = false },
-                    )
-                }
-            },
-        )
+        AppBottomSheet(onDismissRequest = { showResult = false }) {
+            if (outputUnparsable) {
+                DefaultToolPreview(context = context)
+            } else {
+                renderer.Preview(
+                    context = context,
+                    onDismissRequest = { showResult = false },
+                )
+            }
+        }
     }
 }
 

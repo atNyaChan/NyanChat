@@ -3,7 +3,6 @@ package me.rerere.rikkahub.ui.components.ai
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -12,13 +11,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SliderState
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -44,6 +40,8 @@ import me.rerere.hugeicons.HugeIcons
 import me.rerere.hugeicons.stroke.Idea
 import me.rerere.hugeicons.stroke.Idea01
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.ui.components.ui.AppBottomSheet
+import me.rerere.rikkahub.ui.components.ui.BottomSheetColumn
 import me.rerere.rikkahub.ui.components.ui.RegisterItemClickAction
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.theme.codeFontFeatureSettings
@@ -52,7 +50,6 @@ import me.rerere.ui.icons.ReasoningHigh
 import me.rerere.ui.icons.ReasoningLow
 import me.rerere.ui.icons.ReasoningMedium
 import kotlin.math.roundToInt
-import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 private val levels = ReasoningLevel.entries
 private val levelCount = levels.size
@@ -126,18 +123,8 @@ fun ReasoningPicker(
             .collect { hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick) }
     }
 
-    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
-        onDismissRequest = onDismissRequest,
-        sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .bottomSheetMaxHeight()
-                .padding(horizontal = 24.dp)
-                .padding(bottom = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
+    AppBottomSheet(onDismissRequest = onDismissRequest) {
+        BottomSheetColumn(horizontalPadding = 24.dp, verticalArrangement = Arrangement.spacedBy(16.dp)) {
             PickerValueHeader(
                 title = stringResource(R.string.reasoning_picker_title),
                 value = previewLevel,

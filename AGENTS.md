@@ -43,14 +43,19 @@ of adding per-screen variants.
   the input's own `label` and the old `description` in `supportingText` — never a `FormItem` that puts the
   title above the input. `FormItem` stays for rows whose content is not a single input (sliders, switches,
   choice rows, chip rows, lists).
-- **Bottom sheets**: always use `BottomSheetDefaults.DragHandle()` with drag-to-dismiss, wrap the
-  content height up to 95% of the available height, and use top padding 0dp / bottom 8dp (plus the
-  navigation-bar inset). When the sheet contains a `CardGroup`, prefer equal spacing over the uniform
-  bottom gap: the gap below the `CardGroup` matches the left/right inset (e.g. 16dp when the sheet
-  uses 16dp horizontal padding). Fixed bottom button rows keep 8dp above and 8dp below, and use
-  "Cancel / Confirm" via `common_confirm_action`. Titles are horizontally centered and use
-  `MaterialTheme.typography.headlineSmall`, through the shared `BottomSheetTitle`
-  (app/src/main/java/me/rerere/rikkahub/ui/components/ui/SheetContent.kt).
+- **Bottom sheets**: every bottom sheet must render through the shared `AppBottomSheet` shell
+  (`app/src/main/java/me/rerere/rikkahub/ui/components/ui/SheetContent.kt`), and standard sheet content
+  must use `BottomSheetColumn`; never write a new `ModalBottomSheet`/`rememberBottomSheetState` or a
+  hand-rolled `Column(fillMaxWidth().bottomSheetMaxHeight().padding(...))` wrapper. Override
+  `AppBottomSheet` / `BottomSheetColumn` parameters for fixed height fractions, custom padding,
+  `imePadding()` or `verticalScroll()`. They already provide `BottomSheetDefaults.DragHandle()` with
+  drag-to-dismiss, the `surface` container color, content height up to 95% of the available height,
+  and top padding 0dp / bottom 8dp (plus the navigation-bar inset). When the sheet contains a
+  `CardGroup`, prefer equal spacing over the uniform bottom gap: the gap below the `CardGroup`
+  matches the left/right inset (e.g. 16dp when the sheet uses 16dp horizontal padding). Fixed bottom
+  button rows keep 8dp above and 8dp below, and use "Cancel / Confirm" via `common_confirm_action`.
+  Titles are horizontally centered and use `MaterialTheme.typography.headlineSmall`, through the
+  shared `BottomSheetTitle`.
 - **Colors** (`CustomColors`, app/src/main/java/me/rerere/rikkahub/ui/theme/Color.kt): page
   backgrounds, the top bar and all drawers use `surface`; card/list fills use `surfaceContainerLow`
   (`CustomColors.cardColorsOnSurfaceContainer`, `CustomColors.listItemColors`). Every

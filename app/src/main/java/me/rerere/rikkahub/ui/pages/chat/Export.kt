@@ -48,12 +48,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -104,10 +101,11 @@ import me.rerere.rikkahub.ui.components.message.tools.memoryToolTitle
 import me.rerere.rikkahub.ui.components.charts.ChartCard
 import me.rerere.rikkahub.ui.components.charts.ChartSpec
 import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
+import me.rerere.rikkahub.ui.components.ui.AppBottomSheet
 import me.rerere.rikkahub.ui.components.ui.AppLoadingIndicator
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
+import me.rerere.rikkahub.ui.components.ui.BottomSheetColumn
 import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
-import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 import me.rerere.rikkahub.ui.components.ui.ChainOfThought
 import me.rerere.rikkahub.ui.components.ui.ChainOfThoughtScope
 import me.rerere.rikkahub.ui.context.LocalNavController
@@ -235,19 +233,8 @@ fun ChatExportSheet(
     }
 
     if (visible) {
-        ModalBottomSheet(
-            containerColor = MaterialTheme.colorScheme.surface,
-            onDismissRequest = onDismissRequest,
-            sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)),
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .bottomSheetMaxHeight()
-                    .padding(horizontal = 16.dp)
-                    .padding(bottom = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
+        AppBottomSheet(onDismissRequest = onDismissRequest) {
+            BottomSheetColumn {
                 BottomSheetTitle(text = stringResource(id = R.string.chat_page_export_format))
 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

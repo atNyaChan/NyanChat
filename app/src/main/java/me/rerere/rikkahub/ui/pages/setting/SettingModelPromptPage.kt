@@ -1,16 +1,10 @@
 package me.rerere.rikkahub.ui.pages.setting
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -33,10 +27,11 @@ import me.rerere.rikkahub.data.ai.prompts.DEFAULT_SUGGESTION_PROMPT
 import me.rerere.rikkahub.data.ai.prompts.DEFAULT_TITLE_PROMPT
 import me.rerere.rikkahub.data.ai.prompts.DEFAULT_TRANSLATION_PROMPT
 import me.rerere.rikkahub.data.datastore.Settings
+import me.rerere.rikkahub.ui.components.ui.AppBottomSheet
+import me.rerere.rikkahub.ui.components.ui.BottomSheetColumn
 import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
 import me.rerere.rikkahub.ui.components.ui.CardGroupScope
-import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 private val Whitespace = Regex("\\s+")
 
@@ -77,10 +72,6 @@ internal fun PromptEditor(
     vm: SettingVM,
     onDismiss: () -> Unit,
 ) {
-        val sheetState = rememberBottomSheetState(
-            initialValue = SheetValue.Hidden,
-            enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
-        )
         val title = stringResource(type.titleRes)
         val description = stringResource(type.descriptionRes)
         val value = when (type) {
@@ -89,18 +80,9 @@ internal fun PromptEditor(
             PromptType.SUGGESTION -> settings.suggestionPrompt
             PromptType.OCR -> settings.ocrPrompt
         }
-        ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
-            onDismissRequest = onDismiss,
-            sheetState = sheetState,
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .bottomSheetMaxHeight()
-                    .padding(horizontal = 16.dp)
-                    .padding(bottom = 8.dp)
-                    .imePadding(),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+        AppBottomSheet(onDismissRequest = onDismiss) {
+            BottomSheetColumn(
+                modifier = Modifier.imePadding(),
             ) {
                 BottomSheetTitle(text = title)
                 Text(

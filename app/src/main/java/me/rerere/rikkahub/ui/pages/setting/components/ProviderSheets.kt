@@ -1,20 +1,13 @@
 package me.rerere.rikkahub.ui.pages.setting.components
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import me.rerere.rikkahub.R
+import me.rerere.rikkahub.ui.components.ui.AppBottomSheet
+import me.rerere.rikkahub.ui.components.ui.BottomSheetColumn
 import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 
 // 新建 / 编辑服务商的面板：标题、表单、底部的取消和确认；确认之前改动只留在面板里
@@ -39,24 +34,11 @@ internal fun <T> ProviderEditSheet(
 ) {
     var current by remember(initial) { mutableStateOf(initial) }
 
-    ModalBottomSheet(
-        containerColor = MaterialTheme.colorScheme.surface,
-        onDismissRequest = onDismiss,
-        sheetState = rememberBottomSheetState(
-            initialValue = SheetValue.Hidden,
-            enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
-        ),
-        dragHandle = {
-            BottomSheetDefaults.DragHandle()
-        },
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.95f)
-                .padding(bottom = 8.dp)
-                .imePadding(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+    AppBottomSheet(onDismissRequest = onDismiss) {
+        BottomSheetColumn(
+            horizontalPadding = 0.dp,
+            fillHeightFraction = 0.95f,
+            modifier = Modifier.imePadding(),
         ) {
             BottomSheetTitle(
                 text = title,

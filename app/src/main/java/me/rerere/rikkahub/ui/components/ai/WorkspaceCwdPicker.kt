@@ -2,7 +2,6 @@ package me.rerere.rikkahub.ui.components.ai
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -16,7 +15,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -40,10 +38,11 @@ import me.rerere.hugeicons.stroke.ArrowTurnBackward
 import me.rerere.hugeicons.stroke.Folder01
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
+import me.rerere.rikkahub.ui.components.ui.AppBottomSheet
+import me.rerere.rikkahub.ui.components.ui.BottomSheetColumn
 import me.rerere.workspace.WorkspaceFileEntry
 import me.rerere.workspace.WorkspaceStorageArea
 import org.koin.compose.koinInject
-import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 @Composable
 fun WorkspaceCwdPickerSheet(
@@ -75,15 +74,8 @@ fun WorkspaceCwdPickerSheet(
         }
     }
 
-    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface, onDismissRequest = onDismiss) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .bottomSheetMaxHeight()
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
+    AppBottomSheet(onDismissRequest = onDismiss) {
+        BottomSheetColumn {
             Text(
                 text = stringResource(R.string.workspace_cwd_select_directory),
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),

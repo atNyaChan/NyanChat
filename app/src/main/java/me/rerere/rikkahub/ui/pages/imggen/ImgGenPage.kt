@@ -33,7 +33,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
@@ -41,7 +40,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
@@ -102,7 +100,9 @@ import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.files.FileUtils
 import me.rerere.rikkahub.data.files.FilesManager
 import me.rerere.rikkahub.ui.components.ai.ModelSelector
+import me.rerere.rikkahub.ui.components.ui.AppBottomSheet
 import me.rerere.rikkahub.ui.components.ui.AppLoadingIndicator
+import me.rerere.rikkahub.ui.components.ui.BottomSheetColumn
 import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
@@ -120,7 +120,6 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import java.io.File
 import kotlin.uuid.Uuid
-import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 
 @Composable
 fun ImageGenPage(
@@ -894,18 +893,14 @@ private fun SettingsBottomSheet(
     sheetState: SheetState,
     onDismiss: () -> Unit
 ) {
-    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
+    AppBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        dragHandle = { BottomSheetDefaults.DragHandle() }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .bottomSheetMaxHeight()
-                .padding(horizontal = 16.dp).padding(bottom = 16.dp)
-                .imePadding(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        BottomSheetColumn(
+            bottomPadding = 16.dp,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.imePadding(),
         ) {
             BottomSheetTitle(text = stringResource(R.string.imggen_page_settings_title))
 

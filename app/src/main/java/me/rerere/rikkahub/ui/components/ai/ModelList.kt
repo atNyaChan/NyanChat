@@ -24,7 +24,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
@@ -78,12 +77,13 @@ import me.rerere.rikkahub.data.datastore.findModelById
 import me.rerere.rikkahub.data.datastore.findProvider
 import me.rerere.rikkahub.data.datastore.localizedDisplayName
 import me.rerere.rikkahub.ui.components.ui.AutoAIIcon
+import me.rerere.rikkahub.ui.components.ui.AppBottomSheet
+import me.rerere.rikkahub.ui.components.ui.BottomSheetColumn
 import me.rerere.rikkahub.ui.components.ui.BottomSheetTitle
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
 import me.rerere.rikkahub.ui.components.ui.SearchFieldShape
 import me.rerere.rikkahub.ui.components.ui.Tag
 import me.rerere.rikkahub.ui.components.ui.TagType
-import me.rerere.rikkahub.ui.components.ui.bottomSheetMaxHeight
 import me.rerere.rikkahub.ui.components.ui.longPressReorder
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.hooks.rememberSharedPreferenceString
@@ -340,19 +340,16 @@ fun ModelListSheet(
         }
     }
 
-    ModalBottomSheet(containerColor = MaterialTheme.colorScheme.surface,
+    AppBottomSheet(
         onDismissRequest = {
             state.close()
         },
         sheetState = sheetState,
     ) {
-        Column(
-            modifier = Modifier
-                .padding(horizontal = 8.dp)
-                .padding(bottom = 8.dp)
-                .bottomSheetMaxHeight()
-                .imePadding(),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+        BottomSheetColumn(
+            horizontalPadding = 8.dp,
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier.imePadding(),
         ) {
             // 内容左右只有 8dp，再补 16dp 共 24dp
             BottomSheetTitle(
