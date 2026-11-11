@@ -1184,12 +1184,14 @@
   <string name="setting_display_page_enable_ligatures_title">Включить лигатуры</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_desc">Включить виброотклик при генерации сообщений</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_title">Тактильный эффект при генерации сообщения</string>
-  <string name="setting_display_page_enable_quote_highlight_desc">Окрашивать текст в кавычках в цвет темы, чтобы реплики персонажей выделялись</string>
-  <string name="setting_display_page_enable_quote_highlight_title">Подсветка цитируемого текста</string>
     <string name="setting_display_page_font_preview">Предпросмотр шрифта</string>
 <string name="setting_display_page_font_size_preview_part1">В четыре часа утра я увидел, что бегонии всё ещё не спят. Я часто так — бодрствую один среди ночи и думаю: </string>
   <string name="setting_display_page_font_size_preview_part2">если бы кто-то прямо сейчас думал обо мне, этого было бы достаточно.</string>
   <string name="setting_display_page_font_size_title">Размер шрифта чата</string>
+  <string name="setting_display_page_highlight_text_bold_only">Только жирный</string>
+  <string name="setting_display_page_highlight_text_desc">Окрашивать текст в цвет темы, чтобы диалог лучше выделялся</string>
+  <string name="setting_display_page_highlight_text_quotes_only">Только кавычки</string>
+  <string name="setting_display_page_highlight_text_title">Подсветка текста</string>
   <string name="setting_display_page_message_jumper_left">Слева</string>
   <string name="setting_display_page_message_jumper_right">Справа</string>
   <string name="setting_display_page_parse_mid_think_desc">Разбирать теги &lt;think&gt; вне начала сообщения как блоки размышлений</string>

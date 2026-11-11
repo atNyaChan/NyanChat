@@ -16,6 +16,7 @@ class RikkaHubCompatibilityTest {
               "skillOrder": ["one"],
               "workspaceOrder": ["two"],
               "displaySetting": {
+                "enableBoldHighlight": true,
                 "enableCodeLigatures": true,
                 "useChatFontGlobally": true,
                 "screenCornerAdaptation": "ALL",
@@ -48,6 +49,7 @@ class RikkaHubCompatibilityTest {
         assertFalse("skillOrder" in result)
         assertFalse("workspaceOrder" in result)
         result["displaySetting"]!!.jsonObject.let {
+            assertFalse("enableBoldHighlight" in it)
             assertFalse("enableCodeLigatures" in it)
             assertFalse("useChatFontGlobally" in it)
             assertFalse("screenCornerAdaptation" in it)

@@ -9,13 +9,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenuGroup
@@ -27,12 +24,10 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
@@ -45,10 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -57,8 +49,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -954,70 +944,12 @@ private fun TopBar(
         },
     )
     titleState.EditStateContent { title, onUpdate ->
-        val titleFocusRequester = remember { FocusRequester() }
-        val keyboardController = LocalSoftwareKeyboardController.current
-        // 光标默认落在已有文本末尾，打开弹窗后直接接着编辑
-        var titleField by remember {
-            mutableStateOf(TextFieldValue(title, TextRange(title.length)))
-        }
-        // 自动生成标题等外部更新文本时同步，并把光标重新放到末尾
-        LaunchedEffect(title) {
-            if (title != titleField.text) {
-                titleField = TextFieldValue(title, TextRange(title.length))
-            }
-        }
-
-        // 弹窗出现后直接把焦点放到标题输入框并弹出键盘
-        LaunchedEffect(Unit) {
-            withFrameNanos { }
-            titleFocusRequester.requestFocus()
-            keyboardController?.show()
-        }
-
-        AlertDialog(
-            containerColor = MaterialTheme.colorScheme.surface,
-            onDismissRequest = {
-                titleState.dismiss()
-            },
-            title = {
-                Text(stringResource(R.string.chat_page_edit_title))
-            },
-            text = {
-                OutlinedTextField(
-                    value = titleField,
-                    onValueChange = { newValue ->
-                        val text = newValue.text.replace("\n", "").replace("\r", "")
-                        titleField = newValue.copy(
-                            text = text,
-                            selection = TextRange(
-                                newValue.selection.start.coerceIn(0, text.length),
-                                newValue.selection.end.coerceIn(0, text.length),
-                            ),
-                        )
-                        onUpdate(text)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(titleFocusRequester),
-                    singleLine = false,
-                )
-            },
-            confirmButton = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    TextButton(onClick = { titleState.dismiss() }) {
-                        Text(stringResource(R.string.common_cancel))
-                    }
-                    TextButton(onClick = { onGenerateTitle(onUpdate) }) {
-                        Text(stringResource(R.string.chat_page_auto_generate_title))
-                    }
-                    TextButton(onClick = { titleState.confirm() }) {
-                        Text(stringResource(R.string.common_confirm_action))
-                    }
-                }
-            }
+        ConversationTitleEditDialog(
+            title = title,
+            onTitleChange = onUpdate,
+            onDismiss = { titleState.dismiss() },
+            onGenerateTitle = { onGenerateTitle(onUpdate) },
+            onConfirm = { titleState.confirm() },
         )
     }
 }

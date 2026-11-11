@@ -108,8 +108,8 @@ of adding per-screen variants.
   「删除{类型}」), the buttons are always `common_cancel` / `common_delete`, and the body is one of
   `delete_dialog_message_named` / `delete_dialog_message_unnamed` / `delete_dialog_message_batch`.
   Pass a localized `delete_type_*` string as the type plus an optional `name` (`count` + `pluralType`
-  for batch); any extra paragraph goes through the `extra` slot. Simplified Chinese quotes use “”,
-  Traditional Chinese quotes use 「」; `media_creation_*` delete dialogs keep their own copy.
+  for batch); any extra paragraph goes through the `extra` slot. Simplified and Traditional Chinese quotes
+  use 「」, with 『』 for nested quotes; `media_creation_*` delete dialogs keep their own copy.
 - All scrollable pages (including the chat message list) use the platform stretch overscroll effect.
 
 ## Chat Attachments (Content-Addressed Storage, CAS)
@@ -267,15 +267,21 @@ merges in git history, but NEVER let git auto-merge file contents.
       the text.
    b. Hand-edit OUR files to re-implement the change. Our code may be renamed, moved, or rewritten —
       locate by behavior, not by path. Adapt the change to our architecture.
-   If you are unsure how to adapt the change — e.g. the relevant code has diverged too much, or the
-      upstream change conflicts with a deliberate design choice in this fork — STOP and ask the
-      user. Do not guess.
+   c. “The fork already does this” is NEVER a reason to skip a commit. When an upstream commit
+      covers functionality the fork already implemented on its own, still port it: rewrite the
+      fork’s implementation so it matches upstream’s design, and do not list the commit as skipped
+      in the merge message. That replaces fork-specific behavior the user may rely on, so it must
+      be reported as needing re-testing (see step 4).
+   d. If you are unsure how to adapt the change — e.g. the relevant code has diverged too much, or
+      the upstream change conflicts with a deliberate design choice in this fork — STOP and ask the
+      user. Do not guess. Only a change the user agrees cannot be ported may end up as “skipped”.
 4. STOP. Do not commit. Leave every ported change in the working tree (staged is fine) and, if the
    merge is still pending, leave it pending (`git merge -s ours ... --no-commit` keeps
    `.git/MERGE_HEAD`, so the user’s commit lands as the merge commit). Before asking the user to
    verify, tell them (1) what user-visible UI changes the sync introduces and (2) what needs to be
-   tested after compiling. Also report what was ported, what was skipped, and the exact message the
-   user should commit with — the whole sync is ONE commit:
+   tested after compiling — including every already-existing fork feature whose implementation was
+   replaced by upstream’s, which the user must re-verify. Also report what was ported, what was
+   skipped, and the exact message the user should commit with — the whole sync is ONE commit:
 
    merge(upstream): sync to <newest-hash> (skipped: <hash> <subject>, <hash> <subject>)(if any)
 
@@ -400,7 +406,12 @@ one session, STOP and ask the user before starting.
   Notification settings; Notifications; Backup; Request and permission logs; Permissions; Web server;
   Statistics; Debug; Errors; Delete dialogs.
 - In Simplified and Traditional Chinese, separate adjacent CJK and Latin text with a space; do not add spaces
-  around 「」『』“”‘’ quotes and their contents.
+  around 「」『』 quotes and their contents.
+- Use typographic quotation marks in prose, localized strings and source comments: English uses “…” and
+  possessive/contraction apostrophes use ’; Simplified and Traditional Chinese use 「…」, with 『…』 for
+  nested quotes. Straight `'` / `"` are reserved for code, resource keys, placeholders and literal examples.
+  The same quote and apostrophe conventions apply to source comments, including KDoc and commented-out code
+  descriptions.
 - If the user does not explicitly request localization, prioritize implementing functionality without considering
   localization. (e.g `Text("Hello world")`)
 - Existing locales: `values-ar`, `values-de`, `values-ja`, `values-ko-rKR`, `values-ru`, `values-zh`,

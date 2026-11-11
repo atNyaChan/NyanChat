@@ -1184,12 +1184,14 @@
   <string name="setting_display_page_enable_ligatures_title">합자 사용</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_desc">메시지 생성 시 진동 피드백 활성화</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_title">메시지 생성 진동 효과 활성화</string>
-  <string name="setting_display_page_enable_quote_highlight_desc">따옴표 안의 텍스트에 테마 색상을 적용하여 캐릭터 대화를 돋보이게 합니다</string>
-  <string name="setting_display_page_enable_quote_highlight_title">인용된 텍스트 강조</string>
     <string name="setting_display_page_font_preview">글꼴 미리보기</string>
 <string name="setting_display_page_font_size_preview_part1">새벽 네 시, 해당화가 잠들지 않은 것을 보았다. 나는 자주 이렇게, 아무도 없는 밤에 홀로 깨어, 생각한다 — </string>
   <string name="setting_display_page_font_size_preview_part2">지금 이 순간 누군가도 나를 생각하고 있다면, 그것으로 충분하다.</string>
   <string name="setting_display_page_font_size_title">채팅 글꼴 크기</string>
+  <string name="setting_display_page_highlight_text_bold_only">굵게만</string>
+  <string name="setting_display_page_highlight_text_desc">테마 색상으로 텍스트를 칠해 대화를 더 돋보이게 합니다</string>
+  <string name="setting_display_page_highlight_text_quotes_only">따옴표만</string>
+  <string name="setting_display_page_highlight_text_title">텍스트 강조</string>
   <string name="setting_display_page_message_jumper_left">왼쪽</string>
   <string name="setting_display_page_message_jumper_right">오른쪽</string>
   <string name="setting_display_page_parse_mid_think_desc">메시지 시작 부분이 아닌 &lt;think&gt; 태그를 생각 블록으로 파싱합니다</string>

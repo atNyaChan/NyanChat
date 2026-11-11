@@ -1184,12 +1184,14 @@
   <string name="setting_display_page_enable_ligatures_title">Enable Ligatures</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_desc">Enable haptic feedback when messages are being generated</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_title">Message Generation Haptic Effect</string>
-  <string name="setting_display_page_enable_quote_highlight_desc">Color text inside quotation marks with the theme color to make character dialogue stand out</string>
-  <string name="setting_display_page_enable_quote_highlight_title">Highlight Quoted Text</string>
     <string name="setting_display_page_font_preview">Font Preview</string>
 <string name="setting_display_page_font_size_preview_part1">At four in the morning, I saw the begonia flowers still awake. I am often like this — lying awake alone in the quiet night, thinking: </string>
   <string name="setting_display_page_font_size_preview_part2">if someone is thinking of me at this moment, that would be wonderful.</string>
   <string name="setting_display_page_font_size_title">Chat Font Size</string>
+  <string name="setting_display_page_highlight_text_bold_only">Bold only</string>
+  <string name="setting_display_page_highlight_text_desc">Color text with the theme color to make the conversation stand out</string>
+  <string name="setting_display_page_highlight_text_quotes_only">Quotes only</string>
+  <string name="setting_display_page_highlight_text_title">Highlight Text</string>
   <string name="setting_display_page_message_jumper_left">Left</string>
   <string name="setting_display_page_message_jumper_right">Right</string>
   <string name="setting_display_page_parse_mid_think_desc">Parse &lt;think&gt; tags that are not at the message start as thinking blocks</string>

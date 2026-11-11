@@ -1,5 +1,6 @@
 package me.rerere.rikkahub.ui.components.richtext
 
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -14,40 +15,65 @@ import me.rerere.bettertext.markdown.TableCell
  *
  * BetterText 的主题只能配置行内代码、标题这类整体样式：加粗是解析器里固定的 `SpanStyle`，
  * HTML 行内样式产生的等宽字体也拿不到 `fontFeatureSettings`。所以在渲染前改写对应样式：
- * - 加粗（`fontWeight = Bold`，包括 `**…**`、`<b>` 和 CSS 的 `font-weight: bold`）换成本应用设置的字重
+ * - 加粗（`fontWeight = Bold`，包括 `**…**`、`<b>` 和 CSS 的 `font-weight: bold`）换成本应用设置的字重，
+ *   开启加粗高亮时同时改为高亮色
  * - 等宽字体补上代码连字的 `fontFeatureSettings`
  * - 关闭 LaTeX 渲染时把行内公式换成等宽源码，和禁用公式渲染时的显示一致
  *
- * 设置都保持默认（Bold、开启连字、渲染 LaTeX）时直接返回原文档，不做任何遍历。
+ * 设置都保持默认（Bold、开启连字、渲染 LaTeX、不高亮加粗）时直接返回原文档，不做任何遍历。
  */
 internal fun MarkdownDocument.applyDisplaySettings(
     boldFontWeight: FontWeight,
     enableCodeLigatures: Boolean,
     mathAsText: Boolean,
     codeFontFeatureSettings: String,
+    boldHighlightColor: Color? = null,
 ): MarkdownDocument {
     val rewriteBold = boldFontWeight != FontWeight.Bold
+    val highlightBold = boldHighlightColor != null
     val rewriteCode = !enableCodeLigatures
-    if (!rewriteBold && !rewriteCode && !mathAsText) return this
+    if (!rewriteBold && !highlightBold && !rewriteCode && !mathAsText) return this
 
     fun SpanStyle.adjust(): SpanStyle {
-        val adjustedWeight = if (rewriteBold && fontWeight == FontWeight.Bold) boldFontWeight else fontWeight
+        val isBold = fontWeight == FontWeight.Bold
+        val adjustedWeight = if (rewriteBold && isBold) boldFontWeight else fontWeight
         val adjustedFeatures =
             if (rewriteCode && fontFamily == FontFamily.Monospace) codeFontFeatureSettings else fontFeatureSettings
-        if (adjustedWeight == fontWeight && adjustedFeatures == fontFeatureSettings) return this
-        return copy(fontWeight = adjustedWeight, fontFeatureSettings = adjustedFeatures)
+        val adjustedColor = if (boldHighlightColor != null && isBold && color == Color.Unspecified) {
+            boldHighlightColor
+        } else {
+            color
+        }
+        if (adjustedWeight == fontWeight &&
+            adjustedFeatures == fontFeatureSettings &&
+            adjustedColor == color
+        ) {
+            return this
+        }
+        return copy(
+            fontWeight = adjustedWeight,
+            fontFeatureSettings = adjustedFeatures,
+            color = adjustedColor,
+        )
     }
 
     fun TextStyle.adjust(): TextStyle {
         val adjusted = SpanStyle(
+            color = color,
             fontWeight = fontWeight,
             fontFamily = fontFamily,
             fontFeatureSettings = fontFeatureSettings,
         ).adjust()
-        if (adjusted.fontWeight == fontWeight && adjusted.fontFeatureSettings == fontFeatureSettings) return this
+        if (adjusted.fontWeight == fontWeight &&
+            adjusted.fontFeatureSettings == fontFeatureSettings &&
+            adjusted.color == color
+        ) {
+            return this
+        }
         return copy(
             fontWeight = adjusted.fontWeight,
             fontFeatureSettings = adjusted.fontFeatureSettings,
+            color = adjusted.color,
         )
     }
 

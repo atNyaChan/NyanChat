@@ -1184,12 +1184,14 @@
   <string name="setting_display_page_enable_ligatures_title">تفعيل الحروف المتصلة</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_desc">تفعيل التغذية الراجعة اللمسية أثناء إنشاء الرسائل</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_title">تأثير اهتزازي عند إنشاء الرسائل</string>
-  <string name="setting_display_page_enable_quote_highlight_desc">تلوين النص داخل علامات الاقتباس بلون السمة لإبراز حوار الشخصيات</string>
-  <string name="setting_display_page_enable_quote_highlight_title">تمييز النص المقتبس</string>
     <string name="setting_display_page_font_preview">معاينة الخط</string>
 <string name="setting_display_page_font_size_preview_part1">في الرابعة صباحًا، رأيت أزهار البغونيا لا تزال مستيقظة. كثيرًا ما أكون هكذا — مستلقيًا وحدي مستيقظًا في الليل الهادئ، أفكر: </string>
   <string name="setting_display_page_font_size_preview_part2">لو أن أحدًا يفكر بي في هذه اللحظة، لكان ذلك رائعًا.</string>
   <string name="setting_display_page_font_size_title">حجم خط الدردشة</string>
+  <string name="setting_display_page_highlight_text_bold_only">الخط العريض فقط</string>
+  <string name="setting_display_page_highlight_text_desc">تلوين النص بلون السمة لجعل المحادثة أكثر وضوحًا</string>
+  <string name="setting_display_page_highlight_text_quotes_only">علامات الاقتباس فقط</string>
+  <string name="setting_display_page_highlight_text_title">تمييز النص</string>
   <string name="setting_display_page_message_jumper_left">يسار</string>
   <string name="setting_display_page_message_jumper_right">يمين</string>
   <string name="setting_display_page_parse_mid_think_desc">تحليل وسوم &lt;think&gt; غير الواقعة في بداية الرسالة ككتل تفكير</string>

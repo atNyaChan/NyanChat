@@ -153,6 +153,7 @@ fun MarkdownBlock(
     val displaySetting = LocalSettings.current.displaySetting
     val enableLatexRendering = displaySetting.enableLatexRendering
     val enableQuoteHighlight = displaySetting.enableQuoteHighlight
+    val enableBoldHighlight = displaySetting.enableBoldHighlight
     val enableCodeLigatures = displaySetting.enableCodeLigatures
     val boldFontWeight = displaySetting.resolvedBoldFontWeight()
     val codeFontFeatureSettings = enableCodeLigatures.codeFontFeatureSettings
@@ -174,12 +175,20 @@ fun MarkdownBlock(
 
     // 加粗字重、代码连字这些设置 BetterText 主题里没有对应字段，渲染前改写解析结果
     val document = rememberMarkdownDocument(content, streaming = streaming)
-    val displayDocument = remember(document, boldFontWeight, enableCodeLigatures, enableLatexRendering) {
+    val displayDocument = remember(
+        document,
+        boldFontWeight,
+        enableCodeLigatures,
+        enableLatexRendering,
+        enableBoldHighlight,
+        quoteColor,
+    ) {
         document.applyDisplaySettings(
             boldFontWeight = boldFontWeight,
             enableCodeLigatures = enableCodeLigatures,
             mathAsText = !enableLatexRendering,
             codeFontFeatureSettings = codeFontFeatureSettings,
+            boldHighlightColor = quoteColor.takeIf { enableBoldHighlight },
         )
     }
 

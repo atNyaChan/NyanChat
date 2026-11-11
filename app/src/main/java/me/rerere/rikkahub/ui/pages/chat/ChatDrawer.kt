@@ -433,34 +433,16 @@ fun ChatDrawerContent(
             }
 
             conversationToEditTitle?.let { conversation ->
-                AlertDialog(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    onDismissRequest = { conversationToEditTitle = null },
-                    title = { Text(stringResource(R.string.chat_page_edit_title)) },
-                    text = {
-                        OutlinedTextField(
-                            value = editedTitle,
-                            onValueChange = { editedTitle = it },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
+                ConversationTitleEditDialog(
+                    title = editedTitle,
+                    onTitleChange = { editedTitle = it },
+                    onDismiss = { conversationToEditTitle = null },
+                    onGenerateTitle = {
+                        vm.generateTitleCandidate(conversation) { editedTitle = it }
                     },
-                    confirmButton = {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        ) {
-                            TextButton(onClick = { conversationToEditTitle = null }) {
-                                Text(stringResource(R.string.common_cancel))
-                            }
-                            TextButton(onClick = {
-                                vm.generateTitleCandidate(conversation) { editedTitle = it }
-                            }) { Text(stringResource(R.string.chat_page_auto_generate_title)) }
-                            TextButton(onClick = {
-                                vm.updateConversationTitle(conversation, editedTitle)
-                                conversationToEditTitle = null
-                            }) { Text(stringResource(R.string.common_confirm_action)) }
-                        }
+                    onConfirm = {
+                        vm.updateConversationTitle(conversation, editedTitle)
+                        conversationToEditTitle = null
                     },
                 )
             }

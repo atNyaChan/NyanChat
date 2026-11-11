@@ -1184,12 +1184,14 @@
   <string name="setting_display_page_enable_ligatures_title">Ligaturen aktivieren</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_desc">Haptisches Feedback aktivieren, während Nachrichten generiert werden</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_title">Haptisches Feedback bei der Nachrichtengenerierung</string>
-  <string name="setting_display_page_enable_quote_highlight_desc">Text in Anführungszeichen mit der Themenfarbe einfärben, damit Dialoge von Figuren besser auffallen</string>
-  <string name="setting_display_page_enable_quote_highlight_title">Zitierten Text hervorheben</string>
   <string name="setting_display_page_font_preview">Schriftvorschau</string>
   <string name="setting_display_page_font_size_preview_part1">Um vier Uhr morgens sah ich die Begonienblüten noch wach. Oft geht es mir so – ich liege allein in der stillen Nacht wach und denke: </string>
   <string name="setting_display_page_font_size_preview_part2">wenn jetzt jemand an mich denkt, wäre das wunderbar.</string>
   <string name="setting_display_page_font_size_title">Chat-Schriftgröße</string>
+  <string name="setting_display_page_highlight_text_bold_only">Nur fett</string>
+  <string name="setting_display_page_highlight_text_desc">Text mit der Themenfarbe einfärben, damit die Unterhaltung besser auffällt</string>
+  <string name="setting_display_page_highlight_text_quotes_only">Nur Anführungszeichen</string>
+  <string name="setting_display_page_highlight_text_title">Text hervorheben</string>
   <string name="setting_display_page_message_jumper_left">Links</string>
   <string name="setting_display_page_message_jumper_right">Rechts</string>
   <string name="setting_display_page_parse_mid_think_desc">&lt;think&gt;-Tags, die nicht am Nachrichtenbeginn stehen, als Denkblöcke interpretieren</string>

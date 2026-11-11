@@ -594,14 +594,25 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                             )
                         }
                     }
-                    switchItem(
-                        checked = displaySetting.enableQuoteHighlight,
-                        onCheckedChange = {
-                            updateDisplaySetting(displaySetting.copy(enableQuoteHighlight = it))
-                        },
-                        supportingContent = { Text(stringResource(R.string.setting_display_page_enable_quote_highlight_desc)) },
-                        headlineContent = { Text(stringResource(R.string.setting_display_page_enable_quote_highlight_title)) },
-                    )
+                    FormItem(
+                        label = { Text(stringResource(R.string.setting_display_page_highlight_text_title)) },
+                        description = { Text(stringResource(R.string.setting_display_page_highlight_text_desc)) },
+                    ) {
+                        ConnectedChoiceButtons(
+                            options = TextHighlightMode.entries,
+                            selected = displaySetting.textHighlightMode(),
+                            onSelect = { mode ->
+                                updateDisplaySetting(
+                                    displaySetting.copy(
+                                        enableQuoteHighlight = mode.enableQuote,
+                                        enableBoldHighlight = mode.enableBold,
+                                    )
+                                )
+                            },
+                        ) { mode, selected ->
+                            ConnectedChoiceLabel(text = stringResource(mode.labelRes), selected = selected)
+                        }
+                    }
                     switchItem(
                         checked = displaySetting.showAssistantBubble,
                         onCheckedChange = {
@@ -1444,6 +1455,24 @@ private enum class VolumeKeyScrollMode(val ratio: Float?) {
     PERCENT_50(0.5f),
     PERCENT_75(0.75f),
     PERCENT_100(1f),
+}
+
+private enum class TextHighlightMode(
+    val labelRes: Int,
+    val enableQuote: Boolean,
+    val enableBold: Boolean,
+) {
+    OFF(R.string.common_off, enableQuote = false, enableBold = false),
+    QUOTES_ONLY(R.string.setting_display_page_highlight_text_quotes_only, enableQuote = true, enableBold = false),
+    BOLD_ONLY(R.string.setting_display_page_highlight_text_bold_only, enableQuote = false, enableBold = true),
+    ALL(R.string.common_all, enableQuote = true, enableBold = true),
+}
+
+private fun DisplaySetting.textHighlightMode(): TextHighlightMode = when {
+    enableQuoteHighlight && enableBoldHighlight -> TextHighlightMode.ALL
+    enableQuoteHighlight -> TextHighlightMode.QUOTES_ONLY
+    enableBoldHighlight -> TextHighlightMode.BOLD_ONLY
+    else -> TextHighlightMode.OFF
 }
 
 private val ScreenCornerAdaptation.labelRes: Int

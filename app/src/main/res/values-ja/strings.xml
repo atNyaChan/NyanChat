@@ -1184,12 +1184,14 @@
   <string name="setting_display_page_enable_ligatures_title">合字を有効にする</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_desc">メッセージ生成時に触覚フィードバックを有効にする</string>
   <string name="setting_display_page_enable_message_generation_haptic_effect_title">メッセージ生成時の触覚効果</string>
-  <string name="setting_display_page_enable_quote_highlight_desc">引用符内のテキストをテーマカラーで着色し、キャラクターのセリフを目立たせます</string>
-  <string name="setting_display_page_enable_quote_highlight_title">引用テキストをハイライト</string>
     <string name="setting_display_page_font_preview">フォントプレビュー</string>
 <string name="setting_display_page_font_size_preview_part1">午前4時、海棠の花がまだ眠っていないのを見た。私はよくこうして、誰もいない夜にひとり目を覚まし、思う。</string>
   <string name="setting_display_page_font_size_preview_part2">もし今この瞬間、誰かが私のことを思っていてくれたなら、それだけでいい。</string>
   <string name="setting_display_page_font_size_title">チャットフォントサイズ</string>
+  <string name="setting_display_page_highlight_text_bold_only">太字のみ</string>
+  <string name="setting_display_page_highlight_text_desc">テーマカラーでテキストを着色し、会話をより目立たせます</string>
+  <string name="setting_display_page_highlight_text_quotes_only">引用符のみ</string>
+  <string name="setting_display_page_highlight_text_title">テキストをハイライト</string>
   <string name="setting_display_page_message_jumper_left">左</string>
   <string name="setting_display_page_message_jumper_right">右</string>
   <string name="setting_display_page_parse_mid_think_desc">メッセージ冒頭以外の &lt;think&gt; タグを思考ブロックとして解析します</string>
