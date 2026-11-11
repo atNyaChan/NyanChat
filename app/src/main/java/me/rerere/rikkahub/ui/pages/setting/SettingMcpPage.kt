@@ -546,7 +546,7 @@ private fun McpCommonOptionsConfigure(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            // 顶部不留白，让页签与下方卡片组的间距与“编辑模型提供商”页一致（外层 8dp）
+            // 顶部不留白，让页签与下方卡片组的间距与「编辑模型提供商」页一致（外层 8dp）
             .padding(start = 8.dp, end = 8.dp, bottom = 16.dp)
             .verticalScroll(rememberScrollState())
             .imePadding(),

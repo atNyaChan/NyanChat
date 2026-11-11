@@ -92,7 +92,7 @@ fun FileUsage.isMessageUsage(): Boolean =
 fun FileUsage.isSettingsUsage(): Boolean = type in FileUsageType.SETTINGS_TYPES
 
 /**
- * 计入“引用”的使用记录：消息附件与设置类（助手头像/聊天背景、用户头像）。
+ * 计入「引用」的使用记录：消息附件与设置类（助手头像/聊天背景、用户头像）。
  * 存储管理的统计与每个附件卡片上的引用数都用它，`none` 不计入。
  */
 fun FileUsage.isReferenceUsage(): Boolean = isMessageUsage() || isSettingsUsage()

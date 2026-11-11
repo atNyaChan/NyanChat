@@ -220,7 +220,7 @@ class AssistantDetailVM(
         }
     }
 
-    /** 切换助手级的“使用独立对话设置”；非“分别设置”时同步所有会话的开关。 */
+    /** 切换助手级的「使用独立对话设置」；非「分别设置」时同步所有会话的开关。 */
     fun updateConversationSettingsMode(mode: ConversationSettingsMode) {
         viewModelScope.launch {
             val settings = settingsStore.awaitLoaded()

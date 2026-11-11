@@ -91,7 +91,7 @@ private val FlatFamily: BrushFamily by lazy {
     BrushFamily(tip = BrushTip(scaleX = 0.2f, scaleY = 1f, cornerRounding = 0.2f, rotationDegrees = 45f))
 }
 
-// Ink 没有预置的毛笔，这里用几条“笔尖大小跟着输入变”的规则拼一支。几条规则的倍数是相乘的
+// Ink 没有预置的毛笔，这里用几条「笔尖大小跟着输入变」的规则拼一支。几条规则的倍数是相乘的
 private val CalligraphyFamily: BrushFamily by lazy {
     // 粗细跟得太紧线条会抖，按时间平滑一下
     fun smooth(seconds: Float, input: ValueNode) = DampingNode(ProgressDomain.TIME_IN_SECONDS, seconds, input)

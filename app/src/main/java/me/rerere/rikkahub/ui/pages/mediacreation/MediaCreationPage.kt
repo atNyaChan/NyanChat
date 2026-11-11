@@ -154,7 +154,7 @@ fun MediaCreationPage(id: String) {
                             overflow = TextOverflow.Ellipsis,
                         )
                     } else {
-                        // 点标题也能改名，空标题与列表一致显示“新会话”
+                        // 点标题也能改名，空标题与列表一致显示「新会话」
                         Surface(
                             onClick = { showRenameDialog = true },
                             enabled = current != null,

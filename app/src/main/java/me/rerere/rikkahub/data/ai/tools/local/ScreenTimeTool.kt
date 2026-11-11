@@ -149,7 +149,7 @@ internal fun buildScreenTimeTool(context: Context, eventBus: AppEventBus): Tool 
         val pm = context.packageManager
 
         // 通过逐个前台/后台事件配对计算真实前台时长, 比 queryAndAggregateUsageStats
-        // 更接近系统"屏幕使用时间", 避免统计桶溢出导致的范围偏差; 排除桌面 launcher.
+        // 更接近系统「屏幕使用时间」, 避免统计桶溢出导致的范围偏差; 排除桌面 launcher.
         val launcherPackages = resolveLauncherPackages(pm)
         val foregroundMs = computeForegroundTime(usageStatsManager, startMs, endMs, launcherPackages)
 
@@ -186,16 +186,16 @@ internal fun buildScreenTimeTool(context: Context, eventBus: AppEventBus): Tool 
 private const val LOOKBACK_MS = 12L * 60 * 60 * 1000
 
 /**
- * 用"全局单一前台"模型计算 [startMs, endMs) 区间内每个 App 的前台时长(毫秒).
+ * 用「全局单一前台」模型计算 [startMs, endMs) 区间内每个 App 的前台时长(毫秒).
  *
  * 任意时刻只有一个 App 处于计时状态: 新 App 进入前台时先结算上一个前台 App, 息屏时停止计时.
  * 这样各 App 时段串行不重叠, 不会出现 per-app 配对那种因前台时段重叠相加而偏大的问题, 结果
- * 与系统"屏幕使用时间"口径基本一致. 边界处理:
- * - 为正确处理"区间开始前已进入前台、区间内继续使用"的 App, 查询起点向前回看 [LOOKBACK_MS],
+ * 与系统「屏幕使用时间」口径基本一致. 边界处理:
+ * - 为正确处理「区间开始前已进入前台、区间内继续使用」的 App, 查询起点向前回看 [LOOKBACK_MS],
  *   据此还原区间开始时刻正在前台的 App; 结算时把累加区间裁剪到 [startMs, endMs], startMs
  *   之前的部分自动被裁掉, 既补回开头那段使用又不会高估.
  * - 区间结束时仍在前台的 App, 以 endMs 截断.
- * - [excludedPackages] 中的包(如桌面 launcher)不计入结果, 其停留时间视为"无 App 前台".
+ * - [excludedPackages] 中的包(如桌面 launcher)不计入结果, 其停留时间视为「无 App 前台」.
  */
 @Suppress(
     "DEPRECATION", // MOVE_TO_FOREGROUND/BACKGROUND 与 API29 的 ACTIVITY_RESUMED/PAUSED 值相同, 兼容 minSdk 28
@@ -208,7 +208,7 @@ private fun computeForegroundTime(
     excludedPackages: Set<String>,
 ): Map<String, Long> {
     val foregroundMs = HashMap<String, Long>()
-    // 向前回看一段时间以捕获"区间开始前就进入前台"的事件; 累加时再裁剪回 [startMs, endMs]
+    // 向前回看一段时间以捕获「区间开始前就进入前台」的事件; 累加时再裁剪回 [startMs, endMs]
     val events = usageStatsManager.queryEvents(startMs - LOOKBACK_MS, endMs)
     val event = UsageEvents.Event()
 

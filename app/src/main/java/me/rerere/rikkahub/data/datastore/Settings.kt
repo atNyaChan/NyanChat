@@ -195,7 +195,7 @@ data class DisplaySetting(
     val enableLatexRendering: Boolean = true,
     val enableQuoteHighlight: Boolean = false,
     val enableBlurEffect: Boolean = false,
-    // 不使用模糊/玻璃时是否保留标题栏遮罩：用于区分“仅标题栏”与“关闭”
+    // 不使用模糊/玻璃时是否保留标题栏遮罩：用于区分「仅标题栏」与「关闭」
     val enableTitleBarScrim: Boolean = true,
     val backgroundEffectType: BackgroundEffectType = BackgroundEffectType.BLUR,
     val chatFontFamily: ChatFontFamily = ChatFontFamily.DEFAULT,
@@ -239,7 +239,7 @@ data class BackupReminderConfig(
 /**
  * 关闭该提供商下每个模型上当前提供商类型不支持的内置工具。
  *
- * 模型自带的“提供商重写”优先于它所属的提供商；仅保留 [supportedBuiltInTools] 中列出的工具。
+ * 模型自带的「提供商重写」优先于它所属的提供商；仅保留 [supportedBuiltInTools] 中列出的工具。
  * 用于导入备份、切换提供商类型后清理已失效的内置工具。
  */
 fun ProviderSetting.sanitizeBuiltInTools(): ProviderSetting = copyProvider(

@@ -139,7 +139,7 @@ interface ChainOfThoughtScope {
     /**
      * 声明一个受控步骤，由外部传入展开状态。
      *
-     * 适合需要与外部状态联动的场景，例如“推理中预览 / 完成后收起”。
+     * 适合需要与外部状态联动的场景，例如「推理中预览 / 完成后收起」。
      *
      * @param expanded 当前是否处于展开状态
      * @param onExpandedChange 展开状态变化回调

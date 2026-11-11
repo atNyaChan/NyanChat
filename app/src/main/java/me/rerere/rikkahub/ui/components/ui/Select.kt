@@ -146,7 +146,7 @@ fun <T> Select(
  * 文本框 + 预设选项下拉菜单
  *
  * 刻意不使用 ExposedDropdownMenuBox: 它的 ExposedDropdownMenuPositionProvider 在
- * "菜单高度 > 可见窗口高度 - 96dp" 时会 coerceIn(min > max) 直接抛异常 (issue #1549),
+ * 「菜单高度 > 可见窗口高度 - 96dp」 时会 coerceIn(min > max) 直接抛异常 (issue #1549),
  * 小屏设备上点击底部的可编辑输入框会同时弹出输入法, 极易触发。
  * 普通 DropdownMenu 的定位逻辑对这种情况有兜底, 不会崩溃。
  */

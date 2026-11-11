@@ -535,7 +535,7 @@ fun ChatMessageActionsSheet(
                     Text(message.createdAt.toJavaLocalDateTime().toLocalString())
                     // 模型快照被删除后 model 可能为 null，此时用消息上记录的 modelId。
                     // snapshotModel() 在没有快照名时会把 displayName 直接填成 "($id)"，
-                    // 必须把这种回退文案识别成“没有名称”，才能只把 id 部分渲染成等宽字体。
+                    // 必须把这种回退文案识别成「没有名称」，才能只把 id 部分渲染成等宽字体。
                     val searchModelId = model?.id ?: message.modelId
                     val fallbackIdLabel = searchModelId?.let { "($it)" }
                     val modelDisplayName = model?.displayName

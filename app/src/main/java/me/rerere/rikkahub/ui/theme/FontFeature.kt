@@ -3,7 +3,7 @@ package me.rerere.rikkahub.ui.theme
 /**
  * 代码 / 等宽文本的字体特性 (font feature) 配置。
  *
- * 通过设置中的 "代码连字" 开关 (DisplaySetting.enableCodeLigatures) 控制:
+ * 通过设置中的 「代码连字」 开关 (DisplaySetting.enableCodeLigatures) 控制:
  * - 开启: 启用连字 (liga) 与上下文替代 (calt)
  * - 关闭: 显式禁用
  *

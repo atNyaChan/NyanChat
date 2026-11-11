@@ -326,7 +326,7 @@ private fun MemoryFileDetail(
 
 /**
  * @param path 文件路径，新建时为空；编辑已有文件时也可以改，改了保存即重命名
- * @param pathNotRecommended 是否在路径框下显示“不建议修改”（只有编辑已有文件时才显示）
+ * @param pathNotRecommended 是否在路径框下显示「不建议修改」（只有编辑已有文件时才显示）
  * @param titlePlaceholder 标题留空时界面上会显示的名字，从路径推出来
  * @param aliasInput 别名输入框里还没加进 [aliases] 的那个
  * @param contentValid 拼出来的整个文件是否没超过大小上限

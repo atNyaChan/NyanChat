@@ -23,7 +23,7 @@ class AcceptLanguageBuilder private constructor(
         val qStep: Double = 0.1,
         /** q 的下限（包含）；若递减到更低则夹到该下限。*/
         val minQ: Double = 0.1,
-        /** 是否为地区化语言添加“通用语言码”，如 "zh-CN" 追加 "zh"。*/
+        /** 是否为地区化语言添加「通用语言码」，如 "zh-CN" 追加 "zh"。*/
         val includeGenericLanguage: Boolean = true,
         /** 是否对标签去重（保持首次出现的顺序）。*/
         val deduplicate: Boolean = true
@@ -39,7 +39,7 @@ class AcceptLanguageBuilder private constructor(
 
         /**
          * 从 Android 系统环境创建。
-         * @param context 建议传入应用或当前上下文，以获取用户“应用内语言”/系统语言首选列表
+         * @param context 建议传入应用或当前上下文，以获取用户「应用内语言」/系统语言首选列表
          */
         fun fromAndroid(context: android.content.Context, options: Options = Options()): AcceptLanguageBuilder {
             val locales = systemLocalesAndroid(context)
@@ -60,7 +60,7 @@ class AcceptLanguageBuilder private constructor(
 
     /** 生成最终的 Accept-Language 头值（不包含 "Accept-Language:" 前缀）。*/
     fun build(): String {
-        // 1) 先将 Locale 转成语言标签，并按需展开“通用语言码”
+        // 1) 先将 Locale 转成语言标签，并按需展开「通用语言码」
         val tags = mutableListOf<String>()
         for (loc in localesInPreference) {
             val full = toLanguageTagCompat(loc)

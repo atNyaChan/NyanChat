@@ -109,7 +109,7 @@ class MiniMaxTTSProvider : TTSProvider<TTSProviderSetting.MiniMax> {
 
                 is SseEvent.Closed -> {
                     Log.i(TAG, "SSE connection closed")
-                    // Emit final chunk if we haven't already
+                    // Emit final chunk if we haven’t already
                     if (hasEmittedAudio) {
                         emit(
                             AudioChunk(

@@ -83,7 +83,7 @@ class ChatDrawerVM(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
-    // 当前助手 + 当前文件夹筛选下的会话总数（用于多选时的“已选 / 总数”展示）
+    // 当前助手 + 当前文件夹筛选下的会话总数（用于多选时的「已选 / 总数」展示）
     val conversationCount: StateFlow<Int> = combine(assistantIdFlow, _selectedFolderId) { assistantId, folderId ->
         if (folderId == null) {
             conversationRepo.countUnfiledOfAssistant(assistantId)
@@ -130,7 +130,7 @@ class ChatDrawerVM(
     }
 
     /**
-     * 一次性读取当前视图（按助手 + 当前文件夹筛选）下的全部会话，用于“全选”。
+     * 一次性读取当前视图（按助手 + 当前文件夹筛选）下的全部会话，用于「全选」。
      */
     suspend fun loadAllConversationsForSelection(): List<Conversation> {
         val assistantId = assistantIdFlow.first()

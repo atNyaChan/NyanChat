@@ -55,7 +55,7 @@ fun Context.writeClipboardText(text: String) {
 }
 
 /**
- * Whether the app has been granted the "Usage access" special permission
+ * Whether the app has been granted the “Usage access” special permission
  * (android.permission.PACKAGE_USAGE_STATS), required to query screen usage time.
  */
 fun Context.hasUsageStatsPermission(): Boolean {
@@ -79,7 +79,7 @@ fun Context.hasUsageStatsPermission(): Boolean {
 }
 
 /**
- * Open the system "Usage access" settings page so the user can grant the
+ * Open the system “Usage access” settings page so the user can grant the
  * PACKAGE_USAGE_STATS permission manually.
  */
 fun Context.openAccessibilitySettings() {

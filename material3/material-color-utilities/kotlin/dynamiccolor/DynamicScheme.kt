@@ -37,7 +37,7 @@ open class DynamicScheme(
   val isDark: Boolean,
   /**
    * Value from -1 to 1. -1 represents minimum contrast. 0 represents standard (i.e. the design as
-   * spec'd), and 1 represents maximum contrast.
+   * spec’d), and 1 represents maximum contrast.
    */
   val contrastLevel: Double,
   /** The platform on which this scheme is intended to be used. */
@@ -333,9 +333,9 @@ open class DynamicScheme(
      * @param sourceColorHct The input value.
      * @param hueBreakpoints The breakpoints, in sorted order. No default lower or upper bounds are
      *   assumed.
-     * @param hues The hues that should be applied when source color's hue is >= the same index in
+     * @param hues The hues that should be applied when source color’s hue is >= the same index in
      *   hueBreakpoints array, and < the hue at the next index in hueBreakpoints array. Otherwise,
-     *   the source color's hue is returned.
+     *   the source color’s hue is returned.
      */
     @JvmStatic
     fun getPiecewiseValue(
@@ -374,9 +374,9 @@ open class DynamicScheme(
      * @param sourceColorHct the source color of the theme, in HCT.
      * @param hueBreakpoints The "breakpoints", i.e. the hues at which a rotation should be apply.
      *   No default lower or upper bounds are assumed.
-     * @param rotations The rotation that should be applied when source color's hue is >= the same
+     * @param rotations The rotation that should be applied when source color’s hue is >= the same
      *   index in hues array, and < the hue at the next index in hues array. Otherwise, the source
-     *   color's hue is returned.
+     *   color’s hue is returned.
      */
     @JvmStatic
     fun getRotatedHue(

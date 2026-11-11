@@ -25,7 +25,7 @@ private const val SWIPE_STEPS = 20
  * Refer to the [baseline profile documentation](https://d.android.com/topic/performance/baselineprofiles)
  * for more information.
  *
- * You can run the generator with the "Generate Baseline Profile" run configuration in Android Studio or
+ * You can run the generator with the “Generate Baseline Profile” run configuration in Android Studio or
  * the equivalent `generateBaselineProfile` gradle task:
  * ```
  * ./gradlew :app:generateReleaseBaselineProfile
@@ -55,7 +55,7 @@ class BaselineProfileGenerator {
     @Test
     fun generate() {
         // benchmark 的 resetAndCompile 只重置 ART profile，不清 app 数据；上一轮留下的会话会让这一轮的
-        // 回复落到很靠下的位置，而且会话里的旧标记会让“等回复出现”变成误判。每次运行都从干净的数据开始。
+        // 回复落到很靠下的位置，而且会话里的旧标记会让「等回复出现」变成误判。每次运行都从干净的数据开始。
         clearTargetAppData()
 
         // 需要先应用 app/baselineprofile/mock-provider.patch，app 的默认模型才会指向这个假接口
@@ -87,7 +87,7 @@ class BaselineProfileGenerator {
             // See: https://d.android.com/topic/performance/baselineprofiles/dex-layout-optimizations
             includeInStartupProfile = true
         ) {
-            // This block defines the app's critical user journey. Here we are interested in
+            // This block defines the app’s critical user journey. Here we are interested in
             // optimizing for app startup. But you can also navigate and scroll through your most important UI.
 
             // Start default activity for your app

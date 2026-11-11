@@ -600,7 +600,7 @@ public final class TerminalEmulator {
                 }
                 break;
             case 27: // ESC
-                // Starts an escape sequence unless we're parsing a string
+                // Starts an escape sequence unless we’re parsing a string
                 if (mEscapeState == ESC_P) {
                     // XXX: Ignore escape when reading device control sequence, since it may be part of string terminator.
                     return;
@@ -707,7 +707,7 @@ public final class TerminalEmulator {
                             case 't': // "${CSI}${TOP}${LEFT}${BOTTOM}${RIGHT}${ATTRIBUTES}$t"
                                 // Reverse attributes in rectangular area (DECRARA - http://www.vt100.net/docs/vt510-rm/DECRARA).
                                 boolean reverse = b == 't';
-                                // FIXME: "coordinates of the rectangular area are affected by the setting of origin mode (DECOM)".
+                                // FIXME: “coordinates of the rectangular area are affected by the setting of origin mode (DECOM)”.
                                 int top = Math.min(getArg(0, 1, true) - 1, effectiveBottomMargin) + effectiveTopMargin;
                                 int left = Math.min(getArg(1, 1, true) - 1, effectiveRightMargin) + effectiveLeftMargin;
                                 int bottom = Math.min(getArg(2, mRows, true) + 1, effectiveBottomMargin - 1) + effectiveTopMargin;
@@ -880,7 +880,7 @@ public final class TerminalEmulator {
         }
     }
 
-    /** When in {@link #ESC_P} ("device control") sequence. */
+    /** When in {@link #ESC_P} (“device control”) sequence. */
     private void doDeviceControl(int b) {
         switch (b) {
             case (byte) '\\': // End of ESC \ string Terminator
@@ -911,10 +911,10 @@ public final class TerminalEmulator {
                     // kl=left-arrow key
                     // kr=right-arrow key
                     // ku=up-arrow key
-                    // #2=key_shome, "shifted home"
-                    // #4=key_sleft, "shift arrow left"
-                    // %i=key_sright, "shift arrow right"
-                    // *7=key_send, "shifted end"
+                    // #2=key_shome, “shifted home”
+                    // #4=key_sleft, “shift arrow left”
+                    // %i=key_sright, “shift arrow right”
+                    // *7=key_send, “shifted end”
                     // k1=F1 function key
 
                     // Example: Request for ku is "ESC P + q 6 b 7 5 ESC \", where 6b7d=ku in hexadecimal.
@@ -923,7 +923,7 @@ public final class TerminalEmulator {
                     // Xterm response in application cursor mode:
                     // "<27> P 1 + r 6 b 7 5 = 1 B 5 B 4 1" where 0x1B 0x4F 0x41 = 27 91 65 = ESC 0 A
 
-                    // #4 is "shift arrow left":
+                    // #4 is “shift arrow left”:
                     // *** Device Control (DCS) for '#4'- 'ESC P + q 23 34 ESC \'
                     // Response: <27> P 1 + r 2 3 3 4 = 1 B 5 B 3 1 3 B 3 2 4 4 <27> \
                     // where 0x1B 0x5B 0x31 0x3B 0x32 0x44 = ESC [ 1 ; 2 D
@@ -1096,16 +1096,16 @@ public final class TerminalEmulator {
             case 1: // Application Cursor Keys (DECCKM).
                 break;
             case 3: // Set: 132 column mode (. Reset: 80 column mode. ANSI name: DECCOLM.
-                // We don't actually set/reset 132 cols, but we do want the side effects
+                // We don’t actually set/reset 132 cols, but we do want the side effects
                 // (FIXME: Should only do this if the 95 DECSET bit (DECNCSM) is set, and if changing value?):
                 // Sets the left, right, top and bottom scrolling margins to their default positions, which is important for
                 // the "reset" utility to really reset the terminal:
                 mLeftMargin = mTopMargin = 0;
                 mBottomMargin = mRows;
                 mRightMargin = mColumns;
-                // "DECCOLM resets vertical split screen mode (DECLRMM) to unavailable":
+                // “DECCOLM resets vertical split screen mode (DECLRMM) to unavailable”:
                 setDecsetinternalBit(DECSET_BIT_LEFTRIGHT_MARGIN_MODE, false);
-                // "Erases all data in page memory":
+                // “Erases all data in page memory”:
                 blockClear(0, 0, mColumns, mRows);
                 setCursorRowCol(0, 0);
                 break;
@@ -1193,11 +1193,11 @@ public final class TerminalEmulator {
                 // Originally this was used for the terminal to respond with "identification code, firmware version level,
                 // and hardware options" (http://vt100.net/docs/vt510-rm/DA2), with the first "41" meaning the VT420
                 // terminal type. This is not used anymore, but the second version level field has been changed by xterm
-                // to mean it's release number ("patch numbers" listed at http://invisible-island.net/xterm/xterm.log.html),
+                // to mean it’s release number (“patch numbers” listed at http://invisible-island.net/xterm/xterm.log.html),
                 // and some applications use it as a feature check:
-                // * tmux used to have a "xterm won't reach version 500 for a while so set that as the upper limit" check,
+                // * tmux used to have a “xterm won’t reach version 500 for a while so set that as the upper limit” check,
                 // and then check "xterm_version > 270" if rectangular area operations such as DECCRA could be used.
-                // * vim checks xterm version number >140 for "Request termcap/terminfo string" functionality >276 for SGR
+                // * vim checks xterm version number >140 for “Request termcap/terminfo string” functionality >276 for SGR
                 // mouse report.
                 // The third number is a keyboard identifier not used nowadays.
                 mSession.write("\033[>41;320;0c");
@@ -1297,7 +1297,7 @@ public final class TerminalEmulator {
 
     private void doEscPound(int b) {
         switch (b) {
-            case '8': // Esc # 8 - DEC screen alignment test - fill screen with E's.
+            case '8': // Esc # 8 - DEC screen alignment test - fill screen with E’s.
                 mScreen.blockSet(0, 0, mColumns, mRows, 'E', getStyle());
                 break;
             default:
@@ -1707,7 +1707,7 @@ public final class TerminalEmulator {
                         mSession.write(String.format(Locale.US, "\033[8;%d;%dt", mRows, mColumns));
                         break;
                     case 19: // Report the size of the screen in characters. Result is CSI 9 ; height ; width t
-                        // We report the same size as the view, since it's the view really isn't resizable from the shell.
+                        // We report the same size as the view, since it’s the view really isn’t resizable from the shell.
                         mSession.write(String.format(Locale.US, "\033[9;%d;%dt", mRows, mColumns));
                         break;
                     case 20: // Report xterm windows icon label. Result is OSC L label ST. Disabled due to security concerns:
@@ -2043,7 +2043,7 @@ public final class TerminalEmulator {
     private void doSetMode(boolean newValue) {
         int modeBit = getArg0(0);
         switch (modeBit) {
-            case 4: // Set="Insert Mode". Reset="Replace Mode". (IRM).
+            case 4: // Set=“Insert Mode”. Reset=“Replace Mode”. (IRM).
                 mInsertMode = newValue;
                 break;
             case 20: // Normal Linefeed (LNM).
@@ -2314,7 +2314,7 @@ public final class TerminalEmulator {
             }
         } else if (cursorInLastColumn && displayWidth == 2) {
             // The behaviour when a wide character is output with cursor in the last column when
-            // autowrap is disabled is not obvious - it's ignored here.
+            // autowrap is disabled is not obvious - it’s ignored here.
             return;
         }
 
@@ -2401,12 +2401,12 @@ public final class TerminalEmulator {
         return mScreen.getSelectedText(x1, y1, x2, y2);
     }
 
-    /** Get the terminal session's title (null if not set). */
+    /** Get the terminal session’s title (null if not set). */
     public String getTitle() {
         return mTitle;
     }
 
-    /** Change the terminal session's title. */
+    /** Change the terminal session’s title. */
     private void setTitle(String newTitle) {
         String oldTitle = mTitle;
         mTitle = newTitle;

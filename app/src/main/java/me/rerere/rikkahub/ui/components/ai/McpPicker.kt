@@ -183,7 +183,7 @@ fun McpPicker(
                     }
                 },
                 // ListItem 测量时会读 supporting 的基线判断是否多行，这里放多子节点布局会在测量中提前放置子节点，
-                // 触发 Compose UI 1.12 的 "LayoutNode not found in RectList" 崩溃 (#2179)，所以只放单个 Text
+                // 触发 Compose UI 1.12 的 “LayoutNode not found in RectList” 崩溃 (#2179)，所以只放单个 Text
                 supportingContent = {
                     Text(
                         text = when (val s = status) {

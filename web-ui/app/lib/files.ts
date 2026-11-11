@@ -23,7 +23,7 @@ export function resolveFileUrl(url: string): string {
     if (match && match[1]) {
       return appendWebAuthQuery(`/api/files/path/${match[1]}`);
     }
-    // If we can't extract the path, return as-is (will fail to load with error)
+    // If we can’t extract the path, return as-is (will fail to load with error)
     return url;
   }
 

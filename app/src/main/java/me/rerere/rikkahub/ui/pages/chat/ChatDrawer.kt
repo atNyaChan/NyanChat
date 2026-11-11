@@ -129,7 +129,7 @@ fun ChatDrawerContent(
 
     // 是否需要对当前会话居中（大屏常驻侧栏始终需要）。
     // 弹出式侧栏在 targetValue 变为 Open（即刚发起打开、抽屉动画刚开始、内容基本还不可见）时就触发居中，
-    // 这样居中滚动在侧栏完全打开前即可完成，避免出现“打开后再滚动”的情况。
+    // 这样居中滚动在侧栏完全打开前即可完成，避免出现「打开后再滚动」的情况。
     val drawerVisible = navDrawerPermanent || drawerState.targetValue == DrawerValue.Open
 
     val activity = context as ComponentActivity

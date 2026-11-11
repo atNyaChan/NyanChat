@@ -38,7 +38,7 @@ import kotlin.math.sqrt
  * bstar in code. CAM16-UCS is included in the CAM16 specification, and should be used when
  * measuring distances between colors.
  *
- * In traditional color spaces, a color can be identified solely by the observer's measurement of
+ * In traditional color spaces, a color can be identified solely by the observer’s measurement of
  * the color. Color appearance models such as CAM16 also use information about the environment where
  * the color was observed, known as the viewing conditions.
  *
@@ -73,7 +73,7 @@ private constructor(
    * Saturation in CAM16.
    *
    * Colorfulness in proportion to brightness. Prefer chroma, saturation measures colorfulness
-   * relative to the color's own brightness, where chroma is colorfulness relative to white.
+   * relative to the color’s own brightness, where chroma is colorfulness relative to white.
    */
   val s: Double,
   /** Lightness coordinate in CAM16-UCS */

@@ -130,7 +130,7 @@ class BackupManager(
     /**
      * 导出上游 RikkaHub 兼容的旧 ZIP 备份：数据库使用与上游一致的 `VACUUM INTO` 快照，
      * 只写入单个 [DatabaseBackup.ARCHIVE_DATABASE]（不携带 `-wal`/`-shm`），设置剥离本分支独有字段。
-     * 仅本地“导出旧版格式”使用，S3 与 WebDAV 只导出新 TAR 格式。
+     * 仅本地「导出旧版格式」使用，S3 与 WebDAV 只导出新 TAR 格式。
      */
     suspend fun createLegacyBackup(includeFiles: Boolean): File = withContext(Dispatchers.IO) {
         val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))

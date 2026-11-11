@@ -84,13 +84,13 @@
     "title": "Web Search",
     "description": "Configure web search and search services",
     "builtin_title": "Built-in model search",
-    "builtin_desc": "Use the model's native search capability",
+    "builtin_desc": "Use the model’s native search capability",
     "web_title": "Web search",
     "status_enabled": "Enabled",
     "status_disabled": "Disabled",
     "unknown": "Unknown",
     "empty": "No search services available",
-    "builtin_notice": "Built-in model search is enabled. App search service settings won't take effect."
+    "builtin_notice": "Built-in model search is enabled. App search service settings won’t take effect."
   },
   "chat": {
     "attachment_image": "Image",

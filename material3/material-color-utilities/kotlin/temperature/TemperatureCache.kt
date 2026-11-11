@@ -136,7 +136,7 @@ class TemperatureCache(val input: Hct) {
       var indexSatisfied = totalTempDelta >= desiredTotalTempDeltaForIndex
       var indexAddend = 1
       // Keep adding this hue to the answers until its temperature is
-      // insufficient. This ensures consistent behavior when there aren't
+      // insufficient. This ensures consistent behavior when there aren’t
       // `divisions` discrete steps between 0 and 360 in hue with `tempStep`
       // delta in temperature between them.
       //
@@ -194,7 +194,7 @@ class TemperatureCache(val input: Hct) {
   fun getRelativeTemperature(hct: Hct): Double {
     val range = tempsByHct[warmest]!! - tempsByHct[coldest]!!
     val differenceFromColdest = tempsByHct[hct]!! - tempsByHct[coldest]!!
-    // Handle when there's no difference in temperature between warmest and
+    // Handle when there’s no difference in temperature between warmest and
     // coldest: for example, at T100, only one color is available, white.
     return if (range == 0.0) {
       0.5
@@ -273,10 +273,10 @@ class TemperatureCache(val input: Hct) {
      *
      * Color science has researched emotion and harmony, which art uses to select colors. Warm-cool
      * is the foundation of analogous and complementary colors. See:
-     * - Li-Chen Ou's Chapter 19 in Handbook of Color Psychology (2015).
+     * - Li-Chen Ou’s Chapter 19 in Handbook of Color Psychology (2015).
      * - Josef Albers' Interaction of Color chapters 19 and 21.
      *
-     * Implementation of Ou, Woodcock and Wright's algorithm, which uses Lab/LCH color space. Return
+     * Implementation of Ou, Woodcock and Wright’s algorithm, which uses Lab/LCH color space. Return
      * value has these properties:
      * - Values below 0 are cool, above 0 are warm.
      * - Lower bound: -9.66. Chroma is infinite. Assuming max of Lab chroma 130.

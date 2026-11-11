@@ -102,7 +102,7 @@ internal class RealEventSource(
             // This is a long-lived response. Cancel full-call timeouts.
             call?.timeout()?.cancel()
 
-            // Replace the body with a stripped one so the callbacks can't see real data.
+            // Replace the body with a stripped one so the callbacks can’t see real data.
             val response = response.stripBody()
 
             val reader = ServerSentEventReader(body.source(), this)

@@ -20,7 +20,7 @@ import java.util.ArrayList
 import java.util.LinkedHashMap
 
 /**
- * An image quantizer that divides the image's pixels into clusters by recursively cutting an RGB
+ * An image quantizer that divides the image’s pixels into clusters by recursively cutting an RGB
  * cube, based on the weight of pixels in each area of the cube.
  *
  * The algorithm was described by Xiaolin Wu in Graphic Gems II, published in 1991.

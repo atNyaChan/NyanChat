@@ -24,7 +24,7 @@ The fork consolidates cross-cutting UI behavior into shared components and rules
 of adding per-screen variants.
 
 - **List items**: reorderable entity lists, favorites, message search results, model pickers,
-  network/permission request logs, the sidebar assistant picker and the "copy assistant" list all
+  network/permission request logs, the sidebar assistant picker and the “copy assistant” list all
   render through the shared `OutlinedItemCard`
   (app/src/main/java/me/rerere/rikkahub/ui/components/ui/OutlinedItemCard.kt) — full width, outlined,
   16dp corners, whole-card click. List margins and item gaps are 8dp and the card vertical content
@@ -33,14 +33,14 @@ of adding per-screen variants.
   haptic feedback) and disable reordering while a search filter is active.
 - **Settings and forms**: group options with `CardGroup`; on pages that reuse the settings-home large
   title plus card/list layout, keep 8dp between the title bar and the first item. The gap below the last
-  card must match the page's left/right inset: with the 8dp outer `contentPadding` plus the 8dp item
-  padding that means 16dp at the bottom, never half of it (the stats page's `LazyColumn` follows this).
-  A setting with two to four choices renders as a "label + choice buttons" `CardGroup` item via the
+  card must match the page’s left/right inset: with the 8dp outer `contentPadding` plus the 8dp item
+  padding that means 16dp at the bottom, never half of it (the stats page’s `LazyColumn` follows this).
+  A setting with two to four choices renders as a “label + choice buttons” `CardGroup` item via the
   shared `ConnectedChoiceButtons` / `ConnectedChoiceLabel`
   (app/src/main/java/me/rerere/rikkahub/ui/components/ui/ConnectedChoiceButtons.kt), never
   `SegmentedButton` / `SingleChoiceSegmentedButtonRow`.
   A text input is one `CardGroup` item whose `headlineContent` is the input itself, with the field name in
-  the input's own `label` and the old `description` in `supportingText` — never a `FormItem` that puts the
+  the input’s own `label` and the old `description` in `supportingText` — never a `FormItem` that puts the
   title above the input. `FormItem` stays for rows whose content is not a single input (sliders, switches,
   choice rows, chip rows, lists).
 - **Bottom sheets**: every bottom sheet must render through the shared `AppBottomSheet` shell
@@ -53,20 +53,20 @@ of adding per-screen variants.
   and top padding 0dp / bottom 8dp (plus the navigation-bar inset). When the sheet contains a
   `CardGroup`, prefer equal spacing over the uniform bottom gap: the gap below the `CardGroup`
   matches the left/right inset (e.g. 16dp when the sheet uses 16dp horizontal padding). Fixed bottom
-  button rows keep 8dp above and 8dp below, and use "Cancel / Confirm" via `common_confirm_action`.
+  button rows keep 8dp above and 8dp below, and use “Cancel / Confirm” via `common_confirm_action`.
   Titles are horizontally centered and use `MaterialTheme.typography.headlineSmall`, through the
   shared `BottomSheetTitle`.
 - **Colors** (`CustomColors`, app/src/main/java/me/rerere/rikkahub/ui/theme/Color.kt): page
   backgrounds, the top bar and all drawers use `surface`; card/list fills use `surfaceContainerLow`
   (`CustomColors.cardColorsOnSurfaceContainer`, `CustomColors.listItemColors`). Every
   `AlertDialog`/`BasicAlertDialog` uses `MaterialTheme.colorScheme.surface`.
-- **Shapes**: `OutlinedTextField`s use the theme's `Shapes.extraSmall` (16dp); search fields use the
+- **Shapes**: `OutlinedTextField`s use the theme’s `Shapes.extraSmall` (16dp); search fields use the
   fixed 20dp `SearchFieldShape`
   (app/src/main/java/me/rerere/rikkahub/ui/components/ui/SearchFieldShape.kt) instead of the
   screen-corner shape. Large containers (`CardGroup`, page cards, dialogs) adapt to the physical
   screen corner via `rememberScreenEdgeCornerShape`
   (app/src/main/java/me/rerere/rikkahub/ui/theme/ScreenCornerShape.kt), falling back to 28dp (the
-  "直角" mode uses 4dp); message bubbles, thinking blocks, shared outlined list cards and file item
+  「直角」 mode uses 4dp); message bubbles, thinking blocks, shared outlined list cards and file item
   cards keep their own shape.
 - **Monospace text / code ligatures**: every piece of monospace text rendered as text (code
   blocks, line numbers, paths, identifiers, logs, JSON, formula source, …) must control ligatures
@@ -105,7 +105,7 @@ of adding per-screen variants.
 - **Delete dialogs**: every delete confirmation goes through the shared `DeleteConfirmDialog`
   (app/src/main/java/me/rerere/rikkahub/ui/components/ui/DeleteConfirmDialog.kt) — do not rebuild the
   title or message at the call site. The title is always `delete_dialog_title` (“Delete {type}” /
-  “删除{类型}”), the buttons are always `common_cancel` / `common_delete`, and the body is one of
+  「删除{类型}」), the buttons are always `common_cancel` / `common_delete`, and the body is one of
   `delete_dialog_message_named` / `delete_dialog_message_unnamed` / `delete_dialog_message_batch`.
   Pass a localized `delete_type_*` string as the type plus an optional `name` (`count` + `pluralType`
   for batch); any extra paragraph goes through the `extra` slot. Simplified Chinese quotes use “”,
@@ -129,7 +129,7 @@ as an ordinary folder, and never invent a uuid/filename-keyed path for an attach
 - **Stored vs runtime form.** In-memory `UIMessage`/`Settings` always hold absolute `file://` urls; the
   database and DataStore only store paths relative to `filesDir` (`upload/<sha256>`). The conversion is
   `data/files/LocalFileUrls` (`withStoredLocalUrls` / `withRuntimeLocalUrls`), applied at
-  `ConversationRepository`'s read/write boundary. Never persist a package-qualified absolute path, and
+  `ConversationRepository`’s read/write boundary. Never persist a package-qualified absolute path, and
   never parse a sha out of a url by hand — use `attachmentShaFromUrl` / `tempAttachmentNameFromUrl`.
 - **Drafts are not CAS.** Composer/queue attachments live under `cacheDir/upload_tmp`
   (`FileFolders.UPLOAD_TEMP`) with display name/MIME/sha only in an in-process map; they are neither
@@ -185,13 +185,13 @@ Do not raise `minSdk` or change the Java/Kotlin target per module.
 
 ## Database Schema and Backup Compatibility
 
-The fork's `AppDatabase` version and upstream RikkaHub's schema version are independent: the fork is
+The fork’s `AppDatabase` version and upstream RikkaHub’s schema version are independent: the fork is
 currently at `102`, upstream is at `32`. Both must be kept in sync when a new schema lands.
 
 When adding a new schema version (fork target `N`, matching upstream version `U`):
 
 1. Bump `AppDatabase.version` to `N` and let Room export the new schema JSON.
-2. Add `Migration(previousForkVersion, N)` for the fork's own databases (for example `101 -> 102`).
+2. Add `Migration(previousForkVersion, N)` for the fork’s own databases (for example `101 -> 102`).
 3. Add `Migration(previousUpstreamVersion, U)` for upstream archives (for example `31 -> 32`).
 4. Add `Migration(U, N)` bridging the upstream schema to the fork schema (for example `32 -> 102`).
    Keep it idempotent: legacy ZIP archives may already have been partially converted by
@@ -201,8 +201,8 @@ When adding a new schema version (fork target `N`, matching upstream version `U`
    register the upstream chain (`30 -> 31`, `31 -> 32`, `32 -> N`) only under `allowLegacyMigration`,
    which `BackupManager` enables only for legacy `.zip` restores, so the app itself still refuses to
    open an old upstream database in place and old TAR backups are rejected.
-   A `.tar` backup must already use the fork's CAS schema (`>= 100`); no upstream migration chain runs
-   for TAR, though the fork's own migrations (`100 -> 101 -> ...`) still apply.
+   A `.tar` backup must already use the fork’s CAS schema (`>= 100`); no upstream migration chain runs
+   for TAR, though the fork’s own migrations (`100 -> 101 -> ...`) still apply.
 6. Update `ManagedFilesArchive.LEGACY_SCHEMA_VERSION` to `U`: the compatible ZIP export must declare
    the same schema version upstream writes. Export converts `managed_files_cas` back to
    `managed_files`, writes `PRAGMA user_version = U`, and drops `room_master_table`.
@@ -211,7 +211,7 @@ When adding a new schema version (fork target `N`, matching upstream version `U`
 
 Example — adding upstream `32` to the fork at `102` requires `LEGACY_SCHEMA_VERSION = 32` plus the
 `31 -> 32`, `32 -> 102`, and `101 -> 102` migrations. Upstream restore chains are
-`30 -> 31 -> 32 -> 102` (or `31 -> 32 -> 102` / `32 -> 102`), while the fork's own databases use
+`30 -> 31 -> 32 -> 102` (or `31 -> 32 -> 102` / `32 -> 102`), while the fork’s own databases use
 `100 -> 101 -> 102`.
 
 ## Agent Change Workflow
@@ -249,10 +249,10 @@ merges in git history, but NEVER let git auto-merge file contents.
   abort immediately and stop.
 - NEVER copy upstream files wholesale over ours.
 - **NEVER run `git commit` yourself — under any circumstances, including for an upstream sync,
-  a cleanup, or after a "done" instruction.** Leaving the ported changes staged (or the merge in
-  progress) and handing over is the agent's final step of a sync; the user reviews, builds and
+  a cleanup, or after a “done” instruction.** Leaving the ported changes staged (or the merge in
+  progress) and handing over is the agent’s final step of a sync; the user reviews, builds and
   commits. If the user seems to want the commit done, ask instead of running it.
-- The same ban covers anything that creates a commit behind the user's back: `git commit`,
+- The same ban covers anything that creates a commit behind the user’s back: `git commit`,
   `git merge` *without* `--no-commit`, `git merge --continue`, `git cherry-pick` (applies and
   commits), `git revert`, `git rebase --continue`, and `git stash pop` variants that auto-commit.
   `git stash` / `git reset` / `git checkout` that only move changes around without committing are
@@ -262,7 +262,7 @@ merges in git history, but NEVER let git auto-merge file contents.
 1. List unported commits: `git log --oneline HEAD..upstream/master`
 2. Start the merge (this changes NO files — verify `git diff HEAD` is empty):
    `git merge -s ours upstream/master --no-commit --no-ff`
-3. Now port EACH upstream commit's changes, oldest first:
+3. Now port EACH upstream commit’s changes, oldest first:
    a. `git show <hash>` — read the diff AND the commit message. Understand the *intent*, not just
       the text.
    b. Hand-edit OUR files to re-implement the change. Our code may be renamed, moved, or rewritten —
@@ -272,7 +272,7 @@ merges in git history, but NEVER let git auto-merge file contents.
       user. Do not guess.
 4. STOP. Do not commit. Leave every ported change in the working tree (staged is fine) and, if the
    merge is still pending, leave it pending (`git merge -s ours ... --no-commit` keeps
-   `.git/MERGE_HEAD`, so the user's commit lands as the merge commit). Before asking the user to
+   `.git/MERGE_HEAD`, so the user’s commit lands as the merge commit). Before asking the user to
    verify, tell them (1) what user-visible UI changes the sync introduces and (2) what needs to be
    tested after compiling. Also report what was ported, what was skipped, and the exact message the
    user should commit with — the whole sync is ONE commit:
@@ -285,13 +285,13 @@ merges in git history, but NEVER let git auto-merge file contents.
 
 ### Do not commit partway through
 The entire sync lands as ONE merge commit, and that commit is always made by the user. Never split
-the port into agent-made commits to "save progress". If the range is too large to port safely in
+the port into agent-made commits to “save progress”. If the range is too large to port safely in
 one session, STOP and ask the user before starting.
 
 ### NyanwChanges.md
 - Only record things that actually differ from upstream in the appropriate place in the document;
   never re-apply entries the user reworded, reverted or removed.
-- Do NOT open a separate "sync upstream" section in `docs/NyanwChanges.md`; ported upstream changes
+- Do NOT open a separate “sync upstream” section in `docs/NyanwChanges.md`; ported upstream changes
   are recorded only in the merge commit message.
 
 ## Module Structure
@@ -311,9 +311,9 @@ one session, STOP and ask the user before starting.
 - **workspace**: Per-workspace file system and shell execution environment exposed to the AI as tools. A `WorkspaceBackend`
   abstracts local PRoot Rootfs (`LocalWorkspaceBackend`) and remote SSH hosts (`SshWorkspaceBackend`); `WorkspaceEntity.type`
   declares capabilities (rootfs/terminal/localFiles/fileWriteTools).
-- **terminal**: Terminal emulator core taken from termux-app's `terminal-emulator` (package `com.termux.terminal`, kept
+- **terminal**: Terminal emulator core taken from termux-app’s `terminal-emulator` (package `com.termux.terminal`, kept
   binary compatible with the `terminal-view` aar). `TerminalSession` runs over a `TerminalTransport`: local PRoot
-  terminals use `LocalPtyTransport`, SSH workspaces use the app's `SshTerminalTransport`. Origin and local changes are
+  terminals use `LocalPtyTransport`, SSH workspaces use the app’s `SshTerminalTransport`. Origin and local changes are
   listed in terminal/README.md.
 - **mediagen**: Media (image/video) generation SDK with a provider abstraction and built-in providers.
 - **oauth**: OAuth 2.0 authorization helpers (loopback callback server, callback foreground service) used by providers.
@@ -335,9 +335,9 @@ one session, STOP and ask the user before starting.
   MCP servers, workspace, skills) taken from the assistant; from then on chat-page changes to those settings stay on
   the conversation, and code should read them through `Settings.getAssistantOf(conversation)` /
   `Settings.getChatModelOf(conversation)` instead of the assistant directly. A fork-only `followAssistant` flag on that
-  snapshot makes a conversation follow the live assistant settings instead; the assistant's fork-only
+  snapshot makes a conversation follow the live assistant settings instead; the assistant’s fork-only
   `conversationSettingsMode` can force all conversations to follow the assistant (`OFF`), force all to stay
-  independent (`ON`), or defer to each conversation's `followAssistant` flag (`PER_CONVERSATION`). (
+  independent (`ON`), or defer to each conversation’s `followAssistant` flag (`PER_CONVERSATION`). (
   app/src/main/java/me/rerere/rikkahub/data/model/Conversation.kt,
   app/src/main/java/me/rerere/rikkahub/data/model/ConversationConfig.kt)
 
@@ -426,10 +426,10 @@ copied file is missing our fork-only keys and mistranslates keys whose English w
      `python3 tools/strings_grouping.py reorder` (mirrors the sections/key order onto the new file) and
      `check`.
    - `AppLanguage` (`app/src/main/java/me/rerere/rikkahub/ui/pages/setting/SettingPreferencesUIPage.kt`):
-     append an entry with the locale tag and the language's own endonym, e.g.
+     append an entry with the locale tag and the language’s own endonym, e.g.
      `GERMAN("de", label = "🇩🇪 Deutsch")`, so the in-app language picker offers it.
 4. Keep placeholders, escapes (`\'`, `\"`, `\n`, `\u0020`), markup and formatting identical to the English
-   source, and follow that language's typography and terminology (Chinese spacing/quote rules above; for
+   source, and follow that language’s typography and terminology (Chinese spacing/quote rules above; for
    German the glossary in “German (`values-de`) Terminology” below). Keep `SKILL.md`, file names, URLs and
    brand/product names (`NyanChat`, `RikkaHub`, provider names) untranslated.
 5. Verify: identical key sets per module, no unescaped `'`/`"`, matching printf placeholders, XML parses, and
@@ -468,7 +468,7 @@ the whole UI and comes from the upstream German commit.
 - Typography: quotes `„…“`, decimal comma (`0,5–2,0`), binary size units (`MiB`) as everywhere else. Do not
   translate file names, URLs, `SKILL.md` or brand/product names.
 - New German keys follow this glossary first; when a neighbouring German string contradicts it, keep the
-  neighbour's wording only if the glossary has no entry for that term.
+  neighbour’s wording only if the glossary has no entry for that term.
 
 ### Manual Localization Workflow
 

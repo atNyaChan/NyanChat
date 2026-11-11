@@ -11,7 +11,7 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
 
 class AwsSignatureV4Test {
-    // AWS 文档 "Authenticating Requests: Using Query Parameters" 里的示例凭据和时间
+    // AWS 文档 “Authenticating Requests: Using Query Parameters” 里的示例凭据和时间
     private val awsExample = S3Config(
         endpoint = "https://s3.amazonaws.com",
         accessKeyId = "AKIAIOSFODNN7EXAMPLE",

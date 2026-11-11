@@ -59,7 +59,7 @@ data class SearchConditions(
 private fun Set<MessageSearchContent>.encodeContents(): String =
     MessageSearchContent.entries.filter(this::contains).joinToString(",")
 
-/** 空字符串表示“一个都不选”，与缺省偏好（用户 + 正文）区分开。 */
+/** 空字符串表示「一个都不选」，与缺省偏好（用户 + 正文）区分开。 */
 private fun String.decodeContents(): Set<MessageSearchContent> =
     if (isBlank()) {
         emptySet()
@@ -108,7 +108,7 @@ class SearchVM(
     var deletedModelIds by mutableStateOf<List<Uuid>>(emptyList())
         private set
 
-    /** 聊天记录中出现过的模型 ID（与“已删除模型”使用同一筛选范围）。 */
+    /** 聊天记录中出现过的模型 ID（与「已删除模型」使用同一筛选范围）。 */
     var usedModelIds by mutableStateOf<Set<Uuid>>(emptySet())
         private set
     var isLoading by mutableStateOf(false)
@@ -204,7 +204,7 @@ class SearchVM(
 
     private suspend fun performSearch() {
         val current = conditions
-        // “匹配内容”一个都不选时没有可搜索的文本；仅匹配标题时不涉及内容
+        // 「匹配内容」一个都不选时没有可搜索的文本；仅匹配标题时不涉及内容
         val hasSearchableContent = current.mode == MessageSearchMode.TITLE_ONLY ||
             current.contents.isNotEmpty()
         if (!current.hasAnyCriteria || !hasSearchableContent) {

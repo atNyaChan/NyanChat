@@ -160,7 +160,7 @@ public class OperatingSystemControlTest extends TerminalTestCase {
 		enterString("\033]11;#0ABCD0\007").assertColor(TextStyle.COLOR_INDEX_BACKGROUND, 0xFF0ABCD0);
 		enterString("\033]12;#00ABCD\007").assertColor(TextStyle.COLOR_INDEX_CURSOR, 0xFF00ABCD);
 		// Two special colors at once
-		// ("Each successive parameter changes the next color in the list. The value of P s tells the starting point in the list"):
+		// (“Each successive parameter changes the next color in the list. The value of P s tells the starting point in the list”):
 		enterString("\033]10;#FF0000;#00FF00\007").assertColor(TextStyle.COLOR_INDEX_FOREGROUND, 0xFFFF0000);
 		assertColor(TextStyle.COLOR_INDEX_BACKGROUND, 0xFF00FF00);
 		// Three at once:

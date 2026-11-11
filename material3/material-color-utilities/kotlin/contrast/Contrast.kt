@@ -25,8 +25,8 @@ import kotlin.math.max
  * Utility methods for calculating contrast given two colors, or calculating a color given one color
  * and a contrast ratio.
  *
- * Contrast ratio is calculated using XYZ's Y. When linearized to match human perception, Y becomes
- * HCT's tone and L*a*b*'s' L*.
+ * Contrast ratio is calculated using XYZ’s Y. When linearized to match human perception, Y becomes
+ * HCT’s tone and L*a*b*'s' L*.
  */
 object Contrast {
   /**
@@ -59,7 +59,7 @@ object Contrast {
   // Color spaces that measure luminance, such as Y in XYZ, L* in L*a*b*, or T in HCT, are known as
   // perceptually accurate color spaces.
   //
-  // To be displayed, they must gamut map to a "display space", one that has a defined limit on the
+  // To be displayed, they must gamut map to a “display space”, one that has a defined limit on the
   // number of colors. Display spaces include sRGB, more commonly understood  as RGB/HSL/HSV/HSB.
   // Gamut mapping is undefined and not defined by the color space. Any gamut mapping algorithm must
   // choose how to sacrifice accuracy in hue, saturation, and/or lightness.
@@ -67,7 +67,7 @@ object Contrast {
   // A principled solution is to maintain lightness, thus maintaining contrast/a11y, maintain hue,
   // thus maintaining aesthetic intent, and reduce chroma until the color is in gamut.
   //
-  // HCT chooses this solution, but, that doesn't mean it will _exactly_ matched desired lightness,
+  // HCT chooses this solution, but, that doesn’t mean it will _exactly_ matched desired lightness,
   // if only because RGB is quantized: RGB is expressed as a set of integers: there may be an RGB
   // color with, for example, 47.892 lightness, but not 47.891.
   //
@@ -103,13 +103,13 @@ object Contrast {
    *
    * Contrast ratio is defined using Y in XYZ, relative luminance. However, relative luminance is
    * linear to number of photons, not to perception of lightness. Perceptual luminance, L* in
-   * L*a*b*, T in HCT, is. Designers prefer color spaces with perceptual luminance since they're
+   * L*a*b*, T in HCT, is. Designers prefer color spaces with perceptual luminance since they’re
    * accurate to the eye.
    *
    * Y and L* are pure functions of each other, so it possible to use perceptually accurate color
    * spaces, and measure contrast, and measure contrast in a much more understandable way: instead
    * of a ratio, a linear difference. This allows a designer to determine what they need to adjust a
-   * color's lightness to in order to reach their desired contrast, instead of guessing & checking
+   * color’s lightness to in order to reach their desired contrast, instead of guessing & checking
    * with hex codes.
    */
   @JvmStatic

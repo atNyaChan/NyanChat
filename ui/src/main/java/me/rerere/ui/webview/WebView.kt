@@ -164,8 +164,8 @@ fun WebView(
                 when (val content = state.content) {
                     is WebContent.Url -> {
                         val url = content.url
-                        // Only load new URL if it's different from the current one or if the state forces reload
-                        // Also check if the webView's url is null or blank, which might happen initially
+                        // Only load new URL if it’s different from the current one or if the state forces reload
+                        // Also check if the webView’s url is null or blank, which might happen initially
                         val currentWebViewUrl = webView.url
                         if (url.isNotEmpty() && (currentWebViewUrl.isNullOrBlank() || url != currentWebViewUrl || state.forceReload)) {
                             webView.loadUrl(content.url, content.additionalHttpHeaders)
@@ -262,7 +262,7 @@ class WebViewState(
 
     // --- WebView Instance ---
     // Hold the WebView instance internally to perform actions.
-    // Be cautious with this reference, ensure it doesn't leak context.
+    // Be cautious with this reference, ensure it doesn’t leak context.
     var webView: WebView? by mutableStateOf(null)
         internal set
 

@@ -10,7 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 
 /**
- * 让卡片尾部控件（下拉框、思考强度选择等）支持“整卡点击”。
+ * 让卡片尾部控件（下拉框、思考强度选择等）支持「整卡点击」。
  *
  * 布局尾部控件通过 [RegisterItemClickAction] 注册自己的点击动作；卡片检测到存在动作后
  * 整张卡片变为可点击，点击卡片即触发该动作（开关类控件已有独立的 switchItem 写法）。

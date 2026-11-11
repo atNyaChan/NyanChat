@@ -156,7 +156,7 @@ sealed class ASRProviderSetting {
         val sampleRate: Int = 16000,
         // 每多少秒自动 flush 一次 (上传识别)。0 = 仅 stop() 时整体上传
         val segmentDurationSec: Int = 30,
-        // 逆文本归一化 (Inverse Text Normalization): 把 "三百" -> "300" 等
+        // 逆文本归一化 (Inverse Text Normalization): 把 「三百」 -> "300" 等
         val enableItn: Boolean = true,
         // 是否返回词级时间戳 (rikkahub 当前不消费时间戳, 默认关闭节省 token)
         val enableTimestamp: Boolean = false,

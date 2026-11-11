@@ -568,7 +568,7 @@ fun SettingProviderDetailSheet(
 // 模型页列表开头是「模型（数量）」标题行（拖拽排序按 key 定位，此常量仅用于初始定位滚动）
 private const val MODELS_LIST_START_INDEX = 1
 
-// 模型页顶部的「模型（数量）」操作行：左侧标题，右侧“自定义模型”与“选择模型”按钮
+// 模型页顶部的「模型（数量）」操作行：左侧标题，右侧「自定义模型」与「选择模型」按钮
 @Composable
 private fun ModelsHeaderRow(
     modelCount: Int,

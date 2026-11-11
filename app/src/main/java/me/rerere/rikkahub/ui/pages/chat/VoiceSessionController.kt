@@ -112,7 +112,7 @@ class VoiceSessionController(
                     asr = null
                     mutableState.update { it.copy(phase = VoicePhase.Speaking) }
                     speak(replies.removeFirst())
-                    delay(300) // Let the loudspeaker's tail decay before opening the microphone.
+                    delay(300) // Let the loudspeaker’s tail decay before opening the microphone.
                     continue
                 }
                 // Turn-based mode keeps the microphone closed until every reply has arrived and been spoken.

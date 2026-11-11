@@ -383,7 +383,7 @@ private fun SearchConditionsDialog(
         )
     }
 
-    // 搜索条件抽屉一出现就把焦点放到“搜索文本”输入框、光标置于已有文本末尾并弹出键盘。
+    // 搜索条件抽屉一出现就把焦点放到「搜索文本」输入框、光标置于已有文本末尾并弹出键盘。
     LaunchedEffect(Unit) {
         withFrameNanos { }
         queryInput = queryInput.copy(selection = TextRange(queryInput.text.length))
@@ -489,7 +489,7 @@ private fun SearchConditionsDialog(
                                     } else {
                                         conditions.contents - content
                                     }
-                                    // 允许一个都不选，此时右下角“搜索”不可点
+                                    // 允许一个都不选，此时右下角「搜索」不可点
                                     onConditionsChange(conditions.copy(contents = contents))
                                 },
                             ) { content, selected ->
@@ -713,7 +713,7 @@ private fun SearchConditionsDialog(
                 }
                 Button(
                     onClick = onConfirm,
-                    // “匹配内容”一个都没选时没有可搜索的内容；仅匹配标题时不涉及内容
+                    // 「匹配内容」一个都没选时没有可搜索的内容；仅匹配标题时不涉及内容
                     enabled = conditions.mode == MessageSearchMode.TITLE_ONLY ||
                         conditions.contents.isNotEmpty(),
                 ) {

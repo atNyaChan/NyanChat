@@ -94,7 +94,7 @@ class AgentLoopTest {
             text("hello")
             finish()
         }
-        // App 侧在开始请求前先放一条占位消息，用来立刻显示“生成中”并承接本轮回复
+        // App 侧在开始请求前先放一条占位消息，用来立刻显示「生成中」并承接本轮回复
         val placeholder = UIMessage(role = MessageRole.ASSISTANT, parts = emptyList())
 
         val events = runToEnd(request(messages = listOf(UIMessage.user("hi"), placeholder)))

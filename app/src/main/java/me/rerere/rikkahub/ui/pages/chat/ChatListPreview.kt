@@ -256,7 +256,7 @@ private fun PreviewSearchBar(
     totalCount: Int,
     modifier: Modifier = Modifier,
 ) {
-    // 与“选择模型”页同一套搜索框：SearchFieldShape 的描边输入框 + 透明输入区，底色用 Surface 默认值
+    // 与「选择模型」页同一套搜索框：SearchFieldShape 的描边输入框 + 透明输入区，底色用 Surface 默认值
     Surface(
         shape = SearchFieldShape,
         modifier = modifier.fillMaxWidth(),

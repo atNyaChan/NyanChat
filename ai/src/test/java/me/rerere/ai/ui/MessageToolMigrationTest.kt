@@ -329,7 +329,7 @@ class MessageToolMigrationTest {
             setMessages = { node, msgs -> node.copy(messages = msgs) }
         )
 
-        // TOOL node should remain since there's no ASSISTANT to merge into
+        // TOOL node should remain since there’s no ASSISTANT to merge into
         assertEquals(2, result.size)
     }
 

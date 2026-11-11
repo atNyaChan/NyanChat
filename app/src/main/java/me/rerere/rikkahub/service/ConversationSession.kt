@@ -126,7 +126,7 @@ class ConversationSession(
             // 还没开始的新会话不落库（哪怕带着预设消息），也不能提前固定配置：
             // 会话开始前聊天页的修改要写回助手。这样只打开过、没发过消息的新聊天
             // 不会在会话列表里留下空记录；会话被删除后内存里剩下的也是一个空会话，
-            // 这里同时挡住了“删除后被重新写入”。
+            // 这里同时挡住了「删除后被重新写入」。
             if (!existsInDatabase && (latest.newConversation || latest.messageNodes.isEmpty())) {
                 return@withLock latest
             }
@@ -245,7 +245,7 @@ class ConversationSession(
     // 最近一次生成任务开始的时间，用来认出这一轮报的错。在任务启动前同步记下，任务里报的错不会早于它
     val generationStartedAt = MutableStateFlow<Long?>(null)
 
-    // 当前正在生成的助手消息 id（fork）。界面据此判断哪条消息处于“生成中”，不能依赖 finishedAt，
+    // 当前正在生成的助手消息 id（fork）。界面据此判断哪条消息处于「生成中」，不能依赖 finishedAt，
     // 因为多轮工具调用每一轮都会写入 finishedAt，而手动编辑的消息则始终没有 finishedAt。
     private val _generatingMessageId = MutableStateFlow<Uuid?>(null)
     val generatingMessageId: StateFlow<Uuid?> = _generatingMessageId.asStateFlow()

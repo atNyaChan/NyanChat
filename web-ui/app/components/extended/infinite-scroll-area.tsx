@@ -36,8 +36,8 @@ function InfiniteScrollArea({
   );
   const effectiveLoader = loader ?? defaultLoader;
 
-  // When the container isn't scrollable (content shorter than viewport)
-  // but there's still more data, auto-trigger the next load.
+  // When the container isn’t scrollable (content shorter than viewport)
+  // but there’s still more data, auto-trigger the next load.
   React.useEffect(() => {
     const el = containerRef.current;
     if (!el || !hasMore) return;

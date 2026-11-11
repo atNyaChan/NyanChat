@@ -285,7 +285,7 @@ class ChatRequestFactory(
             processingStatus = processingStatus,
             workspaceCwd = turn.workspaceCwd,
         ).expandNotices()
-        // 未启用“模型内置搜索”时移除模型的内置搜索工具，避免请求仍携带内置搜索
+        // 未启用「模型内置搜索」时移除模型的内置搜索工具，避免请求仍携带内置搜索
         val requestModel = if (assistant.useBuiltInSearch) {
             turn.model
         } else {
@@ -330,7 +330,7 @@ private const val CONTINUATION_HINT =
  * 检查点后面不是用户消息时（一轮中途压缩，后面直接是助手的回复或什么都没有），告诉模型接着干活，
  * 否则它会把摘要当成用户发来的内容去回应。
  *
- * 按"后面不是用户消息"而不是"在末尾"判断：这一轮之后的请求里检查点仍然带着这段话，前缀不变，不影响提示词缓存。
+ * 按「后面不是用户消息」而不是「在末尾」判断：这一轮之后的请求里检查点仍然带着这段话，前缀不变，不影响提示词缓存。
  */
 internal fun List<UIMessage>.withContinuationHint(): List<UIMessage> {
     val index = indexOfLast { it.isContextCheckpoint }
@@ -344,7 +344,7 @@ internal fun List<UIMessage>.withContinuationHint(): List<UIMessage> {
 /**
  * 取出压缩请求回复里的摘要正文。
  *
- * 指令要求不调用工具，模型仍可能发起调用。这时附带的文本只是"我先看看文件"之类的说明，
+ * 指令要求不调用工具，模型仍可能发起调用。这时附带的文本只是「我先看看文件」之类的说明，
  * 当成摘要保存会让之后的请求丢掉全部历史，所以返回 null 交给调用方报错。
  * 压缩请求不经过输出转换器，正文开头的 <think> 思考内容也要在这里剥掉，否则会存进摘要。
  */

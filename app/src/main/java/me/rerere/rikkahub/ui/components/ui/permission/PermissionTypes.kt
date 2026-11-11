@@ -34,7 +34,7 @@ enum class PermissionStatus {
     /** 被拒绝但可以再次请求 */
     Denied,
 
-    /** 被拒绝且用户选择"不再询问" */
+    /** 被拒绝且用户选择「不再询问」 */
     DeniedPermanently
 }
 

@@ -61,7 +61,7 @@ data class Assistant(
     val conversationSettingsMode: ConversationSettingsMode = ConversationSettingsMode.ON,
 )
 
-/** fork：助手级的“使用独立对话设置”选项。 */
+/** fork：助手级的「使用独立对话设置」选项。 */
 @Serializable
 enum class ConversationSettingsMode {
     OFF, // 所有对话跟随助手

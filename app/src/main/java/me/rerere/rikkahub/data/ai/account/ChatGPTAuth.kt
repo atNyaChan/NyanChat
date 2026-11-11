@@ -71,7 +71,7 @@ internal object ChatGPTAuth {
 
     /**
      * `chatgpt_plan_type` 的显示名，照搬 codex-rs/protocol 的 `KnownPlan::display_name`，
-     * 注意 prolite 才是 "Pro"，pro 是 "Pro (More)"。不认识的值按单词首字母大写显示。
+     * 注意 prolite 才是 “Pro”，pro 是 “Pro (More)”。不认识的值按单词首字母大写显示。
      */
     fun planDisplayName(plan: String): String = when (plan.lowercase()) {
         "free" -> "Free"

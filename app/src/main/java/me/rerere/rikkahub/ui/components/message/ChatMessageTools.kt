@@ -468,7 +468,7 @@ private fun ChainOfThoughtScope.AskUserToolStep(
                                 singleLine = false,
                             )
                         } else if (isAnswered) {
-                            // Show the user's answer
+                            // Show the user’s answer
                             val answeredState = tool.approvalState as ToolApprovalState.Answered
                             val answerJson = runCatching {
                                 JsonInstant.parseToJsonElement(answeredState.answer)

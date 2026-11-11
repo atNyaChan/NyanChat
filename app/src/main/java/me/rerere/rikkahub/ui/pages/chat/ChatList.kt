@@ -256,7 +256,7 @@ private fun ChatListNormal(
     val conversationUpdated by rememberUpdatedState(conversation)
     val density = LocalDensity.current
     val activity = LocalContext.current as? me.rerere.rikkahub.RouteActivity
-    // “关闭”背景效果时不给消息加标题栏方向的偏移，也不绘制顶部渐隐遮罩
+    // 「关闭」背景效果时不给消息加标题栏方向的偏移，也不绘制顶部渐隐遮罩
     val titleBarScrim = settings.displaySetting.enableTitleBarScrim
 
     DisposableEffect(Unit) {

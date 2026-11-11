@@ -185,12 +185,12 @@ fun SettingFilesPage(
     }
     val files = loadedFiles.orEmpty()
         .filter {
-            // 消息与设置类（头像/背景、用户头像）使用都算引用；“未使用”只放完全没有引用的
+            // 消息与设置类（头像/背景、用户头像）使用都算引用；「未使用」只放完全没有引用的
             if (selectedFolder == UNUSED_ATTACHMENTS) it.isUnused else it.hasReferences
         }
         .sortedWith(
             when (sortOrder) {
-                // 两种排序都把较新的卡片放在上方, 只是取每个附件的“时间”不同:
+                // 两种排序都把较新的卡片放在上方, 只是取每个附件的「时间」不同:
                 // 最新引用取它在 usages 里最晚的使用时间, 最旧引用取最早的使用时间
                 AttachmentSortOrder.LATEST_REFERENCE ->
                     compareByDescending<CasAttachment> { it.latestManagedAt }
@@ -465,7 +465,7 @@ private enum class CleanRange(val days: Int?) {
     ALL(null),
 }
 
-/** “存储管理”页的附件排序方式, 在整个应用启动期间有效。 */
+/** 「存储管理」页的附件排序方式, 在整个应用启动期间有效。 */
 private enum class AttachmentSortOrder {
     /** 取每个附件最新一次使用的消息时间作为它的时间, 较新的卡片在上方。 */
     LATEST_REFERENCE,
@@ -751,7 +751,7 @@ private fun UsedByMessagesDialog(
     )
 }
 
-/** 设置类使用记录的说明文本：助手头像/背景带上助手名，取不到时退回“未知助手”。 */
+/** 设置类使用记录的说明文本：助手头像/背景带上助手名，取不到时退回「未知助手」。 */
 @Composable
 private fun settingsUsageDescription(usage: FileUsage, assistantNames: Map<String, String>): String =
     when (usage.type) {

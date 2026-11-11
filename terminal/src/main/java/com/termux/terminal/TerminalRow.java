@@ -128,7 +128,7 @@ public final class TerminalRow {
 
         final int newCodePointDisplayWidth = WcWidth.width(codePoint);
 
-        // Fast path when we don't have any chars with width != 1
+        // Fast path when we don’t have any chars with width != 1
         if (!mHasNonOneWidthOrSurrogateChars) {
             if (codePoint >= Character.MIN_SUPPLEMENTARY_CODE_POINT || newCodePointDisplayWidth != 1) {
                 mHasNonOneWidthOrSurrogateChars = true;

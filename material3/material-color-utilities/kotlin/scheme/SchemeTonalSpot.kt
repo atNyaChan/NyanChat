@@ -21,7 +21,7 @@ import dynamiccolor.DynamicScheme
 import dynamiccolor.Variant
 import hct.Hct
 
-/** A calm theme, sedated colors that aren't particularly chromatic. */
+/** A calm theme, sedated colors that aren’t particularly chromatic. */
 class SchemeTonalSpot(
   sourceColorHctList: List<Hct>,
   isDark: Boolean,

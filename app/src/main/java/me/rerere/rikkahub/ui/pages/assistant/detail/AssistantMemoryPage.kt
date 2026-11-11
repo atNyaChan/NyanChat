@@ -359,7 +359,7 @@ private fun memorySectionTitle(directory: String): String = when (directory) {
     else -> memoryTitleOf(directory.removePrefix("/"))
 }
 
-// 一周内显示"41 分钟前"这样的相对时间，更早的显示日期
+// 一周内显示「41 分钟前」这样的相对时间，更早的显示日期
 private fun relativeTimeOf(time: Long): String = DateUtils.getRelativeTimeSpanString(
     time,
     System.currentTimeMillis(),

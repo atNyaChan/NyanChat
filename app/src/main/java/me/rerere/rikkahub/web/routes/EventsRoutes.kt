@@ -56,7 +56,7 @@ fun Route.eventsRoutes(
                     chatService.getConversationJobs()
                 ) { conversations, generationJobs ->
                     // Key per conversation folds in generation state (so start/stop invalidates the
-                    // sidebar even when content isn't persisted) and folderId (so moving a
+                    // sidebar even when content isn’t persisted) and folderId (so moving a
                     // conversation between folders invalidates other clients' folder views).
                     conversations.map { conversation ->
                         buildString {

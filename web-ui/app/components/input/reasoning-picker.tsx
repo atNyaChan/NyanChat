@@ -93,7 +93,7 @@ function ReasoningSlider({
       className="relative flex h-7 w-full touch-none items-center select-none data-[disabled]:opacity-50"
     >
       <SliderPrimitive.Track className="relative h-7 w-full grow overflow-hidden rounded-full bg-muted">
-        {/* Match the thumb's right edge, including its inset at both ends. */}
+        {/* Match the thumb’s right edge, including its inset at both ends. */}
         <span
           aria-hidden="true"
           className="absolute left-0 h-full rounded-r-lg bg-primary/75"

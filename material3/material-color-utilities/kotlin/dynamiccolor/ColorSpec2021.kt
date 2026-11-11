@@ -877,7 +877,7 @@ open class ColorSpec2021 : ColorSpec {
   // Color value calculations //
   // ///////////////////////////////////////////////////////////////
   override fun getHct(scheme: DynamicScheme, color: DynamicColor): Hct {
-    // This is crucial for aesthetics: we aren't simply taking the standard color
+    // This is crucial for aesthetics: we aren’t simply taking the standard color
     // and changing its tone for contrast. Rather, we find the tone for contrast, then
     // use the specified chroma from the palette to construct a new color.
     //
@@ -936,7 +936,7 @@ open class ColorSpec2021 : ColorSpec {
             fTone = DynamicColor.foregroundTone(bgTone, fContrast)
           }
           if (decreasingContrast) {
-            // If decreasing contrast, adjust color to the "bare minimum"
+            // If decreasing contrast, adjust color to the “bare minimum”
             // that satisfies contrast.
             nTone = DynamicColor.foregroundTone(bgTone, nContrast)
             fTone = DynamicColor.foregroundTone(bgTone, fContrast)
@@ -1000,7 +1000,7 @@ open class ColorSpec2021 : ColorSpec {
       val bgTone = background.getTone(scheme)
       val desiredRatio = contrastCurve.get(scheme.contrastLevel)
       if (Contrast.ratioOfTones(bgTone, answer) >= desiredRatio) {
-        // Don't "improve" what's good enough.
+        // Don’t "improve" what’s good enough.
       } else {
         // Rough improvement.
         answer = DynamicColor.foregroundTone(bgTone, desiredRatio)

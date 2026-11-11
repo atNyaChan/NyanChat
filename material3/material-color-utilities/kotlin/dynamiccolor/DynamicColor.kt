@@ -33,7 +33,7 @@ import kotlin.math.roundToInt
  * become closer to their background as contrast lowers, and further when contrast increases.
  *
  * For example, the default behavior of adjust tone at max contrast to be at a 7.0 ratio with its
- * background is principled and matches accessibility guidance. That does not mean it's the desired
+ * background is principled and matches accessibility guidance. That does not mean it’s the desired
  * approach for _every_ design system, and every color pairing, always, in every case.
  *
  * Ultimately, each component necessary for calculating a color, adjusting it for a desired contrast
@@ -158,13 +158,13 @@ data class DynamicColor(
       val darkerRatio = Contrast.ratioOfTones(darkerTone, bgTone)
       val preferLighter = tonePrefersLightForeground(bgTone)
       if (preferLighter) {
-        // "Neglible difference" handles an edge case where the initial contrast ratio is high
+        // “Neglible difference” handles an edge case where the initial contrast ratio is high
         // (ex. 13.0), and the ratio passed to the function is that high ratio, and both the lighter
         // and darker ratio fails to pass that ratio.
         //
-        // This was observed with Tonal Spot's On Primary Container turning black momentarily
+        // This was observed with Tonal Spot’s On Primary Container turning black momentarily
         // between
-        // high and max contrast in light mode. PC's standard tone was T90, OPC's was T10, it was
+        // high and max contrast in light mode. PC’s standard tone was T90, OPC’s was T10, it was
         // light mode, and the contrast level was 0.6568521221032331.
         val negligibleDifference =
           abs(lighterRatio - darkerRatio) < 0.1 && lighterRatio < ratio && darkerRatio < ratio

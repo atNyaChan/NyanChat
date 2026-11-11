@@ -48,7 +48,7 @@ fun ScreenEdgeCornerRadii.inset(
 }
 
 /**
- * Returns the display's physical bottom-corner radii, adjusted for a component's
+ * Returns the display’s physical bottom-corner radii, adjusted for a component’s
  * distance from the screen edges. A null result means the platform did not expose
  * usable radii and callers should preserve their Material fallback.
  */
@@ -113,7 +113,7 @@ fun CornerBasedShape.adaptToScreenEdgeCornerRadii(
 }
 
 /**
- * Adapts all corners of a bottom-edge Material shape to the display's physical
+ * Adapts all corners of a bottom-edge Material shape to the display’s physical
  * bottom-corner radii. The bottom pair can remain square while attached to the IME.
  *
  * Android only exposes the physical corner radius from Android 12 onward. On older
@@ -142,7 +142,7 @@ fun rememberScreenEdgeCornerShape(
 }
 
 /**
- * Returns the display's physical bottom-corner radius in dp (the larger of the
+ * Returns the display’s physical bottom-corner radius in dp (the larger of the
  * two bottom corners), or null when the platform does not expose a usable value.
  * Unlike [rememberScreenEdgeCornerRadii], this does not apply the 28dp trust
  * threshold, so callers can report unreliable values to the user.

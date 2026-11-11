@@ -3,7 +3,7 @@ package com.termux.terminal;
 /**
  * ${CSI}${top};${bottom}r" - set Scrolling Region [top;bottom] (default = full size of window) (DECSTBM).
  * <p/>
- * "DECSTBM moves the cursor to column 1, line 1 of the page" (http://www.vt100.net/docs/vt510-rm/DECSTBM).
+ * “DECSTBM moves the cursor to column 1, line 1 of the page” (http://www.vt100.net/docs/vt510-rm/DECSTBM).
  */
 public class ScrollRegionTest extends TerminalTestCase {
 
@@ -69,7 +69,7 @@ public class ScrollRegionTest extends TerminalTestCase {
 	}
 
 	public void testNELRespectsLeftMargin() {
-		// vttest "Menu 11.3.2: VT420 Cursor-Movement Test", select "10. Test other movement (CR/HT/LF/FF) within margins".
+		// vttest "Menu 11.3.2: VT420 Cursor-Movement Test", select “10. Test other movement (CR/HT/LF/FF) within margins”.
 		// The NEL (ESC E) sequence moves cursor to first position on next line, where first position depends on origin mode and margin.
 		withTerminalSized(3, 3).enterString("\033[?69h\033[2sABC\033ED").assertLinesAre("ABC", "D  ", "   ");
 		withTerminalSized(3, 3).enterString("\033[?69h\033[2sABC\033[?6h\033ED").assertLinesAre("ABC", " D ", "   ");

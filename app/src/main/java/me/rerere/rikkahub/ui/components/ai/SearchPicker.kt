@@ -127,7 +127,7 @@ private fun SearchPicker(
     onDismiss: () -> Unit,
 ) {
     val navBackStack = LocalNavController.current
-    // 模型内置搜索开关（模型设置里的内置工具）开着才会显示“模型内置搜索”项
+    // 模型内置搜索开关（模型设置里的内置工具）开着才会显示「模型内置搜索」项
     val hasBuiltInSearchEnabled = model?.tools?.contains(BuiltInTools.Search) == true
     // 内置搜索仅在模型支持时生效，否则回退到本地搜索
     val isBuiltInSearchSelected = useBuiltInSearch && hasBuiltInSearchEnabled

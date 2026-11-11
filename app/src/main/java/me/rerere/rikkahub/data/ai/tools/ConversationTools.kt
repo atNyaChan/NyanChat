@@ -21,7 +21,7 @@ import me.rerere.rikkahub.utils.toLocalDate
 import kotlin.uuid.Uuid
 
 /**
- * Tools that let the assistant query the user's past conversations on demand, instead of
+ * Tools that let the assistant query the user’s past conversations on demand, instead of
  * statically injecting recent chats into the system prompt (which would break prompt caching).
  */
 fun createConversationTools(

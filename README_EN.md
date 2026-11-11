@@ -10,7 +10,7 @@
 
 ## ✨ Improvements over RikkaHub: (Why NyanChat)
 
-- ⚠️ **Delete Confirmation** — Confirmation dialog before deleting messages or conversations (yes, the original didn't have one)
+- ⚠️ **Delete Confirmation** — Confirmation dialog before deleting messages or conversations (yes, the original didn’t have one)
 - 💰 **Message Price Display** — See the cost of each message directly for better budget management *(though price calculation may be inaccurate when caching is enabled)*
 - 🔍 **Better Message Search** — Search by title, or precise text matching (the original only had fuzzy search)
 - 🖼️ **Better Chat Attachment Management** — View all attachments in chat history and jump directly to the message using that attachment, making storage management easier. **After forking a conversation, the same attachments will not occupy space repeatedly!**

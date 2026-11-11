@@ -20,10 +20,10 @@ package dynamiccolor
  * distance from each other.
  *
  * The polarity is an adjective that describes "A", compared to "B". For instance, ToneDeltaPair(A,
- * B, 15, 'darker') states that A's tone should be at least 15 darker than B's.
+ * B, 15, 'darker') states that A’s tone should be at least 15 darker than B’s.
  *
  * Prefer a DynamicColor with a background, this is for special cases when designers want tonal
- * distance, literally contrast, between two colors that don't have a background / foreground
+ * distance, literally contrast, between two colors that don’t have a background / foreground
  * relationship or a contrast guarantee.
  *
  * @param roleA The first role in a pair.
@@ -31,7 +31,7 @@ package dynamiccolor
  * @param delta Required difference between tones. Absolute value, negative values have undefined
  *   behavior.
  * @param polarity The relative relation between tones of roleA and roleB, as described above.
- * @param stayTogether Whether these two roles should stay on the same side of the "awkward zone"
+ * @param stayTogether Whether these two roles should stay on the same side of the “awkward zone”
  *   (T50-59). This is necessary for certain cases where one role has two backgrounds.
  * @param constraint How to fulfill the tone delta pair constraint.
  */

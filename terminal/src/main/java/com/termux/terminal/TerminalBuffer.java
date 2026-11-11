@@ -85,7 +85,7 @@ public final class TerminalBuffer {
             int i;
             boolean rowLineWrap = getLineWrap(row);
             if (rowLineWrap && x2 == columns) {
-                // If the line was wrapped, we shouldn't lose trailing space:
+                // If the line was wrapped, we shouldn’t lose trailing space:
                 lastPrintingCharIndex = x2Index - 1;
             } else {
                 for (i = x1Index; i < x2Index; ++i) {
@@ -122,7 +122,7 @@ public final class TerminalBuffer {
 
         if (textOffset >= text.length()) {
           // The click was to the right of the last word on the line, so
-          // there's no word to return
+          // there’s no word to return
           return "";
         }
 
@@ -135,7 +135,7 @@ public final class TerminalBuffer {
         }
 
         if (x1 == x2) {
-          // The click was on a space, so there's no word to return
+          // The click was on a space, so there’s no word to return
           return "";
         }
         return text.substring(x1 + 1, x2);

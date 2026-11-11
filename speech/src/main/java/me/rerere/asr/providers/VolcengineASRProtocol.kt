@@ -85,7 +85,7 @@ internal object VolcengineASRProtocol {
 
     fun voiceTurn(current: ASRVoiceTurn, result: JsonObject?): ASRVoiceTurn {
         if (result == null || current.isComplete) return current
-        // result_type=full keeps sentence order. Retain the first sentence's identity even if
+        // result_type=full keeps sentence order. Retain the first sentence’s identity even if
         // its timestamp changes during second-pass correction; each voice connection owns one turn.
         val first = result["utterances"]?.jsonArray?.firstOrNull()?.jsonObject
         val text = first?.get("text")?.jsonPrimitive?.contentOrNull

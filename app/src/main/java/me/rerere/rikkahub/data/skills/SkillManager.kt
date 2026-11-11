@@ -134,7 +134,7 @@ class SkillManager(
      * 清理所有助手 enabledSkills 中已不存在于磁盘的技能名。
      *
      * 当用户在 App 外直接删除 /skills/ 目录下的技能时，不会走 [deleteSkill] 的清理逻辑，
-     * 导致 enabledSkills 残留"幽灵"技能名，使扩展入口角标计数偏大。
+     * 导致 enabledSkills 残留「幽灵」技能名，使扩展入口角标计数偏大。
      */
     suspend fun pruneOrphanedEnabledSkills(): List<SkillMetadata> = withContext(Dispatchers.IO) {
         val skills = listSkills()

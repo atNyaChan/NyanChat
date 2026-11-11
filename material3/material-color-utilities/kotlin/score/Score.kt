@@ -26,7 +26,7 @@ import kotlin.math.roundToInt
  * Given a large set of colors, remove colors that are unsuitable for a UI theme, and rank the rest
  * based on suitability.
  *
- * Enables use of a high cluster count for image quantization, thus ensuring colors aren't muddied,
+ * Enables use of a high cluster count for image quantization, thus ensuring colors aren’t muddied,
  * while curating the high cluster count to a much smaller number of appropriate choices.
  */
 object Score {

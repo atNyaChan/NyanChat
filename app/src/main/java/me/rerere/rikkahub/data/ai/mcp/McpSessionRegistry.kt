@@ -487,7 +487,7 @@ private fun hasSameConnectionParameters(
 ): Boolean = left != null && right != null && left.connectionKey() == right.connectionKey()
 
 private fun McpServerConfig.resolvedHeaders(): List<Pair<String, String>> {
-    // 设置页“添加请求头”后未填写会留下空名称，OkHttp 会直接抛出 "name is empty"
+    // 设置页「添加请求头」后未填写会留下空名称，OkHttp 会直接抛出 “name is empty”
     val base = commonOptions.headers.filter { it.first.isNotBlank() }
     val token = commonOptions.oauth?.takeIf { it.enabled }?.accessToken
     val hasAuthorization = base.any { it.first.equals("Authorization", ignoreCase = true) }

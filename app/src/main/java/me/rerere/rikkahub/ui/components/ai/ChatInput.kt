@@ -240,7 +240,7 @@ fun ChatInput(
 
     // The expanded input is pinned at a fixed distance from the top of the screen; only its
     // bottom edge moves (following the IME/build-nav bars), so the top edge never shifts with
-    // the keyboard. This mirrors Agora's fillMaxHeight + fixed-top-offset anchoring.
+    // the keyboard. This mirrors Agora’s fillMaxHeight + fixed-top-offset anchoring.
     val screenHeightPx = LocalContext.current.resources.displayMetrics.heightPixels
     val topOffsetPx = screenHeightPx * 0.05f
     val navBarPx = WindowInsets.navigationBars.getBottom(density)
@@ -399,7 +399,7 @@ fun ChatInput(
                                 Text(text = stringResource(R.string.editing))
                                 Spacer(Modifier.weight(1f))
                                 if (state.editingReasoning != null) {
-                                    // 比左侧“编辑中”略小一档
+                                    // 比左侧「编辑中」略小一档
                                     Text(
                                         text = stringResource(R.string.chat_input_edit_thinking_process),
                                         style = MaterialTheme.typography.bodyMedium,

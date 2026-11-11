@@ -111,7 +111,7 @@ private fun rememberReasoningState(reasoning: UIMessagePart.Reasoning): Pair<Rea
     val expandState = rememberSaveable(reasoning.createdAt) {
         mutableStateOf(ReasoningCardState.Collapsed)
     }
-    // 标记是否已处理过“生成结束”的展开/自动折叠，避免滚动回收重建后再次触发自动折叠
+    // 标记是否已处理过「生成结束」的展开/自动折叠，避免滚动回收重建后再次触发自动折叠
     var finishedHandled by rememberSaveable(reasoning.createdAt) { mutableStateOf(false) }
 
     val state = remember(reasoning.createdAt) {

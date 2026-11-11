@@ -24,12 +24,12 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
  *     permissions = setOf(
  *         PermissionInfo(
  *             permission = Manifest.permission.CAMERA,
- *             usage = { Text("需要相机权限来拍照") },
+ *             usage = { Text(「需要相机权限来拍照」) },
  *             required = true
  *         ),
  *         PermissionInfo(
  *             permission = Manifest.permission.RECORD_AUDIO,
- *             usage = { Text("需要录音权限来录制视频") },
+ *             usage = { Text(「需要录音权限来录制视频」) },
  *             required = false
  *         )
  *     )
@@ -37,12 +37,12 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
  *
  * // 请求权限
  * Button(onClick = { permissionState.requestPermissions() }) {
- *     Text("请求权限")
+ *     Text(「请求权限」)
  * }
  *
  * // 检查权限状态
  * if (permissionState.allRequiredPermissionsGranted) {
- *     Text("所有必需权限已授权")
+ *     Text(「所有必需权限已授权」)
  * }
  * ```
  */

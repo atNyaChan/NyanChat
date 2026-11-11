@@ -645,7 +645,7 @@ private fun ChatMessageBubble(
     val interactionSource = remember { MutableInteractionSource() }
     val pressProgress by animatePressProgress(interactionSource)
     val corner = lerp(BubbleCorner, BubblePressedCorner, pressProgress)
-    // 按下时“尾巴”角也跟着收紧，松手后回到小角
+    // 按下时「尾巴」角也跟着收紧，松手后回到小角
     val tailCorner = lerp(BubbleTailCorner, BubblePressedCorner, pressProgress)
     val shape = if (role == MessageRole.USER) {
         RoundedCornerShape(topStart = corner, topEnd = tailCorner, bottomEnd = corner, bottomStart = corner)

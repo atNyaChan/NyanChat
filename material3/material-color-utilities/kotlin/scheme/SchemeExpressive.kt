@@ -21,7 +21,7 @@ import dynamiccolor.DynamicScheme
 import dynamiccolor.Variant
 import hct.Hct
 
-/** A playful theme - the source color's hue does not appear in the theme. */
+/** A playful theme - the source color’s hue does not appear in the theme. */
 class SchemeExpressive(
   sourceColorHctList: List<Hct>,
   isDark: Boolean,

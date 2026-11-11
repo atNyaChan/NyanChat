@@ -63,7 +63,7 @@ enum class MessageAttachmentState {
     MISSING,
 }
 
-/** 搜索页“匹配内容”：只在这些内容里查找关键词，可多选。 */
+/** 搜索页「匹配内容」：只在这些内容里查找关键词，可多选。 */
 enum class MessageSearchContent {
     /** 用户发出的消息正文 */
     USER,

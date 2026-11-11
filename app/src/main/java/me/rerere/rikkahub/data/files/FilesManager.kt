@@ -843,7 +843,7 @@ class FilesManager(
     // ------------------------------------------------------------------ 存储管理
 
     /**
-     * “存储管理”页的附件列表。附件属性直接取自登记表，使用记录同步来自 [FileUsage]。
+     * 「存储管理」页的附件列表。附件属性直接取自登记表，使用记录同步来自 [FileUsage]。
      */
     suspend fun listCasAttachments(forceRebuild: Boolean = false): List<CasAttachment> =
         withContext(Dispatchers.IO) {
@@ -1211,7 +1211,7 @@ data class TempAttachmentSelection(
 )
 
 /**
- * “存储管理”页展示的一份内容寻址附件：相同内容只显示一张卡片。
+ * 「存储管理」页展示的一份内容寻址附件：相同内容只显示一张卡片。
  * [usages] 是登记表里的全部使用记录（含未被引用时的 `none` 记录）。
  */
 data class CasAttachment(
@@ -1256,17 +1256,17 @@ data class CasAttachment(
             else -> "${displayNames.first()}, ..."
         }
 
-    /** “按最新的引用排序”取全部使用记录里最晚的时间。 */
+    /** 「按最新的引用排序」取全部使用记录里最晚的时间。 */
     val latestManagedAt: Long get() = usages.maxOfOrNull { it.createdAt } ?: 0L
 
-    /** “按最旧的引用排序”取全部使用记录里最早的时间。 */
+    /** 「按最旧的引用排序」取全部使用记录里最早的时间。 */
     val oldestManagedAt: Long get() = usages.minOfOrNull { it.createdAt } ?: 0L
 
     /** sha256 的前 6 位与后 6 位, 中间用 `...` 连接。 */
     val sha256Short: String get() = "${sha256.take(6)}...${sha256.takeLast(6)}"
 }
 
-/** “存储管理”统计: [fileCount] 为 `upload` 下的文件数, [referenceCount] 为消息与设置类使用记录数。 */
+/** 「存储管理」统计: [fileCount] 为 `upload` 下的文件数, [referenceCount] 为消息与设置类使用记录数。 */
 data class CasStorageStats(
     val fileCount: Int,
     val referenceCount: Int,

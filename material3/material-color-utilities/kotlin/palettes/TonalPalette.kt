@@ -30,7 +30,7 @@ private constructor(
   val hue: Double,
   /** The chroma of the Tonal Palette, in HCT. Ranges from 0 to ~130 (for sRGB gamut). */
   val chroma: Double,
-  /** The key color is the first tone, starting from T50, that matches the palette's chroma. */
+  /** The key color is the first tone, starting from T50, that matches the palette’s chroma. */
   val keyColor: Hct,
 ) {
   var cache: MutableMap<Int, Int> = mutableMapOf()
@@ -143,7 +143,7 @@ private constructor(
      * Create tones using the HCT hue and chroma from a color.
      *
      * @param argb ARGB representation of a color
-     * @return Tones matching that color's hue and chroma.
+     * @return Tones matching that color’s hue and chroma.
      */
     @JvmStatic
     fun fromInt(argb: Int): TonalPalette {
@@ -154,7 +154,7 @@ private constructor(
      * Create tones using a HCT color.
      *
      * @param hct HCT representation of a color.
-     * @return Tones matching that color's hue and chroma.
+     * @return Tones matching that color’s hue and chroma.
      */
     @JvmStatic
     fun fromHct(hct: Hct): TonalPalette {

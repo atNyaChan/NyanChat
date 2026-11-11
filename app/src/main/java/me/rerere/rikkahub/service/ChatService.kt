@@ -178,7 +178,7 @@ class ChatService(
 
     private val conversationStore = object : ConversationStore {
         override suspend fun prepareWrite(): (Conversation) -> Conversation {
-            // 会话落库即视为开始：清掉“还没开始”的标记，并把助手的配置固定到会话上
+            // 会话落库即视为开始：清掉「还没开始」的标记，并把助手的配置固定到会话上
             val settings = settingsStore.awaitLoaded()
             return { it.copy(newConversation = false).bindConfig(settings).fillModelSnapshots(settings) }
         }
@@ -224,7 +224,7 @@ class ChatService(
         onSessionRemoved = memoryConsolidationScheduler::onConversationLeft,
     )
 
-    // 翻译任务（fork）：按 (会话, 消息) 记录，支持单个取消并对外暴露“翻译中”状态
+    // 翻译任务（fork）：按 (会话, 消息) 记录，支持单个取消并对外暴露「翻译中」状态
     private val translationJobs = ConcurrentHashMap<Pair<Uuid, Uuid>, Job>()
 
     private val _translatingMessages = MutableStateFlow<Set<Pair<Uuid, Uuid>>>(emptySet())
@@ -748,7 +748,7 @@ class ChatService(
                 }
             }
         }
-        // 内置工具只计入实际会传给模型的部分（受“模型内置搜索”开关与提供商支持情况限制）
+        // 内置工具只计入实际会传给模型的部分（受「模型内置搜索」开关与提供商支持情况限制）
         val builtInToolCount = turn.model.findProvider(settings.providers)
             ?.let { chatRequestBuiltInTools(turn.model, it, turn.assistant.useBuiltInSearch).size }
             ?: 0
@@ -900,7 +900,7 @@ class ChatService(
                 while (true) {
                     val replyNodeId = target.nodeId
                     val continuing = target.continuedMessageId != null
-                    // 开始请求前先把助手消息放进会话：界面立刻把它显示为“生成中”，
+                    // 开始请求前先把助手消息放进会话：界面立刻把它显示为「生成中」，
                     // 也不会在构建工具（可能较慢，含 MCP）的窗口里被当成手动编辑的消息。
                     // 这条占位消息就是本轮要写的消息，agent 循环会接着它写，所以模型归属先按会话固定配置填好。
                     val messages = if (continuing) {
@@ -1108,7 +1108,7 @@ class ChatService(
 
     // ---- 生成标题 ----
 
-    /** 新建对话的默认标题（本地化“新聊天”），也用于判断标题是否仍待标题模型生成。 */
+    /** 新建对话的默认标题（本地化「新聊天」），也用于判断标题是否仍待标题模型生成。 */
     private fun defaultConversationTitle(): String =
         context.getString(R.string.chat_page_new_chat)
 
@@ -1150,7 +1150,7 @@ class ChatService(
         }
     }
 
-    /** 只生成标题文本，不落库（标题编辑框的“重新生成”用它填候选） */
+    /** 只生成标题文本，不落库（标题编辑框的「重新生成」用它填候选） */
     suspend fun generateTitleCandidate(conversation: Conversation): String =
         metaGenerator.generateTitle(settingsStore.awaitLoaded(), conversation)
 

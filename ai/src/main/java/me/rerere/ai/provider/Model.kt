@@ -105,7 +105,7 @@ fun ProviderSetting.supportedBuiltInTools(): Set<BuiltInTools> = when (this) {
 /**
  * 文本生成请求中实际会传给模型的内置工具。
  *
- * - 未开启“模型内置搜索”时移除 [BuiltInTools.Search]（与请求构建一致，见 GenerationHandler）
+ * - 未开启「模型内置搜索」时移除 [BuiltInTools.Search]（与请求构建一致，见 GenerationHandler）
  * - 只保留当前提供商实际支持的内置工具，见 [supportedBuiltInTools]
  *
  * 需要与各提供商的请求构建逻辑保持同步。

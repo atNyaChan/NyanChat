@@ -41,7 +41,7 @@ public class UnicodeInputTest extends TerminalTestCase {
 		assertLinesAre("\uFFFD\uFFFD\uFFFD\uFFFD ", "     ");
 
 		// https://bugzilla.mozilla.org/show_bug.cgi?id=746900: "with this patch 0xe0 0x80 is decoded as two U+FFFDs,
-		// but 0xe0 0xa0 is decoded as a single U+FFFD, and this is correct according to the "Best Practices", but IE
+		// but 0xe0 0xa0 is decoded as a single U+FFFD, and this is correct according to the “Best Practices”, but IE
 		// and Chrome (Version 22.0.1229.94) decode both of them as two U+FFFDs. Opera 12.11 decodes both of them as
 		// one U+FFFD".
 		withTerminalSized(5, 2);

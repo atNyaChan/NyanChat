@@ -133,7 +133,7 @@ public final class TerminalSession extends TerminalOutput {
     }
 
     /**
-     * Set the terminal emulator's window size and start terminal emulation.
+     * Set the terminal emulator’s window size and start terminal emulation.
      *
      * @param columns The number of columns in the terminal window.
      * @param rows    The number of rows in the terminal window.

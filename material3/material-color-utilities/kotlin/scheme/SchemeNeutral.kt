@@ -21,7 +21,7 @@ import dynamiccolor.DynamicScheme
 import dynamiccolor.Variant
 import hct.Hct
 
-/** A theme that's slightly more chromatic than monochrome, which is purely black / white / gray. */
+/** A theme that’s slightly more chromatic than monochrome, which is purely black / white / gray. */
 class SchemeNeutral(
   sourceColorHctList: List<Hct>,
   isDark: Boolean,

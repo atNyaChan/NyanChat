@@ -145,7 +145,7 @@ private fun DetailedNerdLine(
                     .padding(horizontal = 4.dp, vertical = 2.dp)
             ) {
                 // 生成中用每 0.1s 推送的快照（含按时钟外推的生成耗时），没 chunk 时耗时/速度也会继续走；
-                // 生成结束后换回最终的 generationTimeMs，保持“不含首 token 延迟与工具等待”的口径。
+                // 生成结束后换回最终的 generationTimeMs，保持「不含首 token 延迟与工具等待」的口径。
                 val statsMillis = if (loading) {
                     stats?.liveGenerationMillis ?: stats?.elapsedMillis ?: message.elapsedMillis(loading = true)
                 } else {

@@ -454,7 +454,7 @@ fun List<UIMessage>.migrateToolMessages(): List<UIMessage> {
                 }
                 result.add(lastAssistant.copy(parts = updatedParts.toSortedMessageParts()))
             }
-            // Skip the TOOL message (don't add it to result)
+            // Skip the TOOL message (don’t add it to result)
             i++
             continue
         }
@@ -470,7 +470,7 @@ fun List<UIMessage>.migrateToolMessages(): List<UIMessage> {
 /**
  * Migrate legacy TOOL role messages at the MessageNode level.
  * This handles the case where TOOL messages are stored in separate MessageNodes
- * by merging ToolResult parts into the previous ASSISTANT node's Tool parts.
+ * by merging ToolResult parts into the previous ASSISTANT node’s Tool parts.
  *
  * @param MessageNode A container holding one or more UIMessages for branching.
  * @return Migrated list with TOOL nodes removed and their results merged into ASSISTANT nodes.
@@ -503,7 +503,7 @@ fun <T> List<T>.migrateToolNodes(
                     msg.parts.filterIsInstance<UIMessagePart.ToolResult>()
                 }
 
-                // Update the ASSISTANT node's messages by merging ToolResults
+                // Update the ASSISTANT node’s messages by merging ToolResults
                 val updatedMessages = lastMessages.map { assistantMsg ->
                     if (assistantMsg.role != MessageRole.ASSISTANT) return@map assistantMsg
 
@@ -562,7 +562,7 @@ fun <T> List<T>.migrateToolNodes(
                 }
 
                 result[lastIndex] = setMessages(lastNode, updatedMessages)
-                // Skip the TOOL node (don't add it to result)
+                // Skip the TOOL node (don’t add it to result)
                 i++
                 continue
             }

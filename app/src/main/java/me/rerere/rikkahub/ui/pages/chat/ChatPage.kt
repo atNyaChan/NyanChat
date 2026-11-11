@@ -275,7 +275,7 @@ fun ChatPage(id: Uuid, text: String?, files: List<Uri>, nodeId: Uuid? = null) {
         refreshRequestWordCount()
     }
 
-    // 切换“回传思考”（includeHistoryReasoning）后计入/排除历史思考内容，需重新统计请求总词数
+    // 切换「回传思考」（includeHistoryReasoning）后计入/排除历史思考内容，需重新统计请求总词数
     val currentIncludeHistoryReasoning = assistant.includeHistoryReasoning
     LaunchedEffect(currentIncludeHistoryReasoning) {
         refreshRequestWordCount()

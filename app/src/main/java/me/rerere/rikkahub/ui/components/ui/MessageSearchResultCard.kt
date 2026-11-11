@@ -74,7 +74,7 @@ fun MessageSearchResultCard(
     val formattedTime = remember(result.timeAt) {
         result.timeAt.toLocalDateTime()
     }
-    // 结果来源：助手/文件夹，例如 "Assistant/Folder"；缺失的部分会被省略。
+    // 结果来源：助手/文件夹，例如 “Assistant/Folder”；缺失的部分会被省略。
     val sourceLabel = remember(assistantName, result.folderName) {
         listOfNotNull(
             assistantName?.takeIf { it.isNotBlank() },

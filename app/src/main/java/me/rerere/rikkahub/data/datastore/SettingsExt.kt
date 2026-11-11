@@ -45,7 +45,7 @@ fun DisplaySetting.effectiveBackgroundEffectSelection(): BackgroundEffectSelecti
     else -> BackgroundEffectSelection.OFF
 }
 
-/** 按选择项写回设置；只有“关闭”会同时移除标题栏遮罩。 */
+/** 按选择项写回设置；只有「关闭」会同时移除标题栏遮罩。 */
 fun DisplaySetting.withBackgroundEffectSelection(selection: BackgroundEffectSelection): DisplaySetting =
     when (selection) {
         BackgroundEffectSelection.OFF -> copy(

@@ -187,7 +187,7 @@ fun UIAvatar(
             }
         }
         // No click/update handler: render a plain (non-clickable) surface so touches
-        // fall through to the parent, and the parent's press ripple covers the whole card.
+        // fall through to the parent, and the parent’s press ripple covers the whole card.
         if (onClick != null || onUpdate != null) {
             Surface(
                 shape = shape,

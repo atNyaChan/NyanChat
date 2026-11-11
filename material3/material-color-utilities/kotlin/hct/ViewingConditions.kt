@@ -25,7 +25,7 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 /**
- * In traditional color spaces, a color can be identified solely by the observer's measurement of
+ * In traditional color spaces, a color can be identified solely by the observer’s measurement of
  * the color. Color appearance models such as CAM16 also use information about the environment where
  * the color was observed, known as the viewing conditions.
  *
@@ -41,7 +41,7 @@ data class ViewingConditions
  * Parameters are intermediate values of the CAM16 conversion process. Their names are shorthand for
  * technical color science terminology, this class would not benefit from documenting them
  * individually. A brief overview is available in the CAM16 specification, and a complete overview
- * requires a color science textbook, such as Fairchild's Color Appearance Models.
+ * requires a color science textbook, such as Fairchild’s Color Appearance Models.
  */
 private constructor(
   val n: Double,
@@ -87,7 +87,7 @@ private constructor(
       discountingIlluminant: Boolean,
     ): ViewingConditions {
       // A background of pure black is non-physical and leads to infinities that represent the idea
-      // that any color viewed in pure black can't be seen.
+      // that any color viewed in pure black can’t be seen.
       val backgroundLstar = max(0.1, backgroundLstar)
       // Transform white point XYZ to 'cone'/'rgb' responses
       val matrix = Cam16.XYZ_TO_CAM16RGB

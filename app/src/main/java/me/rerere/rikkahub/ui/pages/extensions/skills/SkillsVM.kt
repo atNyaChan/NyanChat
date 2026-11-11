@@ -377,7 +377,7 @@ class SkillsVM(
         connection.setRequestProperty("Accept", "application/vnd.github+json")
         return try {
             val code = connection.responseCode
-            // 未登录的 GitHub API 每小时仅 60 次，超限时给出明确提示而不是笼统的"读取失败"
+            // 未登录的 GitHub API 每小时仅 60 次，超限时给出明确提示而不是笼统的「读取失败」
             if ((code == 403 || code == 429) && connection.getHeaderField("X-RateLimit-Remaining") == "0") {
                 error(context.getString(R.string.error_skill_github_rate_limit))
             }

@@ -114,7 +114,7 @@ internal class PendingRestore(
                 RestoreEntry(path, install = true, hadOriginal = targetFile(path).exists())
             }.toMutableList()
         if (paths.contains("database/${databaseFile.name}")) {
-            // The new database is standalone. Keep the old DB's sidecars with the old DB only.
+            // The new database is standalone. Keep the old DB’s sidecars with the old DB only.
             for (suffix in listOf("-wal", "-shm", "-journal")) {
                 val path = "database/${databaseFile.name}$suffix"
                 entries.add(0, RestoreEntry(path, install = false, hadOriginal = targetFile(path).exists()))

@@ -22,7 +22,7 @@ import kotlin.math.roundToInt
 /**
  * Color science utilities.
  *
- * Utility methods for color science constants and color space conversions that aren't HCT or CAM16.
+ * Utility methods for color science constants and color space conversions that aren’t HCT or CAM16.
  */
 object ColorUtils {
   private val SRGB_TO_XYZ =
