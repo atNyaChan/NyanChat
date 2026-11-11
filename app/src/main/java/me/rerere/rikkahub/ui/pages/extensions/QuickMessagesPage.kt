@@ -79,7 +79,7 @@ fun QuickMessagesPage(vm: QuickMessagesVM = koinViewModel()) {
     Scaffold(
         topBar = {
             LargeFlexibleTopAppBar(
-                title = { Text(stringResource(R.string.quick_messages_page_title)) },
+                title = { Text(stringResource(R.string.setting_page_quick_messages)) },
                 navigationIcon = { BackButton() },
                 scrollBehavior = scrollBehavior,
                 colors = CustomColors.topBarColors,

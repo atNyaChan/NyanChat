@@ -69,7 +69,7 @@ fun BackupPage(vm: BackupVM = koinViewModel()) {
         topBar = {
             LargeFlexibleTopAppBar(
                 title = {
-                    Text(stringResource(R.string.backup_page_title))
+                    Text(stringResource(R.string.setting_page_backup))
                 },
                 navigationIcon = {
                     BackButton(enabled = !isBackupOrRestoreRunning)

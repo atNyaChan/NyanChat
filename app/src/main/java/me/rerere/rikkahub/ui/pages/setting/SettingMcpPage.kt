@@ -177,7 +177,7 @@ fun SettingMcpPage(vm: SettingVM = koinViewModel()) {
         topBar = {
             LargeFlexibleTopAppBar(
                 title = {
-                    Text(stringResource(R.string.setting_mcp_page_title))
+                    Text(stringResource(R.string.setting_page_mcp))
                 },
                 navigationIcon = {
                     BackButton()

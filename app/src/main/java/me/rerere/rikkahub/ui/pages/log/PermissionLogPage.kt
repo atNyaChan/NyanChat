@@ -70,7 +70,7 @@ fun PermissionLogPage() {
     Scaffold(
         topBar = {
             LargeFlexibleTopAppBar(
-                title = { Text(stringResource(R.string.permission_log_page_title)) },
+                title = { Text(stringResource(R.string.setting_page_permission_log)) },
                 navigationIcon = { BackButton() },
                 actions = {
                     IconButton(onClick = { showClearConfirm = true }) {

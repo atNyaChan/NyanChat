@@ -36,10 +36,10 @@ private enum class ExtensionTab(
     override val icon: ImageVector,
     @param:StringRes private val labelRes: Int,
 ) : PagerTab {
-    QUICK_MESSAGES(HugeIcons.Zap, R.string.quick_messages_page_title),
-    MODE_INJECTIONS(HugeIcons.MagicWand01, R.string.mode_injection_page_title),
-    LOREBOOKS(HugeIcons.Book01, R.string.lorebook_page_title),
-    SKILLS(HugeIcons.Puzzle, R.string.skills_page_title);
+    QUICK_MESSAGES(HugeIcons.Zap, R.string.setting_page_quick_messages),
+    MODE_INJECTIONS(HugeIcons.MagicWand01, R.string.setting_page_mode_injection),
+    LOREBOOKS(HugeIcons.Book01, R.string.setting_page_lorebook),
+    SKILLS(HugeIcons.Puzzle, R.string.setting_page_skills);
 
     override val label: String
         @Composable get() = stringResource(labelRes)

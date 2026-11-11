@@ -56,7 +56,7 @@ fun SettingModelPage(vm: SettingVM = koinViewModel()) {
         containerColor = CustomColors.topBarColors.containerColor,
         topBar = {
             LargeFlexibleTopAppBar(
-                title = { Text(stringResource(R.string.setting_model_page_title)) },
+                title = { Text(stringResource(R.string.setting_page_models)) },
                 navigationIcon = { BackButton() },
                 scrollBehavior = scrollBehavior,
                 colors = CustomColors.topBarColors,

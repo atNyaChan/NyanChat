@@ -97,7 +97,7 @@ fun WorkspacePage(vm: WorkspaceVM = koinViewModel()) {
     Scaffold(
         topBar = {
             LargeFlexibleTopAppBar(
-                title = { Text(stringResource(R.string.workspace_page_title)) },
+                title = { Text(stringResource(R.string.setting_page_workspace)) },
                 navigationIcon = { BackButton() },
                 scrollBehavior = scrollBehavior,
                 colors = CustomColors.topBarColors,

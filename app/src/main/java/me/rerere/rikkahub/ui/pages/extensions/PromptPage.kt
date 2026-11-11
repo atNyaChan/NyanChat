@@ -113,7 +113,7 @@ fun ModeInjectionPage(vm: PromptVM = koinViewModel()) {
         topBar = {
             LargeFlexibleTopAppBar(
                 navigationIcon = { BackButton() },
-                title = { Text(stringResource(R.string.mode_injection_page_title)) },
+                title = { Text(stringResource(R.string.setting_page_mode_injection)) },
                 scrollBehavior = scrollBehavior,
                 colors = CustomColors.topBarColors,
             )
@@ -143,7 +143,7 @@ fun LorebookPage(vm: PromptVM = koinViewModel()) {
         topBar = {
             LargeFlexibleTopAppBar(
                 navigationIcon = { BackButton() },
-                title = { Text(stringResource(R.string.lorebook_page_title)) },
+                title = { Text(stringResource(R.string.setting_page_lorebook)) },
                 scrollBehavior = scrollBehavior,
                 colors = CustomColors.topBarColors,
             )

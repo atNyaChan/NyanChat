@@ -59,8 +59,8 @@ fun LocalNetworkPermissionCard(
     PermissionRequestCard(
         permissionState = permissionState,
         icon = HugeIcons.Alert01,
-        title = stringResource(R.string.permission_local_network),
-        description = stringResource(R.string.permission_local_network_desc),
+        title = stringResource(R.string.setting_page_permission_local_network),
+        description = stringResource(R.string.setting_page_permission_local_network_desc),
         modifier = modifier,
     )
 }
@@ -78,8 +78,8 @@ fun NotificationPermissionCard(
     PermissionRequestCard(
         permissionState = permissionState,
         icon = HugeIcons.Notification01,
-        title = stringResource(R.string.permission_notification),
-        description = stringResource(R.string.permission_notification_card_desc),
+        title = stringResource(R.string.setting_page_permission_notification),
+        description = stringResource(R.string.setting_page_permission_notification_card_desc),
         modifier = modifier,
     )
 }

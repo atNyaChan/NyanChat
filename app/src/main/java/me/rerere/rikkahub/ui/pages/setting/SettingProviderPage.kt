@@ -127,7 +127,7 @@ fun SettingProviderPage(vm: SettingVM = koinViewModel()) {
         topBar = {
             LargeFlexibleTopAppBar(
                 title = {
-                    Text(text = stringResource(R.string.setting_provider_page_title))
+                    Text(text = stringResource(R.string.setting_page_providers))
                 },
                 navigationIcon = {
                     BackButton()

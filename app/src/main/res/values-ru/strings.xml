@@ -6,7 +6,6 @@
   <string name="about_page_original_github">RikkaHub GitHub</string>
   <string name="about_page_original_website">Сайт RikkaHub</string>
   <string name="about_page_system">Система</string>
-  <string name="about_page_title">О приложении</string>
   <string name="about_page_version">Версия</string>
   <string name="app_name">NyanChat</string>
   <string name="create_fork">Создать форк</string>
@@ -24,6 +23,7 @@
   <string name="safe_mode_enter_app">Войти в приложение</string>
   <string name="safe_mode_switch_assistant">Переключить помощника</string>
   <string name="safe_mode_title">Безопасный режим</string>
+  <string name="setting_page_about">О приложении</string>
   <string name="settings">Настройки</string>
   <string name="share_handler_page_title">Выбрать ассистента</string>
   <string name="share_model_title">Поделиться моделью LLM</string>
@@ -254,10 +254,10 @@
   <string name="chat_message_attachment_deleted">Вложение удалено</string>
   <string name="chat_message_cannot_edit_tool_call">Невозможно редактировать сообщения, содержащие вызовы инструментов</string>
   <string name="chat_message_remove_favorite">Удалить из избранного</string>
-  <string name="chat_message_usage_cached">Из кэша</string>
+  <string name="chat_message_usage_cached">Кэшировано</string>
   <string name="chat_message_usage_cached_short">(%1$s из кэша)</string>
   <string name="chat_message_usage_context">Контекст</string>
-  <string name="chat_message_usage_context_short">%1$s контекст</string>
+  <string name="chat_message_usage_context_short">%1$s конт.</string>
   <string name="chat_message_usage_duration">Длительность</string>
   <string name="chat_message_usage_input">Ввод</string>
   <string name="chat_message_usage_output">Вывод</string>
@@ -265,9 +265,9 @@
   <string name="chat_message_usage_step_count">Шаги</string>
   <string name="chat_message_usage_steps">%1$d шагов</string>
   <string name="chat_message_usage_title">Использование</string>
-  <string name="chat_message_usage_total_cached">Всего из кэша</string>
-  <string name="chat_message_usage_total_input">Всего на вход</string>
-  <string name="chat_message_usage_total_output">Всего на выход</string>
+  <string name="chat_message_usage_total_cached">Всего кэшировано</string>
+  <string name="chat_message_usage_total_input">Всего входных</string>
+  <string name="chat_message_usage_total_output">Общий объём вывода</string>
   <string name="regenerate">Сгенерировать заново</string>
   <string name="regenerate_confirm_message">Вы уверены, что хотите заново сгенерировать это сообщение? Все сообщения ниже этого будут удалены.</string>
   <!-- Chat message tools -->
@@ -290,7 +290,7 @@
   <string name="chat_message_tool_deny_dialog_title">Отклонить выполнение инструмента</string>
   <string name="chat_message_tool_edit_memory">Обновлена память</string>
   <string name="chat_message_tool_get_time">Получить информацию о времени</string>
-  <string name="chat_message_tool_list_memory">Список воспоминаний</string>
+  <string name="chat_message_tool_list_memory">Перечислил воспоминания</string>
 <string name="chat_message_tool_phone_use_list_apps">Список приложений</string>
 <string name="chat_message_tool_phone_use_long_press">Долгое нажатие</string>
 <string name="chat_message_tool_phone_use_long_press_target">Долгое нажатие на %1$s</string>
@@ -314,7 +314,7 @@
 <string name="chat_message_tool_phone_use_type">Ввести текст</string>
 <string name="chat_message_tool_phone_use_type_text">Ввести текст: %1$s</string>
 <string name="chat_message_tool_phone_use_wait">Ожидание %1$s сек.</string>
-  <string name="chat_message_tool_read_memory">Чтение памяти</string>
+  <string name="chat_message_tool_read_memory">Прочитал память</string>
   <string name="chat_message_tool_recent_chats">Посмотреть недавние чаты</string>
   <string name="chat_message_tool_scrape_prefix">Собрать данные с сайта: %1$s</string>
   <string name="chat_message_tool_scrape_web">Собрать данные со страницы</string>
@@ -418,11 +418,11 @@
   <string name="chat_page_compress_context_desc">Сжать переписку в краткое резюме, чтобы сэкономить токены</string>
   <string name="chat_page_compress_context_title">Сжать историю чата</string>
   <string name="chat_page_compress_conversation_changed">Диалог изменился во время сжатия. Повторите попытку.</string>
-  <string name="chat_page_compress_handle_pending_tools">Обработайте ожидающие вызовы инструментов перед сжатием</string>
+  <string name="chat_page_compress_handle_pending_tools">Перед сжатием обработайте ожидающие вызовы инструментов</string>
   <string name="chat_page_compress_keep_recent">Оставлять последние сообщения</string>
   <string name="chat_page_compress_keep_recent_desc">Эти сообщения не сжимаются и остаются после сводки. 0 сжимает всё и лучше всего переиспользует кэш промптов; если разговор слишком длинный для сжатия, оставьте больше сообщений.</string>
   <string name="chat_page_compress_not_enough_messages">Недостаточно сообщений для сжатия. Уменьшите количество сообщений, которые нужно оставить.</string>
-  <string name="chat_page_compress_nothing_to_compress">С момента последней сводки нет новых сообщений для сжатия</string>
+  <string name="chat_page_compress_nothing_to_compress">Нет новых сообщений для сжатия с момента последней сводки</string>
   <string name="chat_page_compress_tool_call_response">Модель попыталась вызвать инструмент вместо написания сводки. Повторите попытку.</string>
   <string name="chat_page_compressing">Сжатие...</string>
   <string name="error_title_compress_conversation">Сжатие переписки не удалось</string>
@@ -443,7 +443,7 @@
   <string name="translator_page_history">История переводов</string>
   <string name="translator_page_input_placeholder">Введите текст для перевода...</string>
   <string name="translator_page_model_missing">Модель перевода не выбрана. Нажмите в правом верхнем углу, чтобы выбрать её.</string>
-  <string name="translator_page_paste">Вставить текст</string>
+  <string name="translator_page_paste">Вставить</string>
   <string name="translator_page_result_placeholder">Результат перевода будет показан здесь</string>
   <string name="translator_page_title">Переводчик</string>
   <string name="translator_page_translate">Перевести</string>
@@ -472,12 +472,12 @@
   <!-- Assistant memory -->
   <string name="assistant_page_memory_auto_dream">Автосновидение</string>
   <string name="assistant_page_memory_auto_dream_desc">Превращать чаты в воспоминания в фоновом режиме после паузы. Если выключено, это происходит только при нажатии «Запустить сновидение сейчас».</string>
-  <string name="assistant_page_memory_desc">Когда память включена, ассистент запоминает то, что вы ему сообщаете, и использует это в последующих беседах. Когда разговор приостанавливается, память упорядочивается в фоновом режиме. Для работы этой функции модель должна поддерживать вызовы инструментов</string>
-  <string name="assistant_page_memory_dream_failed">Не удалось обработать: %s</string>
+  <string name="assistant_page_memory_desc">Когда память включена, ассистент запоминает то, что вы ему сообщаете, и использует это в последующих беседах; когда разговор приостанавливается, память упорядочивается в фоновом режиме. Для работы этой функции модель должна поддерживать вызовы инструментов.</string>
+  <string name="assistant_page_memory_dream_failed">Сбой сновидения: %s</string>
   <string name="assistant_page_memory_dream_hint">Превращает ваши беседы в воспоминания после паузы</string>
   <string name="assistant_page_memory_dream_no_changes">Новых воспоминаний нет</string>
-  <string name="assistant_page_memory_dream_now">Упорядочить сейчас</string>
-  <string name="assistant_page_memory_dream_pending">Ожидают обработки: %d</string>
+  <string name="assistant_page_memory_dream_now">Запустить сновидение сейчас</string>
+  <string name="assistant_page_memory_dream_pending">Новых ходов в ожидании: %d</string>
   <string name="assistant_page_memory_dream_removed">удалено %s</string>
   <string name="assistant_page_memory_dream_retry">Повторить</string>
   <string name="assistant_page_memory_dream_updated">Память обновлена: %s</string>
@@ -487,20 +487,20 @@
   <string name="assistant_page_memory_section_areas">Проекты</string>
   <string name="assistant_page_memory_section_people">Люди</string>
   <string name="assistant_page_memory_section_topics">Темы</string>
-  <string name="assistant_page_memory_section_you">О вас</string>
+  <string name="assistant_page_memory_section_you">Вы</string>
   <string name="assistant_page_memory_updated_at">Обновлено %s</string>
-  <string name="memory_dream_notification_text">Превращаем ваши беседы в воспоминания</string>
-  <string name="memory_dream_title">Упорядочение</string>
-  <string name="memory_dreaming">Обработка…</string>
-  <string name="memory_file_page_aliases">Другие названия</string>
+  <string name="memory_dream_notification_text">Превращаем ваши чаты в воспоминания</string>
+  <string name="memory_dream_title">Сновидение</string>
+  <string name="memory_dreaming">Сновидение…</string>
+  <string name="memory_file_page_aliases">Также известен как</string>
   <string name="memory_file_page_details">Содержание</string>
   <string name="memory_file_page_edit_warning">Старайтесь не редактировать воспоминания вручную. Вместо этого попросите ИИ в чате запомнить или изменить что-то за вас</string>
   <string name="memory_file_page_last_updated">Последнее обновление</string>
-  <string name="memory_file_page_missing">Это воспоминание больше не существует</string>
-  <string name="memory_file_page_new">Новое воспоминание</string>
+  <string name="memory_file_page_missing">Эта запись памяти больше не существует</string>
+  <string name="memory_file_page_new">Новая запись памяти</string>
   <string name="memory_file_page_path">Путь</string>
-  <string name="memory_file_page_path_conflict">По этому пути уже существует воспоминание</string>
-  <string name="memory_file_page_summary">Краткое содержание</string>
+  <string name="memory_file_page_path_conflict">По этому пути уже существует запись памяти</string>
+  <string name="memory_file_page_summary">Сводка</string>
   <string name="memory_file_page_title">Заголовок</string>
   <!-- Assistant settings -->
   <string name="assistant_delete_blocked_message">У этого ассистента ещё есть беседы. Можно удалять только ассистентов без бесед.</string>
@@ -642,7 +642,6 @@
   <string name="assistant_page_time_reminder_desc">Автоматически добавлять напоминания о времени перед сообщениями с большими интервалами, чтобы помочь ИИ понимать паузы в разговоре</string>
   <string name="assistant_page_time_reminder_interval">Интервал напоминания о времени</string>
   <string name="assistant_page_time_reminder_interval_desc">Вставлять напоминание, когда промежуток между сообщениями превышает этот интервал (всегда напоминать перед первым сообщением пользователя). Единица — минуты.</string>
-  <string name="assistant_page_title">Настройки ассистента</string>
   <string name="assistant_page_top_p">Top P</string>
   <string name="assistant_page_top_p_range_hint"> Диапазон: 0 - 1. Оставьте пустым для значения по умолчанию.</string>
   <string name="assistant_page_top_p_warning">Пожалуйста, не изменяйте это значение, если не уверены в своих действиях</string>
@@ -655,12 +654,11 @@
   <string name="assistant_page_workspace">Рабочая область</string>
   <string name="assistant_page_workspace_desc">После привязки Agent может использовать файлы и возможности sandbox этого рабочего пространства.</string>
   <string name="assistant_page_workspace_unbound">Не привязано</string>
+  <string name="setting_page_assistant">Настройки ассистента</string>
   <!-- Prompt extensions -->
   <string name="extensions_page_agent_skills_desc">Управление пакетами навыков для загрузки ИИ по требованию</string>
   <string name="extensions_page_quick_messages_desc">Управление общими шаблонами быстрых сообщений</string>
   <string name="extensions_page_workspace_desc">Управление локальными рабочими каталогами, доступными для Agent</string>
-  <string name="lorebook_page_title">Лорбуки</string>
-  <string name="mode_injection_page_title">Внедрения режимов</string>
   <string name="placeholder_char">Имя ассистента</string>
   <string name="placeholder_device_info">Информация об устройстве</string>
   <string name="placeholder_model_id">ID модели</string>
@@ -712,9 +710,12 @@
   <string name="quick_messages_page_empty_content">Нет содержимого</string>
   <string name="quick_messages_page_empty_hint">Нажмите кнопку + в правом нижнем углу, чтобы добавить быстрое сообщение</string>
   <string name="quick_messages_page_empty_title">Нет быстрых сообщений</string>
-  <string name="quick_messages_page_title">Быстрые сообщения</string>
   <string name="quick_messages_page_untitled">Без названия</string>
+  <string name="setting_page_lorebook">Лорбуки</string>
+  <string name="setting_page_mode_injection">Внедрения режимов</string>
+  <string name="setting_page_quick_messages">Быстрые сообщения</string>
   <!-- Skills -->
+  <string name="setting_page_skills">Навыки</string>
   <string name="skill_detail_page_content">Контент</string>
   <string name="skill_detail_page_create">Создать</string>
   <string name="skill_detail_page_delete_failed">Не удалось удалить</string>
@@ -731,7 +732,7 @@
   <string name="skills_page_empty_title">Навыки отсутствуют</string>
   <string name="skills_page_import_confirm">Импорт</string>
   <string name="skills_page_import_description">Введите URL репозитория GitHub, и файл SKILL.md в корневом каталоге будет загружен автоматически.</string>
-  <string name="skills_page_import_error_invalid_format">Недопустимый формат %1$s: %2$s</string>
+  <string name="skills_page_import_error_invalid_format">%1$s имеет неверный формат: %2$s</string>
   <string name="skills_page_import_failed">Не удалось импортировать: %s</string>
   <string name="skills_page_import_from_file">Импортировать из файла</string>
   <string name="skills_page_import_from_github">Импорт из GitHub</string>
@@ -739,11 +740,11 @@
   <string name="skills_page_invalid_dirs_title">Нераспознанные папки</string>
   <string name="skills_page_invalid_reason_missing_description">В SKILL.md отсутствует поле description</string>
   <string name="skills_page_invalid_reason_missing_name">В SKILL.md отсутствует поле name</string>
-  <string name="skills_page_invalid_reason_missing_skill_md">SKILL.md отсутствует</string>
+  <string name="skills_page_invalid_reason_missing_skill_md">Отсутствует SKILL.md</string>
   <string name="skills_page_invalid_reason_read_failed">Не удалось прочитать SKILL.md</string>
   <string name="skills_page_name_dot_error">Поле name не должно начинаться с точки</string>
   <string name="skills_page_name_error">Не удаётся найти поле name, проверьте формат frontmatter</string>
-  <string name="skills_page_name_invalid_chars_error">Поле name не должно содержать косые черты, обратные косые черты или управляющие символы</string>
+  <string name="skills_page_name_invalid_chars_error">Поле name не должно содержать прямые или обратные слеши и управляющие символы</string>
   <string name="skills_page_name_too_long_error">Поле name должно содержать не более %1$d символов</string>
   <string name="skills_page_name_whitespace_error">Поле name не должно начинаться или заканчиваться пробелом</string>
   <string name="skills_page_paste_hint">Вставьте полное содержимое файла SKILL.md</string>
@@ -754,8 +755,8 @@
   <string name="skills_page_search_placeholder">Поиск навыков</string>
   <string name="skills_page_skill_body_placeholder">Инструкции...</string>
   <string name="skills_page_skill_name">Название навыка: %s</string>
-  <string name="skills_page_title">Навыки</string>
   <!-- Workspace -->
+  <string name="setting_page_workspace">Рабочее пространство</string>
   <string name="workspace_cwd_current">Текущий рабочий каталог</string>
   <string name="workspace_cwd_no_subdirectories">Нет подкаталогов</string>
   <string name="workspace_cwd_reset">Сбросить</string>
@@ -846,7 +847,6 @@
   <string name="workspace_page_name">Имя</string>
   <string name="workspace_page_name_duplicate">Такое имя уже существует</string>
   <string name="workspace_page_rename">Переименовать рабочее пространство</string>
-  <string name="workspace_page_title">Рабочее пространство</string>
 <string name="workspace_page_type_local">Локальное рабочее пространство</string>
 <string name="workspace_page_type_local_desc">Работает в песочнице Linux на этом устройстве и требует Rootfs</string>
 <string name="workspace_page_type_ssh">Удалённое рабочее пространство по SSH</string>
@@ -1133,7 +1133,7 @@
   <string name="setting_page_search_service_desc">Настроить поставщиков поисковых служб</string>
   <string name="setting_page_system_settings">Системные настройки</string>
   <string name="setting_page_theme_setting">Тема</string>
-  <string name="setting_page_tts_service">Синтез и распознавание речи</string>
+  <string name="setting_page_tts_asr">Синтез и распознавание речи</string>
   <string name="setting_page_tts_service_desc">Настроить поставщиков службы преобразования текста в речь</string>
   <!-- Display settings -->
   <string name="setting_display_page_amoled_dark_mode_desc">Использовать чёрный фон в тёмной теме, подходит для AMOLED-экранов</string>
@@ -1238,7 +1238,7 @@
   <string name="setting_display_page_voice_listen_while_replying_desc">Речь, пока модель отвечает, ставится в очередь и отправляется после. Отключите, чтобы приостанавливать микрофон до завершения ответа (и его озвучивания), для диалогов «вопрос — ответ».</string>
   <string name="setting_display_page_voice_listen_while_replying_title">Продолжать слушать во время ответов в голосовом режиме</string>
   <string name="setting_display_page_volume_key_scroll_desc">Задаёт величину прокрутки при перелистывании клавишами громкости, подходит для экранов E-Ink</string>
-  <string name="setting_display_page_volume_key_scroll_title">Прокрутка клавишами громкости</string>
+  <string name="setting_display_page_volume_key_scroll_title">Прокрутка страниц клавишами громкости</string>
   <!-- Theme settings -->
   <string name="setting_theme_page_add_theme">Создать</string>
   <string name="setting_theme_page_auto_derive">Автовывод</string>
@@ -1282,16 +1282,17 @@
   <string name="setting_model_page_prompt_translation">Промпт перевода</string>
   <string name="setting_model_page_reset_to_default">Сбросить до значения по умолчанию</string>
   <string name="setting_model_page_suggestion_prompt_vars">Переменные: Содержание разговора: {content}, Язык: {locale}</string>
-  <string name="setting_model_page_title">Модели и промпты по умолчанию</string>
   <string name="setting_model_page_translate_model">Модель перевода</string>
   <string name="setting_model_page_translate_model_desc">Модель, используемая для функций перевода</string>
   <string name="setting_model_page_translate_prompt_vars">Переменные: Исходный текст: {source_text}, Целевой язык: {target_lang}</string>
+  <string name="setting_page_models">Модели и промпты по умолчанию</string>
   <!-- Provider settings -->
   <string name="default_provider_alibaba_bailian">Alibaba Cloud Bailian</string>
   <string name="default_provider_moonshot">Moonshot AI</string>
   <string name="default_provider_siliconflow">SiliconFlow</string>
   <string name="default_provider_volcengine">Volcengine</string>
   <string name="default_provider_zhipu">Zhipu AI</string>
+  <string name="setting_page_providers">Поставщики моделей</string>
   <string name="setting_provider_page_abilities">Возможности</string>
   <string name="setting_provider_page_account">Аккаунт</string>
   <string name="setting_provider_page_add_models_hint">Нажмите кнопку выше, чтобы добавить модели</string>
@@ -1302,7 +1303,7 @@
   <string name="setting_provider_page_api_key">Ключ API</string>
   <string name="setting_provider_page_api_path">Путь API</string>
   <string name="setting_provider_page_avaliable_models">Доступные модели</string>
-  <string name="setting_provider_page_balance_info">Получить баланс</string>
+  <string name="setting_provider_page_balance_info">Получить баланс аккаунта</string>
   <string name="setting_provider_page_balance_json_key">Ключ результата JSON</string>
   <string name="setting_provider_page_basic_settings">Основные настройки</string>
   <string name="setting_provider_page_cache_read_price">Цена чтения кэша</string>
@@ -1351,7 +1352,7 @@
   <string name="setting_provider_page_model_display_name">Отображаемое имя модели</string>
   <string name="setting_provider_page_model_display_name_placeholder">например: GPT-3.5, для отображения в интерфейсе</string>
   <string name="setting_provider_page_model_id">ID модели</string>
-  <string name="setting_provider_page_model_id_placeholder">например: deepseek-v4.1-flash-1017</string>
+  <string name="setting_provider_page_model_id_placeholder">например: claude-fable-5-2</string>
   <string name="setting_provider_page_model_name">Название модели</string>
   <string name="setting_provider_page_model_type">Тип модели</string>
   <string name="setting_provider_page_models_format">Модели (%1$d)</string>
@@ -1384,13 +1385,12 @@
   <string name="setting_provider_page_tab_models">Модели</string>
   <string name="setting_provider_page_test">Тест</string>
   <string name="setting_provider_page_test_connection">Проверить подключение</string>
-  <string name="setting_provider_page_test_non_streaming">Без потока</string>
-  <string name="setting_provider_page_test_streaming">Потоковый режим</string>
+  <string name="setting_provider_page_test_non_streaming">Без стриминга</string>
+  <string name="setting_provider_page_test_streaming">Стриминг</string>
   <string name="setting_provider_page_test_tool_call">Вызов инструмента</string>
   <string name="setting_provider_page_test_tool_called">Вызвано: %1$s  Аргументы: %2$s</string>
   <string name="setting_provider_page_test_tool_not_called">Инструмент не вызван, ответ: %s</string>
   <string name="setting_provider_page_text">Текст</string>
-  <string name="setting_provider_page_title">Поставщики моделей</string>
   <string name="setting_provider_page_tool">Инструмент</string>
 <string name="setting_provider_page_type_subscription">Подписка %s</string>
   <string name="setting_provider_page_usage">Использование</string>
@@ -1439,12 +1439,12 @@
   <string name="setting_mcp_page_no_mcp_servers_found">Серверы MCP не найдены</string>
   <string name="setting_mcp_page_sse_url_placeholder">https://example.com/sse</string>
   <string name="setting_mcp_page_streamable_http_url_placeholder">https://example.com/mcp</string>
-  <string name="setting_mcp_page_title">Сервисы MCP</string>
   <string name="setting_mcp_page_tools">Инструменты</string>
   <string name="setting_mcp_page_tools_unavailable_message">Невозможно просмотреть список инструментов при добавлении MCP-сервера, пожалуйста, проверьте после добавления</string>
   <string name="setting_mcp_page_transport_type">Тип транспорта</string>
   <string name="setting_mcp_page_transport_type_desc">Выберите тип транспортного протокола для MCP-сервера</string>
   <string name="setting_mcp_page_url_label">URL-адрес</string>
+  <string name="setting_page_mcp">Сервисы MCP</string>
   <!-- Search settings -->
   <string name="built_in_search_title">Встроенный поиск</string>
   <string name="search_ability_scrape">Собрать</string>
@@ -1474,6 +1474,7 @@
   <string name="search_detail_system_prompt">Системный запрос</string>
   <string name="search_detail_unknown_error">Неизвестная ошибка</string>
   <string name="search_detail_username">Имя пользователя</string>
+  <string name="setting_page_search">Служба поиска</string>
   <string name="setting_page_search_add_provider">Добавить поставщика</string>
   <string name="setting_page_search_common_options">Общие параметры</string>
   <string name="setting_page_search_common_title">Общие настройки поиска</string>
@@ -1482,7 +1483,6 @@
   <string name="setting_page_search_test">Тест поиска</string>
   <string name="setting_page_search_test_query_hint">Введите тестовый запрос…</string>
   <string name="setting_page_search_test_run">Запустить тест</string>
-  <string name="setting_page_search_title">Сервисы поиска</string>
   <!-- TTS settings -->
   <string name="setting_page_tts_settings">Настройки TTS</string>
   <string name="setting_tts_page_add_provider">Добавить поставщика TTS</string>
@@ -1593,7 +1593,7 @@
   <string name="setting_asr_configure_step_sample_rate_desc">Частота дискретизации записи PCM в Гц; для ASR рекомендуется 16000</string>
   <string name="setting_asr_configure_step_segment_desc">Автоматически отправлять буферизованный звук каждые N секунд во время записи. 0 отключает авторазбиение (один запрос при stop)</string>
   <string name="setting_asr_configure_step_timestamp">Включить временные метки</string>
-  <string name="setting_asr_configure_step_timestamp_desc">Возвращать временные метки на уровне слов. Сейчас rikkahub их не использует, поэтому по умолчанию отключено для экономии token</string>
+  <string name="setting_asr_configure_step_timestamp_desc">Возвращать временные метки на уровне слов. Сейчас NyanChat их не использует, поэтому по умолчанию отключено для экономии token</string>
   <string name="setting_asr_configure_vad_desc">Чувствительность VAD сервера, обычно 0,3–0,8</string>
   <string name="setting_asr_configure_vad_threshold">Порог VAD</string>
   <string name="setting_asr_configure_volcengine_api_key_desc">Ключ API Volcengine (X-Api-Key)</string>
@@ -1751,13 +1751,13 @@
   <string name="backup_page_s3_secret_access_key">Секретный ключ доступа</string>
   <string name="backup_page_tar_desc">Экспорт данных приложения в TAR (несовместимо с RikkaHub)</string>
   <string name="backup_page_test_connection">Проверить подключение</string>
-  <string name="backup_page_title">Резервное копирование и восстановление</string>
   <string name="backup_page_unknown_error">Неизвестная ошибка</string>
   <string name="backup_page_username">Имя пользователя</string>
   <string name="backup_page_webdav_backup">Резервное копирование WebDAV</string>
   <string name="backup_page_webdav_backup_files">Файлы резервного копирования WebDAV</string>
   <string name="backup_page_webdav_server_address">Адрес сервера WebDAV</string>
   <string name="backup_page_workspace">Рабочая область</string>
+  <string name="setting_page_backup">Резервное копирование и восстановление</string>
   <!-- Request and permission logs -->
   <string name="log_page_clear_confirm">Очистить журналы запросов?</string>
   <string name="log_page_content_reasoning">Рассуждение</string>
@@ -1784,10 +1784,10 @@
   <string name="permission_log_page_granted"> (Разрешено)</string>
   <string name="permission_log_page_input">Ввод инструмента</string>
   <string name="permission_log_page_output">Вывод инструмента</string>
-  <string name="permission_log_page_title">Журнал запросов разрешений</string>
   <string name="request_intercept_cancel">Отмена отправки</string>
   <string name="request_intercept_confirm">Отправить</string>
   <string name="request_intercept_dialog_title">【Отладка】Исходящий сетевой запрос:</string>
+  <string name="setting_page_permission_log">Журнал запросов разрешений</string>
   <string name="setting_page_permission_logs_desc">Просмотр запросов разрешений за текущий запуск приложения</string>
   <string name="setting_page_request_logs">Журналы сетевых запросов</string>
   <string name="setting_page_request_logs_desc">Просмотр журнала сетевых запросов за текущий запуск приложения</string>
@@ -1802,20 +1802,20 @@
   <string name="permission_desc_require_permission">Чтобы обеспечить лучший пользовательский опыт, приложению требуются следующие разрешения:</string>
   <string name="permission_diaog_title">Запрос разрешения</string>
   <string name="permission_go_to_settings">Перейти в настройки приложения</string>
-  <string name="permission_local_network">Локальная сеть</string>
-  <string name="permission_local_network_desc">Необходимо для подключения к собственным сервисам в локальной сети и для доступа других устройств к веб-серверу</string>
   <string name="permission_location">Местоположение</string>
   <string name="permission_location_desc">Используется для предоставления примерного местоположения инструментам ассистента</string>
   <string name="permission_microphone">Микрофон</string>
   <string name="permission_microphone_desc">Для распознавания речи требуется разрешение на использование микрофона</string>
-  <string name="permission_notification">Уведомление</string>
-<string name="permission_notification_card_desc">Разрешите уведомления, чтобы отслеживать выполнение фоновых задач, таких как генерация ИИ и работа веб-сервера</string>
   <string name="permission_notification_desc">Отправлять уведомления</string>
   <string name="permission_permanently_denied">Запрещено навсегда</string>
   <string name="permission_precise_location">Точное местоположение</string>
   <string name="permission_precise_location_desc">Используется для предоставления более точного местоположения инструментам ассистента</string>
   <string name="permission_required">Требуется</string>
 <string name="phone_use_accessibility_description">Позволяет ИИ-ассистенту читать экран и выполнять за вас нажатия, свайпы и ввод текста, когда вы включаете инструмент Phone Use. Ничего не выполняется, если ассистент не выполняет задачу, которую вы запросили.</string>
+  <string name="setting_page_permission_local_network">Локальная сеть</string>
+  <string name="setting_page_permission_local_network_desc">Необходимо для подключения к собственным сервисам в локальной сети и для доступа других устройств к веб-серверу</string>
+  <string name="setting_page_permission_notification">Уведомление</string>
+<string name="setting_page_permission_notification_card_desc">Разрешите уведомления, чтобы отслеживать выполнение фоновых задач, таких как генерация ИИ и работа веб-сервера</string>
   <!-- Web server -->
   <string name="setting_page_web_server">Веб-сервер</string>
   <string name="setting_page_web_server_desc">Доступ к NyanChat через веб</string>

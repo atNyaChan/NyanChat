@@ -6,7 +6,6 @@
   <string name="about_page_original_github">RikkaHub GitHub</string>
   <string name="about_page_original_website">RikkaHub ウェブサイト</string>
   <string name="about_page_system">システム</string>
-  <string name="about_page_title">アプリについて</string>
   <string name="about_page_version">バージョン</string>
   <string name="app_name">NyanChat</string>
   <string name="create_fork">フォークを作成</string>
@@ -24,6 +23,7 @@
   <string name="safe_mode_enter_app">アプリを開く</string>
   <string name="safe_mode_switch_assistant">アシスタントを切り替える</string>
   <string name="safe_mode_title">セーフモード</string>
+  <string name="setting_page_about">アプリについて</string>
   <string name="settings">設定</string>
   <string name="share_handler_page_title">共有を処理するアシスタントを選択</string>
   <string name="share_model_title">LLM モデルを共有</string>
@@ -254,7 +254,7 @@
   <string name="chat_message_attachment_deleted">添付ファイルは削除されました</string>
   <string name="chat_message_cannot_edit_tool_call">ツール呼び出しを含むメッセージは編集できません</string>
   <string name="chat_message_remove_favorite">お気に入りから削除</string>
-  <string name="chat_message_usage_cached">キャッシュ</string>
+  <string name="chat_message_usage_cached">キャッシュ済み</string>
   <string name="chat_message_usage_cached_short">(%1$s キャッシュ済み)</string>
   <string name="chat_message_usage_context">コンテキスト</string>
   <string name="chat_message_usage_context_short">%1$s コンテキスト</string>
@@ -262,11 +262,11 @@
   <string name="chat_message_usage_input">入力</string>
   <string name="chat_message_usage_output">出力</string>
   <string name="chat_message_usage_speed">速度</string>
-  <string name="chat_message_usage_step_count">ステップ数</string>
+  <string name="chat_message_usage_step_count">ステップ</string>
   <string name="chat_message_usage_steps">%1$d ステップ</string>
   <string name="chat_message_usage_title">使用量</string>
-  <string name="chat_message_usage_total_cached">合計キャッシュ</string>
-  <string name="chat_message_usage_total_input">合計入力</string>
+  <string name="chat_message_usage_total_cached">キャッシュ合計</string>
+  <string name="chat_message_usage_total_input">入力合計</string>
   <string name="chat_message_usage_total_output">合計出力</string>
   <string name="regenerate">再生成</string>
   <string name="regenerate_confirm_message">このメッセージを再生成してもよろしいですか？このメッセージより下のメッセージはすべて削除されます。</string>
@@ -290,7 +290,7 @@
   <string name="chat_message_tool_deny_dialog_title">ツール実行を拒否</string>
   <string name="chat_message_tool_edit_memory">記憶を更新しました</string>
   <string name="chat_message_tool_get_time">時刻情報を取得</string>
-  <string name="chat_message_tool_list_memory">メモリの一覧</string>
+  <string name="chat_message_tool_list_memory">記憶を一覧表示しました</string>
 <string name="chat_message_tool_phone_use_list_apps">アプリを一覧表示</string>
 <string name="chat_message_tool_phone_use_long_press">長押し</string>
 <string name="chat_message_tool_phone_use_long_press_target">%1$sを長押し</string>
@@ -314,7 +314,7 @@
 <string name="chat_message_tool_phone_use_type">テキストを入力</string>
 <string name="chat_message_tool_phone_use_type_text">テキストを入力: %1$s</string>
 <string name="chat_message_tool_phone_use_wait">%1$s秒待機</string>
-  <string name="chat_message_tool_read_memory">メモリを読む</string>
+  <string name="chat_message_tool_read_memory">記憶を読み取りました</string>
   <string name="chat_message_tool_recent_chats">最近のチャットを表示</string>
   <string name="chat_message_tool_scrape_prefix">ウェブサイトをスクレイピング: %1$s</string>
   <string name="chat_message_tool_scrape_web">ウェブページを取得</string>
@@ -418,7 +418,7 @@
   <string name="chat_page_compress_context_desc">会話を要約して圧縮し、トークンを節約します</string>
   <string name="chat_page_compress_context_title">会話履歴を圧縮</string>
   <string name="chat_page_compress_conversation_changed">圧縮中に会話が変更されました。もう一度お試しください。</string>
-  <string name="chat_page_compress_handle_pending_tools">圧縮する前に保留中のツール呼び出しを処理してください</string>
+  <string name="chat_page_compress_handle_pending_tools">圧縮する前に、保留中のツール呼び出しを処理してください</string>
   <string name="chat_page_compress_keep_recent">最近のメッセージを保持</string>
   <string name="chat_page_compress_keep_recent_desc">これらのメッセージは圧縮されず、要約の後に残ります。0 にするとすべてを圧縮し、プロンプトキャッシュを最も有効に再利用します。会話が長すぎて圧縮できない場合は、保持するメッセージを増やしてください。</string>
   <string name="chat_page_compress_not_enough_messages">圧縮するのに十分なメッセージがありません。保持するメッセージ数を減らしてください。</string>
@@ -443,7 +443,7 @@
   <string name="translator_page_history">翻訳履歴</string>
   <string name="translator_page_input_placeholder">翻訳するテキストを入力してください...</string>
   <string name="translator_page_model_missing">翻訳モデルが選択されていません。右上隅をタップして選択してください。</string>
-  <string name="translator_page_paste">テキストを貼り付け</string>
+  <string name="translator_page_paste">貼り付け</string>
   <string name="translator_page_result_placeholder">翻訳結果がここに表示されます</string>
   <string name="translator_page_title">翻訳</string>
   <string name="translator_page_translate">翻訳</string>
@@ -472,35 +472,35 @@
   <!-- Assistant memory -->
   <string name="assistant_page_memory_auto_dream">自動で夢を見る</string>
   <string name="assistant_page_memory_auto_dream_desc">チャットが停止すると、バックグラウンドで記憶に変換されます。オフの場合、これは「今すぐ夢を見る」をタップしたときにのみ実行されます。</string>
-  <string name="assistant_page_memory_desc">メモリを有効にすると、アシスタントはあなたが伝えた内容を覚え、後の会話で使用します。会話が一時停止するとバックグラウンドでメモリを整理します。この機能が動作するには、モデルがツール呼び出しをサポートしている必要があります</string>
-  <string name="assistant_page_memory_dream_failed">夢の整理に失敗しました：%s</string>
+  <string name="assistant_page_memory_desc">メモリを有効にすると、アシスタントはあなたが伝えた内容を覚え、後の会話で使用します。会話が一時停止するとバックグラウンドでメモリを整理します。この機能が動作するには、モデルがツール呼び出しをサポートしている必要があります。</string>
+  <string name="assistant_page_memory_dream_failed">夢を見るのに失敗しました: %s</string>
   <string name="assistant_page_memory_dream_hint">会話が一時停止するとバックグラウンドでメモリに整理します</string>
   <string name="assistant_page_memory_dream_no_changes">新しく覚えることはありません</string>
   <string name="assistant_page_memory_dream_now">今すぐ夢を見る</string>
-  <string name="assistant_page_memory_dream_pending">整理待ちのターン：%d</string>
-  <string name="assistant_page_memory_dream_removed">%s を削除しました</string>
+  <string name="assistant_page_memory_dream_pending">待機中の新しいターン: %d</string>
+  <string name="assistant_page_memory_dream_removed">%sを削除しました</string>
   <string name="assistant_page_memory_dream_retry">再試行</string>
-  <string name="assistant_page_memory_dream_updated">メモリを更新しました：%s</string>
+  <string name="assistant_page_memory_dream_updated">記憶を更新しました: %s</string>
   <string name="assistant_page_memory_empty">まだ記憶がありません</string>
   <string name="assistant_page_memory_empty_disabled_hint">このアシスタントの記憶はオフになっています。オンにすると、伝えた内容を記憶できるようになります</string>
   <string name="assistant_page_memory_empty_hint">チャット中に伝えた内容をアシスタントが記憶します。+ をタップして追加することもできます</string>
   <string name="assistant_page_memory_section_areas">進行中</string>
   <string name="assistant_page_memory_section_people">人物</string>
-  <string name="assistant_page_memory_section_topics">テーマ</string>
-  <string name="assistant_page_memory_section_you">あなたについて</string>
-  <string name="assistant_page_memory_updated_at">%s に更新</string>
-  <string name="memory_dream_notification_text">会話をメモリに整理しています</string>
+  <string name="assistant_page_memory_section_topics">トピック</string>
+  <string name="assistant_page_memory_section_you">あなた</string>
+  <string name="assistant_page_memory_updated_at">更新: %s</string>
+  <string name="memory_dream_notification_text">チャットを記憶に変換しています</string>
   <string name="memory_dream_title">夢を見る</string>
   <string name="memory_dreaming">夢を見ています…</string>
   <string name="memory_file_page_aliases">別名</string>
   <string name="memory_file_page_details">本文</string>
   <string name="memory_file_page_edit_warning">メモリは手動で編集しないでください。代わりにチャットで AI に覚えてもらうか変更してもらいましょう</string>
   <string name="memory_file_page_last_updated">最終更新</string>
-  <string name="memory_file_page_missing">このメモリはもう存在しません</string>
-  <string name="memory_file_page_new">新しいメモリ</string>
+  <string name="memory_file_page_missing">この記憶はもう存在しません</string>
+  <string name="memory_file_page_new">新しい記憶</string>
   <string name="memory_file_page_path">パス</string>
-  <string name="memory_file_page_path_conflict">このパスにはすでにメモリが存在します</string>
-  <string name="memory_file_page_summary">要約</string>
+  <string name="memory_file_page_path_conflict">このパスにはすでに記憶が存在します</string>
+  <string name="memory_file_page_summary">概要</string>
   <string name="memory_file_page_title">タイトル</string>
   <!-- Assistant settings -->
   <string name="assistant_delete_blocked_message">このアシスタントにはまだ会話があります。会話のないアシスタントのみ削除できます。</string>
@@ -642,7 +642,6 @@
   <string name="assistant_page_time_reminder_desc">会話の間隔が大きいメッセージの前に自動で時刻リマインダーを挿入し、AIが会話の間隔を理解しやすくします</string>
   <string name="assistant_page_time_reminder_interval">時間リマインダー間隔</string>
   <string name="assistant_page_time_reminder_interval_desc">メッセージ間隔がこの間隔を超えた場合にリマインダーを挿入します（最初のユーザーメッセージの前には常にリマインド）。単位は分です。</string>
-  <string name="assistant_page_title">アシスタント設定</string>
   <string name="assistant_page_top_p">Top P</string>
   <string name="assistant_page_top_p_range_hint"> 範囲は0〜1です。空欄にするとデフォルト値を使用します。</string>
   <string name="assistant_page_top_p_warning">何をしているのか理解している場合を除き、この値を変更しないでください</string>
@@ -655,12 +654,11 @@
   <string name="assistant_page_workspace">ワークスペース</string>
   <string name="assistant_page_workspace_desc">バインド後、エージェントはこのワークスペースのファイルとサンドボックス機能を使用できます</string>
   <string name="assistant_page_workspace_unbound">未バインド</string>
+  <string name="setting_page_assistant">アシスタント設定</string>
   <!-- Prompt extensions -->
   <string name="extensions_page_agent_skills_desc">AIがオンデマンドで読み込むスキルパッケージを管理</string>
   <string name="extensions_page_quick_messages_desc">共有クイックメッセージテンプレートを管理</string>
   <string name="extensions_page_workspace_desc">エージェントがアクセス可能なローカルの作業ディレクトリを管理します</string>
-  <string name="lorebook_page_title">ロアブックス</string>
-  <string name="mode_injection_page_title">モードインジェクション</string>
   <string name="placeholder_char">アシスタント名</string>
   <string name="placeholder_device_info">デバイス情報</string>
   <string name="placeholder_model_id">モデルID</string>
@@ -712,9 +710,12 @@
   <string name="quick_messages_page_empty_content">コンテンツがありません</string>
   <string name="quick_messages_page_empty_hint">右下の+ボタンをタップしてクイックメッセージを追加</string>
   <string name="quick_messages_page_empty_title">クイックメッセージがありません</string>
-  <string name="quick_messages_page_title">クイックメッセージ</string>
   <string name="quick_messages_page_untitled">無題</string>
+  <string name="setting_page_lorebook">ロアブックス</string>
+  <string name="setting_page_mode_injection">モードインジェクション</string>
+  <string name="setting_page_quick_messages">クイックメッセージ</string>
   <!-- Skills -->
+  <string name="setting_page_skills">スキル</string>
   <string name="skill_detail_page_content">コンテンツ</string>
   <string name="skill_detail_page_create">作成</string>
   <string name="skill_detail_page_delete_failed">削除に失敗しました</string>
@@ -736,15 +737,15 @@
   <string name="skills_page_import_from_file">ファイルからインポート</string>
   <string name="skills_page_import_from_github">GitHubからインポート</string>
   <string name="skills_page_import_success">スキルをインポートしました: %s</string>
-  <string name="skills_page_invalid_dirs_title">認識できないフォルダ</string>
+  <string name="skills_page_invalid_dirs_title">認識されないフォルダ</string>
   <string name="skills_page_invalid_reason_missing_description">SKILL.md に description フィールドがありません</string>
   <string name="skills_page_invalid_reason_missing_name">SKILL.md に name フィールドがありません</string>
   <string name="skills_page_invalid_reason_missing_skill_md">SKILL.md がありません</string>
-  <string name="skills_page_invalid_reason_read_failed">SKILL.md の読み取りに失敗しました</string>
-  <string name="skills_page_name_dot_error">name フィールドをドットで始めることはできません</string>
+  <string name="skills_page_invalid_reason_read_failed">SKILL.mdの読み取りに失敗しました</string>
+  <string name="skills_page_name_dot_error">name フィールドはドットで始めることはできません</string>
   <string name="skills_page_name_error">名前フィールドが見つかりません。フロントマター形式を確認してください</string>
-  <string name="skills_page_name_invalid_chars_error">name フィールドにスラッシュ、バックスラッシュ、制御文字を含めることはできません</string>
-  <string name="skills_page_name_too_long_error">name フィールドは %1$d 文字以内である必要があります</string>
+  <string name="skills_page_name_invalid_chars_error">name フィールドにはスラッシュ、バックスラッシュ、制御文字を含めることはできません</string>
+  <string name="skills_page_name_too_long_error">name フィールドは%1$d文字以内で入力してください</string>
   <string name="skills_page_name_whitespace_error">name フィールドの先頭または末尾に空白を含めることはできません</string>
   <string name="skills_page_paste_hint">SKILL.mdファイルの内容全体を貼り付けてください</string>
   <string name="skills_page_repo_url_hint">/tree/branchまたはサブディレクトリパスをサポート</string>
@@ -752,10 +753,10 @@
   <string name="skills_page_save_failed">保存に失敗しました。スキルの形式を確認してください</string>
   <string name="skills_page_search_no_result">一致するスキルがありません</string>
   <string name="skills_page_search_placeholder">スキルを検索</string>
-  <string name="skills_page_skill_body_placeholder">指示...</string>
+  <string name="skills_page_skill_body_placeholder">指示を入力...</string>
   <string name="skills_page_skill_name">スキル名: %s</string>
-  <string name="skills_page_title">スキル</string>
   <!-- Workspace -->
+  <string name="setting_page_workspace">ワークスペース</string>
   <string name="workspace_cwd_current">現在の作業ディレクトリ</string>
   <string name="workspace_cwd_no_subdirectories">サブディレクトリがありません</string>
   <string name="workspace_cwd_reset">リセット</string>
@@ -846,7 +847,6 @@
   <string name="workspace_page_name">名前</string>
   <string name="workspace_page_name_duplicate">名前は既に存在します</string>
   <string name="workspace_page_rename">ワークスペースの名前を変更</string>
-  <string name="workspace_page_title">ワークスペース</string>
 <string name="workspace_page_type_local">ローカルワークスペース</string>
 <string name="workspace_page_type_local_desc">このデバイス上の Linux サンドボックスで動作し、Rootfs が必要です</string>
 <string name="workspace_page_type_ssh">SSHリモートワークスペース</string>
@@ -1133,7 +1133,7 @@
   <string name="setting_page_search_service_desc">検索サービスのプロバイダーを設定</string>
   <string name="setting_page_system_settings">システム設定</string>
   <string name="setting_page_theme_setting">テーマ</string>
-  <string name="setting_page_tts_service">音声合成と音声認識</string>
+  <string name="setting_page_tts_asr">音声合成と音声認識</string>
   <string name="setting_page_tts_service_desc">音声合成と音声認識のプロバイダーを設定</string>
   <!-- Display settings -->
   <string name="setting_display_page_amoled_dark_mode_desc">ダークテーマで純粋な黒色背景を使用、AMOLED画面に適しています</string>
@@ -1282,16 +1282,17 @@
   <string name="setting_model_page_prompt_translation">翻訳プロンプト</string>
   <string name="setting_model_page_reset_to_default">デフォルトにリセット</string>
   <string name="setting_model_page_suggestion_prompt_vars">変数: 会話内容: {content}, 言語: {locale}</string>
-  <string name="setting_model_page_title">デフォルトモデルとプロンプト</string>
   <string name="setting_model_page_translate_model">翻訳モデル</string>
   <string name="setting_model_page_translate_model_desc">翻訳機能に使用されるモデル</string>
   <string name="setting_model_page_translate_prompt_vars">変数: 原文テキスト: {source_text}, 対象言語: {target_lang}</string>
+  <string name="setting_page_models">デフォルトモデルとプロンプト</string>
   <!-- Provider settings -->
   <string name="default_provider_alibaba_bailian">Alibaba Cloud Bailian</string>
   <string name="default_provider_moonshot">Moonshot AI</string>
   <string name="default_provider_siliconflow">SiliconFlow</string>
   <string name="default_provider_volcengine">Volcengine</string>
   <string name="default_provider_zhipu">Zhipu AI</string>
+  <string name="setting_page_providers">モデルプロバイダー</string>
   <string name="setting_provider_page_abilities">能力</string>
   <string name="setting_provider_page_account">アカウント</string>
   <string name="setting_provider_page_add_models_hint">上のボタンをクリックしてモデルを追加</string>
@@ -1302,14 +1303,14 @@
   <string name="setting_provider_page_api_key">API Key</string>
   <string name="setting_provider_page_api_path">APIパス</string>
   <string name="setting_provider_page_avaliable_models">利用可能なモデル</string>
-  <string name="setting_provider_page_balance_info">残高を取得</string>
+  <string name="setting_provider_page_balance_info">アカウント残高を取得</string>
   <string name="setting_provider_page_balance_json_key">結果のJsonキー</string>
   <string name="setting_provider_page_basic_settings">基本設定</string>
   <string name="setting_provider_page_cache_read_price">キャッシュ読み取り料金</string>
   <string name="setting_provider_page_cache_write_price">キャッシュ書き込み料金</string>
   <string name="setting_provider_page_chat_model">チャット</string>
   <string name="setting_provider_page_chatgpt_disclaimer">Codexバックエンド経由でChatGPTサブスクリプションを使用します。実験的機能: OpenAIはこれをいつでも変更または制限する可能性があります。</string>
-  <string name="setting_provider_page_configure_provider_override">プロバイダーオーバーライドの設定</string>
+  <string name="setting_provider_page_configure_provider_override">プロバイダーオーバーライドを構成</string>
   <string name="setting_provider_page_context_length">コンテキスト長</string>
   <string name="setting_provider_page_context_length_custom">カスタム</string>
   <string name="setting_provider_page_create_provider">モデルプロバイダーを新規作成</string>
@@ -1351,7 +1352,7 @@
   <string name="setting_provider_page_model_display_name">モデル表示名</string>
   <string name="setting_provider_page_model_display_name_placeholder">例：GPT-3.5、UI表示用</string>
   <string name="setting_provider_page_model_id">モデルID</string>
-  <string name="setting_provider_page_model_id_placeholder">例：deepseek-v4.1-flash-1017</string>
+  <string name="setting_provider_page_model_id_placeholder">例：claude-fable-5-2</string>
   <string name="setting_provider_page_model_name">モデル名</string>
   <string name="setting_provider_page_model_type">モデルタイプ</string>
   <string name="setting_provider_page_models_format">モデル（%1$d）</string>
@@ -1390,7 +1391,6 @@
   <string name="setting_provider_page_test_tool_called">呼び出し: %1$s  引数: %2$s</string>
   <string name="setting_provider_page_test_tool_not_called">ツールが呼び出されませんでした。応答: %s</string>
   <string name="setting_provider_page_text">テキスト</string>
-  <string name="setting_provider_page_title">モデルプロバイダー</string>
   <string name="setting_provider_page_tool">ツール</string>
 <string name="setting_provider_page_type_subscription">%s サブスクリプション</string>
   <string name="setting_provider_page_usage">使用量</string>
@@ -1439,12 +1439,12 @@
   <string name="setting_mcp_page_no_mcp_servers_found">MCPサーバーが見つかりません</string>
   <string name="setting_mcp_page_sse_url_placeholder">https://example.com/sse</string>
   <string name="setting_mcp_page_streamable_http_url_placeholder">https://example.com/mcp</string>
-  <string name="setting_mcp_page_title">MCP サービス</string>
   <string name="setting_mcp_page_tools">ツール</string>
   <string name="setting_mcp_page_tools_unavailable_message">MCPサーバー追加時にはツールリストを表示できません。追加完了後に再度確認してください</string>
   <string name="setting_mcp_page_transport_type">転送タイプ</string>
   <string name="setting_mcp_page_transport_type_desc">MCPサーバーの転送プロトコルタイプを選択</string>
   <string name="setting_mcp_page_url_label">URL アドレス</string>
+  <string name="setting_page_mcp">MCP サービス</string>
   <!-- Search settings -->
   <string name="built_in_search_title">組み込み検索</string>
   <string name="search_ability_scrape">スクレイピング</string>
@@ -1474,6 +1474,7 @@
   <string name="search_detail_system_prompt">システムプロンプト</string>
   <string name="search_detail_unknown_error">不明なエラー</string>
   <string name="search_detail_username">ユーザー名</string>
+  <string name="setting_page_search">検索サービス</string>
   <string name="setting_page_search_add_provider">プロバイダー追加</string>
   <string name="setting_page_search_common_options">共通オプション</string>
   <string name="setting_page_search_common_title">一般検索設定</string>
@@ -1482,7 +1483,6 @@
   <string name="setting_page_search_test">検索テスト</string>
   <string name="setting_page_search_test_query_hint">テストクエリを入力…</string>
   <string name="setting_page_search_test_run">テスト実行</string>
-  <string name="setting_page_search_title">検索サービス</string>
   <!-- TTS settings -->
   <string name="setting_page_tts_settings">TTS設定</string>
   <string name="setting_tts_page_add_provider">TTSプロバイダーを追加</string>
@@ -1593,7 +1593,7 @@
   <string name="setting_asr_configure_step_sample_rate_desc">PCM 録音のサンプルレート（Hz）。ASR には 16000 を推奨します</string>
   <string name="setting_asr_configure_step_segment_desc">録音中に N 秒ごとにバッファ済み音声を自動アップロードして認識します。0 にすると自動分割を無効化します（stop 時に一括送信）</string>
   <string name="setting_asr_configure_step_timestamp">タイムスタンプを有効化</string>
-  <string name="setting_asr_configure_step_timestamp_desc">単語単位のタイムスタンプを返します。rikkahub では現在使用していないため、token 節約のため既定では無効です</string>
+  <string name="setting_asr_configure_step_timestamp_desc">単語単位のタイムスタンプを返します。NyanChat では現在使用していないため、token 節約のため既定では無効です</string>
   <string name="setting_asr_configure_vad_desc">サーバーVAD感度、通常は0.3〜0.8</string>
   <string name="setting_asr_configure_vad_threshold">VAD閾値</string>
   <string name="setting_asr_configure_volcengine_api_key_desc">Volcengine APIキー (X-Api-Key)</string>
@@ -1751,13 +1751,13 @@
   <string name="backup_page_s3_secret_access_key">シークレットアクセスキー</string>
   <string name="backup_page_tar_desc">アプリデータをTARファイルにエクスポート（RikkaHub非対応）</string>
   <string name="backup_page_test_connection">接続テスト</string>
-  <string name="backup_page_title">バックアップと復元</string>
   <string name="backup_page_unknown_error">不明なエラー</string>
   <string name="backup_page_username">ユーザー名</string>
   <string name="backup_page_webdav_backup">WebDAVバックアップ</string>
   <string name="backup_page_webdav_backup_files">WebDavバックアップファイル一覧</string>
   <string name="backup_page_webdav_server_address">WebDAV サーバーアドレス</string>
   <string name="backup_page_workspace">ワークスペース</string>
+  <string name="setting_page_backup">バックアップと復元</string>
   <!-- Request and permission logs -->
   <string name="log_page_clear_confirm">リクエストログを消去しますか？</string>
   <string name="log_page_content_reasoning">思考</string>
@@ -1784,10 +1784,10 @@
   <string name="permission_log_page_granted">（許可済み）</string>
   <string name="permission_log_page_input">ツール入力</string>
   <string name="permission_log_page_output">ツール出力</string>
-  <string name="permission_log_page_title">権限リクエストログ</string>
   <string name="request_intercept_cancel">送信キャンセル</string>
   <string name="request_intercept_confirm">送信する</string>
   <string name="request_intercept_dialog_title">【デバッグ】送信予定のネットワークリクエスト：</string>
+  <string name="setting_page_permission_log">権限リクエストログ</string>
   <string name="setting_page_permission_logs_desc">今回のアプリ起動中の権限リクエストログを表示</string>
   <string name="setting_page_request_logs">ネットワークリクエストログ</string>
   <string name="setting_page_request_logs_desc">今回のアプリ起動中のネットワークリクエストログを表示</string>
@@ -1802,20 +1802,20 @@
   <string name="permission_desc_require_permission">より良いユーザー体験を提供するため、アプリは以下の権限を必要とします:</string>
   <string name="permission_diaog_title">権限リクエスト</string>
   <string name="permission_go_to_settings">アプリ設定へ移動</string>
-  <string name="permission_local_network">ローカルネットワーク</string>
-  <string name="permission_local_network_desc">ローカルネットワーク上のセルフホストサービスへの接続や、他のデバイスから Web サーバーへのアクセスに必要です</string>
   <string name="permission_location">位置情報</string>
   <string name="permission_location_desc">アシスタントツールにおおよその位置を提供するために使用します</string>
   <string name="permission_microphone">マイク</string>
   <string name="permission_microphone_desc">音声認識にはマイクの権限が必要です</string>
-  <string name="permission_notification">通知</string>
-<string name="permission_notification_card_desc">AI生成やWebサーバーなどのバックグラウンドタスクの進捗を確認するには、通知を許可してください</string>
   <string name="permission_notification_desc">通知を送信する</string>
   <string name="permission_permanently_denied">永久に拒否されました</string>
   <string name="permission_precise_location">正確な位置情報</string>
   <string name="permission_precise_location_desc">アシスタントツールにより正確な位置を提供するために使用します</string>
   <string name="permission_required">必須</string>
 <string name="phone_use_accessibility_description">Phone Useツールを有効にすると、AIアシスタントが画面を読み取り、タップ、スワイプ、テキスト入力を代行できるようになります。アシスタントがあなたの依頼したタスクを実行している場合にのみ動作し、それ以外は何も行われません。</string>
+  <string name="setting_page_permission_local_network">ローカルネットワーク</string>
+  <string name="setting_page_permission_local_network_desc">ローカルネットワーク上のセルフホストサービスへの接続や、他のデバイスから Web サーバーへのアクセスに必要です</string>
+  <string name="setting_page_permission_notification">通知</string>
+<string name="setting_page_permission_notification_card_desc">AI生成やWebサーバーなどのバックグラウンドタスクの進捗を確認するには、通知を許可してください</string>
   <!-- Web server -->
   <string name="setting_page_web_server">Webサーバー</string>
   <string name="setting_page_web_server_desc">Web経由でNyanChatにアクセス</string>

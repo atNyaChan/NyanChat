@@ -6,7 +6,6 @@
   <string name="about_page_original_github">RikkaHub GitHub</string>
   <string name="about_page_original_website">RikkaHub 官網</string>
   <string name="about_page_system">系統</string>
-  <string name="about_page_title">關於</string>
   <string name="about_page_version">版本</string>
   <string name="app_name">NyanChat</string>
   <string name="create_fork">建立分支</string>
@@ -24,6 +23,7 @@
   <string name="safe_mode_enter_app">進入應用程式</string>
   <string name="safe_mode_switch_assistant">切換助理</string>
   <string name="safe_mode_title">安全模式</string>
+  <string name="setting_page_about">關於</string>
   <string name="settings">設定</string>
   <string name="share_handler_page_title">選擇一個助手處理分享</string>
   <string name="share_model_title">分享你的 LLM 模型</string>
@@ -254,20 +254,20 @@
   <string name="chat_message_attachment_deleted">附件已被刪除</string>
   <string name="chat_message_cannot_edit_tool_call">無法編輯含有工具呼叫的訊息</string>
   <string name="chat_message_remove_favorite">移除最愛</string>
-  <string name="chat_message_usage_cached">快取</string>
-  <string name="chat_message_usage_cached_short">（已快取 %1$s）</string>
+  <string name="chat_message_usage_cached">已快取</string>
+  <string name="chat_message_usage_cached_short">（%1$s 已快取）</string>
   <string name="chat_message_usage_context">上下文</string>
   <string name="chat_message_usage_context_short">%1$s 上下文</string>
-  <string name="chat_message_usage_duration">耗時</string>
+  <string name="chat_message_usage_duration">時長</string>
   <string name="chat_message_usage_input">輸入</string>
   <string name="chat_message_usage_output">輸出</string>
   <string name="chat_message_usage_speed">速度</string>
   <string name="chat_message_usage_step_count">步數</string>
-  <string name="chat_message_usage_steps">%1$d 步</string>
+  <string name="chat_message_usage_steps">%1$d 個步驟</string>
   <string name="chat_message_usage_title">用量</string>
-  <string name="chat_message_usage_total_cached">累計快取</string>
-  <string name="chat_message_usage_total_input">累計輸入</string>
-  <string name="chat_message_usage_total_output">累計輸出</string>
+  <string name="chat_message_usage_total_cached">快取總計</string>
+  <string name="chat_message_usage_total_input">總輸入</string>
+  <string name="chat_message_usage_total_output">總輸出</string>
   <string name="regenerate">重新生成</string>
   <string name="regenerate_confirm_message">您確定要重新生成此訊息嗎？此訊息下方的所有訊息都會被刪除。</string>
   <!-- Chat message tools -->
@@ -290,7 +290,7 @@
   <string name="chat_message_tool_deny_dialog_title">拒絕工具執行</string>
   <string name="chat_message_tool_edit_memory">更新了記憶</string>
   <string name="chat_message_tool_get_time">取得時間資訊</string>
-  <string name="chat_message_tool_list_memory">記憶清單</string>
+  <string name="chat_message_tool_list_memory">列出了記憶</string>
 <string name="chat_message_tool_phone_use_list_apps">列出應用程式</string>
 <string name="chat_message_tool_phone_use_long_press">長按</string>
 <string name="chat_message_tool_phone_use_long_press_target">長按 %1$s</string>
@@ -314,7 +314,7 @@
 <string name="chat_message_tool_phone_use_type">輸入文字</string>
 <string name="chat_message_tool_phone_use_type_text">輸入文字：%1$s</string>
 <string name="chat_message_tool_phone_use_wait">等待 %1$s 秒</string>
-  <string name="chat_message_tool_read_memory">讀取記憶</string>
+  <string name="chat_message_tool_read_memory">讀取了記憶</string>
   <string name="chat_message_tool_recent_chats">查看最近聊天</string>
   <string name="chat_message_tool_scrape_prefix">爬取網站：%1$s</string>
   <string name="chat_message_tool_scrape_web">爬取網頁</string>
@@ -418,11 +418,11 @@
   <string name="chat_page_compress_context_desc">將對話壓縮成摘要以節省 token</string>
   <string name="chat_page_compress_context_title">壓縮對話紀錄</string>
   <string name="chat_page_compress_conversation_changed">對話在壓縮期間已變更。請再試一次。</string>
-  <string name="chat_page_compress_handle_pending_tools">壓縮前請先處理待處理的工具呼叫</string>
+  <string name="chat_page_compress_handle_pending_tools">請先處理待完成的工具呼叫，再進行壓縮</string>
   <string name="chat_page_compress_keep_recent">保留最近訊息</string>
   <string name="chat_page_compress_keep_recent_desc">這些訊息不會被壓縮，並保留在摘要之後。設為 0 會壓縮全部內容，最能有效重用提示詞快取；如果對話太長而無法壓縮，請保留更多訊息。</string>
   <string name="chat_page_compress_not_enough_messages">訊息不足，無法壓縮。請減少要保留的訊息數量。</string>
-  <string name="chat_page_compress_nothing_to_compress">自上次摘要以來沒有新訊息需要壓縮</string>
+  <string name="chat_page_compress_nothing_to_compress">自上次摘要以來沒有可壓縮的新訊息</string>
   <string name="chat_page_compress_tool_call_response">模型試圖呼叫工具而不是撰寫摘要，請重試</string>
   <string name="chat_page_compressing">正在壓縮...</string>
   <string name="error_title_compress_conversation">對話壓縮失敗</string>
@@ -443,7 +443,7 @@
   <string name="translator_page_history">翻譯歷史</string>
   <string name="translator_page_input_placeholder">請輸入要翻譯的文字...</string>
   <string name="translator_page_model_missing">未選擇翻譯模型。請輕觸右上角選擇一個。</string>
-  <string name="translator_page_paste">貼上文字</string>
+  <string name="translator_page_paste">貼上</string>
   <string name="translator_page_result_placeholder">翻譯結果將顯示在這裡</string>
   <string name="translator_page_title">翻譯</string>
   <string name="translator_page_translate">翻譯</string>
@@ -472,13 +472,13 @@
   <!-- Assistant memory -->
   <string name="assistant_page_memory_auto_dream">自動做夢</string>
   <string name="assistant_page_memory_auto_dream_desc">對話暫停後，在背景將對話轉為記憶。關閉時，只有在你點選「立即做夢」時才會執行此操作</string>
-  <string name="assistant_page_memory_desc">開啟記憶後，助手會記住你告訴它的內容，並在之後的對話中使用。對話暫停後會在背景整理記憶。此功能需要模型支援工具呼叫才能正常運作</string>
+  <string name="assistant_page_memory_desc">開啟記憶後，助手會記住你告訴它的內容並在之後的對話中使用；對話暫停後會在背景整理記憶。此功能需要模型支援工具呼叫才能正常運作。</string>
   <string name="assistant_page_memory_dream_failed">做夢失敗：%s</string>
   <string name="assistant_page_memory_dream_hint">對話暫停後會在背景整理成記憶</string>
   <string name="assistant_page_memory_dream_no_changes">沒有新內容需要記住</string>
-  <string name="assistant_page_memory_dream_now">現在做夢</string>
-  <string name="assistant_page_memory_dream_pending">有待整理的對話輪次：%d</string>
-  <string name="assistant_page_memory_dream_removed">移除 %s</string>
+  <string name="assistant_page_memory_dream_now">立即做夢</string>
+  <string name="assistant_page_memory_dream_pending">待整理的對話：%d 輪</string>
+  <string name="assistant_page_memory_dream_removed">已移除 %s</string>
   <string name="assistant_page_memory_dream_retry">重試</string>
   <string name="assistant_page_memory_dream_updated">記憶已更新：%s</string>
   <string name="assistant_page_memory_empty">尚無記憶</string>
@@ -487,19 +487,19 @@
   <string name="assistant_page_memory_section_areas">進行中</string>
   <string name="assistant_page_memory_section_people">人物</string>
   <string name="assistant_page_memory_section_topics">主題</string>
-  <string name="assistant_page_memory_section_you">關於你</string>
+  <string name="assistant_page_memory_section_you">你</string>
   <string name="assistant_page_memory_updated_at">更新於 %s</string>
-  <string name="memory_dream_notification_text">將對話整理成記憶</string>
+  <string name="memory_dream_notification_text">正在把聊天整理成記憶</string>
   <string name="memory_dream_title">做夢</string>
-  <string name="memory_dreaming">做夢…</string>
+  <string name="memory_dreaming">做夢中…</string>
   <string name="memory_file_page_aliases">別名</string>
   <string name="memory_file_page_details">內文</string>
   <string name="memory_file_page_edit_warning">盡量不要手動編輯記憶，而是在聊天中讓模型幫你記住或修改</string>
-  <string name="memory_file_page_last_updated">最後更新</string>
-  <string name="memory_file_page_missing">該記憶已不存在</string>
+  <string name="memory_file_page_last_updated">上次更新</string>
+  <string name="memory_file_page_missing">此記憶已不存在</string>
   <string name="memory_file_page_new">新增記憶</string>
   <string name="memory_file_page_path">路徑</string>
-  <string name="memory_file_page_path_conflict">該路徑已存在一個記憶</string>
+  <string name="memory_file_page_path_conflict">此路徑已有記憶</string>
   <string name="memory_file_page_summary">摘要</string>
   <string name="memory_file_page_title">標題</string>
   <!-- Assistant settings -->
@@ -590,7 +590,7 @@
   <string name="assistant_page_local_tools_tts_title">文字轉語音</string>
   <string name="assistant_page_manage_memory_title">管理記憶</string>
   <string name="assistant_page_max_tokens">最大 Token 數</string>
-  <string name="assistant_page_max_tokens_desc">生成的 Token 的最大數量，留空表示無限制</string>
+  <string name="assistant_page_max_tokens_desc">生成的 Token 的最大數量，留空表示無限制。</string>
   <string name="assistant_page_max_tokens_no_limit">無限制</string>
   <string name="assistant_page_memory">記憶</string>
   <string name="assistant_page_message_template">聊天內容模板</string>
@@ -642,7 +642,6 @@
   <string name="assistant_page_time_reminder_desc">自動在時間間隔較大的訊息前插入時間提醒，幫助 AI 理解對話間隔</string>
   <string name="assistant_page_time_reminder_interval">時間提醒間隔</string>
   <string name="assistant_page_time_reminder_interval_desc">當訊息間隔超過此間隔時插入提醒（第一則使用者訊息前一律提醒），單位為分鐘。</string>
-  <string name="assistant_page_title">助手設定</string>
   <string name="assistant_page_top_p">Top P</string>
   <string name="assistant_page_top_p_range_hint">。範圍是 0 - 1，留空表示使用預設值。</string>
   <string name="assistant_page_top_p_warning">請不要修改此值, 除非你知道自己在做什麼</string>
@@ -653,21 +652,20 @@
   <string name="assistant_page_use_independent_conversation_settings_per_conversation">分別設定</string>
   <string name="assistant_page_web_search_desc">讓助手可以進行網路搜尋</string>
   <string name="assistant_page_workspace">工作區</string>
-  <string name="assistant_page_workspace_desc">綁定後，Agent 可以使用此工作區的檔案和沙箱功能</string>
+  <string name="assistant_page_workspace_desc">綁定後，Agent可以使用此工作區的檔案和沙箱功能</string>
   <string name="assistant_page_workspace_unbound">未綁定</string>
+  <string name="setting_page_assistant">助手設定</string>
   <!-- Prompt extensions -->
   <string name="extensions_page_agent_skills_desc">管理 AI 按需載入的技能套件</string>
   <string name="extensions_page_quick_messages_desc">管理共用的快速訊息範本</string>
   <string name="extensions_page_workspace_desc">管理可由 Agent 存取的本地工作目錄</string>
-  <string name="lorebook_page_title">Lorebooks</string>
-  <string name="mode_injection_page_title">模式注入</string>
   <string name="placeholder_char">助手名稱</string>
   <string name="placeholder_device_info">設備資訊</string>
   <string name="placeholder_model_id">模型 ID</string>
   <string name="placeholder_model_name">模型名稱</string>
   <string name="placeholder_user">用戶名稱</string>
   <string name="prompt_page_add_entry">新增項目</string>
-  <string name="prompt_page_add_lorebook">新增 Lorebook</string>
+  <string name="prompt_page_add_lorebook">新增Lorebook</string>
   <string name="prompt_page_add_mode_injection">新增模式注入</string>
   <string name="prompt_page_case_sensitive">區分大小寫</string>
   <string name="prompt_page_constant_active">持續啟用</string>
@@ -712,9 +710,12 @@
   <string name="quick_messages_page_empty_content">無內容</string>
   <string name="quick_messages_page_empty_hint">點擊右下角的 + 按鈕來新增快速訊息</string>
   <string name="quick_messages_page_empty_title">無快速訊息</string>
-  <string name="quick_messages_page_title">快速訊息</string>
   <string name="quick_messages_page_untitled">未命名</string>
+  <string name="setting_page_lorebook">Lorebooks</string>
+  <string name="setting_page_mode_injection">模式注入</string>
+  <string name="setting_page_quick_messages">快速訊息</string>
   <!-- Skills -->
+  <string name="setting_page_skills">技能</string>
   <string name="skill_detail_page_content">內容</string>
   <string name="skill_detail_page_create">建立</string>
   <string name="skill_detail_page_delete_failed">刪除失敗</string>
@@ -740,7 +741,7 @@
   <string name="skills_page_invalid_reason_missing_description">SKILL.md 缺少 description 欄位</string>
   <string name="skills_page_invalid_reason_missing_name">SKILL.md 缺少 name 欄位</string>
   <string name="skills_page_invalid_reason_missing_skill_md">缺少 SKILL.md</string>
-  <string name="skills_page_invalid_reason_read_failed">讀取 SKILL.md 失敗</string>
+  <string name="skills_page_invalid_reason_read_failed">無法讀取 SKILL.md</string>
   <string name="skills_page_name_dot_error">name 欄位不得以點號開頭</string>
   <string name="skills_page_name_error">找不到名稱欄位，請檢查 frontmatter 格式</string>
   <string name="skills_page_name_invalid_chars_error">name 欄位不得包含斜線、反斜線或控制字元</string>
@@ -749,13 +750,13 @@
   <string name="skills_page_paste_hint">貼上完整的 SKILL.md 檔案內容</string>
   <string name="skills_page_repo_url_hint">支援 /tree/branch 或子目錄路徑</string>
   <string name="skills_page_repo_url_label">Repository URL</string>
-  <string name="skills_page_save_failed">儲存失敗，請檢查技能格式</string>
+  <string name="skills_page_save_failed">儲存失敗，請檢查 Skill 格式</string>
   <string name="skills_page_search_no_result">找不到符合的技能</string>
   <string name="skills_page_search_placeholder">搜尋技能</string>
   <string name="skills_page_skill_body_placeholder">指令...</string>
   <string name="skills_page_skill_name">技能名稱：%s</string>
-  <string name="skills_page_title">技能</string>
   <!-- Workspace -->
+  <string name="setting_page_workspace">工作區</string>
   <string name="workspace_cwd_current">目前工作目錄</string>
   <string name="workspace_cwd_no_subdirectories">沒有子目錄</string>
   <string name="workspace_cwd_reset">重置</string>
@@ -846,7 +847,6 @@
   <string name="workspace_page_name">名稱</string>
   <string name="workspace_page_name_duplicate">名稱已存在</string>
   <string name="workspace_page_rename">重新命名工作區</string>
-  <string name="workspace_page_title">工作區</string>
 <string name="workspace_page_type_local">本機工作區</string>
 <string name="workspace_page_type_local_desc">在此裝置上的 Linux 沙盒中執行，且需要 Rootfs</string>
 <string name="workspace_page_type_ssh">SSH 遠端工作區</string>
@@ -913,7 +913,7 @@
   <string name="workspace_terminal_close_tab">關閉終端機 %1$d</string>
   <string name="workspace_terminal_exited">終端已退出</string>
   <string name="workspace_terminal_loading">正在載入工作區…</string>
-  <string name="workspace_terminal_new_tab">新增終端分頁</string>
+  <string name="workspace_terminal_new_tab">新增終端機分頁</string>
   <string name="workspace_terminal_no_tabs">沒有開啟的終端機分頁</string>
   <string name="workspace_terminal_not_installed">請先安裝 Rootfs</string>
   <string name="workspace_terminal_tab">終端機 %1$d</string>
@@ -1133,13 +1133,13 @@
   <string name="setting_page_search_service_desc">設定搜尋服務提供者</string>
   <string name="setting_page_system_settings">系統設定</string>
   <string name="setting_page_theme_setting">主題</string>
-  <string name="setting_page_tts_service">語音合成與語音辨識</string>
+  <string name="setting_page_tts_asr">語音合成與語音辨識</string>
   <string name="setting_page_tts_service_desc">配置語音合成與語音識別服務提供商</string>
   <!-- Display settings -->
   <string name="setting_display_page_amoled_dark_mode_desc">在暗色主題中使用純黑背景，適合 AMOLED 螢幕</string>
   <string name="setting_display_page_amoled_dark_mode_title">AMOLED 暗色模式</string>
   <string name="setting_display_page_auto_collapse_thinking_desc">思考完成自動折疊思考內容</string>
-  <string name="setting_display_page_auto_collapse_thinking_title">自動摺疊思考</string>
+  <string name="setting_display_page_auto_collapse_thinking_title">自動折疊思考</string>
 <string name="setting_display_page_auto_compress_desc">回覆後，當上下文使用量超過設定比例時，自動將歷史記錄壓縮為摘要</string>
 <string name="setting_display_page_auto_compress_threshold_desc">相對於聊天模型的上下文視窗</string>
 <string name="setting_display_page_auto_compress_threshold_title">觸發比例</string>
@@ -1282,16 +1282,17 @@
   <string name="setting_model_page_prompt_translation">翻譯提示詞</string>
   <string name="setting_model_page_reset_to_default">重置為預設值</string>
   <string name="setting_model_page_suggestion_prompt_vars">變數: 對話內容: {content}, 語言: {locale}</string>
-  <string name="setting_model_page_title">預設模型和提示詞</string>
   <string name="setting_model_page_translate_model">翻譯模型</string>
   <string name="setting_model_page_translate_model_desc">用於翻譯功能的模型</string>
   <string name="setting_model_page_translate_prompt_vars">變數: 原始文字: {source_text}, 目標語言: {target_lang}</string>
+  <string name="setting_page_models">預設模型和提示詞</string>
   <!-- Provider settings -->
   <string name="default_provider_alibaba_bailian">阿里云百炼</string>
   <string name="default_provider_moonshot">月之暗面</string>
   <string name="default_provider_siliconflow">硅基流动</string>
   <string name="default_provider_volcengine">火山引擎</string>
   <string name="default_provider_zhipu">智谱AI开放平台</string>
+  <string name="setting_page_providers">模型提供商</string>
   <string name="setting_provider_page_abilities">能力</string>
   <string name="setting_provider_page_account">帳戶</string>
   <string name="setting_provider_page_add_models_hint">點擊上方按鈕添加模型</string>
@@ -1302,14 +1303,14 @@
   <string name="setting_provider_page_api_key">API Key</string>
   <string name="setting_provider_page_api_path">API 路徑</string>
   <string name="setting_provider_page_avaliable_models">可用模型</string>
-  <string name="setting_provider_page_balance_info">取得餘額</string>
+  <string name="setting_provider_page_balance_info">取得帳戶餘額</string>
   <string name="setting_provider_page_balance_json_key">結果 JSON 鍵值</string>
   <string name="setting_provider_page_basic_settings">基本設定</string>
   <string name="setting_provider_page_cache_read_price">快取讀取價格</string>
   <string name="setting_provider_page_cache_write_price">快取寫入價格</string>
   <string name="setting_provider_page_chat_model">聊天</string>
   <string name="setting_provider_page_chatgpt_disclaimer">透過 Codex 後端使用您的 ChatGPT 訂閱。實驗性：OpenAI 可能隨時變更或限制此功能。</string>
-  <string name="setting_provider_page_configure_provider_override">設定提供商覆寫</string>
+  <string name="setting_provider_page_configure_provider_override">配置提供商覆寫</string>
   <string name="setting_provider_page_context_length">上下文長度</string>
   <string name="setting_provider_page_context_length_custom">自訂</string>
   <string name="setting_provider_page_create_provider">新增模型提供商</string>
@@ -1326,7 +1327,7 @@
   <string name="setting_provider_page_edit_provider">編輯模型提供商</string>
   <string name="setting_provider_page_embedding_model">嵌入</string>
   <string name="setting_provider_page_enable">啟用</string>
-  <string name="setting_provider_page_enabled">啟用</string>
+  <string name="setting_provider_page_enabled">已啟用</string>
   <string name="setting_provider_page_filter_placeholder">輸入模型名稱篩選</string>
   <string name="setting_provider_page_grok_disclaimer">以 Grok CLI 的方式登入，使用你的 SuperGrok 訂閱。實驗性功能：xAI 可能隨時變更或限制此功能。</string>
   <string name="setting_provider_page_image">圖片</string>
@@ -1351,7 +1352,7 @@
   <string name="setting_provider_page_model_display_name">模型顯示名稱</string>
   <string name="setting_provider_page_model_display_name_placeholder">例如：GPT-3.5, 用於 UI 顯示</string>
   <string name="setting_provider_page_model_id">模型 ID</string>
-  <string name="setting_provider_page_model_id_placeholder">例如：deepseek-v4.1-flash-1017</string>
+  <string name="setting_provider_page_model_id_placeholder">例如：claude-fable-5-2</string>
   <string name="setting_provider_page_model_name">模型名稱</string>
   <string name="setting_provider_page_model_type">模型類型</string>
   <string name="setting_provider_page_models_format">模型（%1$d）</string>
@@ -1386,11 +1387,10 @@
   <string name="setting_provider_page_test_connection">測試連接</string>
   <string name="setting_provider_page_test_non_streaming">非串流</string>
   <string name="setting_provider_page_test_streaming">串流</string>
-  <string name="setting_provider_page_test_tool_call">工具調用</string>
+  <string name="setting_provider_page_test_tool_call">工具呼叫</string>
   <string name="setting_provider_page_test_tool_called">已調用：%1$s  參數：%2$s</string>
   <string name="setting_provider_page_test_tool_not_called">工具未被呼叫，回應：%s</string>
   <string name="setting_provider_page_text">文字</string>
-  <string name="setting_provider_page_title">模型提供商</string>
   <string name="setting_provider_page_tool">工具</string>
 <string name="setting_provider_page_type_subscription">%s 訂閱</string>
   <string name="setting_provider_page_usage">用量</string>
@@ -1439,12 +1439,12 @@
   <string name="setting_mcp_page_no_mcp_servers_found">找不到 MCP 伺服器</string>
   <string name="setting_mcp_page_sse_url_placeholder">https://example.com/sse</string>
   <string name="setting_mcp_page_streamable_http_url_placeholder">https://example.com/mcp</string>
-  <string name="setting_mcp_page_title">MCP 服務</string>
   <string name="setting_mcp_page_tools">工具</string>
   <string name="setting_mcp_page_tools_unavailable_message">添加 MCP Server 時無法查看工具列表，請添加完後再來查看</string>
   <string name="setting_mcp_page_transport_type">傳輸類型</string>
   <string name="setting_mcp_page_transport_type_desc">選擇 MCP 伺服器的傳輸協定類型</string>
   <string name="setting_mcp_page_url_label">URL 位址</string>
+  <string name="setting_page_mcp">MCP 服務</string>
   <!-- Search settings -->
   <string name="built_in_search_title">模型內建搜尋</string>
   <string name="search_ability_scrape">爬取</string>
@@ -1474,6 +1474,7 @@
   <string name="search_detail_system_prompt">系統提示</string>
   <string name="search_detail_unknown_error">未知錯誤</string>
   <string name="search_detail_username">使用者名稱</string>
+  <string name="setting_page_search">搜尋服務</string>
   <string name="setting_page_search_add_provider">新增提供商</string>
   <string name="setting_page_search_common_options">通用選項</string>
   <string name="setting_page_search_common_title">通用搜尋設定</string>
@@ -1482,7 +1483,6 @@
   <string name="setting_page_search_test">測試搜尋</string>
   <string name="setting_page_search_test_query_hint">輸入測試查詢…</string>
   <string name="setting_page_search_test_run">執行測試</string>
-  <string name="setting_page_search_title">搜尋服務</string>
   <!-- TTS settings -->
   <string name="setting_page_tts_settings">TTS 設定</string>
   <string name="setting_tts_page_add_provider">新增 TTS 提供商</string>
@@ -1593,7 +1593,7 @@
   <string name="setting_asr_configure_step_sample_rate_desc">PCM 錄音取樣率（Hz），ASR 建議使用 16000</string>
   <string name="setting_asr_configure_step_segment_desc">錄音期間每 N 秒自動上傳一段音訊進行辨識。0 表示停用自動分段（僅在 stop 時整體上傳）</string>
   <string name="setting_asr_configure_step_timestamp">啟用時間戳</string>
-  <string name="setting_asr_configure_step_timestamp_desc">回傳詞級時間戳。 rikkahub 目前尚未使用，預設關閉以節省 token</string>
+  <string name="setting_asr_configure_step_timestamp_desc">回傳詞級時間戳。NyanChat 目前尚未使用，預設關閉以節省 token</string>
   <string name="setting_asr_configure_vad_desc">伺服器 VAD 靈敏度，通常為 0.3 - 0.8</string>
   <string name="setting_asr_configure_vad_threshold">VAD 閾值</string>
   <string name="setting_asr_configure_volcengine_api_key_desc">Volcengine API 金鑰 (X-Api-Key)</string>
@@ -1751,13 +1751,13 @@
   <string name="backup_page_s3_secret_access_key">私密存取金鑰</string>
   <string name="backup_page_tar_desc">將 App 資料匯出為 TAR 檔案（不相容 RikkaHub）</string>
   <string name="backup_page_test_connection">測試連線</string>
-  <string name="backup_page_title">備份與恢復</string>
   <string name="backup_page_unknown_error">未知錯誤</string>
   <string name="backup_page_username">使用者名稱</string>
   <string name="backup_page_webdav_backup">WebDAV 備份</string>
   <string name="backup_page_webdav_backup_files">WebDav 備份檔案列表</string>
   <string name="backup_page_webdav_server_address">WebDAV 伺服器地址</string>
   <string name="backup_page_workspace">工作區</string>
+  <string name="setting_page_backup">備份與恢復</string>
   <!-- Request and permission logs -->
   <string name="log_page_clear_confirm">是否清空請求記錄</string>
   <string name="log_page_content_reasoning">思考</string>
@@ -1784,10 +1784,10 @@
   <string name="permission_log_page_granted">（已同意）</string>
   <string name="permission_log_page_input">工具輸入</string>
   <string name="permission_log_page_output">工具輸出</string>
-  <string name="permission_log_page_title">權限請求記錄</string>
   <string name="request_intercept_cancel">取消傳送</string>
   <string name="request_intercept_confirm">確認傳送</string>
   <string name="request_intercept_dialog_title">【調試】即將發送的網路請求：</string>
+  <string name="setting_page_permission_log">權限請求記錄</string>
   <string name="setting_page_permission_logs_desc">檢視本次應用程式啟動期間的權限請求記錄</string>
   <string name="setting_page_request_logs">網路請求記錄</string>
   <string name="setting_page_request_logs_desc">檢視本次應用程式啟動期間的網路請求記錄</string>
@@ -1802,20 +1802,20 @@
   <string name="permission_desc_require_permission">為了提供更優質的使用體驗，應用程式需要下列權限：</string>
   <string name="permission_diaog_title">權限請求</string>
   <string name="permission_go_to_settings">前往設定</string>
-  <string name="permission_local_network">本地網路</string>
-  <string name="permission_local_network_desc">連線區域網路內的自建服務，以及讓其他裝置存取 Web 伺服器時需要此權限</string>
   <string name="permission_location">位置資訊</string>
   <string name="permission_location_desc">用於向助手工具提供大致位置</string>
   <string name="permission_microphone">麥克風</string>
   <string name="permission_microphone_desc">需要麥克風權限才能進行語音辨識</string>
-  <string name="permission_notification">通知</string>
-<string name="permission_notification_card_desc">允許通知，以便在通知欄查看 AI 生成、Web 伺服器等背景任務的進度</string>
   <string name="permission_notification_desc">傳送通知</string>
   <string name="permission_permanently_denied">永久拒絕</string>
   <string name="permission_precise_location">精確位置</string>
   <string name="permission_precise_location_desc">用於向助手工具提供更精確的位置</string>
   <string name="permission_required">必要</string>
 <string name="phone_use_accessibility_description">啟用「Phone Use」工具後，AI 助理即可讀取螢幕內容，並代替你執行點按、滑動和文字輸入。除非助理正在執行你指派的任務，否則不會進行任何操作。</string>
+  <string name="setting_page_permission_local_network">本地網路</string>
+  <string name="setting_page_permission_local_network_desc">連線區域網路內的自建服務，以及讓其他裝置存取 Web 伺服器時需要此權限</string>
+  <string name="setting_page_permission_notification">通知</string>
+<string name="setting_page_permission_notification_card_desc">允許通知，以便在通知欄查看 AI 生成、Web 伺服器等背景任務的進度</string>
   <!-- Web server -->
   <string name="setting_page_web_server">Web 伺服器</string>
   <string name="setting_page_web_server_desc">透過網頁存取 NyanChat</string>
@@ -1892,7 +1892,7 @@
   <string name="error_mcp_auth_no_code">授權失敗: 未回傳授權碼</string>
   <string name="error_mcp_discover_as_metadata">無法探索授權伺服器中繼資料 (authorization server metadata): %1$s</string>
   <string name="error_mcp_discover_resource_metadata">無法探索受保護資源中繼資料 (protected resource metadata)</string>
-  <string name="error_mcp_invalid_server_name">無效的 MCP 伺服器名稱（僅允許英數字元）：%1$s</string>
+  <string name="error_mcp_invalid_server_name">無效的MCP伺服器名稱（僅允許英數字元）：%1$s</string>
   <string name="error_mcp_missing_authorization_endpoint">授權伺服器缺少 authorization_endpoint</string>
   <string name="error_mcp_missing_token_endpoint">授權伺服器缺少 token_endpoint</string>
   <string name="error_mcp_no_dynamic_registration">授權伺服器不支援動態註冊，且未預先設定 client_id</string>

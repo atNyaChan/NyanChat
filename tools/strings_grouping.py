@@ -40,7 +40,7 @@ import xml.etree.ElementTree as ET
 GROUPS: list[tuple[str, list[str]]] = [
     ("App", [
         r"^app_name$", r"^settings$", r"^dev_mode_badge$",
-        r"^about_page_", r"^title_activity_safe_mode$", r"^safe_mode_",
+        r"^about_page_", r"^setting_page_about$", r"^title_activity_safe_mode$", r"^safe_mode_",
         r"^create_fork$", r"^share_handler_page_title$", r"^share_model_title$",
         r"^menu_page_", r"^user_default_name$",
     ]),
@@ -134,22 +134,23 @@ GROUPS: list[tuple[str, list[str]]] = [
         r"^assistant_page_memory_", r"^memory_dream", r"^memory_file_",
     ]),
     ("Assistant settings", [
-        r"^assistant_page_", r"^assistant_detail_", r"^assistant_delete_",
+        r"^assistant_page_", r"^setting_page_assistant$", r"^assistant_detail_", r"^assistant_delete_",
         r"^assistant_importer_", r"^assistant_picker_title$",
     ]),
 
     # ---------------- Extensions ----------------
     ("Prompt extensions", [
-        r"^prompt_page_", r"^lorebook_page_title$", r"^mode_injection_page_title$",
-        r"^quick_messages_page_", r"^extensions_page_", r"^placeholder_",
+        r"^prompt_page_", r"^setting_page_lorebook$", r"^setting_page_mode_injection$",
+        r"^quick_messages_page_", r"^setting_page_quick_messages$", r"^extensions_page_",
+        r"^placeholder_",
     ]),
     ("Skills", [
-        r"^skills_page_", r"^skill_detail_",
+        r"^skills_page_", r"^setting_page_skills$", r"^skill_detail_",
     ]),
 
     # ---------------- Workspace ----------------
     ("Workspace", [
-        r"^workspace_",
+        r"^workspace_", r"^setting_page_workspace$",
     ]),
 
     # ---------------- Media creation ----------------
@@ -172,7 +173,7 @@ GROUPS: list[tuple[str, list[str]]] = [
         r"^setting_page_mcp_desc$", r"^setting_page_font_settings$",
         r"^setting_page_formula_code_settings$", r"^setting_page_model_and_services$",
         r"^setting_page_providers_desc$", r"^setting_page_search_service_desc$",
-        r"^setting_page_tts_service", r"^setting_page_theme_setting$",
+        r"^setting_page_tts_asr$", r"^setting_page_tts_service_desc$", r"^setting_page_theme_setting$",
         r"^setting_page_chat_settings$", r"^setting_page_interface_settings$",
         r"^setting_page_system_settings$", r"^setting_page_more_settings$",
         r"^setting_page_media", r"^setting_page_color_mode",
@@ -184,16 +185,17 @@ GROUPS: list[tuple[str, list[str]]] = [
         r"^setting_theme_page_", r"^theme_name_",
     ]),
     ("Model settings", [
-        r"^setting_model_page_", r"^share_model_title$",
+        r"^setting_model_page_", r"^setting_page_models$", r"^share_model_title$",
     ]),
     ("Provider settings", [
-        r"^setting_provider_", r"^default_provider_",
+        r"^setting_provider_", r"^setting_page_providers$", r"^default_provider_",
     ]),
     ("MCP settings", [
-        r"^setting_mcp_",
+        r"^setting_mcp_", r"^setting_page_mcp$",
     ]),
     ("Search settings", [
-        r"^setting_page_search_", r"^search_detail_", r"^search_ability_", r"^built_in_search_title$",
+        r"^setting_page_search_", r"^setting_page_search$", r"^search_detail_", r"^search_ability_",
+        r"^built_in_search_title$",
     ]),
     ("TTS settings", [
         r"^setting_tts_page_", r"^setting_page_tts_settings$", r"^test_tts$", r"^tts$",
@@ -221,14 +223,14 @@ GROUPS: list[tuple[str, list[str]]] = [
 
     # ---------------- Data ----------------
     ("Backup", [
-        r"^backup_page_",
+        r"^backup_page_", r"^setting_page_backup$",
     ]),
     ("Request and permission logs", [
-        r"^log_page_", r"^setting_page_request_logs", r"^setting_page_permission_logs_desc$",
-        r"^permission_log_page_", r"^request_intercept_",
+        r"^log_page_", r"^setting_page_request_logs", r"^setting_page_permission_log$",
+        r"^setting_page_permission_logs_desc$", r"^permission_log_page_", r"^request_intercept_",
     ]),
     ("Permissions", [
-        r"^permission_", r"^phone_use_",
+        r"^permission_", r"^setting_page_permission_(local_network|notification)", r"^phone_use_",
     ]),
     ("Web server", [
         r"^setting_page_web_server",

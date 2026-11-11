@@ -6,7 +6,6 @@
   <string name="about_page_original_github">RikkaHub auf GitHub</string>
   <string name="about_page_original_website">RikkaHub-Website</string>
   <string name="about_page_system">System</string>
-  <string name="about_page_title">Über</string>
   <string name="about_page_version">Version</string>
   <string name="app_name">NyanChat</string>
   <string name="create_fork">Fork erstellen</string>
@@ -24,6 +23,7 @@
   <string name="safe_mode_enter_app">App öffnen</string>
   <string name="safe_mode_switch_assistant">Assistent wechseln</string>
   <string name="safe_mode_title">Sicherer Modus</string>
+  <string name="setting_page_about">Über</string>
   <string name="settings">Einstellungen</string>
   <string name="share_handler_page_title">Assistenten auswählen</string>
   <string name="share_model_title">Teile dein LLM-Modell</string>
@@ -128,7 +128,7 @@
   <string name="chat_page_check_fast_model_settings">Einstellungen für schnelles Modell prüfen</string>
   <string name="chat_page_clear_all_errors">Alle löschen</string>
   <string name="chat_page_clear_selection">Auswahl aufheben</string>
-  <string name="chat_page_conversation_map">Unterhaltungskarte</string>
+  <string name="chat_page_conversation_map">Konversationskarte</string>
   <string name="chat_page_conversation_system_prompt">Systemprompt der Unterhaltung</string>
   <string name="chat_page_conversation_system_prompt_clear">Leeren</string>
   <string name="chat_page_conversation_system_prompt_hint">Überschreibe den Systemprompt des Assistenten für diese Unterhaltung</string>
@@ -443,7 +443,7 @@
   <string name="translator_page_history">Übersetzungsverlauf</string>
   <string name="translator_page_input_placeholder">Text zum Übersetzen eingeben...</string>
   <string name="translator_page_model_missing">Kein Übersetzungsmodell ausgewählt. Tippe oben rechts, um eines auszuwählen.</string>
-  <string name="translator_page_paste">Text einfügen</string>
+  <string name="translator_page_paste">Einfügen</string>
   <string name="translator_page_result_placeholder">Das Übersetzungsergebnis wird hier angezeigt</string>
   <string name="translator_page_title">Übersetzer</string>
   <string name="translator_page_translate">Übersetzen</string>
@@ -472,7 +472,7 @@
   <!-- Assistant memory -->
   <string name="assistant_page_memory_auto_dream">Automatisches Träumen</string>
   <string name="assistant_page_memory_auto_dream_desc">Verwandle Chats im Hintergrund in Erinnerungen, sobald sie pausieren. Wenn deaktiviert, geschieht dies nur, wenn du auf „Jetzt träumen“ tippst</string>
-  <string name="assistant_page_memory_desc">Wenn die Erinnerung aktiviert ist, merkt sich der Assistent, was du ihm erzählst, und nutzt dies in späteren Unterhaltungen. Sobald ein Chat pausiert, werden die Erinnerungen im Hintergrund organisiert. Damit diese Funktion ordnungsgemäß funktioniert, muss das Modell Tool-Aufrufe unterstützen</string>
+  <string name="assistant_page_memory_desc">Wenn die Erinnerung aktiviert ist, merkt sich der Assistent, was du ihm erzählst, und nutzt dies in späteren Unterhaltungen; sobald ein Chat pausiert, werden die Erinnerungen im Hintergrund organisiert. Damit diese Funktion ordnungsgemäß funktioniert, muss das Modell Tool-Aufrufe unterstützen.</string>
   <string name="assistant_page_memory_dream_failed">Träumen fehlgeschlagen: %s</string>
   <string name="assistant_page_memory_dream_hint">Verwandelt deine Chats in Erinnerungen, sobald sie pausieren</string>
   <string name="assistant_page_memory_dream_no_changes">Nichts Neues zu erinnern</string>
@@ -642,7 +642,6 @@
   <string name="assistant_page_time_reminder_desc">Fügt automatisch Zeiterinnerungen vor Nachrichten mit großen Zeitabständen ein, damit die KI Gesprächsintervalle versteht</string>
   <string name="assistant_page_time_reminder_interval">Intervall für Zeiterinnerung</string>
   <string name="assistant_page_time_reminder_interval_desc">Fügt eine Erinnerung ein, wenn der Abstand zwischen Nachrichten dieses Intervall überschreitet (immer vor der ersten Benutzernachricht). Einheit: Minuten.</string>
-  <string name="assistant_page_title">Assistenten-Einstellungen</string>
   <string name="assistant_page_top_p">Top P</string>
   <string name="assistant_page_top_p_range_hint">. Bereich 0 - 1; leer lassen, um den Standardwert zu verwenden.</string>
   <string name="assistant_page_top_p_warning">Ändere diesen Wert nur, wenn du weißt, was du tust</string>
@@ -655,12 +654,11 @@
   <string name="assistant_page_workspace">Arbeitsbereich</string>
   <string name="assistant_page_workspace_desc">Nach dem Binden kann der Agent die Dateien und Sandbox-Funktionen dieses Arbeitsbereichs nutzen</string>
   <string name="assistant_page_workspace_unbound">Nicht gebunden</string>
+  <string name="setting_page_assistant">Assistenten-Einstellungen</string>
   <!-- Prompt extensions -->
   <string name="extensions_page_agent_skills_desc">Verwalte Skill-Pakete, die die KI bei Bedarf lädt</string>
   <string name="extensions_page_quick_messages_desc">Gemeinsam genutzte Schnellnachrichten-Vorlagen verwalten</string>
   <string name="extensions_page_workspace_desc">Lokale Arbeitsverzeichnisse verwalten, auf die der Agent zugreifen kann</string>
-  <string name="lorebook_page_title">Lorebooks</string>
-  <string name="mode_injection_page_title">Modus-Injektionen</string>
   <string name="placeholder_char">Name des Assistenten</string>
   <string name="placeholder_device_info">Geräteinfo</string>
   <string name="placeholder_model_id">Modell-ID</string>
@@ -712,9 +710,12 @@
   <string name="quick_messages_page_empty_content">Kein Inhalt</string>
   <string name="quick_messages_page_empty_hint">Tippe unten rechts auf die +-Schaltfläche, um eine Schnellnachricht hinzuzufügen</string>
   <string name="quick_messages_page_empty_title">Keine Schnellnachrichten</string>
-  <string name="quick_messages_page_title">Schnellnachrichten</string>
   <string name="quick_messages_page_untitled">Unbenannt</string>
+  <string name="setting_page_lorebook">Lorebooks</string>
+  <string name="setting_page_mode_injection">Modus-Injektionen</string>
+  <string name="setting_page_quick_messages">Schnellnachrichten</string>
   <!-- Skills -->
+  <string name="setting_page_skills">Skills</string>
   <string name="skill_detail_page_content">Inhalt</string>
   <string name="skill_detail_page_create">Erstellen</string>
   <string name="skill_detail_page_delete_failed">Löschen fehlgeschlagen</string>
@@ -754,8 +755,8 @@
   <string name="skills_page_search_placeholder">Skills suchen</string>
   <string name="skills_page_skill_body_placeholder">Anweisungen...</string>
   <string name="skills_page_skill_name">Skill-Name: %s</string>
-  <string name="skills_page_title">Skills</string>
   <!-- Workspace -->
+  <string name="setting_page_workspace">Arbeitsbereich</string>
   <string name="workspace_cwd_current">Aktuelles Arbeitsverzeichnis</string>
   <string name="workspace_cwd_no_subdirectories">Keine Unterverzeichnisse</string>
   <string name="workspace_cwd_reset">Zurücksetzen</string>
@@ -846,7 +847,6 @@
   <string name="workspace_page_name">Name</string>
   <string name="workspace_page_name_duplicate">Name existiert bereits</string>
   <string name="workspace_page_rename">Arbeitsbereich umbenennen</string>
-  <string name="workspace_page_title">Arbeitsbereich</string>
   <string name="workspace_page_type_local">Lokaler Arbeitsbereich</string>
   <string name="workspace_page_type_local_desc">Läuft in einer Linux-Sandbox auf diesem Gerät und benötigt ein Rootfs</string>
   <string name="workspace_page_type_ssh">SSH-Remote-Arbeitsbereich</string>
@@ -1133,7 +1133,7 @@
   <string name="setting_page_search_service_desc">Suchdienstanbieter konfigurieren</string>
   <string name="setting_page_system_settings">Systemeinstellungen</string>
   <string name="setting_page_theme_setting">Design</string>
-  <string name="setting_page_tts_service">Sprachsynthese und -erkennung</string>
+  <string name="setting_page_tts_asr">Sprachsynthese und -erkennung</string>
   <string name="setting_page_tts_service_desc">Konfiguriere Anbieter für Sprachausgabe und Spracherkennung</string>
   <!-- Display settings -->
   <string name="setting_display_page_amoled_dark_mode_desc">Im dunklen Design einen rein schwarzen Hintergrund verwenden, geeignet für AMOLED-Bildschirme</string>
@@ -1282,16 +1282,17 @@
   <string name="setting_model_page_prompt_translation">Übersetzungs-Prompt</string>
   <string name="setting_model_page_reset_to_default">Auf Standard zurücksetzen</string>
   <string name="setting_model_page_suggestion_prompt_vars">Variablen: Gesprächsinhalt: {content}, Sprache: {locale}</string>
-  <string name="setting_model_page_title">Standardmodelle und Prompts</string>
   <string name="setting_model_page_translate_model">Übersetzungsmodell</string>
   <string name="setting_model_page_translate_model_desc">Das für Übersetzungsfunktionen verwendete Modell</string>
   <string name="setting_model_page_translate_prompt_vars">Variablen: Quelltext: {source_text}, Zielsprache: {target_lang}</string>
+  <string name="setting_page_models">Standardmodelle und Prompts</string>
   <!-- Provider settings -->
   <string name="default_provider_alibaba_bailian">Alibaba Cloud Bailian</string>
   <string name="default_provider_moonshot">Moonshot AI</string>
   <string name="default_provider_siliconflow">SiliconFlow</string>
   <string name="default_provider_volcengine">Volcengine</string>
   <string name="default_provider_zhipu">Zhipu AI</string>
+  <string name="setting_page_providers">Modellanbieter</string>
   <string name="setting_provider_page_abilities">Fähigkeiten</string>
   <string name="setting_provider_page_account">Konto</string>
   <string name="setting_provider_page_add_models_hint">Klicke auf die Schaltfläche oben, um Modelle hinzuzufügen</string>
@@ -1302,7 +1303,7 @@
   <string name="setting_provider_page_api_key">API-Schlüssel</string>
   <string name="setting_provider_page_api_path">API-Pfad</string>
   <string name="setting_provider_page_avaliable_models">Verfügbare Modelle</string>
-  <string name="setting_provider_page_balance_info">Guthaben abrufen</string>
+  <string name="setting_provider_page_balance_info">Kontostand abrufen</string>
   <string name="setting_provider_page_balance_json_key">JSON-Schlüssel des Ergebnisses</string>
   <string name="setting_provider_page_basic_settings">Grundeinstellungen</string>
   <string name="setting_provider_page_cache_read_price">Preis für Cache-Lesen</string>
@@ -1351,7 +1352,7 @@
   <string name="setting_provider_page_model_display_name">Modell-Anzeigename</string>
   <string name="setting_provider_page_model_display_name_placeholder">z. B.: GPT-3.5, zur Anzeige in der UI</string>
   <string name="setting_provider_page_model_id">Modell-ID</string>
-  <string name="setting_provider_page_model_id_placeholder">z. B.: deepseek-v4.1-flash-1017</string>
+  <string name="setting_provider_page_model_id_placeholder">z. B.: claude-fable-5-2</string>
   <string name="setting_provider_page_model_name">Modellname</string>
   <string name="setting_provider_page_model_type">Modelltyp</string>
   <string name="setting_provider_page_models_format">Modelle (%1$d)</string>
@@ -1390,7 +1391,6 @@
   <string name="setting_provider_page_test_tool_called">Aufgerufen: %1$s  Args: %2$s</string>
   <string name="setting_provider_page_test_tool_not_called">Tool nicht aufgerufen, Antwort: %s</string>
   <string name="setting_provider_page_text">Text</string>
-  <string name="setting_provider_page_title">Modellanbieter</string>
   <string name="setting_provider_page_tool">Tool</string>
   <string name="setting_provider_page_type_subscription">%s-Abo</string>
   <string name="setting_provider_page_usage">Nutzung</string>
@@ -1439,12 +1439,12 @@
   <string name="setting_mcp_page_no_mcp_servers_found">Keine MCP-Server gefunden</string>
   <string name="setting_mcp_page_sse_url_placeholder">https://example.com/sse</string>
   <string name="setting_mcp_page_streamable_http_url_placeholder">https://example.com/mcp</string>
-  <string name="setting_mcp_page_title">MCP-Dienste</string>
   <string name="setting_mcp_page_tools">Tools</string>
   <string name="setting_mcp_page_tools_unavailable_message">Die Tool-Liste kann beim Hinzufügen eines MCP-Servers nicht angezeigt werden; bitte prüfe sie nach dem Hinzufügen erneut.</string>
   <string name="setting_mcp_page_transport_type">Transporttyp</string>
   <string name="setting_mcp_page_transport_type_desc">Wähle den Typ des Transportprotokolls für den MCP-Server aus.</string>
   <string name="setting_mcp_page_url_label">URL-Adresse</string>
+  <string name="setting_page_mcp">MCP-Dienste</string>
   <!-- Search settings -->
   <string name="built_in_search_title">Integrierte Suche</string>
   <string name="search_ability_scrape">Scrapen</string>
@@ -1474,6 +1474,7 @@
   <string name="search_detail_system_prompt">Systemprompt</string>
   <string name="search_detail_unknown_error">Unbekannter Fehler</string>
   <string name="search_detail_username">Benutzername</string>
+  <string name="setting_page_search">Suchdienst</string>
   <string name="setting_page_search_add_provider">Anbieter hinzufügen</string>
   <string name="setting_page_search_common_options">Allgemeine Optionen</string>
   <string name="setting_page_search_common_title">Allgemeine Sucheinstellungen</string>
@@ -1482,7 +1483,6 @@
   <string name="setting_page_search_test">Suche testen</string>
   <string name="setting_page_search_test_query_hint">Testabfrage eingeben…</string>
   <string name="setting_page_search_test_run">Test ausführen</string>
-  <string name="setting_page_search_title">Suchdienste</string>
   <!-- TTS settings -->
   <string name="setting_page_tts_settings">TTS-Einstellungen</string>
   <string name="setting_tts_page_add_provider">TTS-Anbieter hinzufügen</string>
@@ -1593,7 +1593,7 @@
   <string name="setting_asr_configure_step_sample_rate_desc">PCM-Abtastrate der Aufnahme in Hz; für ASR werden 16000 empfohlen</string>
   <string name="setting_asr_configure_step_segment_desc">Gepuffertes Audio während der Aufnahme alle N Sekunden automatisch senden. 0 deaktiviert die automatische Segmentierung (eine einzelne Anfrage beim Stoppen)</string>
   <string name="setting_asr_configure_step_timestamp">Zeitstempel aktivieren</string>
-  <string name="setting_asr_configure_step_timestamp_desc">Gibt Zeitstempel auf Wortebene in Delta-Events zurück. Standardmäßig deaktiviert, um Tokens zu sparen (rikkahub nutzt sie noch nicht)</string>
+  <string name="setting_asr_configure_step_timestamp_desc">Gibt Zeitstempel auf Wortebene in Delta-Events zurück. Standardmäßig deaktiviert, um Tokens zu sparen (NyanChat nutzt sie noch nicht)</string>
   <string name="setting_asr_configure_vad_desc">Empfindlichkeit des Server-VAD, üblicherweise 0.3 - 0.8</string>
   <string name="setting_asr_configure_vad_threshold">VAD-Schwelle</string>
   <string name="setting_asr_configure_volcengine_api_key_desc">Volcengine API-Schlüssel (X-Api-Key)</string>
@@ -1751,13 +1751,13 @@
   <string name="backup_page_s3_secret_access_key">Geheimer Zugriffsschlüssel</string>
   <string name="backup_page_tar_desc">App-Daten als TAR-Datei exportieren (nicht mit RikkaHub kompatibel)</string>
   <string name="backup_page_test_connection">Verbindung testen</string>
-  <string name="backup_page_title">Sichern und Wiederherstellen</string>
   <string name="backup_page_unknown_error">Unbekannter Fehler</string>
   <string name="backup_page_username">Benutzername</string>
   <string name="backup_page_webdav_backup">WebDAV-Backup</string>
   <string name="backup_page_webdav_backup_files">WebDAV-Backup-Dateien</string>
   <string name="backup_page_webdav_server_address">WebDAV-Serveradresse</string>
   <string name="backup_page_workspace">Arbeitsbereich</string>
+  <string name="setting_page_backup">Sichern und Wiederherstellen</string>
   <!-- Request and permission logs -->
   <string name="log_page_clear_confirm">Anfrageprotokolle löschen?</string>
   <string name="log_page_content_reasoning">Reasoning</string>
@@ -1784,10 +1784,10 @@
   <string name="permission_log_page_granted"> (Erlaubt)</string>
   <string name="permission_log_page_input">Tool-Eingabe</string>
   <string name="permission_log_page_output">Tool-Ausgabe</string>
-  <string name="permission_log_page_title">Berechtigungsanfrage-Protokolle</string>
   <string name="request_intercept_cancel">Abbrechen</string>
   <string name="request_intercept_confirm">Senden</string>
   <string name="request_intercept_dialog_title">[Debug] Ausgehende Netzwerkanfrage:</string>
+  <string name="setting_page_permission_log">Berechtigungsanfrage-Protokolle</string>
   <string name="setting_page_permission_logs_desc">Berechtigungsanfrage-Protokolle der aktuellen App-Sitzung anzeigen</string>
   <string name="setting_page_request_logs">Netzwerkanfrage-Protokolle</string>
   <string name="setting_page_request_logs_desc">Netzwerkanfrage-Protokolle der aktuellen App-Sitzung anzeigen</string>
@@ -1802,20 +1802,20 @@
   <string name="permission_desc_require_permission">Um eine bessere Benutzererfahrung zu bieten, benötigt die App die folgenden Berechtigungen:</string>
   <string name="permission_diaog_title">Berechtigungsanfrage</string>
   <string name="permission_go_to_settings">Zu den Einstellungen</string>
-  <string name="permission_local_network">Lokales Netzwerk</string>
-  <string name="permission_local_network_desc">Erforderlich, um eine Verbindung zu selbst gehosteten Diensten im lokalen Netzwerk herzustellen und anderen Geräten den Zugriff auf den Webserver zu ermöglichen</string>
   <string name="permission_location">Standort</string>
   <string name="permission_location_desc">Wird verwendet, um Assistenten-Tools den ungefähren Standort bereitzustellen</string>
   <string name="permission_microphone">Mikrofon</string>
   <string name="permission_microphone_desc">Die Mikrofonberechtigung wird für die Spracherkennung benötigt</string>
-  <string name="permission_notification">Benachrichtigung</string>
-<string name="permission_notification_card_desc">Erlaube Benachrichtigungen, um den Fortschritt von Hintergrundaufgaben wie KI-Generierung und Webserver zu sehen</string>
   <string name="permission_notification_desc">Benachrichtigungen senden</string>
   <string name="permission_permanently_denied">Dauerhaft abgelehnt</string>
   <string name="permission_precise_location">Genauer Standort</string>
   <string name="permission_precise_location_desc">Wird verwendet, um Assistenten-Tools einen genaueren Standort bereitzustellen</string>
   <string name="permission_required">Erforderlich</string>
 <string name="phone_use_accessibility_description">Ermöglicht dem KI-Assistenten, den Bildschirm zu lesen und Tippen, Wischen und Texteingaben für dich auszuführen, wenn du das Phone-Use-Tool aktivierst. Es wird nichts ausgeführt, solange der Assistent keine von dir angeforderte Aufgabe ausführt.</string>
+  <string name="setting_page_permission_local_network">Lokales Netzwerk</string>
+  <string name="setting_page_permission_local_network_desc">Erforderlich, um eine Verbindung zu selbst gehosteten Diensten im lokalen Netzwerk herzustellen und anderen Geräten den Zugriff auf den Webserver zu ermöglichen</string>
+  <string name="setting_page_permission_notification">Benachrichtigung</string>
+<string name="setting_page_permission_notification_card_desc">Erlaube Benachrichtigungen, um den Fortschritt von Hintergrundaufgaben wie KI-Generierung und Webserver zu sehen</string>
   <!-- Web server -->
   <string name="setting_page_web_server">Webserver</string>
   <string name="setting_page_web_server_desc">Über das Web auf NyanChat zugreifen</string>

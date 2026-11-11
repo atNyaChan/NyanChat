@@ -90,7 +90,7 @@ fun SettingAboutPage() {
         topBar = {
             TopAppBar(
                 title = {
-                    Text(stringResource(R.string.about_page_title))
+                    Text(stringResource(R.string.setting_page_about))
                 },
                 navigationIcon = {
                     BackButton()

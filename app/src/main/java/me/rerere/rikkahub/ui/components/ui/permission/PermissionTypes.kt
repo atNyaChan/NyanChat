@@ -55,7 +55,7 @@ val PermissionRecordAudio = PermissionInfo(
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 val PermissionNotification = PermissionInfo(
     permission = Manifest.permission.POST_NOTIFICATIONS,
-    displayName = { Text(stringResource(R.string.permission_notification)) },
+    displayName = { Text(stringResource(R.string.setting_page_permission_notification)) },
     usage = { Text(stringResource(R.string.permission_notification_desc)) },
     required = true
 )
@@ -63,7 +63,7 @@ val PermissionNotification = PermissionInfo(
 @RequiresApi(37)
 val PermissionLocalNetwork = PermissionInfo(
     permission = Manifest.permission.ACCESS_LOCAL_NETWORK,
-    displayName = { Text(stringResource(R.string.permission_local_network)) },
-    usage = { Text(stringResource(R.string.permission_local_network_desc)) },
+    displayName = { Text(stringResource(R.string.setting_page_permission_local_network)) },
+    usage = { Text(stringResource(R.string.setting_page_permission_local_network_desc)) },
     required = true
 )
