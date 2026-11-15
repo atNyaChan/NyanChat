@@ -19,6 +19,7 @@ class MessageNoticeTest {
     }
 
     @Test
+    @Suppress("DEPRECATION")
     fun `sorting legacy parts keeps a notice where it is`() {
         val parts = listOf(notice, UIMessagePart.Reasoning("thinking"), UIMessagePart.Text("answer"))
 

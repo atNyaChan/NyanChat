@@ -1,10 +1,9 @@
-@file:OptIn(dev.chrisbanes.haze.ExperimentalHazeApi::class)
-
 package me.rerere.rikkahub.ui.components.ai
 
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -14,11 +13,12 @@ import dev.chrisbanes.haze.blur.HazeBlurStyle
 import dev.chrisbanes.haze.blur.hazeBlur
 import dev.chrisbanes.haze.blur.material3.Material3
 import dev.chrisbanes.haze.glass.GlassDefaults
+import dev.chrisbanes.haze.glass.GlassOptics
 import dev.chrisbanes.haze.glass.GlassStyle
 import dev.chrisbanes.haze.glass.GlassStyleScope
 import dev.chrisbanes.haze.glass.OpticalSizeValue
 import dev.chrisbanes.haze.glass.hazeGlass
-import dev.chrisbanes.haze.glass.material3.Material3
+import dev.chrisbanes.haze.glass.material3.material3
 import me.rerere.rikkahub.data.datastore.BackgroundEffectType
 import me.rerere.rikkahub.data.datastore.DisplaySetting
 import me.rerere.rikkahub.data.datastore.effectiveBackgroundEffectType
@@ -55,22 +55,25 @@ internal fun Modifier.chatInputHaze(
 
         BackgroundEffectType.GLASS -> {
             val darkMode = LocalDarkMode.current
-            hazeGlass(
-                input = HazeInput.Sources(hazeState),
-                style = GlassStyle.Material3(
-                    containerColor = containerColor,
-                    tint = containerColor.copy(alpha = 0.3f),
-                ) {
+            val style = remember(containerColor, shape, darkMode) {
+                GlassStyle {
                     appearanceResponse(dark = darkMode)
                     // Keep background text from competing with the input text.
                     optics(
-                        GlassDefaults.optics.copy(
+                        GlassOptics.regular.copy(
                             blurRadius = OpticalSizeValue.Fixed(16.dp),
                             depth = OpticalSizeValue.Fixed(0.5f),
                         )
                     )
                     shape(shape)
-                },
+                }
+            }
+            hazeGlass(
+                input = HazeInput.Sources(hazeState),
+                style = style.material3(
+                    containerColor = containerColor,
+                    tint = containerColor.copy(alpha = 0.3f),
+                ),
             )
         }
     }

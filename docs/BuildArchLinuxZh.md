@@ -7,19 +7,19 @@
 - 已移除 Firebase，构建时不需要 `google-services.json`
 - 应用 ID 改为 `moe.nyanw.nyanchat`
 - 仅打包 `arm64-v8a`
-- 统一使用 OpenJDK 21
+- 统一使用 OpenJDK 25（pacman `jdk25-openjdk`）
+- Gradle 由 pacman 安装并直接使用全局 `gradle`，不再通过 Gradle Wrapper 下载分发包
 
 ## 下载清单
 
 | 下载内容 | 下载源 | 下载量 | 安装后占用 | 下载命令 |
 |---|---|---:|---:|---|
-| Java 21、Node.js、pnpm 等 | Arch 软件源；是否为国内镜像取决于本机 pacman 配置 | 约 150–300 MB | 约 500 MB–1 GB | `sudo pacman -S --needed git jdk21-openjdk nodejs pnpm unzip wget` |
+| Java 25、Gradle、Node.js、pnpm 等 | Arch 软件源；是否为国内镜像取决于本机 pacman 配置 | 约 280–430 MB | 约 800 MB–1.3 GB | `sudo pacman -S --needed git jdk25-openjdk gradle nodejs pnpm unzip wget` |
 | Android Command-line Tools | Google，无可靠的新版本国内镜像 | 173 MB | 166 MB | 见步骤 2 |
 | Android Platform、Build Tools、Platform Tools | Google `sdkmanager`，无可靠 API 37 国内镜像 | 约 143 MB | 327 MB | 见步骤 3 |
 | NDK 28.2、CMake 3.22.1 | Google `sdkmanager`，无可靠新版本国内镜像 | 约 744 MB | 约 2.3 GB | 见步骤 3 |
 | Material Color Utilities 子模块 | GitHub | 数 MB | 6 MB | 见步骤 1 |
 | Web UI npm 依赖 | npmmirror 国内镜像 | 约 100–300 MB | 407 MB | 见步骤 4 |
-| Gradle 9.5.0 | 阿里云镜像，项目已配置 | 132 MB | 291 MB | 运行 `./gradlew` 时自动下载 |
 | Android/Kotlin/Compose 等 Gradle 依赖 | 阿里云优先，缺包时回退 Google、Maven Central、JitPack | 约 1–2 GB | 本机缓存约 1.8 GB | 构建时自动下载 |
 
 Android SDK 相关内容合计下载约 1 GB，安装后约占 2.7 GB；首次完整构建结束后，
@@ -31,7 +31,7 @@ Android SDK 相关内容合计下载约 1 GB，安装后约占 2.7 GB；首次�
 
 ```bash
 # 安装必要的系统包
-sudo pacman -S --needed git jdk21-openjdk nodejs pnpm unzip wget
+sudo pacman -S --needed git jdk25-openjdk gradle nodejs pnpm unzip wget
 
 # 克隆仓库
 git clone https://github.com/jacob-sheng/better-rikkahub.git
@@ -127,13 +127,13 @@ keytool -genkeypair \
 
 ```bash
 # 构建 Release APK（需要先完成步骤 6 的签名配置）
-./gradlew assembleRelease
+gradle assembleRelease
 
 # 或者构建 Debug APK（无需签名配置）
-./gradlew assembleDebug
+gradle assembleDebug
 ```
 
-首次构建会自动下载 Gradle 9.5.0 和全部 Android/Kotlin/Compose 依赖，耗时较长。
+首次构建会自动下载全部 Android/Kotlin/Compose 依赖，耗时较长。
 
 ### 步骤 8：获取构建产物
 

@@ -24,13 +24,13 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             }
 
             compileOptions {
-                sourceCompatibility = JavaVersion.VERSION_21
-                targetCompatibility = JavaVersion.VERSION_21
+                sourceCompatibility = JavaVersion.VERSION_25
+                targetCompatibility = JavaVersion.VERSION_25
             }
         }
 
         tasks.withType<KotlinCompile>().configureEach {
-            compilerOptions.jvmTarget.set(JvmTarget.JVM_21)
+            compilerOptions.jvmTarget.set(JvmTarget.JVM_25)
         }
     }
 }

@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import me.rerere.rikkahub.R
-import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.ui.components.ConfirmDialog
 
 /**
  * 全局统一的删除确认弹窗。
@@ -37,7 +37,7 @@ fun DeleteConfirmDialog(
         !name.isNullOrBlank() -> stringResource(R.string.delete_dialog_message_named, type, name)
         else -> stringResource(R.string.delete_dialog_message_unnamed, type)
     }
-    RikkaConfirmDialog(
+    ConfirmDialog(
         show = show,
         title = stringResource(R.string.delete_dialog_title, type),
         confirmText = stringResource(R.string.common_delete),

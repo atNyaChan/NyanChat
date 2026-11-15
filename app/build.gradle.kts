@@ -78,8 +78,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_25
+        targetCompatibility = JavaVersion.VERSION_25
     }
     buildFeatures {
         compose = true
@@ -146,7 +146,7 @@ ksp {
 
 kotlin {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_21)
+        jvmTarget.set(JvmTarget.JVM_25)
     }
 }
 
@@ -236,7 +236,7 @@ dependencies {
     // java-diff-utils (unified diff)
     implementation(libs.diffutils)
     implementation(libs.commons.compress)
-    implementation("com.github.luben:zstd-jni:1.5.7-4@aar")
+    implementation("com.github.luben:zstd-jni:1.5.7-28@aar")
     implementation("org.brotli:dec:0.1.2")
 
     // coil

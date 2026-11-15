@@ -68,7 +68,7 @@ import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupItemSpacing
 import me.rerere.rikkahub.ui.components.ui.CardGroupRow
 import me.rerere.rikkahub.ui.components.ui.DeleteConfirmDialog
-import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.ui.components.ConfirmDialog
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalToaster
@@ -230,7 +230,7 @@ fun ColumnScope.ChatMessageActionButtons(
     }
 
     // Regenerate confirmation dialog
-    RikkaConfirmDialog(
+    ConfirmDialog(
         show = showRegenerateConfirm,
         title = stringResource(R.string.regenerate),
         confirmText = stringResource(R.string.common_confirm_action),

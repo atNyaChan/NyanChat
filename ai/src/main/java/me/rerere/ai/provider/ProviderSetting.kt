@@ -48,12 +48,8 @@ sealed class ProviderSetting {
     abstract val customHeaders: List<CustomHeader>
 
     abstract val builtIn: Boolean
-    abstract val description:
-        @Composable()
-        () -> Unit
-    abstract val shortDescription:
-        @Composable()
-        () -> Unit
+    abstract val description: @Composable (() -> Unit)
+    abstract val shortDescription: @Composable (() -> Unit)
 
     fun addModel(model: Model): ProviderSetting = copyProvider(models = models + model)
 
@@ -115,7 +111,7 @@ sealed class ProviderSetting {
                 customHeaders = customHeaders,
                 builtIn = builtIn,
                 description = description,
-                shortDescription = shortDescription
+                shortDescription = shortDescription,
             )
         }
     }

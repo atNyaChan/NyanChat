@@ -176,9 +176,9 @@ as an ordinary folder, and never invent a uuid/filename-keyed path for an attach
 git apply ./app/baselineprofile/mock-provider.patch && ./gradlew :app:generateReleaseBaselineProfile && git apply-reverse ./app/baselineprofile/mock-provider.patch # Generate Profile
 ```
 
-Build configuration is unified across the project: JDK 21 for the project, the Gradle daemon,
+Build configuration is unified across the project: JDK 25 for the project, the Gradle daemon,
 toolchain declarations and CI; `compileSdk` 37.2 (Android SDK Platform 37) and `targetSdk` 37,
-`minSdk` 28; Java and Kotlin `jvmTarget` 21; Build-Tools pinned to 37.0.0. Library modules get this
+`minSdk` 28; Java and Kotlin `jvmTarget` 25; Build-Tools pinned to 37.0.0. Library modules get this
 from the `rikkahub.android.library` / `rikkahub.android.library.compose` convention plugins in the
 `build-logic` included build; app-level keep rules live in `app/src/main/keepRules/rikkahub.keep`.
 Do not raise `minSdk` or change the Java/Kotlin target per module.

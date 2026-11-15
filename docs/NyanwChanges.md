@@ -675,7 +675,7 @@
 - 更新会话时按节点 ID 比较数据库实体与当前消息树，只删除已移除节点并写入新增或变化节点，不再全删全插全部消息节点。
 - 窗口主题 `Theme.Rikkahub` 的父级由框架的 `android:Theme.Material.Light.NoActionBar` / `android:Theme.Material.NoActionBar` 改回 AppCompat 的 `Theme.AppCompat.Light.NoActionBar` / `Theme.AppCompat.NoActionBar`（窗口背景色不变）：`RouteActivity` 继承 `AppCompatActivity`（用于 `AppCompatDelegate.setApplicationLocales` 的应用内语言切换），而 AppCompat 要求主题派生自 `Theme.AppCompat`，否则启动时抛 `You need to use a Theme.AppCompat theme (or descendant) with this activity.` 并崩溃；这不涉及 Material Components，MDC 的样式与属性资源仍可被 R8 裁掉。
 - `locale-tui-localization` skill 改为手工维护全部 `values*` 字符串资源，不再依赖 Python、uv 或自动翻译服务，并将 `locale-tui-localization` skill 内容精简后并入 `AGENTS.md`；上游后来引入的 `tools/i18n` Bun 翻译工具不并入本 Fork，字符串仍由 agent 按 `AGENTS.md` 的手工本地化流程翻译。
-- 在 `AGENTS.md` 中的“Unified UI Conventions”统一列表卡片、设置分组、底部抽屉、颜色、圆角与反馈约定及构建配置（JDK 21、compileSdk 37.2、targetSdk 37、minSdk 28、Build-Tools 37.0.0）。
+- 在 `AGENTS.md` 中的“Unified UI Conventions”统一列表卡片、设置分组、底部抽屉、颜色、圆角与反馈约定及构建配置（JDK 25、compileSdk 37.2、targetSdk 37、minSdk 28、Build-Tools 37.0.0）。
 - 国际化约定补充通用操作字符串、各语言资源键顺序对齐与中英相邻空格规则，并要求新增字符串时按功能分组注释落位（不得追加到文件末尾），同步更新各语言文件的相同位置，且必须同步维护 `tools/strings_grouping.py` 中的分组定义。
 - 将{关闭、取消、删除、保存、导出、分享、重命名、添加、确认、全部}重复操作文案合并为通用本地化资源，并清理原页面专属重复键。
 - 简体及繁体中文资源中的中英文相邻文本统一增加空格，并同步补齐各 `values*` 资源缺失的新增字符串。
@@ -689,10 +689,11 @@
 - 全部通过 `LocalToaster` 触发的错误提示统一改为可滚动、可选择并可一键复制全文的弹窗；成功、警告及普通短提示统一改用 Android 系统 Toast，不再渲染应用顶部的彩色自定义浮层。打开链接、写入剪贴板和聊天图片导出等原本直接使用错误 Toast 的路径也接入该弹窗。
 - SAF 文档提供器顶层改为 `data` 与 `workspaces`，分别暴露应用数据目录及按工作区组织的文件。
 - 通用 UI 组件下沉到 ui 模块时，仅迁移真正不依赖 app 主题/上下文的组件。`Form`、`Select`、`DiffView` 以及依赖 `DataTable` 的 `charts` 因依赖 app 的 `CustomColors`/`rememberScreenEdgeCornerShape`/`LocalSettings`/`codeFontFeatureSettings` 等，仍保留在 app 模块。
-- 整个项目、Gradle Daemon toolchain、CI 与本地构建文档统一使用 JDK 21；各 Android 模块的 Java source/target compatibility 也统一为 21。
+- 整个项目、Gradle Daemon toolchain、CI 与本地构建文档统一提升至 JDK 25；各 Android 模块的 Java source/target compatibility 也统一为 25。
+- Gradle Wrapper 版本升级到 9.9.1；`gradle-wrapper.properties` 的 `distributionUrl` 也改用阿里云 Gradle 分发镜像 `https://mirrors.aliyun.com/gradle/distributions/v9.9.1/gradle-9.9.1-bin.zip`。
 - 统一 compileSdk/targetSdk 至 37，并在根构建脚本为所有 Android 模块显式固定 Build-Tools 为 37.0.0，避免 AGP 按需下载默认的 Build-Tools 36。
 - 所有 Android 模块统一使用 `compileSdk { version = release(37) { minorApiLevel = 2 } }`（即 Android SDK Platform 37.2）。
-- 各 library 模块的共享构建配置改由 `build-logic` 的 `rikkahub.android.library` / `rikkahub.android.library.compose` convention plugin 统一提供（compileSdk 37.2、minSdk 28、Java 21、Kotlin jvmTarget 21、Compose）；应用级 keep 规则集中在 `app/src/main/keepRules/rikkahub.keep`，其中保留 fork 特有的 zstd-jni `-keep` 规则。
+- 各 library 模块的共享构建配置改由 `build-logic` 的 `rikkahub.android.library` / `rikkahub.android.library.compose` convention plugin 统一提供（compileSdk 37.2、minSdk 28、Java 25、Kotlin jvmTarget 25、Compose）；应用级 keep 规则集中在 `app/src/main/keepRules/rikkahub.keep`，其中保留 fork 特有的 zstd-jni `-keep` 规则。
 - 根构建脚本的 Spotless 取消 `ratchetFrom("origin/master")` 默认值，改为默认对整个仓库执行 ktlint 格式化；需要只格式化相对某个 ref 有改动的文件时传 `-PspotlessRatchet=<ref>`，`.kt` target 另可用 `-PspotlessTarget=<glob>` 临时收窄到某个目录（`*.gradle.kts` 不受该参数影响）。
 - `app/baselineprofile` 生成器在发送消息后不再只做一次 20 秒等待，而是先等 mock 接口把这一轮的流式回复写完整，再在界面里确认回复末尾标记渲染出来；确认期间持续把聊天消息列表翻到最新一条。长回复超过一屏后聊天列表的自动跟随会在气泡底边离开视口时停止，原实现会因结尾标记停在屏幕外而误报回复未渲染；而且原来在等待循环里用的 `fling(UP)` 实际是往更早的消息翻（uiautomator 的 fling 会反转手势方向，日志里 `fling(UP)` 的手势是从上往下划），并且每个 `fling` 都要空等 5 秒等不到的 `scrollFinished` 事件，现在改为按列表可见高度取最大的可滚动节点直接注入 `swipe` 手势。生成器每次运行前还会 `pm clear` 目标 app，因为 benchmark 的 `resetAndCompile` 只重置 ART profile、不清 app 数据：上一轮留下的会话会让这一轮的回复落到很靠下的位置，其中的旧编号标记也会让「等回复出现」变成误判。
 - 在 `app` 的 `packaging` 中显式设置 `dex { useLegacyPackaging = true }`（与已有的 `jniLibs { useLegacyPackaging = true }` 一致），让 dex 继续以 deflate 压缩进 APK。因为 `minSdk` 提升到 28 后，AGP 的 `DexPackagingOptionsImpl` 默认 `useLegacyPackaging = (minSdk < 28)` 变为 false，会把 `classes*.dex` 以不压缩（STORED）方式存入 APK，使 release APK 由约 34MB 涨到约 47MB、debug APK 约翻倍；该默认与内容无关，只影响 zip 压缩方式和安装时的 dex2oat。
@@ -705,4 +706,3 @@
 - 删除未使用的反编译工具二进制 `gradle/vineflower.jar`。
 - web-ui 工作台预览 mermaid 的 CDN 地址由 `https://esm.sh/mermaid@11` 固定为 `https://esm.sh/mermaid@11.16.0`，与 Android 端内置的 `app/src/main/assets/html/mermaid.min.js`（11.16.0）版本统一。
 - 收藏列表与翻译历史的侧滑删除抽成公共 `SwipeToDelete`，复用 Material 3 的 `SwipeToDismissBox(onDismiss = ...)` 回调（基于 `settledValue`，仅在真正划出落定时触发，替代已弃用的 `confirmValueChange`），并在触发删除后用 `snapTo(Settled)` 立即把状态收回未滑出位置。
-- Haze 2.0.1 的玻璃效果 API 全部标记为实验性（`ExperimentalHazeApi`），在 `ChatInputHaze.kt` 用文件级 `@file:OptIn` 集中抑制，避免 `chromaMultiplier` 等调用反复产生 “Experimental Haze API” 编译警告。

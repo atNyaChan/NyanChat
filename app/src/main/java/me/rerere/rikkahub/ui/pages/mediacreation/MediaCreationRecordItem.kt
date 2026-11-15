@@ -82,7 +82,7 @@ import me.rerere.rikkahub.data.model.MediaCreationRecord
 import me.rerere.rikkahub.data.model.MediaCreationStatus
 import me.rerere.rikkahub.ui.components.ui.ImagePreviewDialog
 import me.rerere.rikkahub.ui.components.ui.OutlinedItemCard
-import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.ui.components.ConfirmDialog
 import me.rerere.ui.components.Tooltip
 import me.rerere.rikkahub.ui.components.ui.VideoPlayerDialog
 import me.rerere.rikkahub.ui.context.LocalToaster
@@ -641,7 +641,7 @@ private fun RecordActions(
         }
     }
 
-    RikkaConfirmDialog(
+    ConfirmDialog(
         show = confirmCancel,
         title = stringResource(R.string.media_creation_page_stop_waiting_title),
         confirmText = stringResource(R.string.media_creation_page_stop_waiting),
@@ -655,7 +655,7 @@ private fun RecordActions(
         Text(stringResource(R.string.media_creation_page_stop_waiting_text))
     }
 
-    RikkaConfirmDialog(
+    ConfirmDialog(
         show = confirmDelete,
         title = stringResource(R.string.confirm_delete),
         confirmText = stringResource(R.string.common_delete),

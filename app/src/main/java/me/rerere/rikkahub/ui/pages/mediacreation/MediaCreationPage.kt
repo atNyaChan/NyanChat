@@ -86,7 +86,7 @@ import me.rerere.rikkahub.Screen
 import me.rerere.rikkahub.data.model.MediaCreationNode
 import me.rerere.rikkahub.data.datastore.ScreenCornerAdaptation
 import me.rerere.rikkahub.ui.components.nav.BackButton
-import me.rerere.ui.components.RikkaConfirmDialog
+import me.rerere.ui.components.ConfirmDialog
 import me.rerere.ui.components.Tooltip
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalToaster
@@ -253,7 +253,7 @@ fun MediaCreationPage(id: String) {
         }
     }
 
-    RikkaConfirmDialog(
+    ConfirmDialog(
         show = confirmDeleteSelected,
         title = stringResource(R.string.confirm_delete),
         confirmText = stringResource(R.string.common_delete),
@@ -267,7 +267,7 @@ fun MediaCreationPage(id: String) {
         Text(stringResource(R.string.media_creation_page_delete_selected_text, selectedNodes?.size ?: 0))
     }
 
-    RikkaConfirmDialog(
+    ConfirmDialog(
         show = showUploadDialog,
         title = stringResource(R.string.media_creation_page_upload_dialog_title),
         confirmText = stringResource(R.string.media_creation_page_go_configure),
@@ -292,7 +292,7 @@ fun MediaCreationPage(id: String) {
         )
     }
 
-    RikkaConfirmDialog(
+    ConfirmDialog(
         show = showDeleteDialog,
         title = stringResource(R.string.confirm_delete),
         confirmText = stringResource(R.string.common_delete),
