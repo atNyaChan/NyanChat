@@ -9,15 +9,16 @@ class LocalWorkspaceBackend(
     private val manager: WorkspaceManager,
     private val root: String,
     private val shellCompatibilityMode: Boolean = false,
+    /** 该工作区自己的挂载, 叠加在 [WorkspaceManager] 的全局挂载表之后 */
+    private val extraMounts: List<WorkspaceBindMount> = emptyList(),
 ) : WorkspaceBackend {
-    override val layout: WorkspaceLayout
-        get() = manager.layout
+    override val layout: WorkspaceLayout = manager.layout(extraMounts)
 
     override fun shell(): String = manager.rootfsShell(root)
 
     override fun listFiles(area: WorkspaceStorageArea, path: String): List<WorkspaceFileEntry> {
         manager.ensureWorkspace(root)
-        return manager.listFiles(root, path, area)
+        return manager.listFiles(root, path, area, extraMounts)
     }
 
     override fun readText(path: String): String {
@@ -37,7 +38,7 @@ class LocalWorkspaceBackend(
         inputStream: InputStream,
     ): WorkspaceFileEntry {
         manager.ensureWorkspace(root)
-        return manager.importFile(root, destinationPath, area, fileName, inputStream)
+        return manager.importFile(root, destinationPath, area, fileName, inputStream, extraMounts)
     }
 
     override fun createDirectory(
@@ -46,26 +47,26 @@ class LocalWorkspaceBackend(
         name: String,
     ): WorkspaceFileEntry {
         manager.ensureWorkspace(root)
-        return manager.createDirectory(root, destinationPath, area, name)
+        return manager.createDirectory(root, destinationPath, area, name, extraMounts)
     }
 
     override fun fileSize(area: WorkspaceStorageArea, path: String): Long =
-        manager.fileSize(root, path, area)
+        manager.fileSize(root, path, area, extraMounts)
 
     override fun exportFile(area: WorkspaceStorageArea, path: String, outputStream: OutputStream) =
-        manager.exportFile(root, path, area, outputStream)
+        manager.exportFile(root, path, area, outputStream, extraMounts)
 
     override fun deleteFile(area: WorkspaceStorageArea, path: String, recursive: Boolean): Boolean =
-        manager.deleteFile(root, path, recursive, area)
+        manager.deleteFile(root, path, recursive, area, extraMounts)
 
     override fun absoluteFileSize(path: String): Long {
         manager.ensureWorkspace(root)
-        return manager.rootfsFileSize(root, path)
+        return manager.rootfsFileSize(root, path, extraMounts)
     }
 
     override fun exportAbsoluteFile(path: String, outputStream: OutputStream) {
         manager.ensureWorkspace(root)
-        manager.exportRootfsFile(root, path, outputStream)
+        manager.exportRootfsFile(root, path, outputStream, extraMounts)
     }
 
     // 在 Rootfs 内用 shell 写入: Rootfs 里的绝对路径软链只有 PRoot 内才能正确解析
@@ -97,10 +98,10 @@ class LocalWorkspaceBackend(
 
     override fun localFile(area: WorkspaceStorageArea, path: String): File {
         manager.ensureWorkspace(root)
-        return manager.resolveFile(root, path, area)
+        return manager.resolveFile(root, path, area, extraMounts)
     }
 
-    override fun localAbsoluteFile(path: String): File = manager.resolveRootfsFile(root, path)
+    override fun localAbsoluteFile(path: String): File = manager.resolveRootfsFile(root, path, extraMounts)
 
     override fun executeCommand(
         command: String,
@@ -116,12 +117,13 @@ class LocalWorkspaceBackend(
             timeoutMillis = timeoutMillis,
             stdin = stdin,
             shellCompatibilityMode = shellCompatibilityMode,
+            extraMounts = extraMounts,
         )
     }
 
     override fun startBackgroundCommand(command: String, cwd: String, id: String): WorkspaceBackgroundCommand {
         manager.ensureWorkspace(root)
-        return manager.startBackgroundCommand(root, command, cwd, id, shellCompatibilityMode)
+        return manager.startBackgroundCommand(root, command, cwd, id, shellCompatibilityMode, extraMounts)
     }
 
     private fun runCommand(action: String, command: String, stdin: ByteArray?): WorkspaceCommandResult {

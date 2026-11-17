@@ -621,6 +621,16 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                         supportingContent = { Text(stringResource(R.string.setting_display_page_show_assistant_bubble_desc)) },
                         headlineContent = { Text(stringResource(R.string.setting_display_page_show_assistant_bubble_title)) },
                     )
+                    if (displaySetting.showAssistantBubble) {
+                        switchItem(
+                            checked = displaySetting.splitAssistantBubbleByParagraph,
+                            onCheckedChange = {
+                                updateDisplaySetting(displaySetting.copy(splitAssistantBubbleByParagraph = it))
+                            },
+                            supportingContent = { Text(stringResource(R.string.setting_display_page_split_assistant_bubble_desc)) },
+                            headlineContent = { Text(stringResource(R.string.setting_display_page_split_assistant_bubble_title)) },
+                        )
+                    }
                     FormItem(
                         label = {
                             Row(

@@ -254,6 +254,7 @@
 	- 模糊/玻璃效果（默认：仅标题栏；可选：关闭、仅标题栏、模糊、玻璃；描述：为主页的 UI 元素加上模糊或玻璃效果）
 	- 高亮文字（默认：关闭；可选：关闭、仅引号、仅加粗、全部；描述：使用主题色为文本着色，让对话更加醒目）
 	- 显示助手消息气泡（默认：关闭）
+	- 按段落拆分气泡（开启「显示助手消息气泡」后显示；默认：关闭）
 	- 气泡不透明度（默认：100%）
 	- 生成时显示思考（默认：预览；可选：收起、预览、展开；描述：控制生成回复时默认的思考块展开状态）
 	- 自动折叠思考（默认：开启）
@@ -405,6 +406,10 @@
 - 工作区文件多选导出流程的全部界面文案改为字符串资源并补齐 7 个语言区域。
 - 工作区系统提示词改成真正的 Markdown 无序列表：说明段后与 `</workspace>` 前各保留一个空行，避免整块被当成 HTML 块而折叠换行；与原 system prompt 之间只保留 `appendText` 的一个空行；工具列表作为 `- Available tools:` 下的嵌套 `-` 项。
 - 本地工作区系统提示词中的上传文件说明改为：`/upload` 中的文件以内容 sha256 命名、同一文件可能被多处使用，因此强烈提示模型永远不要修改 `/upload` 中的内容；需要修改时先复制到 `/workspace` 再编辑副本。
+- 工作区添加/编辑共享存储文件夹的弹窗中，「AI 写入免审批」改为卡片底色 `surfaceContainerLow`、屏幕圆角，点击整行即可切换的开关卡片。
+- 删除工作区已添加的共享存储目录时显示删除确认框（类型「文件夹」、正文带目录路径），确认后才移除挂载。
+- 添加或编辑共享存储目录时，若规范化后的路径已存在于其它挂载项，输入框下方显示红色「该文件夹已添加」提示，并禁用保存。
+- 工作区文件页的 Rootfs 标签页会沿共享存储挂载路径补齐中间目录（如 `/` → `storage` → `emulated` → `0` → 挂载目录），并可进入挂载目录浏览、打开、导入、删除文件；此前挂载只在命令/终端里生效，文件页看不到 `/storage`。
 
 ### 模型提供商
 #### 跟具体值有关
@@ -505,14 +510,14 @@
 - 「备份提醒」的间隔按钮组最前面加入用于关闭提醒的「关」，不再单独显示备份提醒开关；无论是否关闭都显示上次备份时间。
 - 导出备份前先写入最新备份时间，使归档内的设置也包含该时间；导出或上传失败时恢复导出前的时间。
 - 导入完整备份后扫描消息数据库，把图片、文档、视频和音频记录里的附件 url 统一改写成相对 `filesDir` 的落盘路径（`upload/<sha256>`）。设置里的助手头像、聊天背景与用户头像在写入 DataStore 时同样折叠成相对路径。
-- 导入时按存档数据库版本与其容器格式处理附件：新 `.tar` 必须是 CAS schema（100 及以上），低于 100 的旧 TAR 直接报错；只有旧 ZIP 在版本低于 100 时才把旧的 `managed_files` 表转换成 `managed_files_cas`（一份 sha256 一行，使用记录写入 `usages` 并逐条保存旧文件名与展示名），并把消息/设置里 `upload/<uuid.ext>` 的名字按内容 sha256 改写；消息库里记录了真实文件名（目前文档附件才有）时优先用它作为该次使用的展示名。版本已是 100 及以上的存档直接用恢复后的 `managed_files_cas`，不迁移 `upload`。导入后删除旧 `managed_files` 表（带数据的转换始终在恢复阶段完成；App 自身禁止原地升级：运行路径不注册上游旧版本的迁移，启动读到小于 100 的上游旧库会直接报错，`Migration_30_31`、`Migration_31_32`、`Migration_32_33`、`Migration_33_103` 只在恢复旧 ZIP 的暂存库上执行）。旧表转 `managed_files_cas` 的整个转换（建表、改写消息 url、删旧表）在单个 SQLite 事务内完成，中途异常会整体回滚，不留下半转换的库。
+- 导入时按存档数据库版本与其容器格式处理附件：新 `.tar` 必须是 CAS schema（100 及以上），低于 100 的旧 TAR 直接报错；只有旧 ZIP 在版本低于 100 时才把旧的 `managed_files` 表转换成 `managed_files_cas`（一份 sha256 一行，使用记录写入 `usages` 并逐条保存旧文件名与展示名），并把消息/设置里 `upload/<uuid.ext>` 的名字按内容 sha256 改写；消息库里记录了真实文件名（目前文档附件才有）时优先用它作为该次使用的展示名。版本已是 100 及以上的存档直接用恢复后的 `managed_files_cas`，不迁移 `upload`。导入后删除旧 `managed_files` 表（带数据的转换始终在恢复阶段完成；App 自身禁止原地升级：运行路径不注册上游旧版本的迁移，启动读到小于 100 的上游旧库会直接报错，`Migration_30_31`、`Migration_31_32`、`Migration_32_33`、`Migration_33_34`、`Migration_34_104` 只在恢复旧 ZIP 的暂存库上执行）。旧表转 `managed_files_cas` 的整个转换（建表、改写消息 url、删旧表）在单个 SQLite 事务内完成，中途异常会整体回滚，不留下半转换的库。
 - 导入根据文件后缀识别新 `.tar` 与旧 `.zip`，旧 ZIP 备份仍可还原；还原时只读取单个 `rikka_hub.db`，不再合并旧 zip 的 `-wal`/`-shm` 旁路文件。
 - 本地导出额外提供旧 ZIP 兼容格式（移除 Fork 新增的模型价格、排序、显示（含 `detailedTokenUsage`、`enableTitleBarScrim`、`enableBoldHighlight`）、上下文缓存、回传思考、本地工具授权、中途思考、自定义字体字重与内置搜索字段；`chatFontFamily` 的 `outfit` 回落为 `serif`；`webDavConfig`/`s3Config`/`uploadS3Config` 的备份项去除 `WORKSPACE`；过滤官方版本无法反序列化的电池和定位本地工具；并标注「兼容 RikkaHub 3.3.0+」）。
 - 兼容 ZIP 中 `rikka_hub.db` 与 `settings.json` 使用 deflate 5 级压缩，其余附件条目只储存（STORED）不压缩。
 - 兼容 ZIP 只包含名为 `upload` 的附件目录，里面是 `uuid.ext` 形式的真实文件：每份内容按各次消息使用记录（usages 的 `filename`）分别落一份副本，同一附件被使用几次就复制几份；被设置（助手头像/背景、用户头像）引用或完全未被消息引用的内容才用 `filenameBySha` 的基础名落一份。
 - 每条旧的 `managed_files` 行用该次使用的 `display_name`（缺失时退回 `filename`）作展示名。同时把数据库里的 `managed_files_cas` 转回旧 `managed_files` 表（`folder` 固定 `upload`、`relative_path` 用 `upload/<uuid.ext>`、`updated_at` 照抄 `created_at`）。
-- 兼容 ZIP 里数据库声明为上游当前的 schema 版本（`user_version = 33`）：导出前把 `managed_files_cas` 转回 `managed_files`、删掉 `message_search_cache`、写回 33、并删除 `room_master_table`，让上游 release 版按自己的 schema 重新校验后导入。
-- 数据库 schema 的 fork/上游版本对应关系与新增版本规则写在 `AGENTS.md` 的 Database Schema and Backup Compatibility 小节：新增上游版本时同步提高 `ManagedFilesArchive.LEGACY_SCHEMA_VERSION`，并补齐上游上一版到新版以及与新版对应的 fork 版本、新版到 fork 当前版本以及 fork 上一版到当前版本的迁移（当前为 `32 -> 33`、`33 -> 103`、`102 -> 103`）。
+- 兼容 ZIP 里数据库声明为上游当前的 schema 版本（`user_version = 34`）：导出前把 `managed_files_cas` 转回 `managed_files`、删掉 `message_search_cache`、写回 34、并删除 `room_master_table`，让上游 release 版按自己的 schema 重新校验后导入。
+- 数据库 schema 的 fork/上游版本对应关系与新增版本规则写在 `AGENTS.md` 的 Database Schema and Backup Compatibility 小节：新增上游版本时同步提高 `ManagedFilesArchive.LEGACY_SCHEMA_VERSION`，并补齐上游上一版到新版以及与新版对应的 fork 版本、新版到 fork 当前版本以及 fork 上一版到当前版本的迁移（当前为 `33 -> 34`、`34 -> 104`、`103 -> 104`）。
 - 兼容 ZIP 面向上游 RikkaHub release 版：导出前把数据库快照里附件 part 的 url 与 `settings.json` 里助手的头像、聊天背景从相对路径展开成上游安装目录下的绝对 `file://` 路径（用当前数据目录前缀 + `me.rerere.rikkahub/files/` 拼出），使上游 release 版导入后能直接读到附件；上游 debug 版（包名带 `.debug` 后缀）无法覆盖。
 - S3 与 WebDAV 仍只导出新的 TAR 格式。
 - Android 端 zstd 使用官方 `zstd-jni` AAR（包含各 Android ABI 原生库），避免普通 JVM JAR 缺少 `.so` 导致导出失败；Release 混淆配置保留 zstd-jni 的 JNI 字段与方法名，避免导出时因字段被重命名而报 `dstPos` 缺失。
@@ -631,7 +636,7 @@
 - Release 构建改用 `local.properties` 配置的仓库根目录 `.signing` 发布证书，不再使用 Android Debug 证书；发布身份为 `NyanChat Release`。
 - 发布渠道保持仅 GitHub（Release APK 与每日构建），不引入上游按 `distribution` flavor 区分的 `play` 渠道；构建任务与产物路径仍使用不带渠道的 `assembleRelease` / `bundleRelease`，混淆映射对应为 `app/build/outputs/mapping/release/mapping.txt`。
 - 应用自身的显示名称统一改为 `NyanChat`，包括 Android 应用名、Web 服务、导出图片水印及对外客户端标识，独立的 `RikkaHub` 搜索服务保留原名。deep link scheme 由 `rikkahub` 改为 `nyanchat`。
-- 应用包名改为 `moe.nyanw.nyanchat`，版本字符串自动取构建日期与上游版本号拼接为 `{yyyyMMdd}+{上游版本}`（如 `20261111+3.2.0`）。
+- 应用包名改为 `moe.nyanw.nyanchat`，版本字符串自动取构建日期与上游版本号拼接为 `{yyyyMMdd}+{上游版本}`（如 `20261117+3.3.0`）。
 - 完整移除应用内的自动更新以及捐赠功能，以及启动次数达到阈值后自动弹出的捐赠提醒。
 - 「关于」分组只保留「关于」项，并删除右侧的 QQ 和 Discord 链接。
 - 「关于」页第二个分组依次包含该 Fork GitHub 链接、该 Fork 的 License 文件链接、RikkaHub GitHub、RikkaHub 官网。

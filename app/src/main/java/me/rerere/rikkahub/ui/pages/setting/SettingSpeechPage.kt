@@ -440,6 +440,7 @@ private val TTSProviderSetting.typeName: String
         is TTSProviderSetting.ElevenLabs -> "ElevenLabs"
         is TTSProviderSetting.FishAudio -> "Fish Audio"
         is TTSProviderSetting.Volcengine -> "火山引擎"
+        is TTSProviderSetting.DeepSeek -> "DeepSeek"
     }
 
 @Composable

@@ -186,19 +186,22 @@ Do not raise `minSdk` or change the Java/Kotlin target per module.
 ## Database Schema and Backup Compatibility
 
 The fork’s `AppDatabase` version and upstream RikkaHub’s schema version are independent: the fork is
-currently at `103`, upstream is at `33`. Both must be kept in sync when a new schema lands.
+currently at `104`, upstream is at `34`. Both must be kept in sync when a new schema lands.
 
 When adding a new schema version (fork target `N`, matching upstream version `U`):
 
 1. Bump `AppDatabase.version` to `N` and let Room export the new schema JSON.
-2. Add `Migration(previousForkVersion, N)` for the fork’s own databases (for example `102 -> 103`).
-3. Add `Migration(previousUpstreamVersion, U)` for upstream archives (for example `32 -> 33`).
-4. Add `Migration(U, N)` bridging the upstream schema to the fork schema (for example `33 -> 103`).
+   The schema JSON’s `identityHash` is computed by Room when the project is compiled; do not try to
+   derive it by hand. Copy the previous version’s JSON, adjust the version/createSql/fields, and leave
+   the hash for the compile to regenerate.
+2. Add `Migration(previousForkVersion, N)` for the fork’s own databases (for example `103 -> 104`).
+3. Add `Migration(previousUpstreamVersion, U)` for upstream archives (for example `33 -> 34`).
+4. Add `Migration(U, N)` bridging the upstream schema to the fork schema (for example `34 -> 104`).
    Keep it idempotent: legacy ZIP archives may already have been partially converted by
    `ManagedFilesArchive` before Room runs. Attachment URL rewrites and `upload` renames stay in
    `ManagedFilesArchive.convertLegacyDatabase`, never in a SQL-only migration.
-5. Register fork migrations (`100 -> 101`, `101 -> 102`, `102 -> 103`, ...) unconditionally in `AppDatabaseFactory`;
-   register the upstream chain (`30 -> 31`, `31 -> 32`, `32 -> 33`, `33 -> N`) only under `allowLegacyMigration`,
+5. Register fork migrations (`100 -> 101`, `101 -> 102`, `102 -> 103`, `103 -> 104`, ...) unconditionally in `AppDatabaseFactory`;
+   register the upstream chain (`30 -> 31`, `31 -> 32`, `32 -> 33`, `33 -> 34`, `34 -> N`) only under `allowLegacyMigration`,
    which `BackupManager` enables only for legacy `.zip` restores, so the app itself still refuses to
    open an old upstream database in place and old TAR backups are rejected.
    A `.tar` backup must already use the fork’s CAS schema (`>= 100`); no upstream migration chain runs
@@ -206,13 +209,15 @@ When adding a new schema version (fork target `N`, matching upstream version `U`
 6. Update `ManagedFilesArchive.LEGACY_SCHEMA_VERSION` to `U`: the compatible ZIP export must declare
    the same schema version upstream writes. Export converts `managed_files_cas` back to
    `managed_files`, writes `PRAGMA user_version = U`, and drops `room_master_table`.
-7. Update the migration-chain comments in `AppDatabase`, `AppDatabaseFactory`,
-   `ManagedFilesArchive`, `BackupManager`, and `docs/NyanwChanges.md`.
+7. Do not rewrite older migrations’ comments when adding a version. Comments in `AppDatabase`,
+   `AppDatabaseFactory`, `ManagedFilesArchive`, `BackupManager` and existing migration files must
+   describe the migration mechanism itself or their own fixed transition, never the newest schema
+   endpoint. Only `docs/NyanwChanges.md` records the current version details.
 
-Example — adding upstream `33` to the fork at `103` requires `LEGACY_SCHEMA_VERSION = 33` plus the
-`32 -> 33`, `33 -> 103`, and `102 -> 103` migrations. Upstream restore chains are
-`30 -> 31 -> 32 -> 33 -> 103` (or `31 -> 32 -> 33 -> 103` / `32 -> 33 -> 103` / `33 -> 103`), while the
-fork’s own databases use `100 -> 101 -> 102 -> 103`.
+Example — adding upstream `34` to the fork at `104` requires `LEGACY_SCHEMA_VERSION = 34` plus the
+`33 -> 34`, `34 -> 104`, and `103 -> 104` migrations. Upstream restore chains are
+`30 -> 31 -> 32 -> 33 -> 34 -> 104` (or `31 -> 32 -> 33 -> 34 -> 104` / `32 -> 33 -> 34 -> 104` /
+`33 -> 34 -> 104` / `34 -> 104`), while the fork’s own databases use `100 -> 101 -> 102 -> 103 -> 104`.
 
 ## Agent Change Workflow
 
@@ -235,6 +240,8 @@ fork’s own databases use `100 -> 101 -> 102 -> 103`.
   completing changes and static checks, leave compilation and runtime verification to the user.
 - Do NOT commit anything until the user has manually compiled and verified the changes; never commit
   before user confirmation.
+- Never run `git add` / `git stage` (including `git add -A`) unless the user has explicitly approved it.
+  Leave changes in the working tree for the user to stage.
 
 ## Upstream Sync Policy (IMPORTANT)
 This repo is a **hard fork** (~30k lines diverged). We record upstream

@@ -59,6 +59,7 @@ fun TTSProviderConfigure(
                         is TTSProviderSetting.ElevenLabs -> "ElevenLabs"
                         is TTSProviderSetting.FishAudio -> "Fish Audio"
                         is TTSProviderSetting.Volcengine -> "火山引擎"
+                        is TTSProviderSetting.DeepSeek -> "DeepSeek"
                     },
                     options = providers,
                     readOnly = true,
@@ -77,6 +78,7 @@ fun TTSProviderConfigure(
                             TTSProviderSetting.FishAudio::class -> "Fish Audio"
                             TTSProviderSetting.Step::class -> "Step"
                             TTSProviderSetting.Volcengine::class -> "火山引擎"
+                            TTSProviderSetting.DeepSeek::class -> "DeepSeek"
                             else -> providerClass.simpleName ?: "Unknown"                    }
                     },
                     onOptionSelected = { providerClass ->
@@ -138,6 +140,8 @@ fun TTSProviderConfigure(
 
                             TTSProviderSetting.Volcengine::class -> TTSProviderSetting.Volcengine(id = setting.id)
 
+                            TTSProviderSetting.DeepSeek::class -> TTSProviderSetting.DeepSeek(id = setting.id)
+
                             else -> setting
                         }
                         onValueChange(newSetting)
@@ -174,6 +178,7 @@ fun TTSProviderConfigure(
                 is TTSProviderSetting.FishAudio -> FishAudioTTSConfiguration(setting, onValueChange)
                 is TTSProviderSetting.Step -> StepTTSConfiguration(setting, onValueChange)
                 is TTSProviderSetting.Volcengine -> VolcengineTTSConfiguration(setting, onValueChange)
+                is TTSProviderSetting.DeepSeek -> DeepSeekTTSConfiguration(setting, onValueChange)
             }
         }
         footer?.invoke()
@@ -1231,6 +1236,52 @@ private fun CardGroupScope.VolcengineTTSConfiguration(
             modifier = Modifier.fillMaxWidth(),
             label = stringResource(R.string.setting_tts_page_speed),
             supportingText = { Text("范围 -50～100，0 为正常语速，-50 为半速，100 为两倍速。") },
+        )
+    })
+}
+
+private fun CardGroupScope.DeepSeekTTSConfiguration(
+    setting: TTSProviderSetting.DeepSeek,
+    onValueChange: (TTSProviderSetting) -> Unit
+) {
+    item(headlineContent = {
+        OutlinedTextField(
+            value = setting.apiKey,
+            onValueChange = { onValueChange(setting.copy(apiKey = it)) },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("sk-...") },
+            label = { Text(stringResource(R.string.setting_tts_page_api_key)) },
+            supportingText = { Text("DeepSeek 开放平台的 API Key") },
+            singleLine = true,
+        )
+    })
+
+    item(headlineContent = {
+        OutlinedTextField(
+            value = setting.baseUrl,
+            onValueChange = { onValueChange(setting.copy(baseUrl = it)) },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("https://api.deepseek.com") },
+            label = { Text(stringResource(R.string.setting_tts_page_base_url)) },
+            supportingText = { Text("请求地址为 {Base URL}/v1/tools/tts") },
+            singleLine = true,
+        )
+    })
+
+    val voices = listOf(
+        "stella" to "Stella（女声）",
+        "tide" to "Tide（男声）",
+    )
+    item(headlineContent = {
+        SelectTextField(
+            value = setting.voiceId,
+            options = voices,
+            onValueChange = { onValueChange(setting.copy(voiceId = it)) },
+            onOptionSelected = { (voiceId, _) -> onValueChange(setting.copy(voiceId = voiceId)) },
+            optionToString = { (_, label) -> label },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text(stringResource(R.string.setting_tts_page_voice)) },
+            supportingText = { Text("语种根据文本自动识别，不支持调节语速") },
         )
     })
 }

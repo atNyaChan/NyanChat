@@ -82,6 +82,7 @@ import me.rerere.ai.provider.supportedBuiltInTools
 import me.rerere.ai.provider.supportsQuota
 import me.rerere.ai.registry.ModelRegistry
 import me.rerere.hugeicons.HugeIcons
+import me.rerere.hugeicons.stroke.Connect
 import me.rerere.hugeicons.stroke.Add01
 import me.rerere.hugeicons.stroke.Cancel01
 import me.rerere.hugeicons.stroke.Delete01
@@ -129,7 +130,7 @@ import me.rerere.rikkahub.ui.context.LocalToaster
 import me.rerere.rikkahub.ui.hooks.useEditState
 import me.rerere.rikkahub.ui.pages.assistant.detail.CustomRequestProperties
 import me.rerere.rikkahub.ui.pages.setting.components.ProviderAccountConfig
-import me.rerere.rikkahub.ui.pages.setting.components.ProviderConnectionTester
+import me.rerere.rikkahub.ui.pages.setting.components.ProviderConnectionTestDialog
 import me.rerere.rikkahub.ui.pages.setting.components.SettingProviderQuotaQuery
 import me.rerere.rikkahub.ui.pages.setting.components.convertTo
 import me.rerere.rikkahub.ui.theme.JetbrainsMono
@@ -171,6 +172,7 @@ fun SettingProviderDetailSheet(
     var internalProvider by remember(provider) { mutableStateOf(provider) }
     var showModelPicker by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showTestDialog by remember { mutableStateOf(false) }
     val customModelDialog = useEditState<Model> { edited ->
         internalProvider = internalProvider.addModel(edited.copy(displayName = edited.displayName.trim()))
     }
@@ -441,9 +443,9 @@ fun SettingProviderDetailSheet(
                 ) {
                     Icon(HugeIcons.Delete01, null)
                 }
-                ProviderConnectionTester(
-                    internalProvider = internalProvider,
-                )
+                IconButton(onClick = { showTestDialog = true }) {
+                    Icon(HugeIcons.Connect, null)
+                }
                 // 账号型提供商离开账号就没法用，不提供分享
                 if (internalProvider !is ProviderSetting.Account) {
                     IconButton(
@@ -469,6 +471,14 @@ fun SettingProviderDetailSheet(
                 }
             }
         }
+    }
+
+    // 抽屉在键盘弹出时可能被移出 composition，dialog 不能挂在它下面
+    if (showTestDialog) {
+        ProviderConnectionTestDialog(
+            internalProvider = internalProvider,
+            onDismissRequest = { showTestDialog = false },
+        )
     }
 
     ShareSheet(shareSheetState)

@@ -15,21 +15,44 @@ class WorkspaceManager(
 ) {
     private val fileSystem = WorkspaceFileSystem(config)
 
-    // 按 target 长度降序, 保证 /a/b 优先于 /a 匹配
-    private val sortedBindMounts = bindMounts.sortedByDescending { it.target.trimEnd('/').length }
-
-    val layout = WorkspaceLayout(
-        workspaceDir = ROOTFS_WORKSPACE_DIR,
-        writableRoots = listOf(ROOTFS_WORKSPACE_DIR, "/tmp") +
-            bindMounts.filter { it.writable }.map { it.target.trimEnd('/') },
-    )
-
     init {
         baseDir.mkdirs()
     }
 
-    fun backend(root: String, shellCompatibilityMode: Boolean = false): WorkspaceBackend =
-        LocalWorkspaceBackend(this, root, shellCompatibilityMode)
+    /**
+     * 工作区的目录约定。
+     *
+     * [extraMounts] 是单个工作区自己的挂载 (如用户配置的外部存储目录), 叠加在全局挂载表之后;
+     * 下面凡是带这个参数的方法, 调用方需传入同一份列表, 否则 PRoot 内外看到的路径会对不上。
+     */
+    fun layout(extraMounts: List<WorkspaceBindMount> = emptyList()): WorkspaceLayout {
+        val (writable, approval) = mountsOf(extraMounts).partition { it.writable }
+        return WorkspaceLayout(
+            workspaceDir = ROOTFS_WORKSPACE_DIR,
+            writableRoots = listOf(ROOTFS_WORKSPACE_DIR, "/tmp") + writable.map { it.target.trimEnd('/') },
+            approvalRoots = approval.map { it.target.trimEnd('/') },
+        )
+    }
+
+    fun backend(
+        root: String,
+        shellCompatibilityMode: Boolean = false,
+        extraMounts: List<WorkspaceBindMount> = emptyList(),
+    ): WorkspaceBackend = LocalWorkspaceBackend(this, root, shellCompatibilityMode, extraMounts)
+
+    private fun mountsOf(extraMounts: List<WorkspaceBindMount>): List<WorkspaceBindMount> =
+        if (extraMounts.isEmpty()) bindMounts else bindMounts + extraMounts
+
+    /**
+     * PRoot 会跳过不存在的源目录, 这时 Rootfs 里对应路径落回 Rootfs 自身:
+     * 写入能「成功」, 文件却不在挂载源里, 文件工具也读不到。工作区挂载失效时直接报错。
+     */
+    private fun requireMountsAvailable(extraMounts: List<WorkspaceBindMount>) {
+        val unavailable = extraMounts.filterNot { it.source.isDirectory }
+        if (unavailable.isNotEmpty()) {
+            throw WorkspaceMountUnavailableException(unavailable.map { it.target })
+        }
+    }
 
     fun ensureWorkspace(root: String): File {
         val dir = workspaceDir(root)
@@ -71,29 +94,31 @@ class WorkspaceManager(
         root: String,
         path: String = "",
         area: WorkspaceStorageArea = WorkspaceStorageArea.FILES,
+        extraMounts: List<WorkspaceBindMount> = emptyList(),
     ): List<WorkspaceFileEntry> {
-        val location = storageLocation(root, area, path)
+        val location = storageLocation(root, area, path, extraMounts)
         val logicalParent = path.replace('\\', '/').trim().trim('/')
-        val entries = fileSystem.list(location.rootDir, location.relativePath).map { entry ->
-            entry.copy(
-                path = logicalParent.takeIf(String::isNotBlank)
-                    ?.let { "$it/${entry.name}" }
-                    ?: entry.name,
-            )
+        val mountedEntries = if (area == WorkspaceStorageArea.LINUX) {
+            mountedRootfsEntries(root, logicalParent, extraMounts)
+        } else {
+            emptyList()
+        }
+        // 共享存储通常挂在 /storage/emulated/0/... 下, Rootfs 里这些中间目录可能根本不存在;
+        // 只要能通过挂载表合成子目录, 就把物理目录缺失当成空目录, 让 /storage 这一级可以逐层浏览。
+        val physicalDir = File(location.rootDir, location.relativePath)
+        val entries = if (mountedEntries.isNotEmpty() && !physicalDir.exists()) {
+            emptyList()
+        } else {
+            fileSystem.list(location.rootDir, location.relativePath).map { entry ->
+                entry.copy(
+                    path = logicalParent.takeIf(String::isNotBlank)
+                        ?.let { "$it/${entry.name}" }
+                        ?: entry.name,
+                )
+            }
         }
         if (area != WorkspaceStorageArea.LINUX) return entries
 
-        val mountedEntries = mountedRootfsLocations(root)
-            .filter { it.target.substringBeforeLast('/', missingDelimiterValue = "").trim('/') == logicalParent }
-            .map { mount ->
-                WorkspaceFileEntry(
-                    path = mount.target.trim('/'),
-                    name = mount.target.substringAfterLast('/'),
-                    isDirectory = true,
-                    sizeBytes = 0L,
-                    updatedAt = mount.source.lastModified(),
-                )
-            }
         return (entries + mountedEntries)
             .distinctBy(WorkspaceFileEntry::name)
             .sortedWith(compareBy<WorkspaceFileEntry> { !it.isDirectory }.thenBy { it.name.lowercase() })
@@ -120,8 +145,9 @@ class WorkspaceManager(
         area: WorkspaceStorageArea = WorkspaceStorageArea.FILES,
         fileName: String,
         inputStream: InputStream,
+        extraMounts: List<WorkspaceBindMount> = emptyList(),
     ): WorkspaceFileEntry {
-        val location = storageLocation(root, area, destinationPath)
+        val location = storageLocation(root, area, destinationPath, extraMounts)
         val targetPath = location.relativePath
             .takeIf(String::isNotBlank)
             ?.let { "$it/$fileName" }
@@ -134,10 +160,11 @@ class WorkspaceManager(
         destinationPath: String,
         area: WorkspaceStorageArea = WorkspaceStorageArea.FILES,
         name: String,
+        extraMounts: List<WorkspaceBindMount> = emptyList(),
     ): WorkspaceFileEntry {
         require(name.isNotBlank()) { "Directory name is required" }
         require('/' !in name && '\\' !in name) { "Directory name cannot contain path separators" }
-        val location = storageLocation(root, area, destinationPath)
+        val location = storageLocation(root, area, destinationPath, extraMounts)
         val targetPath = location.relativePath
             .takeIf(String::isNotBlank)
             ?.let { "$it/$name" }
@@ -149,8 +176,9 @@ class WorkspaceManager(
         root: String,
         path: String,
         area: WorkspaceStorageArea = WorkspaceStorageArea.FILES,
+        extraMounts: List<WorkspaceBindMount> = emptyList(),
     ): Long {
-        val location = storageLocation(root, area, path)
+        val location = storageLocation(root, area, path, extraMounts)
         val file = fileSystem.resolve(location.rootDir, location.relativePath)
         require(file.exists()) { "File does not exist: $path" }
         require(file.isFile) { "Path is not a file: $path" }
@@ -161,8 +189,9 @@ class WorkspaceManager(
         root: String,
         path: String,
         area: WorkspaceStorageArea = WorkspaceStorageArea.FILES,
+        extraMounts: List<WorkspaceBindMount> = emptyList(),
     ): File {
-        val location = storageLocation(root, area, path)
+        val location = storageLocation(root, area, path, extraMounts)
         val file = fileSystem.resolve(location.rootDir, location.relativePath)
         require(file.exists()) { "File does not exist: $path" }
         require(file.isFile) { "Path is not a file: $path" }
@@ -174,8 +203,9 @@ class WorkspaceManager(
         path: String,
         area: WorkspaceStorageArea = WorkspaceStorageArea.FILES,
         outputStream: OutputStream,
+        extraMounts: List<WorkspaceBindMount> = emptyList(),
     ) {
-        val location = storageLocation(root, area, path)
+        val location = storageLocation(root, area, path, extraMounts)
         val file = fileSystem.resolve(location.rootDir, location.relativePath)
         require(file.exists()) { "File does not exist: $path" }
         require(file.isFile) { "Path is not a file: $path" }
@@ -189,11 +219,16 @@ class WorkspaceManager(
      * 可以直接用文件 IO 访问, 无需经过 PRoot; 只是 Rootfs 目录里对应位置是个空挂载点,
      * 按 [WorkspaceStorageArea.LINUX] 解析必然落空。
      */
-    fun resolveRootfsPath(root: String, path: String): RootfsLocation {
+    fun resolveRootfsPath(
+        root: String,
+        path: String,
+        extraMounts: List<WorkspaceBindMount> = emptyList(),
+    ): RootfsLocation {
         val trimmed = path.trim().trimEnd('/').ifBlank { "/" }
         require(trimmed.startsWith("/")) { "Rootfs path must be absolute: $path" }
 
-        sortedBindMounts.forEach { mount ->
+        // 按 target 长度降序, 保证 /a/b 优先于 /a 匹配
+        mountsOf(extraMounts).sortedByDescending { it.target.trimEnd('/').length }.forEach { mount ->
             val target = mount.target.trimEnd('/')
             if (trimmed == target) return RootfsLocation(mount.source, "")
             if (trimmed.startsWith("$target/")) {
@@ -216,18 +251,23 @@ class WorkspaceManager(
         return RootfsLocation(linuxDir(root), trimmed.trimStart('/'))
     }
 
-    fun rootfsFileSize(root: String, path: String): Long =
-        resolveRootfsFile(root, path).also { it.requireReadableFile(path) }.length()
+    fun rootfsFileSize(root: String, path: String, extraMounts: List<WorkspaceBindMount> = emptyList()): Long =
+        resolveRootfsFile(root, path, extraMounts).also { it.requireReadableFile(path) }.length()
 
-    fun exportRootfsFile(root: String, path: String, outputStream: OutputStream) {
-        val file = resolveRootfsFile(root, path)
+    fun exportRootfsFile(
+        root: String,
+        path: String,
+        outputStream: OutputStream,
+        extraMounts: List<WorkspaceBindMount> = emptyList(),
+    ) {
+        val file = resolveRootfsFile(root, path, extraMounts)
         file.requireReadableFile(path)
         outputStream.use { out -> file.inputStream().use { it.copyTo(out) } }
     }
 
     /** Rootfs 内绝对路径对应的宿主机文件, 不检查是否存在 */
-    fun resolveRootfsFile(root: String, path: String): File {
-        val location = resolveRootfsPath(root, path)
+    fun resolveRootfsFile(root: String, path: String, extraMounts: List<WorkspaceBindMount> = emptyList()): File {
+        val location = resolveRootfsPath(root, path, extraMounts)
         return fileSystem.resolve(location.rootDir, location.relativePath)
     }
 
@@ -241,8 +281,9 @@ class WorkspaceManager(
         path: String,
         recursive: Boolean = false,
         area: WorkspaceStorageArea = WorkspaceStorageArea.FILES,
+        extraMounts: List<WorkspaceBindMount> = emptyList(),
     ): Boolean {
-        val location = storageLocation(root, area, path)
+        val location = storageLocation(root, area, path, extraMounts)
         return fileSystem.delete(location.rootDir, location.relativePath, recursive)
     }
 
@@ -266,8 +307,10 @@ class WorkspaceManager(
         timeoutMillis: Long = DEFAULT_COMMAND_TIMEOUT_MS,
         stdin: ByteArray? = null,
         shellCompatibilityMode: Boolean = false,
-    ): WorkspaceCommandResult =
-        shellRunner.execute(shellContext(root, command, cwd, timeoutMillis, stdin, shellCompatibilityMode))
+        extraMounts: List<WorkspaceBindMount> = emptyList(),
+    ): WorkspaceCommandResult = shellRunner.execute(
+        shellContext(root, command, cwd, timeoutMillis, stdin, shellCompatibilityMode, extraMounts)
+    )
 
     fun startBackgroundCommand(
         root: String,
@@ -275,8 +318,11 @@ class WorkspaceManager(
         cwd: String,
         id: String,
         shellCompatibilityMode: Boolean = false,
-    ): WorkspaceBackgroundCommand =
-        shellRunner.startBackground(shellContext(root, command, cwd, 0, null, shellCompatibilityMode), id)
+        extraMounts: List<WorkspaceBindMount> = emptyList(),
+    ): WorkspaceBackgroundCommand = shellRunner.startBackground(
+        shellContext(root, command, cwd, 0, null, shellCompatibilityMode, extraMounts),
+        id,
+    )
 
     private fun shellContext(
         root: String,
@@ -285,8 +331,10 @@ class WorkspaceManager(
         timeoutMillis: Long,
         stdin: ByteArray?,
         shellCompatibilityMode: Boolean,
+        extraMounts: List<WorkspaceBindMount>,
     ): WorkspaceShellContext {
         require(command.isNotBlank()) { "Command is required" }
+        requireMountsAvailable(extraMounts)
         val workingDir = fileSystem.resolve(filesDir(root), cwd)
         require(workingDir.exists()) { "Working directory does not exist: $cwd" }
         require(workingDir.isDirectory) { "Working path is not a directory: $cwd" }
@@ -301,7 +349,7 @@ class WorkspaceManager(
             workingDir = workingDir,
             timeoutMillis = timeoutMillis,
             stdin = stdin,
-            bindMounts = bindMounts,
+            bindMounts = mountsOf(extraMounts),
             shellCompatibilityMode = shellCompatibilityMode,
         )
     }
@@ -323,30 +371,64 @@ class WorkspaceManager(
         root: String,
         shellCompatibilityMode: Boolean,
         cwd: String = ROOTFS_WORKSPACE_DIR,
-    ): WorkspaceTerminalLaunch? =
-        shellRunner.terminalLaunch(
+        extraMounts: List<WorkspaceBindMount> = emptyList(),
+    ): WorkspaceTerminalLaunch? {
+        requireMountsAvailable(extraMounts)
+        return shellRunner.terminalLaunch(
             WorkspaceTerminalContext(
                 filesDir = filesDir(root),
                 linuxDir = linuxDir(root),
                 tempDir = tempDir(root),
-                bindMounts = bindMounts,
+                bindMounts = mountsOf(extraMounts),
                 shellCompatibilityMode = shellCompatibilityMode,
                 cwd = cwd,
             )
         )
+    }
 
     private fun storageLocation(
         root: String,
         area: WorkspaceStorageArea,
         path: String,
+        extraMounts: List<WorkspaceBindMount> = emptyList(),
     ): RootfsLocation = when (area) {
         WorkspaceStorageArea.FILES -> RootfsLocation(filesDir(root), path)
-        WorkspaceStorageArea.LINUX -> resolveRootfsPath(root, "/${path.trimStart('/')}")
+        WorkspaceStorageArea.LINUX -> resolveRootfsPath(root, "/${path.trimStart('/')}", extraMounts)
     }
 
-    private fun mountedRootfsLocations(root: String): List<MountedRootfsLocation> =
+    private fun mountedRootfsLocations(
+        root: String,
+        extraMounts: List<WorkspaceBindMount> = emptyList(),
+    ): List<MountedRootfsLocation> =
         listOf(MountedRootfsLocation(ROOTFS_WORKSPACE_DIR, filesDir(root))) +
-            bindMounts.map { MountedRootfsLocation(it.target, it.source) }
+            mountsOf(extraMounts).map { MountedRootfsLocation(it.target, it.source) }
+
+    /**
+     * Rootfs 目录页需要显示挂载路径的每一级父目录。例如共享存储挂到
+     * `/storage/emulated/0/Documents` 时, 浏览 `/` 只应显示 `storage`, 进入后再显示 `emulated`。
+     */
+    private fun mountedRootfsEntries(
+        root: String,
+        logicalParent: String,
+        extraMounts: List<WorkspaceBindMount>,
+    ): List<WorkspaceFileEntry> = mountedRootfsLocations(root, extraMounts).mapNotNull { mount ->
+        val target = mount.target.trim('/')
+        if (target.isEmpty() || target == logicalParent) return@mapNotNull null
+        val relative = when {
+            logicalParent.isEmpty() -> target
+            target.startsWith("$logicalParent/") -> target.removePrefix("$logicalParent/")
+            else -> return@mapNotNull null
+        }
+        val name = relative.substringBefore('/')
+        if (name.isEmpty()) return@mapNotNull null
+        WorkspaceFileEntry(
+            path = if (logicalParent.isEmpty()) name else "$logicalParent/$name",
+            name = name,
+            isDirectory = true,
+            sizeBytes = 0L,
+            updatedAt = mount.source.lastModified(),
+        )
+    }.distinctBy(WorkspaceFileEntry::name)
 
     fun cleanupAllTempDirs() {
         val roots = baseDir.listFiles()?.filter { it.isDirectory } ?: return
@@ -416,6 +498,14 @@ class WorkspaceManager(
         private const val MAX_SYMLINK_DEPTH = 16
     }
 }
+
+/** 工作区挂载的源目录不存在或无权访问; 消息是英文, 会原样交给 AI, 界面按 [targets] 自行本地化 */
+class WorkspaceMountUnavailableException(
+    val targets: List<String>,
+) : IllegalArgumentException(
+    "Mounted directories are unavailable (missing, or storage permission not granted): " +
+        targets.joinToString() + ". Fix or remove them in the workspace settings."
+)
 
 /** Rootfs 内绝对路径在宿主机上的落点 */
 data class RootfsLocation(

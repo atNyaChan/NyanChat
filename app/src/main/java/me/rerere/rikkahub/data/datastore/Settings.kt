@@ -161,6 +161,7 @@ data class DisplaySetting(
     val userNickname: String = "",
     val showUserAvatar: Boolean = false,
     val showAssistantBubble: Boolean = false,
+    val splitAssistantBubbleByParagraph: Boolean = false,
     val bubbleOpacity: Float = 1.0f,
     val showModelIcon: Boolean = false,
     val showModelName: Boolean = false,

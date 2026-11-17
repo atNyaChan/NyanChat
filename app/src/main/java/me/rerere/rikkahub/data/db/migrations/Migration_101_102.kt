@@ -10,8 +10,7 @@ private const val TAG = "Migration_101_102"
  * 新增工作区类型与 SSH 连接配置列，支持远程 SSH 工作区。
  *
  * 旧工作区都是本机 PRoot 工作区，`type` 默认 `LOCAL`；`ssh_config` 为空表示没有远程配置。
- * 对应上游的 `31 -> 32`；上游存档由 [Migration_31_32] 补齐同样的列后继续走 [Migration_32_33] 与
- * [Migration_33_103]。
+ * 对应上游的 `31 -> 32`；上游存档由 [Migration_31_32] 补齐同样的列后继续执行后续上游迁移链。
  */
 val Migration_101_102 = object : Migration(101, 102) {
     override fun migrate(db: SupportSQLiteDatabase) {

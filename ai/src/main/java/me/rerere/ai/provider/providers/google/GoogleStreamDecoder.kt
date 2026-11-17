@@ -64,13 +64,13 @@ internal class GoogleStreamDecoder(
 
     private fun parseMessage(content: JsonObject, groundingMetadata: JsonObject?): UIMessage = UIMessage(
         role = MessageRole.ASSISTANT,
-        parts = content["parts"]?.jsonArray?.mapIndexed { index, part ->
+        parts = content["parts"]?.jsonArray?.mapIndexedNotNull { index, part ->
             parsePart(part.jsonObject, index)
         }.orEmpty(),
         annotations = parseAnnotations(groundingMetadata),
     )
 
-    private fun parsePart(part: JsonObject, index: Int): UIMessagePart = when {
+    private fun parsePart(part: JsonObject, index: Int): UIMessagePart? = when {
         part.containsKey("text") -> {
             val text = part["text"]?.jsonPrimitive?.contentOrNull ?: ""
             val metadata = part.toGoogleThoughtMetadata()
@@ -139,7 +139,11 @@ internal class GoogleStreamDecoder(
                 )
             }
         }
-        else -> error("unknown message part type: $part")
+        // Gemini 可能单独下发只含 thoughtSignature 的 part，按空文本处理，由 GoogleStreamState 挂到相邻 part 上
+        part.containsKey("thoughtSignature") -> UIMessagePart.Text("", part.toGoogleThoughtMetadata())
+
+        // 未知 part 不中断整个流，直接跳过
+        else -> null
     }
 
     private fun parseAnnotations(metadata: JsonObject?): List<UIMessageAnnotation> =
@@ -168,7 +172,9 @@ internal class GoogleStreamDecoder(
     private class GoogleStreamState {
         private var sequence = 0
         private var textId: String? = null
+        private var textHasMetadata = false
         private var reasoningId: String? = null
+        private var reasoningHasMetadata = false
         private var imageId: String? = null
         private val openToolIds = linkedSetOf<String>()
 
@@ -177,15 +183,20 @@ internal class GoogleStreamDecoder(
             var emittedImages = 0
             message.parts.forEach { part ->
                 when (part) {
-                    is UIMessagePart.Text -> if (part.text.isNotEmpty()) {
-                        addAll(closeReasoning())
-                        addAll(closeImage())
-                        addAll(closeTools())
-                        val id = textId ?: nextId(responseId, "text").also {
-                            textId = it
-                            add(StreamChunk.TextStart(it, part.metadata))
+                    is UIMessagePart.Text -> when {
+                        part.text.isNotEmpty() -> {
+                            addAll(closeReasoning())
+                            addAll(closeImage())
+                            addAll(closeTools())
+                            val id = textId ?: nextId(responseId, "text").also {
+                                textId = it
+                                add(StreamChunk.TextStart(it, part.metadata))
+                            }
+                            if (part.metadata != null) textHasMetadata = true
+                            add(StreamChunk.TextDelta(id, part.text, part.metadata))
                         }
-                        add(StreamChunk.TextDelta(id, part.text, part.metadata))
+
+                        else -> part.metadata?.let { addAll(appendStandaloneMetadata(it, responseId)) }
                     }
                     is UIMessagePart.Reasoning -> if (part.reasoning.isNotEmpty() || part.metadata != null) {
                         addAll(closeText())
@@ -195,6 +206,7 @@ internal class GoogleStreamDecoder(
                             reasoningId = it
                             add(StreamChunk.ReasoningStart(it, part.metadata))
                         }
+                        if (part.metadata != null) reasoningHasMetadata = true
                         add(StreamChunk.ReasoningDelta(id, part.reasoning, part.metadata))
                     }
                     is UIMessagePart.Tool -> {
@@ -265,12 +277,45 @@ internal class GoogleStreamDecoder(
             add(StreamChunk.Finish(reason, responseId, model))
         }
 
+        /**
+         * 处理不带文本的签名 part（`{"thoughtSignature": ...}` 或 `{"text": "", "thoughtSignature": ...}`）：
+         * 优先挂到当前还没有签名的文本/思考块上；否则单独开一个空文本块保存签名，保证回放时能原样带回。
+         */
+        private fun appendStandaloneMetadata(metadata: JsonObject, responseId: String): List<StreamChunk> = buildList {
+            val currentText = textId
+            val currentReasoning = reasoningId
+            when {
+                currentText != null && !textHasMetadata -> {
+                    textHasMetadata = true
+                    add(StreamChunk.TextDelta(currentText, "", metadata))
+                }
+
+                currentReasoning != null && !reasoningHasMetadata -> {
+                    reasoningHasMetadata = true
+                    add(StreamChunk.ReasoningDelta(currentReasoning, "", metadata))
+                }
+
+                else -> {
+                    addAll(closeText())
+                    addAll(closeReasoning())
+                    addAll(closeImage())
+                    addAll(closeTools())
+                    val id = nextId(responseId, "text")
+                    textId = id
+                    textHasMetadata = true
+                    add(StreamChunk.TextStart(id, metadata))
+                }
+            }
+        }
+
         private fun closeText() = textId?.let {
             textId = null
+            textHasMetadata = false
             listOf(StreamChunk.TextEnd(it))
         }.orEmpty()
         private fun closeReasoning() = reasoningId?.let {
             reasoningId = null
+            reasoningHasMetadata = false
             listOf(StreamChunk.ReasoningEnd(it))
         }.orEmpty()
         private fun closeImage() = imageId?.let {

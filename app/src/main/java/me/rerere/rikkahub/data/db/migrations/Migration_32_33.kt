@@ -15,8 +15,8 @@ private const val TAG = "Migration_32_33"
  * 复合索引以 conversation_id 开头，外键级联删除和按会话的查询照样能用，旧索引不再需要。
  * 只建索引、删索引，不改动表里的数据。
  *
- * 本迁移只用于恢复上游 32 的存档（随后直接走 [Migration_33_103]）；本 fork 自己的库从 102 -> 103
- * 走 [Migration_102_103]。
+ * 本迁移只用于恢复上游 32 的存档，随后由 `AppDatabaseFactory` 继续执行后续上游迁移链；
+ * 本 fork 自己的库从 102 -> 103 走 [Migration_102_103]。
  */
 val Migration_32_33 = object : Migration(32, 33) {
     override fun migrate(db: SupportSQLiteDatabase) {

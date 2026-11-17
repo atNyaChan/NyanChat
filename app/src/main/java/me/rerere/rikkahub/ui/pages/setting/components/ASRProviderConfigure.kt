@@ -27,6 +27,7 @@ val ASRProviderSetting.typeName: String
         is ASRProviderSetting.Volcengine -> "Volcengine"
         is ASRProviderSetting.MiMo -> "MiMo"
         is ASRProviderSetting.Step -> "Step"
+        is ASRProviderSetting.DeepSeek -> "DeepSeek"
     }
 
 @Composable
@@ -51,6 +52,7 @@ fun ASRProviderConfigure(
                         is ASRProviderSetting.Volcengine -> "Volcengine"
                         is ASRProviderSetting.MiMo -> "MiMo"
                         is ASRProviderSetting.Step -> "Step"
+                        is ASRProviderSetting.DeepSeek -> "DeepSeek"
                     },
                     options = providers,
                     readOnly = true,
@@ -62,6 +64,7 @@ fun ASRProviderConfigure(
                             ASRProviderSetting.Volcengine::class -> "Volcengine"
                             ASRProviderSetting.MiMo::class -> "MiMo"
                             ASRProviderSetting.Step::class -> "Step"
+                            ASRProviderSetting.DeepSeek::class -> "DeepSeek"
                             else -> providerClass.simpleName ?: "Unknown"
                         }
                     },
@@ -81,6 +84,9 @@ fun ASRProviderConfigure(
 
                             ASRProviderSetting.Step::class ->
                                 ASRProviderSetting.Step(id = setting.id)
+
+                            ASRProviderSetting.DeepSeek::class ->
+                                ASRProviderSetting.DeepSeek(id = setting.id)
 
                             else -> setting
                         }
@@ -107,6 +113,7 @@ fun ASRProviderConfigure(
                 is ASRProviderSetting.Volcengine -> VolcengineASRConfiguration(setting, onValueChange)
                 is ASRProviderSetting.MiMo -> MiMoASRConfiguration(setting, onValueChange)
                 is ASRProviderSetting.Step -> StepASRConfiguration(setting, onValueChange)
+                is ASRProviderSetting.DeepSeek -> DeepSeekASRConfiguration(setting, onValueChange)
             }
         }
         footer?.invoke()
@@ -537,3 +544,59 @@ private fun CardGroupScope.StepASRConfiguration(
         )
     })
 }
+
+private fun CardGroupScope.DeepSeekASRConfiguration(
+    setting: ASRProviderSetting.DeepSeek,
+    onValueChange: (ASRProviderSetting) -> Unit
+) {
+    item(headlineContent = {
+        OutlinedTextField(
+            value = setting.apiKey,
+            onValueChange = { onValueChange(setting.copy(apiKey = it)) },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("sk-...") },
+            label = { Text(stringResource(R.string.setting_asr_configure_api_key)) },
+            supportingText = { Text("DeepSeek 开放平台的 API Key") },
+        )
+    })
+
+    item(headlineContent = {
+        OutlinedTextField(
+            value = setting.baseUrl,
+            onValueChange = { onValueChange(setting.copy(baseUrl = it)) },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("https://api.deepseek.com") },
+            label = { Text(stringResource(R.string.setting_asr_configure_base_url)) },
+            supportingText = { Text("请求地址为 {Base URL}/v1/tools/asr") },
+        )
+    })
+
+    item(headlineContent = {
+        SelectTextField(
+            value = "${setting.sampleRate} Hz",
+            options = DEEPSEEK_ASR_SAMPLE_RATES,
+            onOptionSelected = { onValueChange(setting.copy(sampleRate = it)) },
+            readOnly = true,
+            optionToString = { "$it Hz" },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text(stringResource(R.string.setting_asr_configure_sample_rate)) },
+            supportingText = { Text("录音采样率，16000 Hz 即可满足识别") },
+        )
+    })
+
+    item(headlineContent = {
+        OutlinedNumberInput(
+            value = setting.segmentDurationSec,
+            onValueChange = { value ->
+                if (value in 0..110) {
+                    onValueChange(setting.copy(segmentDurationSec = value))
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            label = stringResource(R.string.setting_asr_configure_segment_duration),
+            supportingText = { Text("录音每满多少秒上传识别一段，0 表示停止录音时才上传。单段最长约 110 秒，超出会自动切段") },
+        )
+    })
+}
+
+private val DEEPSEEK_ASR_SAMPLE_RATES = listOf(8000, 16000, 22050, 24000, 32000, 44100, 48000)

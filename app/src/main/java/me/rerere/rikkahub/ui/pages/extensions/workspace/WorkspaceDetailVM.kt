@@ -21,6 +21,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
+import me.rerere.rikkahub.data.model.WorkspaceStorageMount
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.rikkahub.service.BackgroundShellManager
 import me.rerere.workspace.RootfsInstallProgress
@@ -317,6 +318,20 @@ class WorkspaceDetailVM(
                 file
             }.onSuccess(onReady).onFailure { error ->
                 _state.update { it.copy(error = error.message ?: context.getString(R.string.workspace_detail_export_file_failed)) }
+            }
+        }
+    }
+
+    fun setStorageMounts(mounts: List<WorkspaceStorageMount>) {
+        viewModelScope.launch {
+            try {
+                repository.setStorageMounts(id, mounts)
+                val workspace = repository.getById(id)
+                _state.update { it.copy(workspace = workspace) }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                _settingsError.value = error.message.orEmpty()
             }
         }
     }

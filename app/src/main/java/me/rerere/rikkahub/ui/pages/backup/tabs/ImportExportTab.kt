@@ -11,7 +11,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,9 +27,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.ui.toast.ToastType
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.data.datastore.WebDavConfig
+import me.rerere.rikkahub.data.sync.importer.DeepSeekImportResult
 import me.rerere.rikkahub.ui.components.ui.CardGroup
 import me.rerere.rikkahub.ui.components.ui.CardGroupIcon
 import me.rerere.ui.components.StickyHeader
@@ -58,6 +64,7 @@ fun ImportExportTab(
 
     // 导入类型：local 为本地备份，chatbox 为 Chatbox 导入，cherry 为 Cherry Studio 导入
     var importType by remember { mutableStateOf("local") }
+    var deepSeekImportResult by remember { mutableStateOf<DeepSeekImportResult?>(null) }
     var confirmLocalRestore by remember { mutableStateOf(false) }
 
     // 创建文件保存的launcher
@@ -162,6 +169,22 @@ fun ImportExportTab(
                                 }
                             }
 
+                            "deepseek" -> {
+                                deepSeekImportResult = withContext(Dispatchers.IO) {
+                                    val tempFile = File.createTempFile("temp_deepseek_", ".zip", context.cacheDir)
+                                    try {
+                                        requireNotNull(context.contentResolver.openInputStream(sourceUri)) {
+                                            context.getString(R.string.backup_page_import_deepseek_read_error)
+                                        }.use { input ->
+                                            tempFile.outputStream().use { output -> input.copyTo(output) }
+                                        }
+                                        vm.restoreFromDeepSeek(tempFile)
+                                    } finally {
+                                        tempFile.delete()
+                                    }
+                                }
+                            }
+
                             "cherry" -> {
                                 // Cherry Studio导入：处理zip文件
                                 val tempFile =
@@ -181,10 +204,12 @@ fun ImportExportTab(
                             }
                     }
 
-                    toaster.show(
-                        context.getString(R.string.backup_page_restore_success),
-                        type = ToastType.Success
-                    )
+                    if (importType != "deepseek") {
+                        toaster.show(
+                            context.getString(R.string.backup_page_restore_success),
+                            type = ToastType.Success
+                        )
+                    }
                     importSucceeded = true
                 }.onFailure { e ->
                     e.printStackTrace()
@@ -309,6 +334,20 @@ fun ImportExportTab(
                 item(
                     onClick = if (!isRestoring) {
                         {
+                            importType = "deepseek"
+                            openDocumentLauncher.launch(arrayOf("application/zip"))
+                        }
+                    } else null,
+                    headlineContent = { Text(stringResource(R.string.backup_page_import_from_deepseek)) },
+                    supportingContent = { Text(stringResource(R.string.backup_page_import_deepseek_desc)) },
+                    leadingContent = {
+                        CardGroupIcon(HugeIcons.FileImport)
+                    },
+                )
+
+                item(
+                    onClick = if (!isRestoring) {
+                        {
                             importType = "chatbox"
                             openDocumentLauncher.launch(arrayOf("application/zip"))
                         }
@@ -348,6 +387,30 @@ fun ImportExportTab(
         },
         onDismiss = { confirmLocalRestore = false },
     )
+
+    deepSeekImportResult?.let { result ->
+        AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surface,
+            onDismissRequest = { deepSeekImportResult = null },
+            title = { Text(stringResource(R.string.backup_page_import_deepseek_complete)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.backup_page_import_deepseek_summary,
+                        result.importedConversations,
+                        result.skippedExistingConversations,
+                        result.skippedEmptyConversations,
+                        result.missingAttachments,
+                    )
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { deepSeekImportResult = null }) {
+                    Text(stringResource(R.string.common_confirm_action))
+                }
+            },
+        )
+    }
 
     if (showImportDialog) {
         BackupDialog(importing = !importSucceeded)

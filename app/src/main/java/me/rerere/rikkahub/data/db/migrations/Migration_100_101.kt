@@ -13,7 +13,7 @@ private const val TAG = "Migration_100_101"
  * 消息的 createdAt 是本地时间的 ISO 字符串，按设备时区换算成时间戳，解析不了时用会话的创建时间。
  *
  * 本 fork 的 schema 版本号从 100（CAS 存档）起算，所以是 100 -> 101；上游存档恢复时
- * 由 `AppDatabaseFactory` 走 30 -> 31 -> 32 -> 33 -> 103（上游 33 直接 33 -> 103），不会再经过本迁移。
+ * 由 `AppDatabaseFactory` 注册的上游迁移链处理，不会再经过本迁移。
  */
 val Migration_100_101 = object : Migration(100, 101) {
     override fun migrate(db: SupportSQLiteDatabase) {

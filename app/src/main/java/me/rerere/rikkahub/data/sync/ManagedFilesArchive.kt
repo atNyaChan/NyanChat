@@ -39,8 +39,8 @@ internal object ManagedFilesArchive {
 
     private val ATTACHMENT_TYPES = setOf("image", "document", "video", "audio")
 
-    /** 兼容 ZIP 里数据库声明的 schema 版本：上游 RikkaHub 当前版本（33 = `message_node` 复合索引）。 */
-    private const val LEGACY_SCHEMA_VERSION = 33
+    /** 兼容 ZIP 里数据库声明的 schema 版本：上游 RikkaHub 当前版本（34 = 工作区共享存储挂载列）。 */
+    private const val LEGACY_SCHEMA_VERSION = 34
 
     /** 本分支的 CAS schema 版本；数据库达到该版本时 `upload` 已是内容寻址，不能再做迁移。 */
     const val CAS_SCHEMA_VERSION = 100
@@ -62,7 +62,7 @@ internal object ManagedFilesArchive {
 
     /**
      * 把 [filesRoot]/upload 里的普通文件统一成以内容 sha256 命名的实体，相同内容只保留一份。
-     * 只在导入旧库（版本 < [CAS_SCHEMA_VERSION]，上游 RikkaHub 为 30 / 31 / 32 / 33）时调用：旧库里可能仍有
+     * 只在导入旧库（版本 < [CAS_SCHEMA_VERSION]，上游 RikkaHub 为 30 / 31 / 32 / 33 / 34）时调用：旧库里可能仍有
      * 名字已经是 sha256 的文件，这里也按内容重新命名/校验，并返回每个旧文件名到 sha256 的映射
      * 供改写消息/设置里的 url 使用。
      */
@@ -91,8 +91,8 @@ internal object ManagedFilesArchive {
      * `upload/<sha256>`；随后删除旧的 `managed_files` 表与 `room_master_table`
      * （强制 Room 按新 schema 重新校验并写入新的 identity hash）。已经是新格式时不做改动。
      *
-     * 这里只把数据库改到 `managed_files_cas`，不写 `user_version`，让 Room 继续按原版本执行
-     * 迁移链（30 -> 31 -> 32 -> 33 -> 103；上游 31 的存档是 31 -> 32 -> 33 -> 103，上游 33 直接 33 -> 103）。
+     * 这里只把数据库改到 `managed_files_cas`，不写 `user_version`，让 Room 继续按存档原版本执行
+     * `AppDatabaseFactory` 注册的上游迁移链。
      */
     fun convertLegacyDatabase(
         databaseFile: File,

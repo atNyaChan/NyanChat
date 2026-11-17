@@ -13,9 +13,8 @@ private const val TAG = "Migration_30_31"
  * 旧消息只有整条消息的 usage，回填时每条助手消息记一行；所有分支都算，和实际消耗一致。
  * 消息的 createdAt 是本地时间的 ISO 字符串，按设备时区换算成时间戳，解析不了时用会话的创建时间。
  *
- * 上游存档接着走 [Migration_31_32]（SSH 工作区列）、[Migration_32_33]（`message_node` 复合索引）与
- * [Migration_33_103]（附件登记换成 CAS）；
- * 这些迁移只在本 fork 恢复上游存档时注册（`allowLegacyMigration = true`）。
+ * 之后的版本由 `AppDatabaseFactory` 按存档版本继续执行后续迁移，并最终桥接到本 fork 的 schema；
+ * 这些上游迁移只在恢复存档时注册（`allowLegacyMigration = true`）。
  */
 val Migration_30_31 = object : Migration(30, 31) {
     override fun migrate(db: SupportSQLiteDatabase) {
