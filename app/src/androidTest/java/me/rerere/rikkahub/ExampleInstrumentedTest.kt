@@ -17,6 +17,7 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("me.rerere.rikkahub", appContext.packageName)
+        // 应用包名已脱离上游的 me.rerere.rikkahub（并有 debug 后缀），与 BuildConfig 对比而非写死。
+        assertEquals(BuildConfig.APPLICATION_ID, appContext.packageName)
     }
 }

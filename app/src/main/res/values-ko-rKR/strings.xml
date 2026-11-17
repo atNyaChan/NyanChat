@@ -330,6 +330,7 @@
   <string name="local_tool_authorization_mode_always">항상 허용</string>
   <string name="local_tool_authorization_mode_denied">금지</string>
   <string name="local_tool_authorization_mode_manual">매번 수동 승인</string>
+  <string name="local_tool_authorization_phone_use">휴대전화를 조작하기</string>
   <string name="local_tool_authorization_read_calendar">캘린더를 읽기</string>
   <string name="local_tool_authorization_read_clipboard">클립보드를 읽기</string>
   <string name="local_tool_authorization_title">AI가 %1$s하도록 허용할까요?</string>
@@ -579,6 +580,7 @@
 <string name="assistant_page_local_tools_phone_use_desc">AI가 화면을 읽고 이 휴대전화의 다른 앱을 조작하도록 허용</string>
 <string name="assistant_page_local_tools_phone_use_enable_service">접근성 설정에서 \"NyanChat Phone Use\"를 켜세요</string>
 <string name="assistant_page_local_tools_phone_use_floating_window_required">먼저 백그라운드 플로팅 창을 켜세요</string>
+<string name="assistant_page_local_tools_phone_use_manual_desc">「매번 수동 승인」은 각 답변에서 첫 Phone Use 작업만 확인하며, 같은 답변의 이후 작업은 확인 없이 실행합니다.</string>
 <string name="assistant_page_local_tools_phone_use_service_off">접근성 서비스가 꺼져 있습니다. 설정을 열려면 이 스위치를 껐다가 다시 켜세요. 시스템에서 해당 옵션이 회색으로 비활성화되어 있으면 먼저 앱 정보에서 이 앱의 제한된 설정을 허용하세요.</string>
 <string name="assistant_page_local_tools_phone_use_title">휴대폰 사용</string>
   <string name="assistant_page_local_tools_screen_time_desc">AI가 앱 화면 사용 시간을 읽을 수 있도록 합니다.</string>

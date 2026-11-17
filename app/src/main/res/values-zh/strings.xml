@@ -330,6 +330,7 @@
   <string name="local_tool_authorization_mode_always">永久允许</string>
   <string name="local_tool_authorization_mode_denied">禁止</string>
   <string name="local_tool_authorization_mode_manual">每次授权</string>
+  <string name="local_tool_authorization_phone_use">操作手机</string>
   <string name="local_tool_authorization_read_calendar">读取日历</string>
   <string name="local_tool_authorization_read_clipboard">读取剪贴板</string>
   <string name="local_tool_authorization_title">允许 AI %1$s吗？</string>
@@ -579,6 +580,7 @@
 <string name="assistant_page_local_tools_phone_use_desc">允许 AI 读取屏幕并操作此手机上的其他应用</string>
 <string name="assistant_page_local_tools_phone_use_enable_service">在无障碍设置中开启「NyanChat Phone Use」</string>
 <string name="assistant_page_local_tools_phone_use_floating_window_required">请先开启后台悬浮窗</string>
+<string name="assistant_page_local_tools_phone_use_manual_desc">「每次授权」只会在每个回答里第一次使用 Phone Use 时询问，之后的操作不再弹出授权。</string>
 <string name="assistant_page_local_tools_phone_use_service_off">无障碍服务已关闭。请将此开关关闭再打开，以进入设置。若该选项在系统中呈灰色不可用，请先在「应用信息」中为此应用允许受限设置。并且将应用的自启动开关打开，可以避免无障碍权限被频繁收回。</string>
 <string name="assistant_page_local_tools_phone_use_title">Phone Use</string>
   <string name="assistant_page_local_tools_screen_time_desc">让 AI 读取你的应用屏幕使用时间</string>

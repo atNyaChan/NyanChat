@@ -623,7 +623,7 @@ pnpm run dev
 确保 Kotlin 后端在 8080 端口运行：
 ```bash
 # 在 Kotlin 项目目录
-./gradlew :web:run
+gradle :web:run
 ```
 
 ### 类型错误

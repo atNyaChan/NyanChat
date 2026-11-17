@@ -330,6 +330,7 @@
   <string name="local_tool_authorization_mode_always">Always allow</string>
   <string name="local_tool_authorization_mode_denied">Disabled</string>
   <string name="local_tool_authorization_mode_manual">Ask every time</string>
+  <string name="local_tool_authorization_phone_use">operate your phone</string>
   <string name="local_tool_authorization_read_calendar">read the calendar</string>
   <string name="local_tool_authorization_read_clipboard">read the clipboard</string>
   <string name="local_tool_authorization_title">Allow AI to %1$s?</string>
@@ -579,6 +580,7 @@
 <string name="assistant_page_local_tools_phone_use_desc">Let the AI read the screen and operate other apps on this phone</string>
 <string name="assistant_page_local_tools_phone_use_enable_service">Turn on “NyanChat Phone Use” in the accessibility settings</string>
 <string name="assistant_page_local_tools_phone_use_floating_window_required">Turn on the background floating window first</string>
+<string name="assistant_page_local_tools_phone_use_manual_desc">“Ask every time” only asks on the first Phone Use action in each reply; later actions in the same reply run without asking.</string>
 <string name="assistant_page_local_tools_phone_use_service_off">The accessibility service is off. Turn this switch off and on again to open the settings. If the system greys the option out, allow restricted settings for this app in App info first.</string>
 <string name="assistant_page_local_tools_phone_use_title">Phone Use</string>
   <string name="assistant_page_local_tools_screen_time_desc">Let the AI read your app screen usage time</string>

@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.Clipboard
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
@@ -47,8 +48,10 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -268,6 +271,10 @@ private fun CodeBlockWithLineNumbersWrapped(
         displayLines.size.toString().length
     }
     val codeStyle = codeTextStyle(textStyle, fontFeatureSettings)
+    val lineNumberStyle = codeStyle.copy(
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+    )
+    val lineNumberHeight = rememberLineNumberHeight(textStyle)
     // 行号用普通的 Text，不参与选择；每行代码是一个 BetterText，选中多行时以换行连接
     SelectableContent {
         Column {
@@ -277,13 +284,17 @@ private fun CodeBlockWithLineNumbersWrapped(
                 ) {
                     Text(
                         text = (index + 1).toString().padStart(lineNumberWidth, ' '),
-                        fontSize = textStyle.fontSize,
-                        lineHeight = textStyle.lineHeight,
-                        fontFamily = JetbrainsMono,
-                        style = LocalTextStyle.current.copy(fontFeatureSettings = fontFeatureSettings),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                        style = lineNumberStyle,
                         softWrap = false,
-                        modifier = Modifier.padding(end = 8.dp)
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .then(
+                                if (lineNumberHeight != null) {
+                                    Modifier.height(lineNumberHeight)
+                                } else {
+                                    Modifier
+                                }
+                            )
                     )
                     BetterText(
                         text = rememberHighlightedCode(line, language, colorPalette),
@@ -322,21 +333,21 @@ private fun CodeBlockDefault(
             val lineNumberWidth = remember(displayLines.size) {
                 displayLines.size.toString().length
             }
-            Column(
-                modifier = Modifier.padding(end = 8.dp)
-            ) {
-                displayLines.forEachIndexed { index, _ ->
-                    Text(
-                        text = (index + 1).toString().padStart(lineNumberWidth, ' '),
-                        fontSize = textStyle.fontSize,
-                        lineHeight = textStyle.lineHeight,
-                        fontFamily = JetbrainsMono,
-                        style = LocalTextStyle.current.copy(fontFeatureSettings = fontFeatureSettings),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                        softWrap = false,
-                    )
+            val lineNumberStyle = codeTextStyle(textStyle, fontFeatureSettings).copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+            )
+            val lineNumbers = remember(displayLines.size, lineNumberWidth) {
+                displayLines.indices.joinToString("\n") { index ->
+                    (index + 1).toString().padStart(lineNumberWidth, ' ')
                 }
             }
+            // 行号和代码都用 BetterText 渲染同一套 StaticLayout：行高、基线与行数完全一致，
+            // 不会出现两套排版引擎取整方式不同导致的逐行错位和底部留白。
+            BetterText(
+                text = AnnotatedString(lineNumbers),
+                style = lineNumberStyle,
+                modifier = Modifier.padding(end = 8.dp),
+            )
         }
 
         // 代码列：在横向滚动里宽度不受限，不会折行；自动换行时按可用宽度折行
@@ -347,6 +358,21 @@ private fun CodeBlockDefault(
                 style = codeTextStyle(textStyle, fontFeatureSettings),
             )
         }
+    }
+}
+
+/**
+ * 行号 `Text` 的单行高度。自动换行时每行代码是一个 BetterText，行号用普通 `Text` 单行渲染，
+ * 把它限制为 BetterText 的整数像素行高，避免单行 `Text` 忽略 `lineHeight` 后每行都比代码高，
+ * 行数一多就逐行错位并在代码下方留出空白。
+ */
+@Composable
+private fun rememberLineNumberHeight(textStyle: TextStyle): Dp? {
+    val lineHeight = textStyle.lineHeight
+    if (!lineHeight.isSp) return null
+    val density = LocalDensity.current
+    return remember(lineHeight, density) {
+        with(density) { lineHeight.toPx().roundToInt().toFloat().toDp() }
     }
 }
 

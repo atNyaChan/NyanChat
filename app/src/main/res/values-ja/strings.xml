@@ -330,6 +330,7 @@
   <string name="local_tool_authorization_mode_always">常に許可</string>
   <string name="local_tool_authorization_mode_denied">禁止</string>
   <string name="local_tool_authorization_mode_manual">毎回確認</string>
+  <string name="local_tool_authorization_phone_use">スマートフォンを操作する</string>
   <string name="local_tool_authorization_read_calendar">カレンダーを読み取る</string>
   <string name="local_tool_authorization_read_clipboard">クリップボードを読み取る</string>
   <string name="local_tool_authorization_title">AI に%1$sことを許可しますか？</string>
@@ -579,6 +580,7 @@
 <string name="assistant_page_local_tools_phone_use_desc">AI が画面を読み取り、この端末上の他のアプリを操作できるようにします</string>
 <string name="assistant_page_local_tools_phone_use_enable_service">ユーザー補助設定で\"NyanChat Phone Use\"をオンにしてください</string>
 <string name="assistant_page_local_tools_phone_use_floating_window_required">先にバックグラウンドのフローティングウィンドウを有効にしてください</string>
+<string name="assistant_page_local_tools_phone_use_manual_desc">「毎回確認」は各回答で最初の Phone Use 操作時のみ確認し、同じ回答内の以降の操作は確認なしで実行します。</string>
 <string name="assistant_page_local_tools_phone_use_service_off">ユーザー補助サービスがオフです。このスイッチをオフにしてから再度オンにすると設定が開きます。システムでこのオプションがグレー表示される場合は、先にアプリ情報でこのアプリの制限付き設定を許可してください。</string>
 <string name="assistant_page_local_tools_phone_use_title">スマホ操作</string>
   <string name="assistant_page_local_tools_screen_time_desc">AIにアプリの画面使用時間を読み取らせます</string>

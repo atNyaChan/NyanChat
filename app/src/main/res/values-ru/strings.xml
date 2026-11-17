@@ -330,6 +330,7 @@
   <string name="local_tool_authorization_mode_always">Всегда разрешать</string>
   <string name="local_tool_authorization_mode_denied">Запретить</string>
   <string name="local_tool_authorization_mode_manual">Спрашивать каждый раз</string>
+  <string name="local_tool_authorization_phone_use">управлять вашим телефоном</string>
   <string name="local_tool_authorization_read_calendar">читать календарь</string>
   <string name="local_tool_authorization_read_clipboard">читать буфер обмена</string>
   <string name="local_tool_authorization_title">Разрешить ИИ: %1$s?</string>
@@ -579,6 +580,7 @@
 <string name="assistant_page_local_tools_phone_use_desc">Разрешить ИИ читать экран и управлять другими приложениями на этом телефоне</string>
 <string name="assistant_page_local_tools_phone_use_enable_service">Включите \"NyanChat Phone Use\" в настройках специальных возможностей</string>
 <string name="assistant_page_local_tools_phone_use_floating_window_required">Сначала включите фоновое плавающее окно</string>
+<string name="assistant_page_local_tools_phone_use_manual_desc">«Спрашивать каждый раз» запрашивает подтверждение только при первом действии Phone Use в каждом ответе; последующие действия в том же ответе выполняются без запроса.</string>
 <string name="assistant_page_local_tools_phone_use_service_off">Служба доступности выключена. Выключите и снова включите этот переключатель, чтобы открыть настройки. Если система сделает этот пункт серым, сначала разрешите ограниченные настройки для этого приложения в разделе «Информация о приложении».</string>
 <string name="assistant_page_local_tools_phone_use_title">Использование телефона</string>
   <string name="assistant_page_local_tools_screen_time_desc">Позвольте ИИ прочитать время использования экрана вашего приложения</string>

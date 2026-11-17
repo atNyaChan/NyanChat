@@ -168,12 +168,12 @@ as an ordinary folder, and never invent a uuid/filename-keyed path for an attach
 ## Build, Test, and Development Commands
 
 ```bash
-./gradlew assembleDebug          # Build Debug APK
-./gradlew test                   # Run all JVM tests
-./gradlew lint                   # Run Android Lint
-./gradlew spotlessApply          # Format all Kotlin files with ktlint (-PspotlessRatchet=<ref> limits to files changed since that ref)
-./gradlew spotlessCheck          # Check formatting without modifying files
-git apply ./app/baselineprofile/mock-provider.patch && ./gradlew :app:generateReleaseBaselineProfile && git apply-reverse ./app/baselineprofile/mock-provider.patch # Generate Profile
+gradle assembleDebug          # Build Debug APK
+gradle test                   # Run all JVM tests
+gradle lint                   # Run Android Lint
+gradle spotlessApply          # Format all Kotlin files with ktlint (-PspotlessRatchet=<ref> limits to files changed since that ref)
+gradle spotlessCheck          # Check formatting without modifying files
+git apply ./app/baselineprofile/mock-provider.patch && gradle :app:generateReleaseBaselineProfile && git apply-reverse ./app/baselineprofile/mock-provider.patch # Generate Profile
 ```
 
 Build configuration is unified across the project: JDK 25 for the project, the Gradle daemon,

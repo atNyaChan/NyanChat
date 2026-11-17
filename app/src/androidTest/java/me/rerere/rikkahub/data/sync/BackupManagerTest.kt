@@ -12,6 +12,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.db.AppDatabase
 import me.rerere.rikkahub.data.db.AppDatabaseFactory
+import me.rerere.rikkahub.data.files.AttachmentCas
 import me.rerere.rikkahub.data.repository.WorkspaceRepository
 import me.rerere.rikkahub.utils.JsonInstant
 import me.rerere.workspace.RootfsInstaller
@@ -235,10 +236,12 @@ class BackupManagerTest {
         assertEquals(1, links)
     }
 
-    @Test fun restoredUploadIsNormalizedToSha256Entities() = runBlocking {
+    @Test fun tarRestoreKeepsCasUploadEntitiesUntouched() = runBlocking {
         val upload = File(context.filesDir, "upload").apply { mkdirs() }
-        File(upload, "original.bin").writeText("shared payload")
-        File(upload, "copy.bin").writeText("shared payload")
+        val payload = File(directory, "payload.bin").apply { writeText("shared payload") }
+        val sha256 = AttachmentCas.sha256(payload)
+        assertTrue(AttachmentCas.isSha256Name(sha256))
+        payload.copyTo(File(upload, sha256))
 
         val archive = manager.createBackup(includeDatabase = false, includeFiles = true, includeWorkspace = false)
         upload.deleteRecursively()
@@ -247,11 +250,11 @@ class BackupManagerTest {
         assertTrue(File(context.noBackupFilesDir, "backup-restore/pending/settings.json").delete())
         assertTrue(BackupManager.applyPendingRestore(context, JsonInstant))
 
-        // 恢复时转换为内容寻址存储: 相同内容只保留一份以 sha256 命名的实体
+        // `.tar` 只有本应用会写出，upload 里已是内容寻址实体；恢复时不再按内容重命名或去重
         val files = upload.listFiles().orEmpty().filter { it.isFile }
-        assertEquals(1, files.size)
-        assertEquals("shared payload", files.first().readText())
-        assertFalse(Files.isSymbolicLink(files.first().toPath()))
+        assertEquals(listOf(sha256), files.map { it.name })
+        assertEquals("shared payload", files.single().readText())
+        assertFalse(Files.isSymbolicLink(files.single().toPath()))
     }
 
     @Test fun restoreReplacesExistingUploadFolderWhenArchiveHasUpload() = runBlocking {

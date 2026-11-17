@@ -2,6 +2,9 @@ package me.rerere.rikkahub.data.ai.tools.local
 
 import android.content.Context
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
@@ -100,7 +103,12 @@ class LocalTools(
         }
         // 系统版本不支持时不提供（比如导入的备份里带着这个开关）
         if (options.contains(LocalToolOption.PhoneUse) && PhoneUseManager.isSupported) {
-            tools.add(phoneUseTool)
+            // Phone Use 一次回答里会连续调用很多次操作手机，逐次授权只在第一次操作时询问
+            tools += if (LocalToolOption.PhoneUse in manualAuthorizationTools) {
+                phoneUseTool.withFirstUseManualAuthorization(LocalToolOption.PhoneUse)
+            } else {
+                phoneUseTool
+            }
         }
         return tools
     }
@@ -121,39 +129,73 @@ class LocalTools(
         return copy(
             execute = { arguments ->
                 val action = authorizationAction(option, name, arguments)
-                val decision = CompletableDeferred<Boolean>()
-                eventBus.emit(
-                    AppEvent.LocalToolAuthorization(
-                        title = context.getString(R.string.local_tool_authorization_title, action),
-                        decision = decision,
-                    )
-                )
-                val granted = decision.await()
-                if (granted) {
+                if (awaitAuthorization(action)) {
                     originalExecute(arguments)
                 } else {
-                    Logging.logPermission(
-                        type = action,
-                        toolName = name,
-                        rawData = arguments.toString(),
-                        granted = false,
-                    )
-                    listOf(
-                        UIMessagePart.Text(
-                            buildJsonObject {
-                                put("error", "USER_DENIED_PERMISSION")
-                            }.toString()
-                        )
-                    )
+                    deniedResult(action, name, arguments)
                 }
             }
+        )
+    }
+
+    /**
+     * 同一次回答里的后续调用沿用第一次的授权结果。
+     * 工具实例由每轮生成单独创建，所以状态只覆盖这一条回答。
+     */
+    private fun Tool.withFirstUseManualAuthorization(option: LocalToolOption): Tool {
+        val originalExecute = execute
+        val mutex = Mutex()
+        var granted: Boolean? = null
+        return copy(
+            execute = { arguments ->
+                val action = authorizationAction(option, name, arguments)
+                val allowed = mutex.withLock {
+                    granted ?: awaitAuthorization(action).also { granted = it }
+                }
+                if (allowed) {
+                    originalExecute(arguments)
+                } else {
+                    deniedResult(action, name, arguments)
+                }
+            }
+        )
+    }
+
+    private suspend fun awaitAuthorization(action: String): Boolean {
+        val decision = CompletableDeferred<Boolean>()
+        eventBus.emit(
+            AppEvent.LocalToolAuthorization(
+                title = context.getString(R.string.local_tool_authorization_title, action),
+                decision = decision,
+            )
+        )
+        return decision.await()
+    }
+
+    private suspend fun deniedResult(
+        action: String,
+        toolName: String,
+        arguments: JsonElement,
+    ): List<UIMessagePart> {
+        Logging.logPermission(
+            type = action,
+            toolName = toolName,
+            rawData = arguments.toString(),
+            granted = false,
+        )
+        return listOf(
+            UIMessagePart.Text(
+                buildJsonObject {
+                    put("error", "USER_DENIED_PERMISSION")
+                }.toString()
+            )
         )
     }
 
     private fun authorizationAction(
         option: LocalToolOption,
         toolName: String,
-        arguments: kotlinx.serialization.json.JsonElement,
+        arguments: JsonElement,
     ): String = context.getString(
         when (option) {
             LocalToolOption.Clipboard -> {
@@ -173,6 +215,7 @@ class LocalTools(
                     R.string.local_tool_authorization_read_calendar
                 }
             }
+            LocalToolOption.PhoneUse -> R.string.local_tool_authorization_phone_use
             else -> error("Manual authorization is unsupported for $option")
         }
     )

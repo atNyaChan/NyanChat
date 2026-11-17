@@ -330,6 +330,7 @@
   <string name="local_tool_authorization_mode_always">Immer erlauben</string>
   <string name="local_tool_authorization_mode_denied">Deaktiviert</string>
   <string name="local_tool_authorization_mode_manual">Jedes Mal fragen</string>
+  <string name="local_tool_authorization_phone_use">dein Telefon zu bedienen</string>
   <string name="local_tool_authorization_read_calendar">den Kalender zu lesen</string>
   <string name="local_tool_authorization_read_clipboard">die Zwischenablage zu lesen</string>
   <string name="local_tool_authorization_title">Der KI erlauben, %1$s?</string>
@@ -579,6 +580,7 @@
 <string name="assistant_page_local_tools_phone_use_desc">Lass die KI den Bildschirm lesen und andere Apps auf diesem Telefon bedienen</string>
 <string name="assistant_page_local_tools_phone_use_enable_service">Aktiviere \"NyanChat Phone Use\" in den Bedienungshilfen-Einstellungen</string>
 <string name="assistant_page_local_tools_phone_use_floating_window_required">Aktiviere zuerst das schwebende Hintergrundfenster</string>
+<string name="assistant_page_local_tools_phone_use_manual_desc">„Jedes Mal fragen“ fragt nur beim ersten Einsatz von Phone Use in einer Antwort nach; weitere Aktionen derselben Antwort laufen ohne Nachfrage.</string>
 <string name="assistant_page_local_tools_phone_use_service_off">Der Bedienungshilfe-Dienst ist deaktiviert. Schalte diesen Schalter aus und wieder ein, um die Einstellungen zu öffnen. Wenn das System die Option ausgraut, erlaube zuerst eingeschränkte Einstellungen für diese App in den App-Infos.</string>
 <string name="assistant_page_local_tools_phone_use_title">Telefonnutzung</string>
   <string name="assistant_page_local_tools_screen_time_desc">Lass die KI deine App-Nutzungszeit lesen</string>

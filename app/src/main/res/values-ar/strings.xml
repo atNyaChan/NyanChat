@@ -330,6 +330,7 @@
   <string name="local_tool_authorization_mode_always">السماح دائمًا</string>
   <string name="local_tool_authorization_mode_denied">معطّل</string>
   <string name="local_tool_authorization_mode_manual">السؤال في كل مرة</string>
+  <string name="local_tool_authorization_phone_use">التحكم في هاتفك</string>
   <string name="local_tool_authorization_read_calendar">قراءة التقويم</string>
   <string name="local_tool_authorization_read_clipboard">قراءة الحافظة</string>
   <string name="local_tool_authorization_title">السماح للذكاء الاصطناعي بـ%1$s؟</string>
@@ -579,6 +580,7 @@
 <string name="assistant_page_local_tools_phone_use_desc">اسمح للذكاء الاصطناعي بقراءة الشاشة والتحكم في التطبيقات الأخرى على هذا الهاتف</string>
 <string name="assistant_page_local_tools_phone_use_enable_service">فعّل \"NyanChat Phone Use\" في إعدادات إمكانية الوصول</string>
 <string name="assistant_page_local_tools_phone_use_floating_window_required">فعّل النافذة العائمة في الخلفية أولًا</string>
+<string name="assistant_page_local_tools_phone_use_manual_desc">«السؤال في كل مرة» يسأل فقط عند أول إجراء Phone Use في كل رد، وتُنفَّذ الإجراءات اللاحقة في الرد نفسه دون سؤال.</string>
 <string name="assistant_page_local_tools_phone_use_service_off">خدمة إمكانية الوصول متوقفة. أطفئ هذا المفتاح ثم أعد تشغيله لفتح الإعدادات. إذا جعل النظام هذا الخيار باهتًا، فاسمح بالإعدادات المقيّدة لهذا التطبيق من معلومات التطبيق أولًا.</string>
 <string name="assistant_page_local_tools_phone_use_title">استخدام الهاتف</string>
   <string name="assistant_page_local_tools_screen_time_desc">السماح للذكاء الاصطناعي بقراءة وقت استخدام تطبيقاتك على الشاشة</string>

@@ -323,6 +323,7 @@ private fun AssistantLocalToolContent(
             icon: ImageVector,
             title: @Composable () -> Unit,
             description: @Composable () -> Unit,
+            choicesDescription: (@Composable () -> Unit)? = null,
         ) {
             val mode = when {
                 option !in assistant.localTools -> LocalToolAuthorizationMode.DENIED
@@ -368,6 +369,7 @@ private fun AssistantLocalToolContent(
                         selected = selected,
                     )
                 }
+                choicesDescription?.invoke()
             }
         }
 
@@ -498,6 +500,13 @@ private fun AssistantLocalToolContent(
                                 )
                             }
                         }
+                    },
+                    choicesDescription = {
+                        Text(
+                            text = stringResource(R.string.assistant_page_local_tools_phone_use_manual_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     },
                 )
             }
