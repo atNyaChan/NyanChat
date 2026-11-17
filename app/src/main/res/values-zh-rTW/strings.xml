@@ -1713,7 +1713,7 @@
   <string name="backup_page_import_from_other_app">從其他 APP 導入</string>
   <string name="backup_page_import_local">匯入本機檔案</string>
   <string name="backup_page_importing">正在恢復...</string>
-  <string name="backup_page_legacy_export">匯出舊版格式（相容 RikkaHub 3.1.1+）</string>
+  <string name="backup_page_legacy_export">匯出舊版格式（相容 RikkaHub 3.3.0+）</string>
   <string name="backup_page_legacy_export_desc">移除此 Fork 新增的不相容設定欄位；不包含工作區環境</string>
   <string name="backup_page_loading_failed">載入備份檔案失敗: %s</string>
   <string name="backup_page_local_backup_export">導出為檔案</string>

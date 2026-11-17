@@ -8,9 +8,11 @@ import me.rerere.rikkahub.data.db.fts.dropLegacyMessageFts
 import me.rerere.rikkahub.data.db.fts.rebuildMessageSearchCache
 import me.rerere.rikkahub.data.db.migrations.Migration_100_101
 import me.rerere.rikkahub.data.db.migrations.Migration_101_102
+import me.rerere.rikkahub.data.db.migrations.Migration_102_103
 import me.rerere.rikkahub.data.db.migrations.Migration_30_31
 import me.rerere.rikkahub.data.db.migrations.Migration_31_32
-import me.rerere.rikkahub.data.db.migrations.Migration_32_102
+import me.rerere.rikkahub.data.db.migrations.Migration_32_33
+import me.rerere.rikkahub.data.db.migrations.Migration_33_103
 
 /** Shared schema and legacy cleanup for the app and staged backup validation. */
 internal object AppDatabaseFactory {
@@ -19,9 +21,9 @@ internal object AppDatabaseFactory {
      * 读到 30 / 31 / 32 的旧库会直接由 Room 报错，禁止原地升级。只有恢复存档时先在暂存库里
      * 完成附件登记转换，才允许打开旧库并按迁移链升级，因此备份校验传 true。低于 30 的旧库不再有任何迁移链。
      *
-     * 上游存档链路是 30 -> 31 -> 32 -> 102（上游 31 的存档走 31 -> 32 -> 102，上游 32 直接走 32 -> 102）；
-     * 100 -> 101（用量流水表）与 101 -> 102（SSH 工作区列）总是注册：本 fork 自己的旧库停在 100 / 101，
-     * 正常升级也要走这两步。
+     * 上游存档链路是 30 -> 31 -> 32 -> 33 -> 103（上游 31 的存档走 31 -> 32 -> 33 -> 103，上游 32 走
+     * 32 -> 33 -> 103，上游 33 直接走 33 -> 103）；100 -> 101（用量流水表）、101 -> 102（SSH 工作区列）与
+     * 102 -> 103（`message_node` 复合索引）总是注册：本 fork 自己的旧库停在 100 / 101 / 102，正常升级也要走这几步。
      */
     fun create(
         context: Context,
@@ -30,10 +32,10 @@ internal object AppDatabaseFactory {
     ): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, name)
             .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
-            .addMigrations(Migration_100_101, Migration_101_102)
+            .addMigrations(Migration_100_101, Migration_101_102, Migration_102_103)
             .apply {
                 if (allowLegacyMigration) {
-                    addMigrations(Migration_30_31, Migration_31_32, Migration_32_102)
+                    addMigrations(Migration_30_31, Migration_31_32, Migration_32_33, Migration_33_103)
                 }
             }
             .addCallback(object : RoomDatabase.Callback() {

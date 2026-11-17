@@ -186,19 +186,19 @@ Do not raise `minSdk` or change the Java/Kotlin target per module.
 ## Database Schema and Backup Compatibility
 
 The fork’s `AppDatabase` version and upstream RikkaHub’s schema version are independent: the fork is
-currently at `102`, upstream is at `32`. Both must be kept in sync when a new schema lands.
+currently at `103`, upstream is at `33`. Both must be kept in sync when a new schema lands.
 
 When adding a new schema version (fork target `N`, matching upstream version `U`):
 
 1. Bump `AppDatabase.version` to `N` and let Room export the new schema JSON.
-2. Add `Migration(previousForkVersion, N)` for the fork’s own databases (for example `101 -> 102`).
-3. Add `Migration(previousUpstreamVersion, U)` for upstream archives (for example `31 -> 32`).
-4. Add `Migration(U, N)` bridging the upstream schema to the fork schema (for example `32 -> 102`).
+2. Add `Migration(previousForkVersion, N)` for the fork’s own databases (for example `102 -> 103`).
+3. Add `Migration(previousUpstreamVersion, U)` for upstream archives (for example `32 -> 33`).
+4. Add `Migration(U, N)` bridging the upstream schema to the fork schema (for example `33 -> 103`).
    Keep it idempotent: legacy ZIP archives may already have been partially converted by
    `ManagedFilesArchive` before Room runs. Attachment URL rewrites and `upload` renames stay in
    `ManagedFilesArchive.convertLegacyDatabase`, never in a SQL-only migration.
-5. Register fork migrations (`100 -> 101`, `101 -> 102`, ...) unconditionally in `AppDatabaseFactory`;
-   register the upstream chain (`30 -> 31`, `31 -> 32`, `32 -> N`) only under `allowLegacyMigration`,
+5. Register fork migrations (`100 -> 101`, `101 -> 102`, `102 -> 103`, ...) unconditionally in `AppDatabaseFactory`;
+   register the upstream chain (`30 -> 31`, `31 -> 32`, `32 -> 33`, `33 -> N`) only under `allowLegacyMigration`,
    which `BackupManager` enables only for legacy `.zip` restores, so the app itself still refuses to
    open an old upstream database in place and old TAR backups are rejected.
    A `.tar` backup must already use the fork’s CAS schema (`>= 100`); no upstream migration chain runs
@@ -209,10 +209,10 @@ When adding a new schema version (fork target `N`, matching upstream version `U`
 7. Update the migration-chain comments in `AppDatabase`, `AppDatabaseFactory`,
    `ManagedFilesArchive`, `BackupManager`, and `docs/NyanwChanges.md`.
 
-Example — adding upstream `32` to the fork at `102` requires `LEGACY_SCHEMA_VERSION = 32` plus the
-`31 -> 32`, `32 -> 102`, and `101 -> 102` migrations. Upstream restore chains are
-`30 -> 31 -> 32 -> 102` (or `31 -> 32 -> 102` / `32 -> 102`), while the fork’s own databases use
-`100 -> 101 -> 102`.
+Example — adding upstream `33` to the fork at `103` requires `LEGACY_SCHEMA_VERSION = 33` plus the
+`32 -> 33`, `33 -> 103`, and `102 -> 103` migrations. Upstream restore chains are
+`30 -> 31 -> 32 -> 33 -> 103` (or `31 -> 32 -> 33 -> 103` / `32 -> 33 -> 103` / `33 -> 103`), while the
+fork’s own databases use `100 -> 101 -> 102 -> 103`.
 
 ## Agent Change Workflow
 

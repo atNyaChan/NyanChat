@@ -1713,7 +1713,7 @@
   <string name="backup_page_import_from_other_app">Aus anderer App importieren</string>
   <string name="backup_page_import_local">Lokale Datei importieren</string>
   <string name="backup_page_importing">Wird importiert...</string>
-  <string name="backup_page_legacy_export">Altes Format exportieren (kompatibel mit RikkaHub 3.1.1+)</string>
+  <string name="backup_page_legacy_export">Altes Format exportieren (kompatibel mit RikkaHub 3.3.0+)</string>
   <string name="backup_page_legacy_export_desc">Entfernt inkompatible Einstellungen dieses Forks; Arbeitsbereichsumgebungen sind nicht enthalten</string>
   <string name="backup_page_loading_failed">Backup-Dateien konnten nicht geladen werden: %s</string>
   <string name="backup_page_local_backup_export">In Datei exportieren</string>

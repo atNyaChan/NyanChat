@@ -1713,7 +1713,7 @@
   <string name="backup_page_import_from_other_app">他のアプリからインポート</string>
   <string name="backup_page_import_local">ローカルファイルをインポート</string>
   <string name="backup_page_importing">インポート中...</string>
-  <string name="backup_page_legacy_export">旧形式でエクスポート（RikkaHub 3.1.1+ 対応）</string>
+  <string name="backup_page_legacy_export">旧形式でエクスポート（RikkaHub 3.3.0+ 対応）</string>
   <string name="backup_page_legacy_export_desc">この Fork で追加された非互換設定を削除；ワークスペース環境は含まれません</string>
   <string name="backup_page_loading_failed">バックアップファイルの読み込み失敗: %s</string>
   <string name="backup_page_local_backup_export">ファイルにエクスポート</string>

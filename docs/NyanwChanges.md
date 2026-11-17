@@ -244,7 +244,7 @@
 	- 消息生成触觉反馈（默认：关闭）
 	- 跳过图片编辑（默认：关闭）
 	- 解析中途思考（默认：开启；描述：把非消息开头的 `<think>` 标签解析为思考块）
-	- 自动压缩上下文（默认：关闭）
+	- 自动压缩上下文（默认：开启）
 	- 触发比例（开启「自动压缩上下文」后显示；默认 80%，范围 50%–95%，按 5% 一档调整）
 	- 后台悬浮窗（默认：关闭；开启时若没有悬浮窗权限会在后面多显示一行「授予悬浮窗权限」入口。悬浮窗面板以 `surface` 为底色。）
 	- 生成消息后发送通知（默认：关闭；可选：关闭、实时、生成后）
@@ -505,14 +505,14 @@
 - 「备份提醒」的间隔按钮组最前面加入用于关闭提醒的「关」，不再单独显示备份提醒开关；无论是否关闭都显示上次备份时间。
 - 导出备份前先写入最新备份时间，使归档内的设置也包含该时间；导出或上传失败时恢复导出前的时间。
 - 导入完整备份后扫描消息数据库，把图片、文档、视频和音频记录里的附件 url 统一改写成相对 `filesDir` 的落盘路径（`upload/<sha256>`）。设置里的助手头像、聊天背景与用户头像在写入 DataStore 时同样折叠成相对路径。
-- 导入时按存档数据库版本与其容器格式处理附件：新 `.tar` 必须是 CAS schema（100 及以上），低于 100 的旧 TAR 直接报错；只有旧 ZIP 在版本低于 100 时才把旧的 `managed_files` 表转换成 `managed_files_cas`（一份 sha256 一行，使用记录写入 `usages` 并逐条保存旧文件名与展示名），并把消息/设置里 `upload/<uuid.ext>` 的名字按内容 sha256 改写；消息库里记录了真实文件名（目前文档附件才有）时优先用它作为该次使用的展示名。版本已是 100 及以上的存档直接用恢复后的 `managed_files_cas`，不迁移 `upload`。导入后删除旧 `managed_files` 表（带数据的转换始终在恢复阶段完成；App 自身禁止原地升级：运行路径不注册上游旧版本的迁移，启动读到小于 100 的上游旧库会直接报错，`Migration_30_31`、`Migration_31_32`、`Migration_32_102` 只在恢复旧 ZIP 的暂存库上执行）。旧表转 `managed_files_cas` 的整个转换（建表、改写消息 url、删旧表）在单个 SQLite 事务内完成，中途异常会整体回滚，不留下半转换的库。
+- 导入时按存档数据库版本与其容器格式处理附件：新 `.tar` 必须是 CAS schema（100 及以上），低于 100 的旧 TAR 直接报错；只有旧 ZIP 在版本低于 100 时才把旧的 `managed_files` 表转换成 `managed_files_cas`（一份 sha256 一行，使用记录写入 `usages` 并逐条保存旧文件名与展示名），并把消息/设置里 `upload/<uuid.ext>` 的名字按内容 sha256 改写；消息库里记录了真实文件名（目前文档附件才有）时优先用它作为该次使用的展示名。版本已是 100 及以上的存档直接用恢复后的 `managed_files_cas`，不迁移 `upload`。导入后删除旧 `managed_files` 表（带数据的转换始终在恢复阶段完成；App 自身禁止原地升级：运行路径不注册上游旧版本的迁移，启动读到小于 100 的上游旧库会直接报错，`Migration_30_31`、`Migration_31_32`、`Migration_32_33`、`Migration_33_103` 只在恢复旧 ZIP 的暂存库上执行）。旧表转 `managed_files_cas` 的整个转换（建表、改写消息 url、删旧表）在单个 SQLite 事务内完成，中途异常会整体回滚，不留下半转换的库。
 - 导入根据文件后缀识别新 `.tar` 与旧 `.zip`，旧 ZIP 备份仍可还原；还原时只读取单个 `rikka_hub.db`，不再合并旧 zip 的 `-wal`/`-shm` 旁路文件。
-- 本地导出额外提供旧 ZIP 兼容格式（移除 Fork 新增的模型价格、排序、显示（含 `detailedTokenUsage`、`enableTitleBarScrim`、`enableBoldHighlight`）、上下文缓存、回传思考、本地工具授权、中途思考、自定义字体字重与内置搜索字段；`chatFontFamily` 的 `outfit` 回落为 `serif`；`webDavConfig`/`s3Config`/`uploadS3Config` 的备份项去除 `WORKSPACE`；过滤官方版本无法反序列化的电池和定位本地工具；并标注「兼容 RikkaHub 3.1.1+」）。
+- 本地导出额外提供旧 ZIP 兼容格式（移除 Fork 新增的模型价格、排序、显示（含 `detailedTokenUsage`、`enableTitleBarScrim`、`enableBoldHighlight`）、上下文缓存、回传思考、本地工具授权、中途思考、自定义字体字重与内置搜索字段；`chatFontFamily` 的 `outfit` 回落为 `serif`；`webDavConfig`/`s3Config`/`uploadS3Config` 的备份项去除 `WORKSPACE`；过滤官方版本无法反序列化的电池和定位本地工具；并标注「兼容 RikkaHub 3.3.0+」）。
 - 兼容 ZIP 中 `rikka_hub.db` 与 `settings.json` 使用 deflate 5 级压缩，其余附件条目只储存（STORED）不压缩。
 - 兼容 ZIP 只包含名为 `upload` 的附件目录，里面是 `uuid.ext` 形式的真实文件：每份内容按各次消息使用记录（usages 的 `filename`）分别落一份副本，同一附件被使用几次就复制几份；被设置（助手头像/背景、用户头像）引用或完全未被消息引用的内容才用 `filenameBySha` 的基础名落一份。
 - 每条旧的 `managed_files` 行用该次使用的 `display_name`（缺失时退回 `filename`）作展示名。同时把数据库里的 `managed_files_cas` 转回旧 `managed_files` 表（`folder` 固定 `upload`、`relative_path` 用 `upload/<uuid.ext>`、`updated_at` 照抄 `created_at`）。
-- 兼容 ZIP 里数据库声明为上游当前的 schema 版本（`user_version = 32`）：导出前把 `managed_files_cas` 转回 `managed_files`、删掉 `message_search_cache`、写回 32、并删除 `room_master_table`，让上游 release 版按自己的 schema 重新校验后导入。
-- 数据库 schema 的 fork/上游版本对应关系与新增版本规则写在 `AGENTS.md` 的 Database Schema and Backup Compatibility 小节：新增上游版本时同步提高 `ManagedFilesArchive.LEGACY_SCHEMA_VERSION`，并补齐上游上一版到新版、新版到 fork 当前版本以及 fork 上一版到当前版本的迁移（当前为 `31 -> 32`、`32 -> 102`、`101 -> 102`）。
+- 兼容 ZIP 里数据库声明为上游当前的 schema 版本（`user_version = 33`）：导出前把 `managed_files_cas` 转回 `managed_files`、删掉 `message_search_cache`、写回 33、并删除 `room_master_table`，让上游 release 版按自己的 schema 重新校验后导入。
+- 数据库 schema 的 fork/上游版本对应关系与新增版本规则写在 `AGENTS.md` 的 Database Schema and Backup Compatibility 小节：新增上游版本时同步提高 `ManagedFilesArchive.LEGACY_SCHEMA_VERSION`，并补齐上游上一版到新版以及与新版对应的 fork 版本、新版到 fork 当前版本以及 fork 上一版到当前版本的迁移（当前为 `32 -> 33`、`33 -> 103`、`102 -> 103`）。
 - 兼容 ZIP 面向上游 RikkaHub release 版：导出前把数据库快照里附件 part 的 url 与 `settings.json` 里助手的头像、聊天背景从相对路径展开成上游安装目录下的绝对 `file://` 路径（用当前数据目录前缀 + `me.rerere.rikkahub/files/` 拼出），使上游 release 版导入后能直接读到附件；上游 debug 版（包名带 `.debug` 后缀）无法覆盖。
 - S3 与 WebDAV 仍只导出新的 TAR 格式。
 - Android 端 zstd 使用官方 `zstd-jni` AAR（包含各 Android ABI 原生库），避免普通 JVM JAR 缺少 `.so` 导致导出失败；Release 混淆配置保留 zstd-jni 的 JNI 字段与方法名，避免导出时因字段被重命名而报 `dstPos` 缺失。

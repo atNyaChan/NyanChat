@@ -1713,7 +1713,7 @@
   <string name="backup_page_import_from_other_app">Импорт из другого приложения</string>
   <string name="backup_page_import_local">Импорт локального файла</string>
   <string name="backup_page_importing">Импорт…</string>
-  <string name="backup_page_legacy_export">Экспорт в старом формате (совместимо с RikkaHub 3.1.1+)</string>
+  <string name="backup_page_legacy_export">Экспорт в старом формате (совместимо с RikkaHub 3.3.0+)</string>
   <string name="backup_page_legacy_export_desc">Удалить несовместимые настройки, добавленные в этом форке; окружения рабочих пространств не включены</string>
   <string name="backup_page_loading_failed">Не удалось загрузить файлы резервной копии: %s</string>
   <string name="backup_page_local_backup_export">Экспорт в файл</string>
