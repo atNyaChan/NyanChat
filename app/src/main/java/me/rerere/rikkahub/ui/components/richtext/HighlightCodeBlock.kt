@@ -36,6 +36,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.takeOrElse
+import androidx.compose.ui.layout.AlignmentLine
+import androidx.compose.ui.layout.FirstBaseline
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.Clipboard
 import androidx.compose.ui.platform.LocalClipboard
@@ -43,11 +46,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -272,36 +277,22 @@ private fun CodeBlockWithLineNumbersWrapped(
     }
     val codeStyle = codeTextStyle(textStyle, fontFeatureSettings)
     val lineNumberStyle = codeStyle.copy(
-        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+        platformStyle = PlatformTextStyle(includeFontPadding = false),
     )
-    val lineNumberHeight = rememberLineNumberHeight(textStyle)
-    // 行号用普通的 Text，不参与选择；每行代码是一个 BetterText，选中多行时以换行连接
+    val lineNumberHeight = rememberLineNumberHeight(codeStyle)
+    // 行号用普通 Text，不参与代码的选择；布局时让行高完全由代码行决定，
+    // 并把行号的基线对齐到同行代码的 FirstBaseline，避免两套排版引擎的行高/基线差异
     SelectableContent {
         Column {
             displayLines.forEachIndexed { index, line ->
-                Row(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = (index + 1).toString().padStart(lineNumberWidth, ' '),
-                        style = lineNumberStyle,
-                        softWrap = false,
-                        modifier = Modifier
-                            .padding(end = 8.dp)
-                            .then(
-                                if (lineNumberHeight != null) {
-                                    Modifier.height(lineNumberHeight)
-                                } else {
-                                    Modifier
-                                }
-                            )
-                    )
-                    BetterText(
-                        text = rememberHighlightedCode(line, language, colorPalette),
-                        style = codeStyle,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                CodeLineWithNumber(
+                    lineNumber = (index + 1).toString().padStart(lineNumberWidth, ' '),
+                    code = rememberHighlightedCode(line, language, colorPalette),
+                    lineNumberStyle = lineNumberStyle,
+                    codeStyle = codeStyle,
+                    lineNumberHeight = lineNumberHeight,
+                )
             }
         }
     }
@@ -337,8 +328,10 @@ private fun CodeBlockDefault(
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
             )
             val lineNumbers = remember(displayLines.size, lineNumberWidth) {
+                // 末尾留一个空格：BetterText 会按最宽一行收紧布局宽度，空格保证居中的字体
+                // 字形不会因宽度取整比实际字宽少 1px 而被迫换行，否则每行行号下面会多出一行
                 displayLines.indices.joinToString("\n") { index ->
-                    (index + 1).toString().padStart(lineNumberWidth, ' ')
+                    (index + 1).toString().padStart(lineNumberWidth, ' ') + " "
                 }
             }
             // 行号和代码都用 BetterText 渲染同一套 StaticLayout：行高、基线与行数完全一致，
@@ -362,9 +355,68 @@ private fun CodeBlockDefault(
 }
 
 /**
- * 行号 `Text` 的单行高度。自动换行时每行代码是一个 BetterText，行号用普通 `Text` 单行渲染，
- * 把它限制为 BetterText 的整数像素行高，避免单行 `Text` 忽略 `lineHeight` 后每行都比代码高，
- * 行数一多就逐行错位并在代码下方留出空白。
+ * 一行代码与它的行号。行高只取代码行的最大高度（行号不参与行高），因此行号不会把每行
+ * 抬高；行号固定在代码的单行像素行高内并按代码的 `FirstBaseline` 垂直对齐，两套排版引擎
+ * 的行高取整或字体留白差异都不会累积成逐行错位。
+ */
+@Composable
+private fun CodeLineWithNumber(
+    lineNumber: String,
+    code: AnnotatedString,
+    lineNumberStyle: TextStyle,
+    codeStyle: TextStyle,
+    lineNumberHeight: Dp?,
+) {
+    Layout(
+        modifier = Modifier.fillMaxWidth(),
+        content = {
+            Text(
+                text = lineNumber,
+                style = lineNumberStyle,
+                softWrap = false,
+                maxLines = 1,
+                modifier = Modifier.padding(end = 8.dp),
+            )
+            BetterText(
+                text = code,
+                style = codeStyle,
+            )
+        },
+    ) { measurables, constraints ->
+        val numberPlaceable = measurables[0].measure(
+            if (lineNumberHeight != null) {
+                val px = lineNumberHeight.roundToPx()
+                Constraints(minHeight = px, maxHeight = px)
+            } else {
+                Constraints()
+            }
+        )
+        val codePlaceable = measurables[1].measure(
+            Constraints(
+                maxWidth = (constraints.maxWidth - numberPlaceable.width).coerceAtLeast(0)
+            )
+        )
+        val height = maxOf(codePlaceable.height, numberPlaceable.height)
+        layout(constraints.maxWidth, height) {
+            val codeBaseline = codePlaceable[FirstBaseline]
+            val numberBaseline = numberPlaceable[FirstBaseline]
+            val offset = if (
+                codeBaseline != AlignmentLine.Unspecified &&
+                numberBaseline != AlignmentLine.Unspecified
+            ) {
+                codeBaseline - numberBaseline
+            } else {
+                0
+            }
+            numberPlaceable.place(0, offset)
+            codePlaceable.place(numberPlaceable.width, 0)
+        }
+    }
+}
+
+/**
+ * 行号的单行像素高度。行号用普通 `Text` 单行渲染，把它固定为代码用的整数像素行高，
+ * 使它不会比同一行的 BetterText 更高而在行与行之间留出空白。
  */
 @Composable
 private fun rememberLineNumberHeight(textStyle: TextStyle): Dp? {
