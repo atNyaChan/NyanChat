@@ -81,6 +81,7 @@ fun AssistantDetailPage(id: String) {
     val assistant by vm.assistant.collectAsStateWithLifecycle()
     val navController = LocalNavController.current
     val assistantVm: AssistantVM = koinViewModel()
+    val settings by assistantVm.settings.collectAsStateWithLifecycle()
     var showDeleteConfirm by remember { mutableStateOf(false) }
     var showCannotDeleteDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -192,6 +193,7 @@ fun AssistantDetailPage(id: String) {
                             }
                         }
                     },
+                    enabled = settings.assistants.size > 1,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp),

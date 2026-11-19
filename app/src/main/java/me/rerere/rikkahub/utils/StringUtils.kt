@@ -1,10 +1,24 @@
 package me.rerere.rikkahub.utils
 
 import org.apache.commons.text.StringEscapeUtils
+import java.net.URLConnection
 import java.net.URLDecoder
 import java.net.URLEncoder
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
+
+/**
+ * Guesses a MIME type from a file name’s extension.
+ *
+ * Android 9/10’s URLConnection.guessContentTypeFromName throws StringIndexOutOfBoundsException when a '#'
+ * appears before the last '.', so only the extension is handed to it.
+ */
+fun guessMimeTypeFromFileName(fileName: String): String {
+    val ext = fileName.substringAfterLast('/').substringAfterLast('.', "").filter { it.isLetterOrDigit() }
+    return ext.takeIf { it.isNotEmpty() }
+        ?.let { URLConnection.guessContentTypeFromName("file.${it.lowercase()}") }
+        ?: "application/octet-stream"
+}
 
 fun String.urlEncode(): String {
     return URLEncoder.encode(this, "UTF-8")

@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import me.rerere.rikkahub.AppScope
 import me.rerere.rikkahub.data.datastore.Settings
 import me.rerere.rikkahub.data.datastore.SettingsStore
 import me.rerere.rikkahub.data.files.FilesManager
@@ -23,6 +24,7 @@ class AssistantVM(
     private val conversationRepo: ConversationRepository,
     private val chatService: ChatService,
     private val filesManager: FilesManager,
+    private val appScope: AppScope,
 ) : ViewModel() {
     val settings: StateFlow<Settings> = settingsStore.settingsFlow
         .stateIn(viewModelScope, SharingStarted.Eagerly, Settings.dummy())
@@ -43,12 +45,18 @@ class AssistantVM(
         assistant: Assistant,
         onRemoved: (fallbackChatId: Uuid?) -> Unit = {},
     ) {
-        viewModelScope.launch {
+        // 助手从列表移除后用户无法再次触发清理，放到应用级作用域里，离开页面也要跑完
+        appScope.launch {
+            var removed: Assistant? = null
             var fallbackAssistantId: Uuid? = null
+            // 在同一次更新里按最新列表检查，连续删除时不会把最后一个助手也删掉
             // 先落设置：设置类使用记录清理后再删文件，同一内容被别处引用的才不会被误删
             settingsStore.update { settings ->
-                val remainingAssistants = settings.assistants.filter { it.id != assistant.id }
-                if (settings.assistantId == assistant.id) {
+                val target = settings.assistants.find { it.id == assistant.id }
+                if (target == null || settings.assistants.size <= 1) return@update settings
+                removed = target
+                val remainingAssistants = settings.assistants.filter { it.id != target.id }
+                if (settings.assistantId == target.id) {
                     fallbackAssistantId = remainingAssistants.firstOrNull()?.id
                 }
                 settings.copy(
@@ -56,9 +64,11 @@ class AssistantVM(
                     assistantId = fallbackAssistantId ?: settings.assistantId,
                 )
             }
-            cleanupAssistantFiles(assistant)
-            memoryRepository.deleteFilesOfAssistant(assistant.id.toString())
-            chatService.deleteConversationsOfAssistant(assistant.id)
+            // 只有真的删掉了才清理关联数据
+            val target = removed ?: return@launch
+            cleanupAssistantFiles(target)
+            memoryRepository.deleteFilesOfAssistant(target.id.toString())
+            chatService.deleteConversationsOfAssistant(target.id)
             val fallbackChatId = fallbackAssistantId?.let { Uuid.random() }
             onRemoved(fallbackChatId)
         }

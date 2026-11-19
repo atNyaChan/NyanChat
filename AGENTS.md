@@ -408,8 +408,8 @@ one session, STOP and ask the user before starting.
   formatting utilities; Thinking; Chat page; Chat history and favorites; Message search; Chat input and
   attachments; Chat message; Chat message tools; Chat charts; Chat queue; Voice mode; Chat history compression;
   Translation; Pickers; Assistant memory; Assistant settings; Prompt extensions; Skills; Workspace; Media
-  creation; Image generation; Settings home; Display settings; Theme settings; Model settings; Provider
-  settings; MCP settings; Search settings; TTS settings; ASR settings; File settings; Media settings;
+  creation; Image generation; Settings home; Quick start; Display settings; Theme settings; Model settings;
+  Provider settings; MCP settings; Search settings; TTS settings; ASR settings; File settings; Media settings;
   Notification settings; Notifications; Backup; Request and permission logs; Permissions; Web server;
   Statistics; Debug; Errors; Delete dialogs.
 - In Simplified and Traditional Chinese, separate adjacent CJK and Latin text with a space; do not add spaces

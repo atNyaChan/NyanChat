@@ -177,6 +177,10 @@ GROUPS: list[tuple[str, list[str]]] = [
         r"^setting_page_chat_settings$", r"^setting_page_interface_settings$",
         r"^setting_page_system_settings$", r"^setting_page_more_settings$",
         r"^setting_page_media", r"^setting_page_color_mode",
+        r"^setting_page_quick_start",
+    ]),
+    ("Quick start", [
+        r"^quick_start_",
     ]),
     ("Display settings", [
         r"^setting_display_page_(?!notification_message_generated)",

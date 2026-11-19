@@ -50,6 +50,7 @@ import me.rerere.hugeicons.stroke.Megaphone01
 import me.rerere.hugeicons.stroke.MagicWand01
 import me.rerere.hugeicons.stroke.Puzzle
 import me.rerere.hugeicons.stroke.ServerStack01
+import me.rerere.hugeicons.stroke.Rocket01
 import me.rerere.hugeicons.stroke.SecurityKeyUsb
 import me.rerere.hugeicons.stroke.Settings03
 import me.rerere.hugeicons.stroke.Zap
@@ -116,13 +117,19 @@ fun SettingPage(vm: SettingVM = koinViewModel()) {
 
             if (localNetworkPermission?.allRequiredPermissionsGranted == false) {
                 item("localNetworkPermission") {
-                    LocalNetworkPermissionCard(permissionState = localNetworkPermission)
+                    LocalNetworkPermissionCard(
+                        permissionState = localNetworkPermission,
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                    )
                 }
             }
 
             if (notificationPermission?.allRequiredPermissionsGranted == false) {
                 item("notificationPermission") {
-                    NotificationPermissionCard(permissionState = notificationPermission)
+                    NotificationPermissionCard(
+                        permissionState = notificationPermission,
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                    )
                 }
             }
 
@@ -299,6 +306,12 @@ fun SettingPage(vm: SettingVM = koinViewModel()) {
                         supportingContent = { Text(stringResource(R.string.setting_page_about_desc)) },
                         headlineContent = { Text(stringResource(R.string.setting_page_about)) },
                     )
+                    item(
+                        onClick = { navController.navigate(Screen.QuickStart) },
+                        leadingContent = { CardGroupIcon(HugeIcons.Rocket01, containerColor = containerColor, contentColor = contentColor) },
+                        supportingContent = { Text(stringResource(R.string.setting_page_quick_start_desc)) },
+                        headlineContent = { Text(stringResource(R.string.setting_page_quick_start)) },
+                    )
                 }
             }
         }
@@ -316,10 +329,10 @@ private fun groupIconColors(index: Int): Pair<Color, Color> = when (index % 3) {
 @Composable
 private fun ProviderConfigWarningCard(navController: Navigator) {
     Surface(
-        onClick = { navController.navigate(Screen.SettingProvider) },
+        onClick = { navController.navigate(Screen.QuickStart) },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(horizontal = 8.dp),
         shape = rememberScreenEdgeCornerShape(),
         color = MaterialTheme.colorScheme.errorContainer,
         contentColor = MaterialTheme.colorScheme.onErrorContainer,
@@ -360,7 +373,7 @@ private fun ProviderConfigWarningCard(navController: Navigator) {
                 }
             }
             Button(
-                onClick = { navController.navigate(Screen.SettingProvider) },
+                onClick = { navController.navigate(Screen.QuickStart) },
                 modifier = Modifier.align(Alignment.End),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.error,
