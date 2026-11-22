@@ -21,6 +21,8 @@
   <string name="safe_mode_default_assistant">Standard-Assistent</string>
   <string name="safe_mode_description">Die App ist beim letzten Start abgestürzt.</string>
   <string name="safe_mode_enter_app">App öffnen</string>
+  <string name="safe_mode_export_chats">Chats exportieren (TAR)</string>
+  <string name="safe_mode_import_chats">Chats importieren (bestehende Chats überschreiben)</string>
   <string name="safe_mode_switch_assistant">Assistent wechseln</string>
   <string name="safe_mode_title">Sicherer Modus</string>
   <string name="setting_page_about">Über</string>
@@ -581,7 +583,9 @@
 <string name="assistant_page_local_tools_phone_use_enable_service">Aktiviere \"NyanChat Phone Use\" in den Bedienungshilfen-Einstellungen</string>
 <string name="assistant_page_local_tools_phone_use_floating_window_required">Aktiviere zuerst das schwebende Hintergrundfenster</string>
 <string name="assistant_page_local_tools_phone_use_manual_desc">„Jedes Mal fragen“ fragt nur beim ersten Einsatz von Phone Use in einer Antwort nach; weitere Aktionen derselben Antwort laufen ohne Nachfrage.</string>
+<string name="assistant_page_local_tools_phone_use_restart_service">Schalte „NyanChat Phone Use“ in den Bedienungshilfen-Einstellungen aus und wieder ein</string>
 <string name="assistant_page_local_tools_phone_use_service_off">Der Bedienungshilfe-Dienst ist deaktiviert. Schalte diesen Schalter aus und wieder ein, um die Einstellungen zu öffnen. Wenn das System die Option ausgraut, erlaube zuerst eingeschränkte Einstellungen für diese App in den App-Infos.</string>
+<string name="assistant_page_local_tools_phone_use_service_stopped">Das System hat den Bedienungshilfe-Dienst gestoppt, obwohl er in den Systemeinstellungen weiterhin als aktiv angezeigt wird (manche Geräte tun das, nachdem die App aus den letzten Apps gewischt wurde). Schalte diesen Schalter aus und wieder ein, um die Einstellungen zu öffnen, und schalte dort „NyanChat Phone Use“ aus und wieder ein. Wenn du NyanChat in den letzten Apps sperrst und den Autostart erlaubst, passiert das nicht wieder.</string>
 <string name="assistant_page_local_tools_phone_use_title">Telefonnutzung</string>
   <string name="assistant_page_local_tools_screen_time_desc">Lass die KI deine App-Nutzungszeit lesen</string>
   <string name="assistant_page_local_tools_screen_time_permission_required">Bitte erteile in den Einstellungen die Berechtigung für den Nutzungszugriff, um die Bildschirmzeit nutzen zu können</string>

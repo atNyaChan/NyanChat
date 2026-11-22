@@ -21,6 +21,8 @@
   <string name="safe_mode_default_assistant">Ассистент по умолчанию</string>
   <string name="safe_mode_description">При последнем запуске приложение завершилось с ошибкой.</string>
   <string name="safe_mode_enter_app">Войти в приложение</string>
+  <string name="safe_mode_export_chats">Экспорт чатов (TAR)</string>
+  <string name="safe_mode_import_chats">Импорт чатов (перезаписать существующие чаты)</string>
   <string name="safe_mode_switch_assistant">Переключить помощника</string>
   <string name="safe_mode_title">Безопасный режим</string>
   <string name="setting_page_about">О приложении</string>
@@ -581,7 +583,9 @@
 <string name="assistant_page_local_tools_phone_use_enable_service">Включите \"NyanChat Phone Use\" в настройках специальных возможностей</string>
 <string name="assistant_page_local_tools_phone_use_floating_window_required">Сначала включите фоновое плавающее окно</string>
 <string name="assistant_page_local_tools_phone_use_manual_desc">«Спрашивать каждый раз» запрашивает подтверждение только при первом действии Phone Use в каждом ответе; последующие действия в том же ответе выполняются без запроса.</string>
+<string name="assistant_page_local_tools_phone_use_restart_service">Выключите и снова включите \"NyanChat Phone Use\" в настройках специальных возможностей</string>
 <string name="assistant_page_local_tools_phone_use_service_off">Служба доступности выключена. Выключите и снова включите этот переключатель, чтобы открыть настройки. Если система сделает этот пункт серым, сначала разрешите ограниченные настройки для этого приложения в разделе «Информация о приложении».</string>
+<string name="assistant_page_local_tools_phone_use_service_stopped">Система остановила службу доступности, хотя в системных настройках она по-прежнему отображается как включённая (на некоторых телефонах это происходит после смахивания приложения из списка недавних). Выключите и снова включите этот переключатель, чтобы открыть настройки, затем выключите и снова включите там \"NyanChat Phone Use\". Если закрепить NyanChat в списке недавних и разрешить автозапуск, это не повторится.</string>
 <string name="assistant_page_local_tools_phone_use_title">Использование телефона</string>
   <string name="assistant_page_local_tools_screen_time_desc">Позвольте ИИ прочитать время использования экрана вашего приложения</string>
   <string name="assistant_page_local_tools_screen_time_permission_required">Пожалуйста, предоставьте разрешение Доступ к использованию в настройках, чтобы использовать экранное время</string>

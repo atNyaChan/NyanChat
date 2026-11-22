@@ -21,6 +21,8 @@
   <string name="safe_mode_default_assistant">Default Assistant</string>
   <string name="safe_mode_description">The app crashed on the last launch.</string>
   <string name="safe_mode_enter_app">Enter App</string>
+  <string name="safe_mode_export_chats">Export Chats (TAR)</string>
+  <string name="safe_mode_import_chats">Import Chats (Overwrite Existing Chats)</string>
   <string name="safe_mode_switch_assistant">Switch Assistant</string>
   <string name="safe_mode_title">Safe Mode</string>
   <string name="setting_page_about">About</string>
@@ -581,7 +583,9 @@
 <string name="assistant_page_local_tools_phone_use_enable_service">Turn on “NyanChat Phone Use” in the accessibility settings</string>
 <string name="assistant_page_local_tools_phone_use_floating_window_required">Turn on the background floating window first</string>
 <string name="assistant_page_local_tools_phone_use_manual_desc">“Ask every time” only asks on the first Phone Use action in each reply; later actions in the same reply run without asking.</string>
+<string name="assistant_page_local_tools_phone_use_restart_service">Turn “NyanChat Phone Use” off and on again in the accessibility settings</string>
 <string name="assistant_page_local_tools_phone_use_service_off">The accessibility service is off. Turn this switch off and on again to open the settings. If the system greys the option out, allow restricted settings for this app in App info first.</string>
+<string name="assistant_page_local_tools_phone_use_service_stopped">The system has stopped the accessibility service, although the system settings still show it as on (some phones do this after the app is swiped away from recent apps). Turn this switch off and on again to open the settings, then turn “NyanChat Phone Use” off and on there. Locking NyanChat in recent apps and allowing auto-start keeps it from happening again.</string>
 <string name="assistant_page_local_tools_phone_use_title">Phone Use</string>
   <string name="assistant_page_local_tools_screen_time_desc">Let the AI read your app screen usage time</string>
   <string name="assistant_page_local_tools_screen_time_permission_required">Please grant the Usage access permission in settings to use screen time</string>

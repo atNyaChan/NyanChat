@@ -21,6 +21,8 @@
   <string name="safe_mode_default_assistant">默认助手</string>
   <string name="safe_mode_description">应用上次启动时崩溃了。</string>
   <string name="safe_mode_enter_app">进入应用</string>
+  <string name="safe_mode_export_chats">导出聊天记录（TAR）</string>
+  <string name="safe_mode_import_chats">导入聊天记录（覆盖现有聊天记录）</string>
   <string name="safe_mode_switch_assistant">切换助手</string>
   <string name="safe_mode_title">安全模式</string>
   <string name="setting_page_about">关于</string>
@@ -581,7 +583,9 @@
 <string name="assistant_page_local_tools_phone_use_enable_service">在无障碍设置中开启「NyanChat Phone Use」</string>
 <string name="assistant_page_local_tools_phone_use_floating_window_required">请先开启后台悬浮窗</string>
 <string name="assistant_page_local_tools_phone_use_manual_desc">「每次授权」只会在每个回答里第一次使用 Phone Use 时询问，之后的操作不再弹出授权。</string>
+<string name="assistant_page_local_tools_phone_use_restart_service">请在无障碍设置中将「NyanChat Phone Use」关闭再重新打开</string>
 <string name="assistant_page_local_tools_phone_use_service_off">无障碍服务已关闭。请将此开关关闭再打开，以进入设置。若该选项在系统中呈灰色不可用，请先在「应用信息」中为此应用允许受限设置。并且将应用的自启动开关打开，可以避免无障碍权限被频繁收回。</string>
+<string name="assistant_page_local_tools_phone_use_service_stopped">无障碍服务已被系统停止，但系统设置里仍显示开启（部分手机在最近任务中划掉应用后会这样）。请将此开关关闭再打开以进入设置，然后把「NyanChat Phone Use」关闭再重新打开。在最近任务中锁定 NyanChat 并允许自启动，可以避免再次发生。</string>
 <string name="assistant_page_local_tools_phone_use_title">Phone Use</string>
   <string name="assistant_page_local_tools_screen_time_desc">让 AI 读取你的应用屏幕使用时间</string>
   <string name="assistant_page_local_tools_screen_time_permission_required">请在设置中授予「使用情况访问权限」以使用屏幕使用时间</string>

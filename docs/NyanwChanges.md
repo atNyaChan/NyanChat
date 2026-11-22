@@ -530,6 +530,7 @@
 - 导入存档后「重启应用」弹窗的确认按钮自动重新启动应用，无需用户手动打开。
 - 「导入本地备份文件」说明仅支持 NyanChat 和 RikkaHub 3.x。
 - 备份打包逻辑统一收拢到 `data/sync/BackupManager`，`WebDavSync`/`S3Sync` 只负责传输与列表。
+- 安全模式页的导出按钮使用新的 TAR 格式（固定包含附件，不包含工作区，避免数据库打不开时列工作区失败导致整个导出失败）。两个备份按钮的文案分别改为「导出聊天记录（TAR）」与「导入聊天记录（覆盖现有聊天记录）」，四个按钮之间统一 4dp 间隔。
 
 ### 聊天文件
 - 「聊天文件」的上传附件卡片支持点击打开，图片复用聊天图片预览；跳转与删除操作移到卡片底部的低矮分段操作条，MIME 类型与文件大小合并为一行。
@@ -638,10 +639,11 @@
 ## 原版 RikkaHub 相关
 - 应用图标改为由黑白猫脸原图描摹出的矢量资源，同时复用为 Android 主题单色图标、通知图标、默认用户及助手头像、Web 界面 Logo 和聊天图片导出水印。README 使用带柔和投影的白色圆形底板 SVG 版本，使圆形边界在浅色和深色背景下均自然可见，并移除原有 PNG 及兔子图标资源。
 - Release 构建改用 `local.properties` 配置的仓库根目录 `.signing` 发布证书，不再使用 Android Debug 证书；发布身份为 `NyanChat Release`。
-- 发布渠道保持仅 GitHub（Release APK 与每日构建），不引入上游按 `distribution` flavor 区分的 `play` 渠道；构建任务与产物路径仍使用不带渠道的 `assembleRelease` / `bundleRelease`，混淆映射对应为 `app/build/outputs/mapping/release/mapping.txt`。
+- 发布渠道改为仅 GitHub（Release APK），不引入上游按 `distribution` flavor 区分的 `play` 渠道；构建任务与产物路径使用不带渠道的 `assembleRelease` / `bundleRelease`，混淆映射对应为 `app/build/outputs/mapping/release/mapping.txt`。
+- 移除全部 GitHub Actions workflow（每日构建 `daily-build.yml`、上游的 `close-blank-issues.yml`）：构建、签名与发布全部由维护者本地完成。
 - 应用自身的显示名称统一改为 `NyanChat`，包括 Android 应用名、Web 服务、导出图片水印及对外客户端标识，独立的 `RikkaHub` 搜索服务保留原名。deep link scheme 由 `rikkahub` 改为 `nyanchat`。
-- 应用包名改为 `moe.nyanw.nyanchat`，版本字符串自动取构建日期与上游版本号拼接为 `{yyyyMMdd}+{上游版本}`（如 `20261118+3.3.0`）。
-- 完整移除应用内的自动更新以及捐赠功能，以及启动次数达到阈值后自动弹出的捐赠提醒。
+- 应用包名改为 `moe.nyanw.nyanchat`，版本字符串自动取构建日期与上游版本号拼接为 `{yyyyMMdd}+{上游版本}`（如 `20261122+3.3.1`）。
+- 完整移除应用内的自动更新以及捐赠功能，以及启动次数达到阈值后自动弹出的捐赠提醒，并删除仓库的 `.github/FUNDING.yml`。
 - 「关于」分组只保留「关于」项，并删除右侧的 QQ 和 Discord 链接。
 - 「关于」页第二个分组依次包含该 Fork GitHub 链接、该 Fork 的 License 文件链接、RikkaHub GitHub、RikkaHub 官网。
 - 「关于」页版本卡片长按按压反馈裁剪在卡片范围内，长按按住时卡片连同反馈一起扩展为四角屏幕圆角（与其它卡片一致）。
@@ -707,7 +709,7 @@
 - `app/baselineprofile` 生成器在发送消息后不再只做一次 20 秒等待，而是先等 mock 接口把这一轮的流式回复写完整，再在界面里确认回复末尾标记渲染出来；确认期间持续把聊天消息列表翻到最新一条。长回复超过一屏后聊天列表的自动跟随会在气泡底边离开视口时停止，原实现会因结尾标记停在屏幕外而误报回复未渲染；而且原来在等待循环里用的 `fling(UP)` 实际是往更早的消息翻（uiautomator 的 fling 会反转手势方向，日志里 `fling(UP)` 的手势是从上往下划），并且每个 `fling` 都要空等 5 秒等不到的 `scrollFinished` 事件，现在改为按列表可见高度取最大的可滚动节点直接注入 `swipe` 手势。生成器每次运行前还会 `pm clear` 目标 app，因为 benchmark 的 `resetAndCompile` 只重置 ART profile、不清 app 数据：上一轮留下的会话会让这一轮的回复落到很靠下的位置，其中的旧编号标记也会让「等回复出现」变成误判。
 - 在 `app` 的 `packaging` 中显式设置 `dex { useLegacyPackaging = true }`（与已有的 `jniLibs { useLegacyPackaging = true }` 一致），让 dex 继续以 deflate 压缩进 APK。因为 `minSdk` 提升到 28 后，AGP 的 `DexPackagingOptionsImpl` 默认 `useLegacyPackaging = (minSdk < 28)` 变为 false，会把 `classes*.dex` 以不压缩（STORED）方式存入 APK，使 release APK 由约 34MB 涨到约 47MB、debug APK 约翻倍；该默认与内容无关，只影响 zip 压缩方式和安装时的 dex2oat。
 - 移除已发现的死代码，并新增 `tools/scan_deadcode.py` 作为死代码静态检查脚本：一次遍历全仓库建立词频索引，报告未被引用的 Kotlin 声明与整文件、未使用的 import、未引用的字符串资源、孤儿 `res/` 文件与 values 条目、未被引用的枚举项，以及 web-ui 中无人 import 的模块；`--only` 可只跑指定检查，有发现时退出码为 1。`AGENTS.md` 的 Agent Change Workflow 记录其用法。
-- 清理 Firebase 移除后的残留引用：删除 `AGENTS.md` 中关于 `google-services.json` 的过时说明，删除 CI workflow 中写入 `google-services.json` 的步骤。
+- 清理 Firebase 移除后的残留引用：删除 `AGENTS.md` 中关于 `google-services.json` 的过时说明。
 - 清理各网络服务对新版 OkHttp 非空响应体的冗余安全调用、密封类型 `when` 的多余 `else`，并移除低于项目最低 API 28 的废弃 Locale 兼容分支；仍有实际用途的旧 TTS 回调与消息序列化迁移类型继续保留，并仅在对应兼容代码中抑制弃用警告。
 - 首次安装或设置文件损坏（重置为空）产生空助手列表时自动补回默认助手，当前助手读取另有独立兜底，避免主界面与安全模式在启动阶段循环闪退。
 - 移除未使用的 Google Sans Flex 字体。

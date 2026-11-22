@@ -21,6 +21,8 @@
   <string name="safe_mode_default_assistant">المساعد الافتراضي</string>
   <string name="safe_mode_description">تعطل التطبيق عند آخر تشغيل.</string>
   <string name="safe_mode_enter_app">دخول التطبيق</string>
+  <string name="safe_mode_export_chats">تصدير المحادثات (TAR)</string>
+  <string name="safe_mode_import_chats">استيراد المحادثات (استبدال المحادثات الحالية)</string>
   <string name="safe_mode_switch_assistant">تبديل المساعد</string>
   <string name="safe_mode_title">الوضع الآمن</string>
   <string name="setting_page_about">حول</string>
@@ -581,7 +583,9 @@
 <string name="assistant_page_local_tools_phone_use_enable_service">فعّل \"NyanChat Phone Use\" في إعدادات إمكانية الوصول</string>
 <string name="assistant_page_local_tools_phone_use_floating_window_required">فعّل النافذة العائمة في الخلفية أولًا</string>
 <string name="assistant_page_local_tools_phone_use_manual_desc">«السؤال في كل مرة» يسأل فقط عند أول إجراء Phone Use في كل رد، وتُنفَّذ الإجراءات اللاحقة في الرد نفسه دون سؤال.</string>
+<string name="assistant_page_local_tools_phone_use_restart_service">أطفئ \"NyanChat Phone Use\" ثم أعد تشغيله في إعدادات إمكانية الوصول</string>
 <string name="assistant_page_local_tools_phone_use_service_off">خدمة إمكانية الوصول متوقفة. أطفئ هذا المفتاح ثم أعد تشغيله لفتح الإعدادات. إذا جعل النظام هذا الخيار باهتًا، فاسمح بالإعدادات المقيّدة لهذا التطبيق من معلومات التطبيق أولًا.</string>
+<string name="assistant_page_local_tools_phone_use_service_stopped">أوقفت المنظومة خدمة إمكانية الوصول رغم أن إعدادات النظام ما زالت تُظهرها مفعّلة (بعض الهواتف تفعل ذلك بعد إزالة التطبيق من التطبيقات الأخيرة). أطفئ هذا المفتاح ثم أعد تشغيله لفتح الإعدادات، ثم أطفئ \"NyanChat Phone Use\" وأعد تشغيله هناك. تثبيت NyanChat في التطبيقات الأخيرة والسماح بالتشغيل التلقائي يمنع تكرار ذلك.</string>
 <string name="assistant_page_local_tools_phone_use_title">استخدام الهاتف</string>
   <string name="assistant_page_local_tools_screen_time_desc">السماح للذكاء الاصطناعي بقراءة وقت استخدام تطبيقاتك على الشاشة</string>
   <string name="assistant_page_local_tools_screen_time_permission_required">يرجى منح إذن الوصول إلى الاستخدام في الإعدادات لاستخدام وقت الشاشة</string>

@@ -21,6 +21,8 @@
   <string name="safe_mode_default_assistant">기본 비서</string>
   <string name="safe_mode_description">앱이 마지막 실행에서 충돌했습니다.</string>
   <string name="safe_mode_enter_app">앱 들어가기</string>
+  <string name="safe_mode_export_chats">채팅 내보내기 (TAR)</string>
+  <string name="safe_mode_import_chats">채팅 가져오기 (기존 채팅 덮어쓰기)</string>
   <string name="safe_mode_switch_assistant">어시스턴트 전환</string>
   <string name="safe_mode_title">안전 모드</string>
   <string name="setting_page_about">정보</string>
@@ -581,7 +583,9 @@
 <string name="assistant_page_local_tools_phone_use_enable_service">접근성 설정에서 \"NyanChat Phone Use\"를 켜세요</string>
 <string name="assistant_page_local_tools_phone_use_floating_window_required">먼저 백그라운드 플로팅 창을 켜세요</string>
 <string name="assistant_page_local_tools_phone_use_manual_desc">「매번 수동 승인」은 각 답변에서 첫 Phone Use 작업만 확인하며, 같은 답변의 이후 작업은 확인 없이 실행합니다.</string>
+<string name="assistant_page_local_tools_phone_use_restart_service">접근성 설정에서 \"NyanChat Phone Use\"를 껐다가 다시 켜세요</string>
 <string name="assistant_page_local_tools_phone_use_service_off">접근성 서비스가 꺼져 있습니다. 설정을 열려면 이 스위치를 껐다가 다시 켜세요. 시스템에서 해당 옵션이 회색으로 비활성화되어 있으면 먼저 앱 정보에서 이 앱의 제한된 설정을 허용하세요.</string>
+<string name="assistant_page_local_tools_phone_use_service_stopped">시스템 설정에는 켜진 것으로 표시되지만 시스템이 접근성 서비스를 중지했습니다(최근 앱에서 앱을 밀어 지우면 이렇게 되는 기기가 있습니다). 이 스위치를 껐다가 다시 켜서 설정을 열고, \"NyanChat Phone Use\"를 껐다가 다시 켜세요. 최근 앱에서 NyanChat을 고정하고 자동 실행을 허용하면 다시 발생하지 않습니다.</string>
 <string name="assistant_page_local_tools_phone_use_title">휴대폰 사용</string>
   <string name="assistant_page_local_tools_screen_time_desc">AI가 앱 화면 사용 시간을 읽을 수 있도록 합니다.</string>
   <string name="assistant_page_local_tools_screen_time_permission_required">스크린 시간을 사용하려면 설정에서 사용 액세스 권한을 허용해 주세요.</string>

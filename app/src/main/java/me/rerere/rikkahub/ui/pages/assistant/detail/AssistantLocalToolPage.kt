@@ -26,6 +26,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import me.rerere.ui.toast.ToastType
 import me.rerere.hugeicons.HugeIcons
@@ -50,6 +51,7 @@ import me.rerere.rikkahub.data.db.entity.WorkspaceEntity
 import me.rerere.rikkahub.data.model.Assistant
 import me.rerere.rikkahub.phoneuse.PhoneUseManager
 import me.rerere.rikkahub.phoneuse.isFloatingChatWindowOn
+import me.rerere.rikkahub.phoneuse.isPhoneUseCheckedInSystem
 import me.rerere.rikkahub.ui.components.ai.SearchPickerIcon
 import me.rerere.rikkahub.ui.components.ai.SearchPickerSheet
 import me.rerere.rikkahub.ui.components.ai.SearchMode
@@ -135,11 +137,19 @@ private fun AssistantLocalToolContent(
     val settingsStore: SettingsStore = koinInject()
     val phoneUseManager: PhoneUseManager = koinInject()
     val phoneUseServiceOn = phoneUseManager.controller.collectAsStateWithLifecycle().value != null
+    // 系统设置里勾选着但服务没连上：被系统停掉了，要关掉重开。从系统设置回来时重新读
+    var phoneUseCheckedInSystem by remember { mutableStateOf(isPhoneUseCheckedInSystem(context)) }
+    LifecycleResumeEffect(Unit) {
+        phoneUseCheckedInSystem = isPhoneUseCheckedInSystem(context)
+        onPauseOrDispose {}
+    }
+    val phoneUseServiceStopped = !phoneUseServiceOn && phoneUseCheckedInSystem
     val permissionRequiredText =
         stringResource(R.string.assistant_page_local_tools_screen_time_permission_required)
     val floatingWindowRequiredText =
         stringResource(R.string.assistant_page_local_tools_phone_use_floating_window_required)
     val enableServiceText = stringResource(R.string.assistant_page_local_tools_phone_use_enable_service)
+    val restartServiceText = stringResource(R.string.assistant_page_local_tools_phone_use_restart_service)
     var showSearchPicker by remember { mutableStateOf(false) }
 
     val calendarPermissionState = rememberPermissionState(
@@ -188,7 +198,10 @@ private fun AssistantLocalToolContent(
         }
         // 无障碍服务还没开时带用户去系统设置，开关照常打开，开完服务就能用
         if (enabled && option == LocalToolOption.PhoneUse && !phoneUseServiceOn) {
-            toaster.show(message = enableServiceText, type = ToastType.Warning)
+            toaster.show(
+                message = if (phoneUseServiceStopped) restartServiceText else enableServiceText,
+                type = ToastType.Warning,
+            )
             context.openAccessibilitySettings()
         }
         if (enabled && option == LocalToolOption.ScreenTime && !context.hasUsageStatsPermission()) {
@@ -236,7 +249,10 @@ private fun AssistantLocalToolContent(
             }
             // 无障碍服务还没开时带用户去系统设置，开关照常打开，开完服务就能用
             if (option == LocalToolOption.PhoneUse && !phoneUseServiceOn) {
-                toaster.show(message = enableServiceText, type = ToastType.Warning)
+                toaster.show(
+                    message = if (phoneUseServiceStopped) restartServiceText else enableServiceText,
+                    type = ToastType.Warning,
+                )
                 context.openAccessibilitySettings()
             }
             if (option == LocalToolOption.ScreenTime && !context.hasUsageStatsPermission()) {
@@ -495,7 +511,13 @@ private fun AssistantLocalToolContent(
                             // 开了工具但服务没开时模型调用会直接报错，在这里说明原因
                             if (LocalToolOption.PhoneUse in assistant.localTools && !phoneUseServiceOn) {
                                 Text(
-                                    text = stringResource(R.string.assistant_page_local_tools_phone_use_service_off),
+                                    text = stringResource(
+                                        if (phoneUseServiceStopped) {
+                                            R.string.assistant_page_local_tools_phone_use_service_stopped
+                                        } else {
+                                            R.string.assistant_page_local_tools_phone_use_service_off
+                                        }
+                                    ),
                                     color = MaterialTheme.colorScheme.error,
                                 )
                             }

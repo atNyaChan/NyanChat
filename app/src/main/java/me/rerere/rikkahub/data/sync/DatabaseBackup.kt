@@ -13,6 +13,20 @@ internal object DatabaseBackup {
         database.execSQL("VACUUM main INTO ?", arrayOf(destination.absolutePath))
     }
 
+    /**
+     * 不经过 Room，直接从库文件拍快照：Room 打不开库（迁移失败、装了更旧的版本）时也能导出。
+     * 快照保留盘上原来的 schema 版本，恢复时再走迁移。只读打开，不会改动库文件（日志模式、android_metadata 都不碰）。
+     */
+    fun createFileSnapshot(databaseFile: File, destination: File) {
+        check(!destination.exists()) { "Backup snapshot already exists" }
+        require(databaseFile.isFile) { "Database file not found" }
+        SQLiteDatabase.openDatabase(databaseFile.absolutePath, null, SQLiteDatabase.OPEN_READONLY) {
+            error("Database is corrupt")
+        }.use { database ->
+            database.execSQL("VACUUM main INTO ?", arrayOf(destination.absolutePath))
+        }
+    }
+
     /** Only opens the staged copy, which must already be a standalone snapshot. */
     fun normalize(databaseFile: File) {
         require(databaseFile.isFile && databaseFile.length() > 0) { "Backup database is missing or empty" }
