@@ -146,12 +146,12 @@ private fun DetailedNerdLine(
             ) {
                 // 生成中用每 0.1s 推送的快照（含按时钟外推的生成耗时），没 chunk 时耗时/速度也会继续走；
                 // 生成结束后换回最终的 generationTimeMs，保持「不含首 token 延迟与工具等待」的口径。
+                // 没有生成耗时也没有完成时间的消息（手动编辑、旧消息）不把创建时间当成耗时，避免显示 0.0s。
                 val statsMillis = if (loading) {
                     stats?.liveGenerationMillis ?: stats?.elapsedMillis ?: message.elapsedMillis(loading = true)
                 } else {
                     generationMillis ?: stats?.elapsedMillis ?: message.elapsedMillis(loading = false)
                 }
-                val seconds = statsMillis / 1000f
                 val cost = if (!loading && usage != null) calculateCost(usage, model) else null
                 val manuallyEdited = !loading && message.modelId == null
                 val showGenerationStats = loading || message.modelId != null
@@ -186,7 +186,7 @@ private fun DetailedNerdLine(
                             }
                         },
                     )
-                    if (showGenerationStats) {
+                    if (showGenerationStats && statsMillis != null) {
                         StatsItem(
                             icon = {
                                 Icon(
@@ -195,7 +195,7 @@ private fun DetailedNerdLine(
                                     modifier = Modifier.size(12.dp),
                                 )
                             },
-                            content = { Text(text = "${seconds.toFixed(1)}s") },
+                            content = { Text(text = "${(statsMillis / 1000f).toFixed(1)}s") },
                         )
                         if (statsTimeValid && statsMillis >= 150 && wordCount > 0) {
                             val wordsPerSecond = wordCount.toFloat() / statsMillis * 1000
@@ -280,7 +280,7 @@ private fun DetailedNerdLine(
                                 }
                             },
                         )
-                        if (statsTimeValid && statsMillis >= 150) {
+                        if (statsMillis != null && statsTimeValid && statsMillis >= 150) {
                             val tokensPerSecond = usage.completionTokens.toFloat() / statsMillis * 1000
                             StatsItem(
                                 icon = {
@@ -360,11 +360,12 @@ internal fun UIMessage.wordCount(includeReasoning: Boolean): Int = parts.sumOf {
     text.wordCount()
 }
 
-private fun UIMessage.elapsedMillis(loading: Boolean): Long {
+private fun UIMessage.elapsedMillis(loading: Boolean): Long? {
+    // 只有生成中和记录了完成时间的消息才有可用的耗时；手动编辑的新消息没有完成时间
     val end = if (loading) {
         LocalDateTime.now()
     } else {
-        finishedAt?.toJavaLocalDateTime() ?: createdAt.toJavaLocalDateTime()
+        finishedAt?.toJavaLocalDateTime() ?: return null
     }
     return Duration.between(createdAt.toJavaLocalDateTime(), end).toMillis().coerceAtLeast(0)
 }

@@ -393,7 +393,7 @@ private fun McpServerItem(
                         Tag(type = TagType.SUCCESS) {
                             when (item) {
                                 is McpServerConfig.SseTransportServer -> Text("SSE")
-                                is McpServerConfig.StreamableHTTPServer -> Text("HTTP")
+                                is McpServerConfig.StreamableHTTPServer -> Text("Streamable HTTP")
                             }
                         }
                     }
@@ -612,7 +612,7 @@ private fun McpCommonOptionsConfigure(
             }
         ) {
             val transportTypes = listOf(
-                "HTTP",
+                "Streamable HTTP",
                 "SSE"
             )
             val currentTypeIndex = when (config) {

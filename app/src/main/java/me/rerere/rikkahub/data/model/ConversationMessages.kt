@@ -34,13 +34,9 @@ internal fun Conversation.editMessage(messageId: Uuid, parts: List<UIMessagePart
         // 摘要原地改写：新建分支会丢掉检查点标记，删除摘要时还会露出旧版本。
         original.copy(parts = parts)
     } else {
-        UIMessage(
-            role = node.role,
-            parts = parts,
-            // 编辑的是原消息的内容，来源仍是生成它的模型
-            modelId = original.modelId,
-            modelSnapshot = original.modelSnapshot,
-        )
+        // 手动编辑产生的新版本不继承原消息的模型信息：按「模型 UUID 为空的手动编辑消息」处理，
+        // 既不再显示由哪个模型生成，也不显示原消息的生成耗时
+        UIMessage(role = node.role, parts = parts)
     }
     return upsertMessage(node.id, edited)
 }

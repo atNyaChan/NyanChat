@@ -498,6 +498,11 @@ private fun ChatPageContent(
         previewMode = false
     }
 
+    // 多选分享时返回键先退出多选，而不是离开聊天页
+    BackHandler(selectionState.selecting) {
+        selectionState.cancel()
+    }
+
     Surface(
         color = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxSize()

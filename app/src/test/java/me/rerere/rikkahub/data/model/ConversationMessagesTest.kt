@@ -1,6 +1,7 @@
 package me.rerere.rikkahub.data.model
 
 import me.rerere.ai.core.MessageRole
+import me.rerere.ai.ui.ModelSnapshot
 import me.rerere.ai.ui.ToolApprovalState
 import me.rerere.ai.ui.UIMessage
 import me.rerere.ai.ui.UIMessagePart
@@ -40,9 +41,12 @@ class ConversationMessagesTest {
     }
 
     @Test
-    fun `editing a message adds a branch that keeps its model`() {
+    fun `editing a message adds a manually edited branch without the original model`() {
         val modelId = Uuid.random()
-        val reply = UIMessage.assistant("old").copy(modelId = modelId)
+        val reply = UIMessage.assistant("old").copy(
+            modelId = modelId,
+            modelSnapshot = ModelSnapshot(modelId = "model-a", displayName = "Model A"),
+        )
         val conversation = conversationOf(reply.toMessageNode())
 
         val node = conversation.editMessage(reply.id, listOf(UIMessagePart.Text("new"))).messageNodes.single()
@@ -52,7 +56,9 @@ class ConversationMessagesTest {
         assertNotEquals(reply.id, node.currentMessage.id)
         assertEquals("new", node.currentMessage.toText())
         assertEquals(MessageRole.ASSISTANT, node.currentMessage.role)
-        assertEquals(modelId, node.currentMessage.modelId)
+        assertNull(node.currentMessage.modelId)
+        assertNull(node.currentMessage.modelSnapshot)
+        assertNull(node.currentMessage.generationTimeMs)
     }
 
     @Test

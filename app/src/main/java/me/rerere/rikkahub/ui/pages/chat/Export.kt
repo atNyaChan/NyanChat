@@ -235,7 +235,10 @@ fun ChatExportSheet(
 
     if (visible) {
         AppBottomSheet(onDismissRequest = onDismissRequest) {
-            BottomSheetColumn {
+            BottomSheetColumn(
+                bottomPadding = 16.dp,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
                 BottomSheetTitle(text = stringResource(id = R.string.chat_page_export_format))
 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
