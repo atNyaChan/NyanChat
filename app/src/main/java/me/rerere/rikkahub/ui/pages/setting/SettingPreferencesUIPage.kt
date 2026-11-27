@@ -1,10 +1,13 @@
 package me.rerere.rikkahub.ui.pages.setting
 
+import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
+import android.os.PowerManager
 import android.provider.Settings
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -180,9 +183,11 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
     PermissionManager(permissionState = permissionState)
 
     var canDrawOverlays by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
+    var ignoringBatteryOptimizations by remember { mutableStateOf(isIgnoringBatteryOptimizations(context)) }
     // 从系统设置页授权回来后刷新
     LifecycleResumeEffect(Unit) {
         canDrawOverlays = Settings.canDrawOverlays(context)
+        ignoringBatteryOptimizations = isIgnoringBatteryOptimizations(context)
         onPauseOrDispose {}
     }
 
@@ -471,6 +476,24 @@ fun SettingPreferencesMorePage(vm: SettingVM = koinViewModel()) {
                             },
                         )
                     }
+                    item(
+                        onClick = { openBatteryOptimizationSettings(context) },
+                        headlineContent = { Text(stringResource(R.string.setting_page_preferences_notification_battery_optimization)) },
+                        supportingContent = {
+                            Text(
+                                stringResource(
+                                    if (ignoringBatteryOptimizations) {
+                                        R.string.setting_page_preferences_notification_battery_optimization_on
+                                    } else {
+                                        R.string.setting_page_preferences_notification_battery_optimization_off
+                                    }
+                                )
+                            )
+                        },
+                        trailingContent = {
+                            Icon(HugeIcons.ArrowRight01, contentDescription = null)
+                        },
+                    )
                     FormItem(
                         label = { Text(stringResource(R.string.setting_display_page_notification_message_generated)) },
                         description = { Text(stringResource(R.string.setting_display_page_notification_message_generated_desc)) },
@@ -1517,3 +1540,30 @@ internal enum class AppLanguage(val tag: String, val labelRes: Int? = null, val 
 
 @Composable
 private fun AppLanguage.displayName(): String = label ?: stringResource(labelRes!!)
+
+private fun isIgnoringBatteryOptimizations(context: Context): Boolean =
+    context.getSystemService(PowerManager::class.java)?.isIgnoringBatteryOptimizations(context.packageName) == true
+
+/**
+ * 不管当前是否已允许，都打开同一个界面：先弹系统的「忽略电池优化」请求，系统不支持这个页面时
+ * 退回电池优化列表，再退回应用详情页。是否已允许只影响右侧说明文字。
+ * 上游在已允许时改成打开电池优化列表，两个状态进入的界面不一样。
+ */
+@SuppressLint("BatteryLife")
+private fun openBatteryOptimizationSettings(context: Context) {
+    val intents = buildList {
+        add(
+            Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, "package:${context.packageName}".toUri())
+        )
+        add(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+        add(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, "package:${context.packageName}".toUri()))
+    }
+    for (intent in intents) {
+        try {
+            context.startActivity(intent)
+            return
+        } catch (_: ActivityNotFoundException) {
+            // 换下一个
+        }
+    }
+}

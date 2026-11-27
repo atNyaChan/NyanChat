@@ -84,6 +84,7 @@ fun ChatList(
     state: LazyListState,
     previewListState: LazyListState,
     selectionState: ChatSelectionState,
+    scrollAnchor: ChatScrollAnchorState,
     loading: Boolean,
     compressing: Boolean = false,
     generatingMessageId: Uuid? = null,
@@ -150,6 +151,7 @@ fun ChatList(
                 innerPadding = innerPadding,
                 conversation = conversation,
                 state = state,
+                scrollAnchor = scrollAnchor,
                 loading = loading,
                 compressing = compressing,
                 generatingMessageId = generatingMessageId,
@@ -226,6 +228,7 @@ private fun ChatListNormal(
     innerPadding: PaddingValues,
     conversation: Conversation,
     state: LazyListState,
+    scrollAnchor: ChatScrollAnchorState,
     loading: Boolean,
     compressing: Boolean,
     generatingMessageId: Uuid? = null,
@@ -294,8 +297,11 @@ private fun ChatListNormal(
     val selectedItems = selectionState.selectedItems
     var showExportSheet by remember { mutableStateOf(false) }
 
-    // 自动跟随键盘滚动
-    ImeLazyListAutoScroller(lazyListState = state)
+    // 自动跟随键盘滚动；置顶锚点时停下，否则收起键盘的滚动会打断置顶动画、把锚点挤下去
+    ImeLazyListAutoScroller(
+        lazyListState = state,
+        enabled = { !scrollAnchor.isPinning },
+    )
 
     val assistant = remember(
         settings.assistants,
@@ -334,16 +340,23 @@ private fun ChatListNormal(
         }
     }
 
+    // 发送后用户消息置顶，最后一条消息把下面不够一屏的部分用空白补上
+    val lastNodeMinHeight = scrollAnchor.rememberLastNodeMinHeight(
+        listState = state,
+        nodes = conversation.messageNodes,
+        bottomKey = ScrollBottomKey,
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize(),
     ) {
-        // 自动滚动到底部
+        // 自动滚动到底部；发送过消息后改为用户消息置顶，回复不再跟随
         if (settings.displaySetting.enableAutoScroll) {
             LaunchedEffect(state) {
                 snapshotFlow { state.layoutInfo.visibleItemsInfo }.collect { visibleItemsInfo ->
                     // println("is bottom = ${visibleItemsInfo.isAtBottom()}, scroll = ${state.isScrollInProgress}, can_scroll = ${state.canScrollForward}, loading = $loading")
-                    if (!state.isScrollInProgress && loadingState) {
+                    if (!state.isScrollInProgress && loadingState && scrollAnchor.nodeId == null) {
                         if (visibleItemsInfo.isAtBottom()) {
                             state.requestScrollToItem(conversationUpdated.messageNodes.lastIndex + 10)
                             // Log.i(TAG, "ChatList: scroll to ${conversationUpdated.messageNodes.lastIndex}")
@@ -391,7 +404,10 @@ private fun ChatListNormal(
                 items = conversation.messageNodes,
                 key = { index, item -> item.id },
             ) { index, node ->
-                Column {
+                Column(
+                    modifier = if (index == lastMessageIndex) Modifier.chatAnchorMinHeight(lastNodeMinHeight) else Modifier,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
                     ListSelectableItem(
                         key = node.id,
                         onSelectChange = {

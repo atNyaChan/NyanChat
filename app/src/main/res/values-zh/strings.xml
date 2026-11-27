@@ -1149,6 +1149,9 @@
   <string name="setting_page_preferences_network_proxy_list_desc">设置发送请求时使用的代理服务器</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">设置请求时使用的 User Agent 头</string>
+  <string name="setting_page_preferences_notification_battery_optimization">忽略电池优化</string>
+  <string name="setting_page_preferences_notification_battery_optimization_off">未允许。系统可能会为节省电量而停止后台生成</string>
+  <string name="setting_page_preferences_notification_battery_optimization_on">已允许。后台生成被系统中断的可能性更低</string>
 <string name="setting_page_preferences_notification_floating_window">后台悬浮窗</string>
 <string name="setting_page_preferences_notification_floating_window_desc">切到后台时 AI 还在回复，显示一个悬浮图标，点开可查看进度、确认工具调用和快速回复</string>
 <string name="setting_page_preferences_notification_overlay_permission">授予悬浮窗权限</string>

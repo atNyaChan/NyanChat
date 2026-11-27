@@ -1149,6 +1149,9 @@
   <string name="setting_page_preferences_network_proxy_list_desc">Укажите прокси-сервер, используемый при отправке запросов</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">Заголовок User-Agent, используемый в запросах</string>
+  <string name="setting_page_preferences_notification_battery_optimization">Игнорировать оптимизацию батареи</string>
+  <string name="setting_page_preferences_notification_battery_optimization_off">Не разрешено. Система может останавливать генерацию в фоне для экономии заряда батареи</string>
+  <string name="setting_page_preferences_notification_battery_optimization_on">Разрешено. Система реже останавливает фоновую генерацию</string>
 <string name="setting_page_preferences_notification_floating_window">Фоновое плавающее окно</string>
 <string name="setting_page_preferences_notification_floating_window_desc">Показывать плавающий значок, если вы выходите из приложения, пока ИИ ещё отвечает. Нажмите на него, чтобы проверить ход выполнения, подтвердить вызовы инструментов и быстро ответить.</string>
 <string name="setting_page_preferences_notification_overlay_permission">Разрешить наложение поверх других приложений</string>

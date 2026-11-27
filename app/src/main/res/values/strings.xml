@@ -1149,6 +1149,9 @@
   <string name="setting_page_preferences_network_proxy_list_desc">Set the proxy server used when sending requests</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">Set the User-Agent header used in requests</string>
+  <string name="setting_page_preferences_notification_battery_optimization">Ignore battery optimization</string>
+  <string name="setting_page_preferences_notification_battery_optimization_off">Not allowed. The system may stop background generation to save battery</string>
+  <string name="setting_page_preferences_notification_battery_optimization_on">Allowed. Background generation is less likely to be stopped by the system</string>
 <string name="setting_page_preferences_notification_floating_window">Background floating window</string>
 <string name="setting_page_preferences_notification_floating_window_desc">When you leave the app while the AI is still replying, show a floating icon. Tap it to check progress, confirm tool calls and reply quickly</string>
 <string name="setting_page_preferences_notification_overlay_permission">Grant overlay permission</string>

@@ -1149,6 +1149,9 @@
   <string name="setting_page_preferences_network_proxy_list_desc">リクエスト送信時に使用するプロキシサーバーを設定します</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">リクエスト時に使用するUser Agentヘッダーを設定</string>
+  <string name="setting_page_preferences_notification_battery_optimization">バッテリー最適化を無視</string>
+  <string name="setting_page_preferences_notification_battery_optimization_off">許可されていません。バッテリーを節約するため、バックグラウンドでの生成が停止される場合があります</string>
+  <string name="setting_page_preferences_notification_battery_optimization_on">許可済み。バックグラウンドでの生成がシステムによって停止されにくくなります</string>
 <string name="setting_page_preferences_notification_floating_window">バックグラウンドのフローティングウィンドウ</string>
 <string name="setting_page_preferences_notification_floating_window_desc">AIが返信中にアプリを離れると、フローティングアイコンが表示されます。タップすると進行状況を確認し、ツール呼び出しを確認してすばやく返信できます</string>
 <string name="setting_page_preferences_notification_overlay_permission">オーバーレイ権限を許可</string>

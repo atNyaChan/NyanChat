@@ -1149,6 +1149,9 @@
   <string name="setting_page_preferences_network_proxy_list_desc">تعيين الخادم الوسيط المستخدم عند إرسال الطلبات</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">تعيين ترويسة User-Agent المستخدمة في الطلبات</string>
+  <string name="setting_page_preferences_notification_battery_optimization">تجاهل تحسين البطارية</string>
+  <string name="setting_page_preferences_notification_battery_optimization_off">غير مسموح. قد يوقف النظام عملية التوليد في الخلفية لتوفير طاقة البطارية</string>
+  <string name="setting_page_preferences_notification_battery_optimization_on">مسموح. من غير المرجح أن يوقف النظام عملية التوليد في الخلفية</string>
 <string name="setting_page_preferences_notification_floating_window">نافذة عائمة في الخلفية</string>
 <string name="setting_page_preferences_notification_floating_window_desc">عند مغادرتك التطبيق بينما لا يزال الذكاء الاصطناعي يردّ، اعرض أيقونة عائمة. انقر عليها للتحقق من التقدم وتأكيد استدعاءات الأدوات والرد بسرعة</string>
 <string name="setting_page_preferences_notification_overlay_permission">منح إذن العرض فوق التطبيقات</string>

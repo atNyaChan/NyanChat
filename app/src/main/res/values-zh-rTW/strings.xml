@@ -1149,6 +1149,9 @@
   <string name="setting_page_preferences_network_proxy_list_desc">設定傳送請求時使用的代理伺服器</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">設定請求時使用的 User Agent 標頭</string>
+  <string name="setting_page_preferences_notification_battery_optimization">忽略電池最佳化</string>
+  <string name="setting_page_preferences_notification_battery_optimization_off">未允許。系統可能會為了節省電量而停止背景生成</string>
+  <string name="setting_page_preferences_notification_battery_optimization_on">已允許。背景生成較不容易被系統停止</string>
 <string name="setting_page_preferences_notification_floating_window">背景懸浮視窗</string>
 <string name="setting_page_preferences_notification_floating_window_desc">當你離開應用程式而 AI 仍在回覆時，顯示懸浮圖示。點擊即可查看進度、確認工具呼叫並快速回覆</string>
 <string name="setting_page_preferences_notification_overlay_permission">授予懸浮視窗權限</string>

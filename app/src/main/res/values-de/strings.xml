@@ -1149,6 +1149,9 @@
   <string name="setting_page_preferences_network_proxy_list_desc">Lege den Proxyserver fest, der beim Senden von Anfragen verwendet wird</string>
   <string name="setting_page_preferences_network_user_agent">User-Agent</string>
   <string name="setting_page_preferences_network_user_agent_desc">Lege den User-Agent-Header fest, der in Anfragen verwendet wird</string>
+  <string name="setting_page_preferences_notification_battery_optimization">Akkuoptimierung ignorieren</string>
+  <string name="setting_page_preferences_notification_battery_optimization_off">Nicht erlaubt. Das System kann die Generierung im Hintergrund stoppen, um Akku zu sparen</string>
+  <string name="setting_page_preferences_notification_battery_optimization_on">Zugelassen. Die Hintergrundgenerierung wird vom System seltener beendet</string>
 <string name="setting_page_preferences_notification_floating_window">Schwebefenster im Hintergrund</string>
 <string name="setting_page_preferences_notification_floating_window_desc">Wenn du die App verlässt, während die KI noch antwortet, wird ein schwebendes Symbol eingeblendet. Tippe darauf, um den Fortschritt zu prüfen, Tool-Aufrufe zu bestätigen und schnell zu antworten</string>
 <string name="setting_page_preferences_notification_overlay_permission">Overlay-Berechtigung erteilen</string>

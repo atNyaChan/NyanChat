@@ -40,7 +40,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.Job
 import me.rerere.ai.provider.Model
 import me.rerere.ai.provider.ProviderSetting
 import me.rerere.hugeicons.HugeIcons
@@ -98,7 +97,7 @@ internal fun FilesPicker(
     chatModel: Model?,
     state: ChatInputState,
     mcpManager: McpManager,
-    onCompressContext: (additionalPrompt: String, keepRecentMessages: Int) -> Job,
+    onCompressContext: (additionalPrompt: String, keepRecentMessages: Int) -> Unit,
     onUpdateAssistant: (Assistant) -> Unit,
     onUpdateFollowAssistant: (Boolean) -> Unit,
     onSelectSearch: (mode: SearchMode, serviceIndex: Int?) -> Unit,

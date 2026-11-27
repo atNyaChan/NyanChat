@@ -185,6 +185,10 @@ private fun FileContentInline(path: String?, code: String) {
 object ShellToolUI : ToolUIRenderer {
     private const val TITLE_MAX_CHARS = 40
 
+    /** 模型给的一句话说明, 有的话用它当标题, 命令放进摘要里 */
+    private fun descriptionOf(context: ToolUIContext): String? =
+        context.arguments.getStringContent("description")?.trim()?.takeIf { it.isNotEmpty() }
+
     override val toolName: String = "workspace_shell"
     override val inlineDetail: Boolean = true
 
@@ -192,6 +196,7 @@ object ShellToolUI : ToolUIRenderer {
 
     @Composable
     override fun title(context: ToolUIContext): String {
+        descriptionOf(context)?.let { return it }
         val command = context.arguments.getStringContent("command") ?: return stringResource(R.string.tool_ui_shell_default)
         val preview = command.replace("\n", " ").trim()
         val truncated = if (preview.length > TITLE_MAX_CHARS) preview.take(TITLE_MAX_CHARS) + "…" else preview
@@ -223,7 +228,7 @@ object ShellToolUI : ToolUIRenderer {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(
-                    text = stringResource(R.string.tool_ui_shell_default),
+                    text = descriptionOf(context) ?: stringResource(R.string.tool_ui_shell_default),
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.weight(1f),
                 )

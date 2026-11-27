@@ -60,7 +60,6 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.rerere.ai.provider.Model
 import me.rerere.ai.ui.UIMessagePart
@@ -107,7 +106,6 @@ import me.rerere.rikkahub.utils.wordCount
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.Uuid
 
 @Composable
@@ -465,6 +463,7 @@ private fun ChatPageContent(
     var showDeleteConfirm by remember { mutableStateOf(false) }
     // 概览页有自己的列表，用来让顶栏胶囊背景跟随概览滚动
     val previewListState = rememberLazyListState()
+    val chatScrollAnchor = remember { ChatScrollAnchorState() }
     val generatingMessageId by vm.generatingMessageId.collectAsStateWithLifecycle()
     // 生成中的统计快照：每 0.1s 推送一次，不跟随每个流式 chunk 重算
     val statsSnapshot by vm.streamingStats.collectAsStateWithLifecycle()
@@ -593,11 +592,8 @@ private fun ChatPageContent(
                                 messageId = inputState.editingMessage!!,
                             )
                         } else {
+                            chatScrollAnchor.anchorNextUserMessage(conversation.messageNodes)
                             vm.handleMessageSend(inputState.getContents())
-                            scope.launch {
-                                delay(100.milliseconds)
-                                chatListState.requestScrollToItem(conversation.currentMessages.size + 5)
-                            }
                         }
                         inputState.clearInput()
                     },
@@ -608,10 +604,8 @@ private fun ChatPageContent(
                                 messageId = inputState.editingMessage!!,
                             )
                         } else {
+                            chatScrollAnchor.anchorNextUserMessage(conversation.messageNodes)
                             vm.handleMessageSend(content = inputState.getContents(), answer = false)
-                            scope.launch {
-                                chatListState.requestScrollToItem(conversation.currentMessages.size + 5)
-                            }
                         }
                         inputState.clearInput()
                     },
@@ -649,6 +643,7 @@ private fun ChatPageContent(
                     state = chatListState,
                     previewListState = previewListState,
                     selectionState = selectionState,
+                    scrollAnchor = chatScrollAnchor,
                     loading = loadingJob != null,
                     compressing = sessionActivity == SessionActivity.Compressing,
                     generatingMessageId = generatingMessageId,
@@ -663,6 +658,7 @@ private fun ChatPageContent(
                     onDismissError = onDismissError,
                     onClearAllErrors = onClearAllErrors,
                     onRegenerate = {
+                        chatScrollAnchor.anchorTurnOf(conversation.messageNodes, it.id)
                         vm.regenerateAtMessage(it)
                     },
                     onEdit = {
@@ -783,11 +779,8 @@ private fun ChatFilesPanel(
         assistant = assistant,
         chatModel = chatModel,
         mcpManager = vm.mcpManager,
-        onCompressContext = { additionalPrompt, keepRecentMessages ->
-            vm.handleCompressContext(additionalPrompt, keepRecentMessages).also {
-                onRequestStatsRefresh()
-            }
-        },
+        // 压缩在后台上跑，结束后会话内容更新会带回新的上下文占用
+        onCompressContext = vm::handleCompressContext,
         onUpdateAssistant = {
             vm.updateAssistant(it)
             onRequestStatsRefresh()

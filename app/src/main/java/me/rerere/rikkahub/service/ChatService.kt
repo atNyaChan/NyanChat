@@ -106,9 +106,14 @@ import java.net.UnknownHostException
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TimeSource
 import kotlin.uuid.Uuid
 
 private const val TAG = "ChatService"
+
+// 一轮回复里连续调用工具可以跑很久，每隔这么久把已经执行完的步骤落一次库
+private val TurnCheckpointInterval = 30.seconds
 
 data class ChatError(
     val id: Uuid = Uuid.random(),
@@ -885,6 +890,7 @@ class ChatService(
             // 上一段是压缩后新开的；摘要加系统提示词本身就超过阈值时再压也没用，这一轮不再压缩
             var afterCompression = false
             var compressionUseless = false
+            var lastCheckpoint = TimeSource.Monotonic.markNow()
             // 从构建请求开始（MCP 可能较慢、也可能失败）直到生成结束都要收尾：
             // 失败、取消的占位消息在 finally 里移除，不会留在会话里
             try {
@@ -956,6 +962,14 @@ class ChatService(
                                 appEventBus.tryEmit(
                                     AppEvent.ChatGenerationUpdate(conversationId, event.message, senderName)
                                 )
+                                // 平时等这一轮结束才落库，中途进程崩溃或被杀时整轮的操作都没了 (#2377)。
+                                // 工具执行完是完整的一步，只在这里存，不会把生成到一半的内容写进库
+                                if (event.message.endsWithExecutedTool() &&
+                                    lastCheckpoint.elapsedNow() >= TurnCheckpointInterval
+                                ) {
+                                    lastCheckpoint = TimeSource.Monotonic.markNow()
+                                    saveTurnCheckpoint(session)
+                                }
                             }
 
                             is AgentEvent.Retrying -> {
@@ -1027,6 +1041,24 @@ class ChatService(
             Logging.log(TAG, "runTurn: $e")
             Logging.log(TAG, e.stackTraceToString())
             return TurnResult.Failed
+        } catch (e: OutOfMemoryError) {
+            // 组装请求体时一次性分配上百 MB（多张大图的 base64）会 OOM。它不是 Exception，
+            // 不接住就只会落到 AppScope 打日志，界面看不到任何错误 (#2365)。
+            // 抛出后那块大分配已随栈展开释放，可以继续运行
+            appEventBus.tryEmit(AppEvent.ChatGenerationEnded(conversationId, senderName, null))
+            session.inbox.pause()
+            Log.e(TAG, "runTurn: out of memory", e)
+            Logging.log(TAG, "runTurn: $e")
+            addError(
+                IllegalStateException(
+                    "Out of memory while building the request. The conversation likely contains too many " +
+                        "or too large images; remove some of them or start a new conversation.",
+                    e
+                ),
+                conversationId,
+                title = context.getString(R.string.error_title_generation)
+            )
+            return TurnResult.Failed
         }
     }
 
@@ -1062,6 +1094,17 @@ class ChatService(
         if (!removed) return conversation
         val cleaned = conversation.copy(messageNodes = updatedNodes)
         return cleaned.copy(updateAt = cleaned.newestMessageTime ?: cleaned.updateAt)
+    }
+
+    // 中途落库只是多一层保险，失败了不影响这一轮继续，结束时还会再存一次
+    private suspend fun saveTurnCheckpoint(session: ConversationSession) {
+        try {
+            session.flush()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to save turn checkpoint for ${session.id}", e)
+        }
     }
 
     // 模型不支持工具调用时，搜索和 MCP 工具都不会生效，提醒一下
@@ -1183,7 +1226,10 @@ class ChatService(
     // ---- 压缩对话历史 ----
 
     /**
-     * 把上一个检查点之后的消息压缩成摘要检查点。
+     * 开始把上一个检查点之后的消息压缩成摘要检查点，不等它完成。
+     *
+     * 压缩和生成一样在会话的任务槽里跑：聊天页显示压缩中，切换对话、离开页面都不影响，停止生成可以取消；
+     * 失败报告到这个对话的错误里。返回失败只表示没能开始，比如正在生成。
      *
      * [keepRecentMessages] 为 0 时压缩全部消息，请求和上一轮对话前缀一致，缓存命中最好；
      * 大于 0 时最近的这些消息不参与压缩、留在检查点之后，对话已经超出模型上下文、整段发不出去时用来缩小压缩请求。
@@ -1194,8 +1240,7 @@ class ChatService(
         keepRecentMessages: Int = 0,
     ): Result<Unit> = runCatching {
         withLoadedSession<Unit>(conversationId) { session ->
-            val result = CompletableDeferred<Unit>()
-            val job = synchronized(session) {
+            synchronized(session) {
                 // 生成中的回复还没写完，压缩不到它，检查点也不能插到它前面。
                 // 等审批时允许压缩：保留区可以把待审批的工具留在检查点之后
                 check(session.getJob() == null) { context.getString(R.string.chat_page_compress_blocked_generating) }
@@ -1204,15 +1249,12 @@ class ChatService(
                     additionalPrompt = additionalPrompt,
                     keepRecentMessages = keepRecentMessages,
                     clearSuggestions = true,
-                    onResult = result::completeWith,
-                )
-            }
-            try {
-                result.await()
-            } catch (e: CancellationException) {
-                // 压缩弹窗取消时调用方被取消，压缩任务跟着取消
-                job.cancel()
-                throw e
+                ) { result ->
+                    // 停止生成取消的不算失败，addError 会忽略
+                    result.onFailure { e ->
+                        addError(e, session.id, title = context.getString(R.string.error_title_compress_conversation))
+                    }
+                }
             }
         }
     }
@@ -1824,3 +1866,7 @@ class ChatService(
         if (session.isInitialized) finishInterruptedPendingTools(session)
     }
 }
+
+// 一批工具按顺序执行，最后一个有了结果就是都执行完了；模型开始回复后末尾是新内容，不再成立
+private fun UIMessage.endsWithExecutedTool(): Boolean =
+    (parts.lastOrNull() as? UIMessagePart.Tool)?.isExecuted == true
